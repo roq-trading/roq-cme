@@ -1,0 +1,84 @@
+{
+  "name": "MDFull",
+  "type": "item",
+  "values": [
+    {
+      "tag": 269,
+      "name": "MDEntryType",
+      "type": "roq::core::fix::MDEntryType",
+      "required": true
+    },
+    {
+      "tag": 279,
+      "name": "MDUpdateAction",
+      "type": "roq::core::fix::MDUpdateAction",
+      "custom": true
+    },
+    {
+      "tag": 270,
+      "name": "MDEntryPx",
+      "type": "double"
+    },
+    {
+      "tag": 271,
+      "name": "MDEntrySize",
+      "type": "double"
+    },
+    {
+      "tag": 272,
+      "name": "MDEntryDate",
+      "type": "std::chrono::milliseconds"
+    },
+    {
+      "tag": 100009,
+      "name": "DeribitTradeId",
+      "type": "std::string_view",
+      "custom": true
+    },
+    {
+      "tag": 54,
+      "name": "Side",
+      "type": "roq::core::fix::Side",
+      "custom": true
+    },
+    {
+      "tag": 44,
+      "name": "IndexPrice",
+      "type": "double",
+      "custom": true
+    },
+    {
+      "tag": 58,
+      "name": "Text",
+      "type": "std::string_view"
+    },
+    {
+      "tag": 37,
+      "name": "OrderId",
+      "type": "std::string_view"
+    },
+    {
+      "tag": 198,
+      "name": "SecondaryOrderId",
+      "type": "std::string_view"
+    },
+    {
+      "tag": 39,
+      "name": "OrdStatus",
+      "type": "roq::core::fix::OrdStatus",
+      "custom": true
+    },
+    {
+      "tag": 100010,
+      "name": "DeribitLabel",
+      "type": "std::string_view",
+      "custom": true
+    },
+    {
+      "tag": 100091,
+      "name": "DeribitLiquidation",
+      "type": "std::string_view",
+      "custom": true
+    }
+  ]
+}

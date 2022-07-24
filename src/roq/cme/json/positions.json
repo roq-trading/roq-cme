@@ -1,0 +1,10 @@
+{
+  "name": "Positions",
+  "type": "array",
+  "values": [
+    {
+      "name": "data",
+      "type": "std::span<Position>"
+    }
+  ]
+}

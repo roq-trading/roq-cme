@@ -1,0 +1,71 @@
+{
+  "name": "Logon",
+  "type": "simple2",
+  "values": [
+    {
+      "tag": 108,
+      "name": "HeartBtInt",
+      "type": "uint16_t",
+      "required": true
+    },
+    {
+      "tag": 95,
+      "name": "RawDataLength",
+      "type": "uint32_t"
+    },
+    {
+      "tag": 96,
+      "name": "RawData",
+      "type": "std::string_view",
+      "required": true
+    },
+    {
+      "tag": 553,
+      "name": "Username",
+      "type": "std::string_view",
+      "required": true
+    },
+    {
+      "tag": 554,
+      "name": "Password",
+      "type": "std::string_view",
+      "required": true
+    },
+    {
+      "tag": 9002,
+      "name": "UseWordsafeTags",
+      "type": "bool",
+      "custom": true
+    },
+    {
+      "tag": 9001,
+      "name": "CancelOnDisconnect",
+      "type": "bool",
+      "custom": true
+    },
+    {
+      "tag": 9004,
+      "name": "DeribitAppId",
+      "type": "std::string_view",
+      "custom": true
+    },
+    {
+      "tag": 9005,
+      "name": "DeribitAppSig",
+      "type": "std::string_view",
+      "custom": true
+    },
+    {
+      "tag": 9007,
+      "name": "DeribitSequential",
+      "type": "bool",
+      "custom": true
+    },
+    {
+      "tag": 9009,
+      "name": "UnsubscribeExecutionReports",
+      "type": "bool",
+      "custom": true
+    }
+  ]
+}

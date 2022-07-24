@@ -1,0 +1,43 @@
+package:
+  name: roq-cme
+  version: {{ GIT_DESCRIBE_TAG }}
+
+source:
+  git_url: ..
+
+build:
+  skip: True  # [win]
+  number: {{ GIT_DESCRIBE_NUMBER }}
+  run_exports:
+    - {{ pin_subpackage('roq-cme', max_pin='x.x.x') }}
+  script_env:
+   - ROQ_BUILD_TYPE
+
+requirements:
+  build:
+    - {{ compiler('cxx') }}
+    - clangdev
+    - cmake
+    - make
+  host:
+    - roq-core
+    - roq-oss-abseil-cpp
+    - roq-oss-benchmark
+    - roq-oss-brotli
+    - roq-oss-catch2
+    - roq-oss-cppitertools
+    - roq-oss-libsodium
+    - roq-oss-magic_enum
+    - roq-oss-re2
+    - roq-oss-tomlplusplus
+    - roq-server
+    - roq-web
+
+about:
+  home: https://roq-trading.com
+  doc_url: https://roq-trading.com/docs
+  dev_url: https://github.com/roq-trading
+  license: Commercial
+  license_family: PROPRIETARY
+  license_file: LICENSE
+  summary: Roq CME Gateway

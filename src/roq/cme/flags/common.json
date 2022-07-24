@@ -1,0 +1,45 @@
+{
+  "name": "Common",
+  "type": "flags",
+  "values": [
+    {
+      "name": "request_limit",
+      "type": "uint32_t",
+      "default": "20",
+      "description": "request limit per interval"
+    },
+    {
+      "name": "request_limit_interval",
+      "type": "std::chrono::nanoseconds",
+      "validator": "roq::core::flags::TimePeriod",
+      "default": "1s",
+      "description": "request limit monitor interval"
+    },
+    {
+      "name": "encode_buffer_size",
+      "type": "uint32_t",
+      "validator": "roq::core::flags::NonZero<uint32_t>",
+      "default": 1048576,
+      "description": "encode buffer size"
+    },
+    {
+      "name": "decode_buffer_size",
+      "type": "uint32_t",
+      "validator": "roq::core::flags::NonZero<uint32_t>",
+      "default": 10485760,
+      "description": "decode buffer size"
+    },
+    {
+      "name": "disable_deribit_143",
+      "type": "bool",
+      "default": false,
+      "description": "disable #143"
+    },
+    {
+      "name": "disable_master_account_check",
+      "type": "bool",
+      "default": false,
+      "description": "disable requirement for master account"
+    }
+  ]
+}

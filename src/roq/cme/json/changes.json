@@ -1,0 +1,22 @@
+{
+  "name": "Changes",
+  "type": "comp",
+  "values": [
+    {
+      "name": "instrument_name",
+      "type": "std::string_view"
+    },
+    {
+      "name": "trades",
+      "type": "std::span<Trade>"
+    },
+    {
+      "name": "positions",
+      "type": "std::span<Position>"
+    },
+    {
+      "name": "orders",
+      "type": "std::span<Order>"
+    }
+  ]
+}

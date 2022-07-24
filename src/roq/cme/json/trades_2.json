@@ -1,0 +1,10 @@
+{
+  "name": "Trades2",
+  "type": "array",
+  "values": [
+    {
+      "name": "data",
+      "type": "std::span<Trade>"
+    }
+  ]
+}

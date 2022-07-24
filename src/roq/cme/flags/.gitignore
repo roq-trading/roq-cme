@@ -1,0 +1,12 @@
+!!! THIS FILE HAS BEEN AUTO-GENERATED !!!
+roq-deribit-flags
+common.hpp
+config.hpp
+fix.hpp
+multicast.hpp
+web_socket.hpp
+common.cpp
+config.cpp
+fix.cpp
+multicast.cpp
+web_socket.cpp

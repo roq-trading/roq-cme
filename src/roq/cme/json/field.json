@@ -1,0 +1,12 @@
+{
+  "name": "Field",
+  "type": "enum",
+  "values": [
+    {
+      "name": "channel"
+    },
+    {
+      "name": "data"
+    }
+  ]
+}

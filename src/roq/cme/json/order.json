@@ -1,0 +1,94 @@
+{
+  "name": "Order",
+  "type": "item",
+  "values": [
+    {
+      "name": "web",
+      "type": "bool"
+    },
+    {
+      "name": "time_in_force",
+      "type": "TimeInForce"
+    },
+    {
+      "name": "replaced",
+      "type": "bool"
+    },
+    {
+      "name": "reduce_only",
+      "type": "bool"
+    },
+    {
+      "name": "profit_loss",
+      "type": "double"
+    },
+    {
+      "name": "price",
+      "type": "double"
+    },
+    {
+      "name": "post_only",
+      "type": "bool"
+    },
+    {
+      "name": "order_type",
+      "type": "OrderType"
+    },
+    {
+      "name": "order_state",
+      "type": "OrderState"
+    },
+    {
+      "name": "order_id",
+      "type": "std::string_view"
+    },
+    {
+      "name": "max_show",
+      "type": "double"
+    },
+    {
+      "name": "last_update_timestamp",
+      "type": "std::chrono::milliseconds"
+    },
+    {
+      "name": "label",
+      "type": "std::string_view"
+    },
+    {
+      "name": "is_liquidation",
+      "type": "bool"
+    },
+    {
+      "name": "instrument_name",
+      "type": "std::string_view"
+    },
+    {
+      "name": "filled_amount",
+      "type": "double"
+    },
+    {
+      "name": "direction",
+      "type": "Direction"
+    },
+    {
+      "name": "creation_timestamp",
+      "type": "std::chrono::milliseconds"
+    },
+    {
+      "name": "commission",
+      "type": "double"
+    },
+    {
+      "name": "average_price",
+      "type": "double"
+    },
+    {
+      "name": "api",
+      "type": "bool"
+    },
+    {
+      "name": "amount",
+      "type": "double"
+    }
+  ]
+}

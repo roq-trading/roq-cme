@@ -1,0 +1,31 @@
+{
+  "name": "Config",
+  "type": "flags",
+  "values": [
+    {
+      "name": "config_file",
+      "type": "std::string",
+      "validator": "roq::core::flags::Path<std::string>",
+      "description": "config file (path)"
+    },
+    {
+      "name": "secrets_file",
+      "type": "std::string",
+      "validator": "roq::core::flags::Path<std::string>",
+      "description": "secrets file (path, optional)"
+    },
+    {
+      "name": "exchange",
+      "type": "std::string",
+      "validator": "roq::core::flags::NonEmpty<std::string>",
+      "default": "deribit",
+      "description": "exchange identifier (string)"
+    },
+    {
+      "name": "mbp_allow_price_inversion",
+      "type": "bool",
+      "default": true,
+      "description": "allow price inversion?"
+    }
+  ]
+}

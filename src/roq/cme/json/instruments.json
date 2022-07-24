@@ -1,0 +1,10 @@
+{
+  "name": "Instruments",
+  "type": "array",
+  "values": [
+    {
+      "name": "data",
+      "type": "std::span<Instrument>"
+    }
+  ]
+}

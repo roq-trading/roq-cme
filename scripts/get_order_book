@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+INSTRUMENT_NAME="${1:-BTC-PERPETUAL}"
+
+curl -X GET "https://test.deribit.com/api/v2/public/get_order_book?depth=5&instrument_name=$INSTRUMENT_NAME" -H "Content-Type: application/json"

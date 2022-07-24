@@ -1,0 +1,18 @@
+{
+  "name": "OrderMassStatusRequest",
+  "type": "struct",
+  "values": [
+    {
+      "tag": 584,
+      "name": "MassStatusReqID",
+      "type": "std::string_view",
+      "required": true
+    },
+    {
+      "tag": 585,
+      "name": "MassStatusReqType",
+      "type": "roq::core::fix::MassStatusReqType",
+      "required": true
+    }
+  ]
+}

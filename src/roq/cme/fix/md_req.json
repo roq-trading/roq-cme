@@ -1,0 +1,12 @@
+{
+  "name": "MDReq",
+  "type": "item2",
+  "values": [
+    {
+      "tag": 269,
+      "name": "MDEntryType",
+      "type": "roq::core::fix::MDEntryType",
+      "required": true
+    }
+  ]
+}

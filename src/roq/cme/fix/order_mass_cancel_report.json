@@ -1,0 +1,51 @@
+{
+  "name": "OrderMassCancelReport",
+  "type": "comp",
+  "values": [
+    {
+      "tag": 11,
+      "name": "ClOrdID",
+      "type": "std::string_view",
+      "required": true
+    },
+    {
+      "tag": 37,
+      "name": "OrderID",
+      "type": "std::string_view",
+      "comment": "undoc"
+    },
+    {
+      "tag": 530,
+      "name": "MassCancelRequestType",
+      "type": "roq::core::fix::MassCancelRequestType",
+      "required": true
+    },
+    {
+      "tag": 531,
+      "name": "MassCancelResponse",
+      "type": "roq::core::fix::MassCancelResponse"
+    },
+    {
+      "tag": 58,
+      "name": "Text",
+      "type": "std::string_view"
+    },
+    {
+      "tag": 532,
+      "name": "MassCancelRejectReason",
+      "type": "std::string_view"
+    },
+    {
+      "tag": 533,
+      "name": "TotalAffectedOrders",
+      "type": "uint32_t",
+      "comment": "undoc"
+    },
+    {
+      "tag": 534,
+      "name": "NoAffectedOrders",
+      "type": "std::span<AffectedOrd>",
+      "comment": "undoc"
+    }
+  ]
+}

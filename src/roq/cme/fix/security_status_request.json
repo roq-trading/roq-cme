@@ -1,0 +1,24 @@
+{
+  "name": "SecurityStatusRequest",
+  "type": "struct",
+  "values": [
+    {
+      "tag": 324,
+      "name": "SecurityStatusReqId",
+      "type": "std::string_view",
+      "required": true
+    },
+    {
+      "tag": 55,
+      "name": "Symbol",
+      "type": "std::string_view",
+      "required": true
+    },
+    {
+      "tag": 263,
+      "name": "SubscriptionRequestType",
+      "type": "roq::core::fix::SubscriptionRequestType",
+      "required": true
+    }
+  ]
+}

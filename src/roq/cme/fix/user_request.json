@@ -1,0 +1,30 @@
+{
+  "name": "UserRequest",
+  "type": "struct",
+  "values": [
+    {
+      "tag": 923,
+      "name": "UserRequestID",
+      "type": "std::string_view",
+      "required": true
+    },
+    {
+      "tag": 924,
+      "name": "UserRequestType",
+      "type": "roq::core::fix::UserRequestType",
+      "required": true
+    },
+    {
+      "tag": 553,
+      "name": "Username",
+      "type": "std::string_view",
+      "required": true
+    },
+    {
+      "tag": 15,
+      "name": "Currency",
+      "type": "std::string_view",
+      "custom": true
+    }
+  ]
+}

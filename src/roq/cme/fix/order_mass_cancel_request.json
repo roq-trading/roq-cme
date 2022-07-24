@@ -1,0 +1,34 @@
+{
+  "name": "OrderMassCancelRequest",
+  "type": "struct",
+  "values": [
+    {
+      "tag": 11,
+      "name": "ClOrdID",
+      "type": "std::string_view",
+      "required": true
+    },
+    {
+      "tag": 530,
+      "name": "MassCancelRequestType",
+      "type": "roq::core::fix::MassCancelRequestType",
+      "required": true
+    },
+    {
+      "tag": 167,
+      "name": "SecurityType",
+      "type": "std::string_view"
+    },
+    {
+      "tag": 55,
+      "name": "Symbol",
+      "type": "std::string_view"
+    },
+    {
+      "tag": 15,
+      "name": "Currency",
+      "type": "std::string_view",
+      "custom": true
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "name": "SecurityListRequest",
+  "type": "struct",
+  "values": [
+    {
+      "tag": 320,
+      "name": "SecurityReqId",
+      "type": "std::string_view",
+      "required": true
+    },
+    {
+      "tag": 559,
+      "name": "SecurityListRequestType",
+      "type": "roq::core::fix::SecurityListRequestType",
+      "required": true
+    },
+    {
+      "tag": 263,
+      "name": "SubscriptionRequestType",
+      "type": "roq::core::fix::SubscriptionRequestType",
+      "required": true
+    }
+  ]
+}

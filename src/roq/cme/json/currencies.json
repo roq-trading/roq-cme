@@ -1,0 +1,10 @@
+{
+  "name": "Currencies",
+  "type": "array",
+  "values": [
+    {
+      "name": "data",
+      "type": "std::span<Currency>"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "name": "OptionType",
+  "type": "enum",
+  "values": [
+    {
+      "name": "call"
+    },
+    {
+      "name": "put"
+    }
+  ]
+}

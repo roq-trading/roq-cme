@@ -1,0 +1,14 @@
+{
+  "name": "Trades",
+  "type": "comp",
+  "values": [
+    {
+      "name": "trades",
+      "type": "std::span<Trade>"
+    },
+    {
+      "name": "has_more",
+      "type": "bool"
+    }
+  ]
+}

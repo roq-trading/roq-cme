@@ -1,0 +1,187 @@
+{
+  "name": "Portfolio",
+  "type": "item",
+  "values": [
+    {
+      "name": "available_funds",
+      "type": "double"
+    },
+    {
+      "name": "available_withdrawal_funds",
+      "type": "double"
+    },
+    {
+      "name": "balance",
+      "type": "double"
+    },
+    {
+      "name": "creation_timestamp",
+      "type": "std::chrono::milliseconds"
+    },
+    {
+      "name": "currency",
+      "type": "std::string_view"
+    },
+    {
+      "name": "delta_total",
+      "type": "double"
+    },
+    {
+      "name": "deposit_address",
+      "type": "std::string_view"
+    },
+    {
+      "name": "email",
+      "type": "std::string_view"
+    },
+    {
+      "name": "equity",
+      "type": "double"
+    },
+    {
+      "name": "estimated_liquidation_ratio",
+      "type": "double"
+    },
+    {
+      "name": "futures_pl",
+      "type": "double"
+    },
+    {
+      "name": "futures_session_rpl",
+      "type": "double"
+    },
+    {
+      "name": "futures_session_upl",
+      "type": "double"
+    },
+    {
+      "name": "id",
+      "type": "int64_t"
+    },
+    {
+      "name": "initial_margin",
+      "type": "double"
+    },
+    {
+      "name": "interuser_transfers_enabled",
+      "type": "bool"
+    },
+    {
+      "name": "limits"
+    },
+    {
+      "name": "maintenance_margin",
+      "type": "double"
+    },
+    {
+      "name": "margin_balance",
+      "type": "double"
+    },
+    {
+      "name": "options_delta",
+      "type": "double"
+    },
+    {
+      "name": "options_gamma",
+      "type": "double"
+    },
+    {
+      "name": "options_pl",
+      "type": "double"
+    },
+    {
+      "name": "options_session_rpl",
+      "type": "double"
+    },
+    {
+      "name": "options_session_upl",
+      "type": "double"
+    },
+    {
+      "name": "options_theta",
+      "type": "double"
+    },
+    {
+      "name": "options_value",
+      "type": "double"
+    },
+    {
+      "name": "options_vega",
+      "type": "double"
+    },
+    {
+      "name": "portfolio_margining_enabled",
+      "type": "bool"
+    },
+    {
+      "name": "projected_delta_total",
+      "type": "double"
+    },
+    {
+      "name": "projected_initial_margin",
+      "type": "double"
+    },
+    {
+      "name": "projected_maintenance_margin",
+      "type": "double"
+    },
+    {
+      "name": "referrer_id"
+    },
+    {
+      "name": "session_rpl",
+      "type": "double"
+    },
+    {
+      "name": "session_upl",
+      "type": "double"
+    },
+    {
+      "name": "system_name",
+      "type": "std::string_view"
+    },
+    {
+      "name": "tfa_enabled",
+      "type": "bool"
+    },
+    {
+      "name": "total_pl",
+      "type": "double"
+    },
+    {
+      "name": "type",
+      "type": "std::string_view"
+    },
+    {
+      "name": "username",
+      "type": "std::string_view"
+    },
+    {
+      "name": "estimated_liquidation_ratio_list",
+      "comment": "undoc - replaced with map?"
+    },
+    {
+      "name": "estimated_liquidation_ratio_map",
+      "comment": "undoc"
+    },
+    {
+      "name": "delta_total_map",
+      "comment": "undoc"
+    },
+    {
+      "name": "fee_balance",
+      "type": "double",
+      "comment": "undoc"
+    },
+    {
+      "name": "security_keys_enabled",
+      "type": "bool",
+      "comment": "undoc"
+    },
+    {
+      "name": "login_enabled",
+      "type": "bool",
+      "comment": "undoc"
+    }
+  ]
+}

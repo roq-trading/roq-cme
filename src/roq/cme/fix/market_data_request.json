@@ -1,0 +1,51 @@
+{
+  "name": "MarketDataRequest",
+  "type": "struct",
+  "values": [
+    {
+      "tag": 262,
+      "name": "MdReqId",
+      "type": "std::string_view",
+      "required": true
+    },
+    {
+      "tag": 263,
+      "name": "SubscriptionRequestType",
+      "type": "roq::core::fix::SubscriptionRequestType",
+      "required": true
+    },
+    {
+      "tag": 264,
+      "name": "MarketDepth",
+      "type": "uint32_t"
+    },
+    {
+      "tag": 265,
+      "name": "MDUpdateType",
+      "type": "roq::core::fix::MDUpdateType"
+    },
+    {
+      "tag": 100007,
+      "name": "DeribitTradeAmount",
+      "type": "uint32_t",
+      "custom": true
+    },
+    {
+      "tag": 100008,
+      "name": "DeribitSinceTimestamp",
+      "type": "std::chrono::milliseconds",
+      "custom": true
+    },
+    {
+      "tag": 267,
+      "name": "NoMdEntryTypes",
+      "type": "std::span<MDReq>",
+      "required": true
+    },
+    {
+      "tag": 146,
+      "name": "NoRelatedSym",
+      "type": "std::span<InstrmtMDReq>"
+    }
+  ]
+}

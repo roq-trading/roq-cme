@@ -1,0 +1,12 @@
+{
+  "name": "TestRequest",
+  "type": "simple2",
+  "values": [
+    {
+      "tag": 112,
+      "name": "TestReqId",
+      "type": "std::string_view",
+      "required": true
+    }
+  ]
+}

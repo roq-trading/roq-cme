@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+CURRENCY="${1:-BTC}"
+
+curl -X GET "https://test.deribit.com/api/v2/public/get_instruments?currency=$CURRENCY&expired=false&kind=future" -H "Content-Type: application/json"

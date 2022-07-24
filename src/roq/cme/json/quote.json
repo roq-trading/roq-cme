@@ -1,0 +1,30 @@
+{
+  "name": "Quote",
+  "type": "item",
+  "values": [
+    {
+      "name": "best_ask_amount",
+      "type": "double"
+    },
+    {
+      "name": "best_ask_price",
+      "type": "double"
+    },
+    {
+      "name": "best_bid_amount",
+      "type": "double"
+    },
+    {
+      "name": "best_bid_price",
+      "type": "double"
+    },
+    {
+      "name": "instrument_name",
+      "type": "std::string_view"
+    },
+    {
+      "name": "timestamp",
+      "type": "std::chrono::milliseconds"
+    }
+  ]
+}

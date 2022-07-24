@@ -1,0 +1,26 @@
+{
+  "name": "Fill",
+  "type": "item",
+  "values": [
+    {
+      "tag": 1363,
+      "name": "FillExecID",
+      "type": "std::string_view"
+    },
+    {
+      "tag": 1364,
+      "name": "FillPx",
+      "type": "double"
+    },
+    {
+      "tag": 1365,
+      "name": "FillQty",
+      "type": "double"
+    },
+    {
+      "tag": 1443,
+      "name": "FillLiquidityInd",
+      "type": "roq::core::fix::FillLiquidityInd"
+    }
+  ]
+}

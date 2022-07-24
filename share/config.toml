@@ -1,0 +1,36 @@
+symbols = [
+  "^BTC-[0-9]{1,2}[A-Z]{3}[0-9]{2}$",  # futures
+  "^ETH-[0-9]{1,2}[A-Z]{3}[0-9]{2}$",  # futures
+  "^BTC(_USD[A-Z]?)?-PERPETUAL$",      # swaps
+  "^ETH(_USD[A-Z]?)?-PERPETUAL$",      # swaps
+  "^BTC(-USD[A-Z]?)?-DERIBIT-INDEX$",  # index
+  "^ETH(-USD[A-Z]?)?-DERIBIT-INDEX$"   # index
+]
+
+[accounts]
+
+  [accounts.A1]
+  master = true
+  login = "YOUR_DERIBIT_LOGIN_GOES_HERE"
+  secret = "YOUR_DERIBIT_SECRET_GOES_HERE"
+  symbols = [ ".*" ]
+
+[users]
+
+  [users.test]
+  password = "1234"
+  symbols = ".*"
+
+  [users.trader]
+  password = "secret"
+  accounts = [ "A1" ]
+  symbols = [ ".*BTC.*", ".*ETH.*" ]
+
+[rate_limits]
+
+  [rate_limits.global]
+    type = "ORDER_ACTION"
+    aggregate = true
+    request_limit = 100
+    monitor_period = "10s"
+    ban_period = "5m"

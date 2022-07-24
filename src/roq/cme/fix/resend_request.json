@@ -1,0 +1,18 @@
+{
+  "name": "ResendRequest",
+  "type": "simple",
+  "values": [
+    {
+      "tag": 7,
+      "name": "BeginSeqNo",
+      "type": "uint64_t",
+      "required": true
+    },
+    {
+      "tag": 16,
+      "name": "EndSeqNo",
+      "type": "uint64_t",
+      "required": true
+    }
+  ]
+}

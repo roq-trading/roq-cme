@@ -1,0 +1,18 @@
+{
+  "name": "Kind",
+  "type": "enum",
+  "values": [
+    {
+      "name": "future"
+    },
+    {
+      "name": "option"
+    },
+    {
+      "name": "future_combo"
+    },
+    {
+      "name": "option_combo"
+    }
+  ]
+}

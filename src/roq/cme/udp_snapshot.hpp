@@ -1,0 +1,89 @@
+/* Copyright (c) 2017-2022, Hans Erik Thrane */
+
+#pragma once
+
+#include <absl/container/node_hash_map.h>
+
+#include "roq/core/metrics/counter.hpp"
+#include "roq/core/metrics/profile.hpp"
+
+#include "roq/io/buffer.hpp"
+#include "roq/io/context.hpp"
+#include "roq/io/net/udp/receiver.hpp"
+
+#include "roq/server.hpp"
+
+#include "roq/deribit/aggregator.hpp"
+#include "roq/deribit/shared.hpp"
+
+#include "roq/deribit/sbe/parser.hpp"
+
+namespace roq {
+namespace deribit {
+
+class UDPSnapshot final : public io::net::udp::Receiver::Handler, public sbe::Parser::Handler {
+ public:
+  struct Handler {
+    virtual void operator()(Trace<StreamStatus const> const &) = 0;
+    virtual void operator()(Trace<MarketByPriceUpdate const> const &, bool is_last, bool refresh) = 0;
+  };
+
+  UDPSnapshot(Handler &, io::Context &, uint16_t stream_id, Shared &);
+
+  UDPSnapshot(UDPSnapshot const &) = delete;
+  UDPSnapshot(UDPSnapshot &&) = delete;
+
+  void operator()(Event<Start> const &);
+  void operator()(Event<Stop> const &);
+  void operator()(Event<Timer> const &);
+
+  void operator()(metrics::Writer &);
+
+ protected:
+  void operator()(io::net::udp::Receiver::Read const &) override;
+  void operator()(io::net::udp::Receiver::Error const &) override;
+
+ protected:
+  // events
+  void operator()(Trace<deribit_multicast::Instrument> const &, sbe::Frame const &) override;
+  void operator()(Trace<deribit_multicast::Book> const &, sbe::Frame const &) override;
+  void operator()(Trace<deribit_multicast::Ticker> const &, sbe::Frame const &) override;
+  void operator()(Trace<deribit_multicast::Trades> const &, sbe::Frame const &) override;
+  // snapshot
+  void operator()(Trace<deribit_multicast::Snapshot> const &, sbe::Frame const &) override;
+
+  void publish_stream_status(TraceInfo const &, ConnectionStatus connection_status);
+
+  // utils
+  template <typename T, typename U>
+  static void emplace_back(const T &item, double multiplier, U &bids, U &asks);
+
+  Aggregator &get_aggregator(uint16_t channel_id);
+
+ private:
+  Handler &handler_;
+  // config
+  const uint16_t stream_id_;
+  const std::string name_;
+  bool const publish_market_by_price_;
+  Mask<SupportType> const supports_;
+  // receiver
+  std::unique_ptr<io::net::udp::Receiver> receiver_;
+  io::Buffer receive_buffer_;
+  // metrics
+  struct {
+    core::metrics::Counter disconnect;
+  } counter_;
+  struct {
+    core::metrics::Profile parse;
+  } profile_;
+  // cache
+  Shared &shared_;
+  ConnectionStatus connection_status_ = {};
+  absl::node_hash_map<uint16_t, Aggregator> aggregator_;
+  // state
+  std::chrono::nanoseconds last_update_time_ = {};
+};
+
+}  // namespace deribit
+}  // namespace roq

@@ -1,0 +1,32 @@
+{
+  "name": "Reject",
+  "type": "simple2",
+  "values": [
+    {
+      "tag": 45,
+      "name": "RefSeqNum",
+      "type": "uint64_t",
+      "required": true
+    },
+    {
+      "tag": 371,
+      "name": "RefTagID",
+      "type": "uint32_t"
+    },
+    {
+      "tag": 372,
+      "name": "RefMsgType",
+      "type": "roq::core::fix::MsgType"
+    },
+    {
+      "tag": 373,
+      "name": "SessionRejectReason",
+      "type": "std::string_view"
+    },
+    {
+      "tag": 58,
+      "name": "Text",
+      "type": "std::string_view"
+    }
+  ]
+}

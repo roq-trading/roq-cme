@@ -1,0 +1,15 @@
+{
+  "name": "MarketDataState",
+  "type": "enum",
+  "values": [
+    {
+      "name": "securities"
+    },
+    {
+      "name": "subscribe"
+    },
+    {
+      "name": "done"
+    }
+  ]
+}

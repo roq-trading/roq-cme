@@ -1,0 +1,12 @@
+{
+  "name": "AffectedOrd",
+  "type": "item",
+  "values": [
+    {
+      "tag": 41,
+      "name": "OrigClOrdID",
+      "type": "std::string_view",
+      "required": true
+    }
+  ]
+}
