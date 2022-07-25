@@ -8,7 +8,7 @@ roq_autogen(
   OUTPUT
   AUTOGEN_HEADERS
   NAMESPACE
-  "roq/deribit/flags"
+  "roq/cme/flags"
   OUTPUT_TYPE
   "state"
   FILE_TYPE
@@ -22,7 +22,7 @@ roq_autogen(
   OUTPUT
   AUTOGEN_SOURCES
   NAMESPACE
-  "roq/deribit/flags"
+  "roq/cme/flags"
   OUTPUT_TYPE
   "state"
   FILE_TYPE

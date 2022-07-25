@@ -1,17 +1,17 @@
 /* Copyright (c) 2017-2022, Hans Erik Thrane */
 
-#include "roq/deribit/config.hpp"
+#include "roq/cme/config.hpp"
 
 #include <utility>
 
 #include "roq/logging.hpp"
 
-#include "roq/deribit/flags/config.hpp"
+#include "roq/cme/flags/config.hpp"
 
 using namespace std::literals;
 
 namespace roq {
-namespace deribit {
+namespace cme {
 
 Config::Config(std::string_view const &config_path, std::string_view const &secrets_path) {
   server::ConfigReader::parse_file(*this, config_path, secrets_path);
@@ -97,5 +97,5 @@ void Config::operator()(std::string_view const &key, toml::node &) {
   log::warn(R"(Unexpected: key="{}")"sv, key);
 }
 
-}  // namespace deribit
+}  // namespace cme
 }  // namespace roq

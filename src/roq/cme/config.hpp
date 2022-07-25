@@ -11,7 +11,7 @@
 #include "roq/server.hpp"
 
 namespace roq {
-namespace deribit {
+namespace cme {
 
 class Config final : public server::Config, public server::ConfigReader::Handler {
  public:
@@ -41,17 +41,17 @@ class Config final : public server::Config, public server::ConfigReader::Handler
   server::RateLimits rate_limits;
 };
 
-}  // namespace deribit
+}  // namespace cme
 }  // namespace roq
 
 template <>
-struct fmt::formatter<roq::deribit::Config> {
+struct fmt::formatter<roq::cme::Config> {
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);
   }
   template <typename Context>
-  auto format(roq::deribit::Config const &value, Context &context) const {
+  auto format(roq::cme::Config const &value, Context &context) const {
     using namespace std::literals;
     return fmt::format_to(
         context.out(),

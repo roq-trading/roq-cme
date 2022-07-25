@@ -1,15 +1,15 @@
 /* Copyright (c) 2017-2022, Hans Erik Thrane */
 
-#include "roq/deribit/application.hpp"
+#include "roq/cme/application.hpp"
 
 using namespace std::literals;
 
 namespace {
-auto const DESCRIPTION = "Roq Deribit Gateway"sv;
+auto const DESCRIPTION = "Roq CME Gateway"sv;
 }  // namespace
 
 int main(int argc, char **argv) {
-  return roq::deribit::Application(
+  return roq::cme::Application(
              argc,
              argv,
              {

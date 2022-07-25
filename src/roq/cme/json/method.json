@@ -1,9 +1,0 @@
-{
-  "name": "Method",
-  "type": "enum",
-  "values": [
-    {
-      "name": "subscription"
-    }
-  ]
-}

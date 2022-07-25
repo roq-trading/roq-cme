@@ -1,35 +1,18 @@
 set(TARGET_NAME "${PROJECT_NAME}")
 
-add_subdirectory("fix")
-add_subdirectory("json")
 add_subdirectory("flags")
-add_subdirectory("tools")
-add_subdirectory("sbe")
 
-set(SOURCES
-    application.cpp
-    config.cpp
-    drop_copy.cpp
-    gateway.cpp
-    market_data.cpp
-    order_entry.cpp
-    security.cpp
-    shared.cpp
-    udp_events.cpp
-    udp_snapshot.cpp
-    web_socket.cpp
-    main.cpp)
+set(SOURCES application.cpp config.cpp gateway.cpp shared.cpp udp_events.cpp main.cpp)
 
 include(RoqAutogen)
 
-set(AUTOGEN_SCHEMAS market_data_state.json order_entry_state.json web_socket_state.json
-                    drop_copy_state.json)
+set(AUTOGEN_SCHEMAS market_data_state.json)
 
 roq_autogen(
   OUTPUT
   AUTOGEN_HEADERS
   NAMESPACE
-  "roq/deribit"
+  "roq/cme"
   OUTPUT_TYPE
   "state"
   FILE_TYPE
@@ -43,15 +26,11 @@ roq_gitignore(OUTPUT ".gitignore" SOURCES "${TARGET_NAME}" ${AUTOGEN_HEADERS})
 
 add_executable("${TARGET_NAME}" ${SOURCES})
 
-add_dependencies("${TARGET_NAME}" autogen-headers autogen-fix-headers autogen-json-headers)
+add_dependencies("${TARGET_NAME}" autogen-headers)
 
 target_link_libraries(
   "${TARGET_NAME}"
-  PRIVATE "${PROJECT_NAME}-fix"
-          "${PROJECT_NAME}-json"
-          "${PROJECT_NAME}-flags"
-          "${PROJECT_NAME}-tools"
-          "${PROJECT_NAME}-sbe"
+  PRIVATE "${PROJECT_NAME}-flags"
           roq-server::roq-server
           roq-web::roq-web
           roq-io::roq-io

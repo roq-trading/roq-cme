@@ -1,17 +1,17 @@
 /* Copyright (c) 2017-2022, Hans Erik Thrane */
 
-#include "roq/deribit/shared.hpp"
+#include "roq/cme/shared.hpp"
 
 #include "roq/logging.hpp"
 
-#include "roq/deribit/flags/common.hpp"
-#include "roq/deribit/flags/fix.hpp"
-#include "roq/deribit/flags/multicast.hpp"
+#include "roq/cme/flags/common.hpp"
+#include "roq/cme/flags/fix.hpp"
+#include "roq/cme/flags/multicast.hpp"
 
 using namespace std::literals;
 
 namespace roq {
-namespace deribit {
+namespace cme {
 
 namespace {
 auto get_multicast() {
@@ -39,5 +39,5 @@ std::string_view Shared::next_request_id() {
   return std::string_view{std::data(stack_buffer_), std::size(stack_buffer_)};
 }
 
-}  // namespace deribit
+}  // namespace cme
 }  // namespace roq

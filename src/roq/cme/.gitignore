@@ -1,6 +1,3 @@
 !!! THIS FILE HAS BEEN AUTO-GENERATED !!!
-roq-deribit
+roq-cme
 market_data_state.hpp
-order_entry_state.hpp
-web_socket_state.hpp
-drop_copy_state.hpp

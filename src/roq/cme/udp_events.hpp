@@ -14,15 +14,13 @@
 
 #include "roq/server.hpp"
 
-#include "roq/deribit/aggregator.hpp"
-#include "roq/deribit/shared.hpp"
-
-#include "roq/deribit/sbe/parser.hpp"
+#include "roq/cme/aggregator.hpp"
+#include "roq/cme/shared.hpp"
 
 namespace roq {
-namespace deribit {
+namespace cme {
 
-class UDPEvents final : public io::net::udp::Receiver::Handler, public sbe::Parser::Handler {
+class UDPEvents final : public io::net::udp::Receiver::Handler {
  public:
   struct Handler {
     virtual void operator()(Trace<StreamStatus const> const &) = 0;
@@ -47,14 +45,6 @@ class UDPEvents final : public io::net::udp::Receiver::Handler, public sbe::Pars
   void operator()(io::net::udp::Receiver::Error const &) override;
 
  protected:
-  // events
-  void operator()(Trace<deribit_multicast::Instrument> const &, sbe::Frame const &) override;
-  void operator()(Trace<deribit_multicast::Book> const &, sbe::Frame const &) override;
-  void operator()(Trace<deribit_multicast::Ticker> const &, sbe::Frame const &) override;
-  void operator()(Trace<deribit_multicast::Trades> const &, sbe::Frame const &) override;
-  // snapshot
-  void operator()(Trace<deribit_multicast::Snapshot> const &, sbe::Frame const &) override;
-
   void publish_stream_status(TraceInfo const &, ConnectionStatus connection_status);
 
   // utils
@@ -92,5 +82,5 @@ class UDPEvents final : public io::net::udp::Receiver::Handler, public sbe::Pars
   std::chrono::nanoseconds last_update_time_ = {};
 };
 
-}  // namespace deribit
+}  // namespace cme
 }  // namespace roq

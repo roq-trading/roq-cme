@@ -5,7 +5,7 @@
 #include "roq/service.hpp"
 
 namespace roq {
-namespace deribit {
+namespace cme {
 
 class Application final : public roq::Service {
  public:
@@ -15,5 +15,5 @@ class Application final : public roq::Service {
   int main(int, char **) override;
 };
 
-}  // namespace deribit
+}  // namespace cme
 }  // namespace roq

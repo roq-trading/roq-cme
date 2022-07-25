@@ -1,16 +1,16 @@
 /* Copyright (c) 2017-2022, Hans Erik Thrane */
 
-#include "roq/deribit/application.hpp"
+#include "roq/cme/application.hpp"
 
-#include "roq/deribit/config.hpp"
-#include "roq/deribit/gateway.hpp"
+#include "roq/cme/config.hpp"
+#include "roq/cme/gateway.hpp"
 
-#include "roq/deribit/flags/config.hpp"
+#include "roq/cme/flags/config.hpp"
 
 using namespace std::literals;
 
 namespace roq {
-namespace deribit {
+namespace cme {
 
 int Application::main(int, char **) {
   log::info(R"(Parse config_file="{}")"sv, flags::Config::config_file());
@@ -21,5 +21,5 @@ int Application::main(int, char **) {
   return EXIT_SUCCESS;
 }
 
-}  // namespace deribit
+}  // namespace cme
 }  // namespace roq

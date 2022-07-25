@@ -8,7 +8,7 @@
 #include "roq/core/memory.hpp"
 
 namespace roq {
-namespace deribit {
+namespace cme {
 
 struct Aggregator final {
   Aggregator(size_t mbp_size) {
@@ -124,5 +124,5 @@ struct Aggregator final {
   core::page_aligned_vector<MBPUpdate> bids_, asks_;
 };
 
-}  // namespace deribit
+}  // namespace cme
 }  // namespace roq
