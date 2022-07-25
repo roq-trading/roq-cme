@@ -17,10 +17,12 @@
 #include "roq/cme/aggregator.hpp"
 #include "roq/cme/shared.hpp"
 
+#include "roq/cme/sbe/parser.hpp"
+
 namespace roq {
 namespace cme {
 
-class UDPEvents final : public io::net::udp::Receiver::Handler {
+class UDPEvents final : public io::net::udp::Receiver::Handler, public sbe::Parser::Handler {
  public:
   struct Handler {
     virtual void operator()(Trace<StreamStatus const> const &) = 0;
@@ -43,6 +45,9 @@ class UDPEvents final : public io::net::udp::Receiver::Handler {
  protected:
   void operator()(io::net::udp::Receiver::Read const &) override;
   void operator()(io::net::udp::Receiver::Error const &) override;
+
+ protected:
+  void operator()(Trace<cme_mdp::MDInstrumentDefinitionFX63> const &, sbe::Frame const &) override;
 
  protected:
   void publish_stream_status(TraceInfo const &, ConnectionStatus connection_status);

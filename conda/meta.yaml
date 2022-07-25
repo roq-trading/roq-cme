@@ -20,6 +20,7 @@ requirements:
     - cmake
     - make
   host:
+    - roq-cme-mdp
     - roq-core
     - roq-oss-abseil-cpp
     - roq-oss-benchmark

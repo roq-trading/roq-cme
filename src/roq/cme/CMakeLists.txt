@@ -1,6 +1,7 @@
 set(TARGET_NAME "${PROJECT_NAME}")
 
 add_subdirectory("flags")
+add_subdirectory("sbe")
 
 set(SOURCES application.cpp config.cpp gateway.cpp shared.cpp udp_events.cpp main.cpp)
 
@@ -31,6 +32,7 @@ add_dependencies("${TARGET_NAME}" autogen-headers)
 target_link_libraries(
   "${TARGET_NAME}"
   PRIVATE "${PROJECT_NAME}-flags"
+          "${PROJECT_NAME}-sbe"
           roq-server::roq-server
           roq-web::roq-web
           roq-io::roq-io

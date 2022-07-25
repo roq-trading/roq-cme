@@ -22,6 +22,8 @@
 #include "roq/cme/flags/config.hpp"
 #include "roq/cme/flags/multicast.hpp"
 
+#include "roq/cme/sbe/utils.hpp"
+
 using namespace std::literals;
 
 namespace roq {
@@ -127,18 +129,20 @@ void UDPEvents::operator()(io::net::udp::Receiver::Read const &read) {
   while (receive_buffer_.append(*receiver_, read.available_bytes)) {
     auto message = receive_buffer_.data();
     log::info<5>("received {} byte(s)"sv, std::size(message));
-    /*
     if (!sbe::Parser::dispatch(*this, message, trace_info)) {
       log::warn("{}"sv, debug::hex::Message{message});
       log::fatal("Failed to parse message"sv);
     }
     receive_buffer_.drain(std::size(message));
-    */
   }
 }
 
 void UDPEvents::operator()(io::net::udp::Receiver::Error const &error) {
   log::fatal("Error: what={}"sv, error.what);
+}
+
+void UDPEvents::operator()(Trace<cme_mdp::MDInstrumentDefinitionFX63> const &event, sbe::Frame const &frame) {
+  log::info<2>("md_instrument_definition_fx_63={}, frame={}"sv, event.value, frame);
 }
 
 void UDPEvents::operator()(metrics::Writer &writer) {
