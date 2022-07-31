@@ -29,6 +29,7 @@ requirements:
     - roq-oss-cppitertools
     - roq-oss-libsodium
     - roq-oss-magic_enum
+    - roq-oss-range-v3
     - roq-oss-re2
     - roq-oss-tomlplusplus
     - roq-server
