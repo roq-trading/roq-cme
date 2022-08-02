@@ -1,6 +1,6 @@
 set(TARGET_NAME "${PROJECT_NAME}-test")
 
-set(SOURCES dummy.cpp main.cpp)
+set(SOURCES sbe.cpp secdef.cpp main.cpp)
 
 roq_gitignore(OUTPUT ".gitignore" SOURCES "${TARGET_NAME}")
 
@@ -8,6 +8,7 @@ add_executable("${TARGET_NAME}" ${SOURCES})
 
 target_link_libraries(
   "${TARGET_NAME}"
+  "${PROJECT_NAME}-tools"
   roq-server::roq-server
   roq-core::roq-core
   roq-io::roq-io

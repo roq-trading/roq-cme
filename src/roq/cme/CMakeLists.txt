@@ -2,6 +2,7 @@ set(TARGET_NAME "${PROJECT_NAME}")
 
 add_subdirectory("flags")
 add_subdirectory("sbe")
+add_subdirectory("tools")
 
 set(SOURCES application.cpp config.cpp gateway.cpp shared.cpp udp_events.cpp main.cpp)
 
@@ -33,6 +34,7 @@ target_link_libraries(
   "${TARGET_NAME}"
   PRIVATE "${PROJECT_NAME}-flags"
           "${PROJECT_NAME}-sbe"
+          "${PROJECT_NAME}-tools"
           roq-server::roq-server
           roq-web::roq-web
           roq-io::roq-io
