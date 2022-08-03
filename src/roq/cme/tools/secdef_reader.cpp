@@ -17,6 +17,7 @@ namespace cme {
 namespace tools {
 
 void set(auto &result, auto &key, auto &value) {
+  // XXX we could use discard to avoid conversion
   auto tag = core::from_chars<uint32_t>(key);
   switch (tag) {
     case 15:  // currency (string)
@@ -45,6 +46,9 @@ void set(auto &result, auto &key, auto &value) {
       break;
     case 1140:  // max trade vol (uint32)
       result.max_trade_vol = core::from_chars<decltype(result.max_trade_vol)>(value);
+      break;
+    case 6937:  // asset
+      result.asset = value;
       break;
     case 9787:  // display factor (decimal9)
       result.display_factor = core::from_chars<decltype(result.display_factor)>(value);

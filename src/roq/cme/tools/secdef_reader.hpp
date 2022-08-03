@@ -23,6 +23,8 @@ struct SecDefReader final {
     uint32_t max_trade_vol = {};
     double min_price_increment = NaN;
     double display_factor = NaN;
+    std::string_view asset;
+    bool discard = false;
   };
 
   struct Handler {

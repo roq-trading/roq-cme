@@ -47,6 +47,7 @@ include(GNUInstallDirs)
 
 find_package(absl REQUIRED)
 find_package(cppitertools REQUIRED)
+find_package(expat REQUIRED)
 find_package(fmt REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(re2 REQUIRED)

@@ -1,6 +1,6 @@
 set(TARGET_NAME "${PROJECT_NAME}-test")
 
-set(SOURCES sbe.cpp secdef.cpp main.cpp)
+set(SOURCES sbe.cpp config.cpp secdef.cpp main.cpp)
 
 roq_gitignore(OUTPUT ".gitignore" SOURCES "${TARGET_NAME}")
 
@@ -13,6 +13,7 @@ target_link_libraries(
   roq-core::roq-core
   roq-io::roq-io
   roq-logging::roq-logging
+  expat::expat
   Catch2::Catch2
   ${UUID_LIBRARIES}
   ${RT_LIBRARIES})

@@ -38,6 +38,7 @@ TEST_CASE("secdef_reader", "[secdef]") {
           CHECK(sec_def.max_trade_vol == 3000);
           CHECK(sec_def.min_price_increment == 25.0_a);
           CHECK(sec_def.display_factor == 0.01_a);
+          CHECK(sec_def.asset == "ES"sv);
           break;
         case 2:
           CHECK(sec_def.security_id == 1312);
@@ -50,6 +51,7 @@ TEST_CASE("secdef_reader", "[secdef]") {
           CHECK(sec_def.max_trade_vol == 3000);
           CHECK(sec_def.min_price_increment == 25.0_a);
           CHECK(sec_def.display_factor == 0.01_a);
+          CHECK(sec_def.asset == "0ES"sv);
           break;
       }
     }

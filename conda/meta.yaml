@@ -20,6 +20,7 @@ requirements:
     - cmake
     - make
   host:
+    - expat
     - roq-cme-mdp
     - roq-core
     - roq-oss-abseil-cpp
