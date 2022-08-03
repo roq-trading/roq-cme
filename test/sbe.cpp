@@ -2,6 +2,12 @@
 
 #include <catch2/catch_all.hpp>
 
+#include <fmt/format.h>
+
+#include <span>
+
+#include <cme_mdp/MDIncrementalRefreshBook46.h>
+
 using namespace std::literals;
 
 TEST_CASE("md_incremental_refresh_book_46_test_1", "[sbe]") {
@@ -61,6 +67,38 @@ TEST_CASE("md_incremental_refresh_book_46_test_1", "[sbe]") {
       "\x00\x00\x00\x00\x00"  // padding
       "\x00"sv;               // num in group (0)
   CHECK(std::size(message) == 132);
+  std::span msg{const_cast<char *>(reinterpret_cast<char const *>(std::data(message))) + 22, std::size(message) - 22};
+  cme_mdp::MDIncrementalRefreshBook46 book{std::data(msg), std::size(msg)};
+  auto md_entries_length = book.noMDEntries().count();
+  CHECK(md_entries_length == 1);
+  book.sbeRewind();  // wtf!
+  book.noMDEntries().forEach([](auto &e) { e.skip(); });
+  auto order_id_entries_length = book.noOrderIDEntries().count();
+  CHECK(order_id_entries_length == 1);
+  book.noOrderIDEntries().forEach([](auto &e) { e.skip(); });
+  auto length = book.computeLength(md_entries_length, order_id_entries_length);
+  CHECK(length == 78);
+  book.sbeRewind();
+  CHECK(book.transactTime() == 1659367870041633809);
+  auto index = 0;
+  book.sbeRewind();  // wtf!
+  book.noMDEntries().forEach([&index](auto &e) {
+    switch (++index) {
+      case 1: {
+        auto p9 = e.mDEntryPx();
+        CHECK(p9.mantissa() == 66735000000000);
+        CHECK(p9.exponent() == -9);
+        CHECK(e.mDEntrySize() == 2);
+        CHECK(e.securityID() == 30975);
+        CHECK(e.rptSeq() == 80734);
+        CHECK(e.numberOfOrders() == 1);
+        CHECK(e.mDPriceLevel() == 2);
+        auto ua = e.mDUpdateAction();
+        CHECK(ua == cme_mdp::MDUpdateAction::Value::New);
+        break;
+      }
+    }
+  });
 }
 
 TEST_CASE("md_incremental_refresh_book_46_test_2", "[sbe]") {
