@@ -4,6 +4,7 @@
 
 #include <fmt/format.h>
 
+#include <chrono>
 #include <cstdint>
 #include <span>
 
@@ -12,11 +13,10 @@ namespace cme {
 namespace sbe {
 
 struct Frame final {
-  uint16_t packet_length = {};
-  uint16_t channel_id = {};
   uint32_t sequence_number = {};
+  std::chrono::nanoseconds sending_time = {};
 
-  static size_t size() { return 8; }
+  static size_t size() { return 12; }
 
   template <typename Callback>
   static bool parse(std::span<std::byte const> const &buffer, Callback &&callback) {
@@ -46,12 +46,10 @@ struct fmt::formatter<roq::cme::sbe::Frame> {
     return fmt::format_to(
         context.out(),
         R"({{)"
-        R"(packet_length={}, )"
-        R"(channel_id={}, )"
-        R"(sequence_number={})"
+        R"(sequence_number={}, )"
+        R"(sending_time={})"
         R"(}})"sv,
-        value.packet_length,
-        value.channel_id,
-        value.sequence_number);
+        value.sequence_number,
+        value.sending_time);
   }
 };

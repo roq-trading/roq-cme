@@ -47,7 +47,16 @@ class UDPEvents final : public io::net::udp::Receiver::Handler, public sbe::Pars
   void operator()(io::net::udp::Receiver::Error const &) override;
 
  protected:
+  // sbe::Parser::Handler
+  // - MDInstrumentDefinition
+  void operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &, sbe::Frame const &) override;
+  void operator()(Trace<cme_mdp::MDInstrumentDefinitionOption55> const &, sbe::Frame const &) override;
+  void operator()(Trace<cme_mdp::MDInstrumentDefinitionSpread56> const &, sbe::Frame const &) override;
+  void operator()(Trace<cme_mdp::MDInstrumentDefinitionFixedIncome57> const &, sbe::Frame const &) override;
+  void operator()(Trace<cme_mdp::MDInstrumentDefinitionRepo58> const &, sbe::Frame const &) override;
   void operator()(Trace<cme_mdp::MDInstrumentDefinitionFX63> const &, sbe::Frame const &) override;
+  // - MDIncrementalRefresh
+  void operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &, sbe::Frame const &) override;
 
  protected:
   void publish_stream_status(TraceInfo const &, ConnectionStatus connection_status);

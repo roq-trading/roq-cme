@@ -17,18 +17,15 @@ std::pair<bool, Frame> Frame::parse_helper(std::span<std::byte const> const &buf
     log::warn("Invalid message, size={}"sv, std::size(buffer));
     return {false, {}};
   }
-  uint16_t packet_length;
-  std::memcpy(&packet_length, &buffer[0], sizeof(packet_length));
-  uint16_t channel_id;
-  std::memcpy(&channel_id, &buffer[2], sizeof(channel_id));
   uint32_t sequence_number;
-  std::memcpy(&sequence_number, &buffer[4], sizeof(sequence_number));
+  std::memcpy(&sequence_number, &buffer[0], sizeof(sequence_number));
+  uint64_t sending_time;
+  std::memcpy(&sending_time, &buffer[4], sizeof(sending_time));
   return {
       true,
       {
-          .packet_length = core::little_endian_to_host(packet_length),
-          .channel_id = core::little_endian_to_host(channel_id),
           .sequence_number = core::little_endian_to_host(sequence_number),
+          .sending_time = std::chrono::nanoseconds{core::little_endian_to_host(sending_time)},
       },
   };
 }

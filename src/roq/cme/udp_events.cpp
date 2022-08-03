@@ -141,8 +141,45 @@ void UDPEvents::operator()(io::net::udp::Receiver::Error const &error) {
   log::fatal("Error: what={}"sv, error.what);
 }
 
+// sbe::Parser::Handler
+
+// - MDInstrumentDefinition
+
+void UDPEvents::operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &event, sbe::Frame const &frame) {
+  auto &[trace_info, value] = event;
+  log::info<3>("md_instrument_definition_future_54={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+}
+
+void UDPEvents::operator()(Trace<cme_mdp::MDInstrumentDefinitionOption55> const &event, sbe::Frame const &frame) {
+  auto &[trace_info, value] = event;
+  log::info<3>("md_instrument_definition_option_55={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+}
+
+void UDPEvents::operator()(Trace<cme_mdp::MDInstrumentDefinitionSpread56> const &event, sbe::Frame const &frame) {
+  auto &[trace_info, value] = event;
+  log::info<3>("md_instrument_definition_spread_56={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+}
+
+void UDPEvents::operator()(Trace<cme_mdp::MDInstrumentDefinitionFixedIncome57> const &event, sbe::Frame const &frame) {
+  auto &[trace_info, value] = event;
+  log::info<3>("md_instrument_definition_fixed_income_57={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+}
+
+void UDPEvents::operator()(Trace<cme_mdp::MDInstrumentDefinitionRepo58> const &event, sbe::Frame const &frame) {
+  auto &[trace_info, value] = event;
+  log::info<3>("md_instrument_definition_repo_58={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+}
+
 void UDPEvents::operator()(Trace<cme_mdp::MDInstrumentDefinitionFX63> const &event, sbe::Frame const &frame) {
-  log::info<2>("md_instrument_definition_fx_63={}, frame={}"sv, event.value, frame);
+  auto &[trace_info, value] = event;
+  log::info<3>("md_instrument_definition_fx_63={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+}
+
+// - MDIncrementalRefresh
+
+void UDPEvents::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &event, sbe::Frame const &frame) {
+  auto &[trace_info, value] = event;
+  log::info<3>("md_incremental_refresh_book_46={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
 }
 
 void UDPEvents::operator()(metrics::Writer &writer) {

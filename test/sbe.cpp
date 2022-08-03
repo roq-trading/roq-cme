@@ -4,11 +4,17 @@
 
 #include <fmt/format.h>
 
+#include <cmath>
 #include <span>
 
-#include <cme_mdp/MDIncrementalRefreshBook46.h>
+#include "roq/cme/sbe/parser.hpp"
 
 using namespace std::literals;
+
+using namespace Catch::literals;
+
+using namespace roq;
+using namespace roq::cme;
 
 TEST_CASE("md_incremental_refresh_book_46_test_1", "[sbe]") {
   auto message =
@@ -36,7 +42,7 @@ TEST_CASE("md_incremental_refresh_book_46_test_1", "[sbe]") {
       "\x01\x00\x00\x00"                  // number of orders (1)
       "\x02"                              // price level (2)
       "\x00"                              // update action (0 = new)
-      "\x31"                              // entry type ?????????????????????????????
+      "\x31"                              // entry type ('1' = offer)
       "\x00\x00\x00\x00"                  // tradeable size
       "\x00"                              // padding
       // [x44] - NoOrderIDEntries (24)
@@ -46,9 +52,10 @@ TEST_CASE("md_incremental_refresh_book_46_test_1", "[sbe]") {
       // [x4c] --- #1 ---
       "\x9b\x5f\x5e\xa4\xa4\x00\x00\x00"  // order id (707132284827) ???
       "\x7e\x44\x46\xee\x03\x00\x00\x00"  // order priority (16882484350) ???
-      "\x02\x00\x00\x00"                  // visible quantity (2) ???
-      "\x01"                              // order update action (1=update)
-      "\x00\x00\x00"                      // padding
+      "\x02\x00\x00\x00"                  // display quantity (2)
+      "\x01"                              // reference id (1)
+      "\x00"                              // order update action (0=new)
+      "\x00\x00"                          // padding
       // [x64] message #2
       "\x20\x00"  // message size (32)
       "\x0b\x00"  // block length (11)
@@ -67,38 +74,64 @@ TEST_CASE("md_incremental_refresh_book_46_test_1", "[sbe]") {
       "\x00\x00\x00\x00\x00"  // padding
       "\x00"sv;               // num in group (0)
   CHECK(std::size(message) == 132);
-  std::span msg{const_cast<char *>(reinterpret_cast<char const *>(std::data(message))) + 22, std::size(message) - 22};
-  cme_mdp::MDIncrementalRefreshBook46 book{std::data(msg), std::size(msg)};
-  auto md_entries_length = book.noMDEntries().count();
-  CHECK(md_entries_length == 1);
-  book.sbeRewind();  // wtf!
-  book.noMDEntries().forEach([](auto &e) { e.skip(); });
-  auto order_id_entries_length = book.noOrderIDEntries().count();
-  CHECK(order_id_entries_length == 1);
-  book.noOrderIDEntries().forEach([](auto &e) { e.skip(); });
-  auto length = book.computeLength(md_entries_length, order_id_entries_length);
-  CHECK(length == 78);
-  book.sbeRewind();
-  CHECK(book.transactTime() == 1659367870041633809);
-  auto index = 0;
-  book.sbeRewind();  // wtf!
-  book.noMDEntries().forEach([&index](auto &e) {
-    switch (++index) {
-      case 1: {
-        auto p9 = e.mDEntryPx();
-        CHECK(p9.mantissa() == 66735000000000);
-        CHECK(p9.exponent() == -9);
-        CHECK(e.mDEntrySize() == 2);
-        CHECK(e.securityID() == 30975);
-        CHECK(e.rptSeq() == 80734);
-        CHECK(e.numberOfOrders() == 1);
-        CHECK(e.mDPriceLevel() == 2);
-        auto ua = e.mDUpdateAction();
-        CHECK(ua == cme_mdp::MDUpdateAction::Value::New);
-        break;
+  struct MyHandler final : public sbe::Parser::Handler {
+    int counter = 0;
+    void operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDInstrumentDefinitionOption55> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDInstrumentDefinitionSpread56> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDInstrumentDefinitionFixedIncome57> const &, sbe::Frame const &) override {
+      FAIL();
+    }
+    void operator()(Trace<cme_mdp::MDInstrumentDefinitionRepo58> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDInstrumentDefinitionFX63> const &, sbe::Frame const &) override { FAIL(); }
+    //
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &event, sbe::Frame const &frame) override {
+      CHECK(frame.sequence_number == 1044422);
+      CHECK(frame.sending_time == 1659367870041719045ns);
+      auto &[trace_info, book] = event;
+      switch (++counter) {
+        case 1: {
+          CHECK(book.transactTime() == 1659367870041633809);
+          book.sbeRewind();  // wtf!
+          auto no_md_entries_rows = 0;
+          book.noMDEntries().forEach([&no_md_entries_rows](auto &item) {
+            ++no_md_entries_rows;
+            CHECK(sbe::map(item.mDEntryPx()) == 66735.0_a);
+            CHECK(item.mDEntrySize() == 2);
+            CHECK(item.securityID() == 30975);
+            CHECK(item.rptSeq() == 80734);
+            CHECK(item.numberOfOrders() == 1);
+            CHECK(item.mDPriceLevel() == 2);
+            CHECK(item.mDUpdateAction() == cme_mdp::MDUpdateAction::Value::New);
+            CHECK(item.mDEntryType() == cme_mdp::MDEntryTypeBook::Value::Offer);
+            CHECK(item.tradeableSize() == 0);
+          });
+          CHECK(no_md_entries_rows == 1);
+          auto no_order_id_intries_rows = 0;
+          book.noOrderIDEntries().forEach([&no_order_id_intries_rows](auto &item) {
+            ++no_order_id_intries_rows;
+            CHECK(item.orderID() == 707132284827);
+            CHECK(item.mDOrderPriority() == 16882484350);
+            CHECK(item.mDDisplayQty() == 2);
+            CHECK(item.referenceID() == 1);
+            CHECK(item.orderUpdateAction() == cme_mdp::OrderUpdateAction::Value::New);
+          });
+          CHECK(no_order_id_intries_rows == 1);
+          break;
+        }
+        case 2: {
+          CHECK(book.transactTime() == 1659367870041633809);
+          book.sbeRewind();  // wtf!
+          book.noMDEntries().forEach([](auto &) { FAIL(); });
+          book.noOrderIDEntries().forEach([](auto &) { FAIL(); });
+          break;
+        }
       }
     }
-  });
+  } handler;
+  std::span buffer{reinterpret_cast<std::byte const *>(std::data(message)), std::size(message)};
+  sbe::Parser::dispatch(handler, buffer, {});
+  CHECK(handler.counter == 2);
 }
 
 TEST_CASE("md_incremental_refresh_book_46_test_2", "[sbe]") {
@@ -115,7 +148,7 @@ TEST_CASE("md_incremental_refresh_book_46_test_2", "[sbe]") {
       "\x04"
       "\x00\x00"
       "\x20\x00"
-      "\x01"
+      "\x01"  // num in group (1)
       "\x00\xfe\x46\x07\x40\x00\x00\x00"
       "\x02\x00\x00\x00"
       "\x46\xd7\x04\x00"
@@ -123,7 +156,7 @@ TEST_CASE("md_incremental_refresh_book_46_test_2", "[sbe]") {
       "\x02\x00\x00\x00"
       "\x01"
       "\x01"
-      "\x30"
+      "\x30"  // entry type ('0' = bid)
       "\x00\x00\x00\x00"
       "\x00"
       "\x18\x00"
@@ -152,7 +185,7 @@ TEST_CASE("md_incremental_refresh_book_46_test_2", "[sbe]") {
       "\xff\xff\xff\x7f"
       "\x02"
       "\x00"
-      "\x46"  // ???
+      "\x46"  // entry type ('F' = implied offer)
       "\x00\x00\x00\x00"
       "\x00"
       "\x00\x50\x7f\x09\xba\xfe\xff\xff"
@@ -162,7 +195,7 @@ TEST_CASE("md_incremental_refresh_book_46_test_2", "[sbe]") {
       "\xff\xff\xff\x7f"
       "\x02"
       "\x00"
-      "\x45"  // ???
+      "\x45"  // entry type ('E' = implied bid)
       "\x00\x00\x00\x00"
       "\x00"
       "\x00\xf0\xfa\x06\x39\x5c\x00\x00"
@@ -172,7 +205,7 @@ TEST_CASE("md_incremental_refresh_book_46_test_2", "[sbe]") {
       "\xff\xff\xff\x7f"
       "\x01"
       "\x01"
-      "\x46"  // ???
+      "\x46"  // entry type ('F' = implied offer)
       "\x00\x00\x00\x00"
       "\x00"
       "\x00\xaa\x18\xd9\x3e\x5c\x00\x00"
@@ -182,7 +215,7 @@ TEST_CASE("md_incremental_refresh_book_46_test_2", "[sbe]") {
       "\xff\xff\xff\x7f"
       "\x02"
       "\x02"
-      "\x46"  // ???
+      "\x46"  // entry type ('F' = implied offer)
       "\x00\x00\x00\x00"
       "\x00"
       "\x00\x64\x36\xab\x44\x5c\x00\x00"
@@ -192,7 +225,7 @@ TEST_CASE("md_incremental_refresh_book_46_test_2", "[sbe]") {
       "\xff\xff\xff\x7f"
       "\x02"
       "\x00"
-      "\x46"  // ???
+      "\x46"  // entry type ('F' = implied offer)
       "\x00\x00\x00\x00"
       "\x00"
       "\x00\x24\xbc\x9a\x51\x01\x00\x00"
@@ -202,13 +235,29 @@ TEST_CASE("md_incremental_refresh_book_46_test_2", "[sbe]") {
       "\xff\xff\xff\x7f"
       "\x02"
       "\x00"
-      "\x45"  // ???
+      "\x45"  // entry type ('E' = implied bid)
       "\x00\x00\x00\x00"
       "\x00"
       "\x18\x00"
       "\x00\x00\x00\x00\x00"
       "\x00"sv;
   CHECK(std::size(message) == 324);
+  struct MyHandler final : public sbe::Parser::Handler {
+    int counter = 0;
+    void operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDInstrumentDefinitionOption55> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDInstrumentDefinitionSpread56> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDInstrumentDefinitionFixedIncome57> const &, sbe::Frame const &) override {
+      FAIL();
+    }
+    void operator()(Trace<cme_mdp::MDInstrumentDefinitionRepo58> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDInstrumentDefinitionFX63> const &, sbe::Frame const &) override { FAIL(); }
+    //
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &, sbe::Frame const &) override { ++counter; }
+  } handler;
+  std::span buffer{reinterpret_cast<std::byte const *>(std::data(message)), std::size(message)};
+  sbe::Parser::dispatch(handler, buffer, {});
+  CHECK(handler.counter == 2);
 }
 
 /*
