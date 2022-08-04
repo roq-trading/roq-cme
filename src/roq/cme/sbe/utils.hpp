@@ -550,6 +550,17 @@ struct fmt::formatter<cme_mdp::MaturityMonthYear> {
   template <typename Context>
   auto format(value_type const &value, Context &context) const {
     using namespace std::literals;
-    return fmt::format_to(context.out(), R"({}-{}-{})"sv, value.year(), value.month(), value.year());
+    return fmt::format_to(
+        context.out(),
+        R"({{)"
+        R"(year={}, )"
+        R"(month={}, )"
+        R"(day={}, )"
+        R"(week={})"
+        R"(}}))"sv,
+        value.year(),
+        value.month(),
+        value.day(),
+        value.week());
   }
 };
