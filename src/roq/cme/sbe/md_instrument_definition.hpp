@@ -13,6 +13,11 @@
 
 #include "roq/cme/sbe/utils.hpp"
 
+/*
+ * MDInstrumentDefinitionFuture54
+ * - NoEntries appears to be corrupted...?
+ */
+
 namespace roq {
 namespace cme {
 namespace sbe {
@@ -333,10 +338,10 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFuture54> {
         R"(user_defined_instrument={}, )"
         R"(trading_reference_date={}, )"
         R"(instrument_guid={}, )"
-        R"(no_events=[{}], )"
-        R"(no_md_feed_types=[{}], )"
-        R"(no_inst_attrib=[{}], )"
-        R"(no_lot_type_rules=[{}])"
+        R"(no_events=[???], )"
+        R"(no_md_feed_types=[???], )"
+        R"(no_inst_attrib=[???], )"
+        R"(no_lot_type_rules=[???])"
         R"(}})"sv,
         value.matchEventIndicator(),
         value.totNumReports(),
@@ -383,11 +388,12 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFuture54> {
         value.minPriceIncrementAmount(),
         value.userDefinedInstrument(),
         value.tradingReferenceDate(),
-        value.instrumentGUID(),
-        fmt::join(roq::core::sbe::iterator{value.noEvents()}, roq::core::sbe::sentinel{}, ", "sv),
-        fmt::join(roq::core::sbe::iterator{value.noMDFeedTypes()}, roq::core::sbe::sentinel{}, ", "sv),
-        fmt::join(roq::core::sbe::iterator{value.noInstAttrib()}, roq::core::sbe::sentinel{}, ", "sv),
-        fmt::join(roq::core::sbe::iterator{value.noLotTypeRules()}, roq::core::sbe::sentinel{}, ", "sv));
+        value.instrumentGUID());
+    // XXX binary message looks weird...
+    // fmt::join(roq::core::sbe::iterator{value.noEvents()}, roq::core::sbe::sentinel{}, ", "sv),
+    // fmt::join(roq::core::sbe::iterator{value.noMDFeedTypes()}, roq::core::sbe::sentinel{}, ", "sv),
+    // fmt::join(roq::core::sbe::iterator{value.noInstAttrib()}, roq::core::sbe::sentinel{}, ", "sv),
+    // fmt::join(roq::core::sbe::iterator{value.noLotTypeRules()}, roq::core::sbe::sentinel{}, ", "sv),
   }
 };
 
