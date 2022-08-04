@@ -23,7 +23,7 @@ auto create_udp_events(Gateway &gateway, io::Context &context, uint16_t &stream_
 }
 }  // namespace
 
-Gateway::Gateway(server::Dispatcher &dispatcher, Config const &config)
+Gateway::Gateway(server::Dispatcher &dispatcher, Config const &)
     : dispatcher_(dispatcher), context_(io::engine::ContextFactory::create_libevent()), shared_(dispatcher_),
       udp_events_(create_udp_events(*this, *context_, ++stream_id_, shared_)) {
   if (!flags::FIX::fix_cancel_on_disconnect())
@@ -60,7 +60,7 @@ void Gateway::operator()(Event<Disconnected> const &event) {
 }
 
 uint16_t Gateway::operator()(
-    Event<CreateOrder> const &event, oms::Order const &order, std::string_view const &request_id) {
+    Event<CreateOrder> const &event, oms::Order const &, [[maybe_unused]] std::string_view const &request_id) {
   assert(!std::empty(event.value.account));
   throw oms::NotSupported("not supported"sv);
 }
@@ -68,8 +68,8 @@ uint16_t Gateway::operator()(
 uint16_t Gateway::operator()(
     Event<ModifyOrder> const &event,
     oms::Order const &order,
-    std::string_view const &request_id,
-    std::string_view const &previous_request_id) {
+    [[maybe_unused]] std::string_view const &request_id,
+    [[maybe_unused]] std::string_view const &previous_request_id) {
   assert(!std::empty(event.value.account));
   assert(event.value.account == order.account);
   throw oms::NotSupported("not supported"sv);
@@ -78,14 +78,14 @@ uint16_t Gateway::operator()(
 uint16_t Gateway::operator()(
     Event<CancelOrder> const &event,
     oms::Order const &order,
-    std::string_view const &request_id,
-    std::string_view const &previous_request_id) {
+    [[maybe_unused]] std::string_view const &request_id,
+    [[maybe_unused]] std::string_view const &previous_request_id) {
   assert(!std::empty(event.value.account));
   assert(event.value.account == order.account);
   throw oms::NotSupported("not supported"sv);
 }
 
-uint16_t Gateway::operator()(Event<CancelAllOrders> const &event, std::string_view const &request_id) {
+uint16_t Gateway::operator()(Event<CancelAllOrders> const &event, [[maybe_unused]] std::string_view const &request_id) {
   assert(!std::empty(event.value.account));
   throw oms::NotSupported("not supported"sv);
 }

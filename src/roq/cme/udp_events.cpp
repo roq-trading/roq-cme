@@ -122,7 +122,7 @@ void UDPEvents::operator()(Event<Timer> const &event) {
   }
 }
 
-void UDPEvents::operator()(io::net::udp::Receiver::Read const &read) {
+void UDPEvents::operator()(io::net::udp::Receiver::Read const &) {
   auto trace_info = server::create_trace_info();
   last_update_time_ = trace_info.source_receive_time;
   publish_stream_status(trace_info, ConnectionStatus::READY);  // first message will publish
@@ -147,44 +147,37 @@ void UDPEvents::operator()(io::net::udp::Receiver::Error const &error) {
 // - MDInstrumentDefinition
 
 void UDPEvents::operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &event, sbe::Frame const &frame) {
-  log::info<3>("HERE"sv);
   auto &[trace_info, value] = event;
   log::info<3>("md_instrument_definition_future_54={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
 }
 
 void UDPEvents::operator()(Trace<cme_mdp::MDInstrumentDefinitionOption55> const &event, sbe::Frame const &frame) {
-  log::info<3>("HERE"sv);
   auto &[trace_info, value] = event;
   log::info<3>("md_instrument_definition_option_55={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
 }
 
 void UDPEvents::operator()(Trace<cme_mdp::MDInstrumentDefinitionSpread56> const &event, sbe::Frame const &frame) {
-  log::info<3>("HERE"sv);
   auto &[trace_info, value] = event;
   log::info<3>("md_instrument_definition_spread_56={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
 }
 
 void UDPEvents::operator()(Trace<cme_mdp::MDInstrumentDefinitionFixedIncome57> const &event, sbe::Frame const &frame) {
-  log::info<3>("HERE"sv);
   auto &[trace_info, value] = event;
   log::info<3>("md_instrument_definition_fixed_income_57={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
 }
 
 void UDPEvents::operator()(Trace<cme_mdp::MDInstrumentDefinitionRepo58> const &event, sbe::Frame const &frame) {
-  log::info<3>("HERE"sv);
   auto &[trace_info, value] = event;
   log::info<3>("md_instrument_definition_repo_58={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
 }
 
 void UDPEvents::operator()(Trace<cme_mdp::MDInstrumentDefinitionFX63> const &event, sbe::Frame const &frame) {
-  log::info<3>("HERE"sv);
   auto &[trace_info, value] = event;
   log::info<3>("md_instrument_definition_fx_63={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
 }
 // - SnapshotFullRefresh
 
 void UDPEvents::operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &event, sbe::Frame const &frame) {
-  log::info<3>("HERE"sv);
   auto &[trace_info, value] = event;
   log::info<3>("snapshot_full_refresh_52={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
 }
@@ -196,7 +189,6 @@ void UDPEvents::operator()(Trace<cme_mdp::SnapshotFullRefreshOrderBook53> const 
 }
 
 void UDPEvents::operator()(Trace<cme_mdp::SnapshotFullRefreshLongQty69> const &event, sbe::Frame const &frame) {
-  log::info<3>("HERE"sv);
   auto &[trace_info, value] = event;
   log::info<3>("snapshot_full_refresh_long_qty_69={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
 }
@@ -204,74 +196,63 @@ void UDPEvents::operator()(Trace<cme_mdp::SnapshotFullRefreshLongQty69> const &e
 // - MDIncrementalRefresh
 
 void UDPEvents::operator()(Trace<cme_mdp::MDIncrementalRefreshVolume37> const &event, sbe::Frame const &frame) {
-  log::info<3>("HERE"sv);
   auto &[trace_info, value] = event;
   log::info<3>("md_incremental_refresh_volume_37={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
 }
 
 void UDPEvents::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &event, sbe::Frame const &frame) {
-  log::info<3>("HERE"sv);
   auto &[trace_info, value] = event;
   log::info<3>("md_incremental_refresh_book_46={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
 }
 
 void UDPEvents::operator()(Trace<cme_mdp::MDIncrementalRefreshOrderBook47> const &event, sbe::Frame const &frame) {
-  log::info<3>("HERE"sv);
   auto &[trace_info, value] = event;
   log::info<3>("md_incremental_refresh_order_book_47={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
 }
 
 void UDPEvents::operator()(Trace<cme_mdp::MDIncrementalRefreshTradeSummary48> const &event, sbe::Frame const &frame) {
-  log::info<3>("HERE"sv);
   auto &[trace_info, value] = event;
   log::info<3>("md_incremental_refresh_trade_summary_48={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
 }
 
 void UDPEvents::operator()(
     Trace<cme_mdp::MDIncrementalRefreshDailyStatistics49> const &event, sbe::Frame const &frame) {
-  log::info<3>("HERE"sv);
   auto &[trace_info, value] = event;
   log::info<3>(
       "md_incremental_refresh_daily_statistics_49={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
 }
 
 void UDPEvents::operator()(Trace<cme_mdp::MDIncrementalRefreshLimitsBanding50> const &event, sbe::Frame const &frame) {
-  log::info<3>("HERE"sv);
   auto &[trace_info, value] = event;
   log::info<3>("md_incremental_refresh_limits_banding_50={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
 }
 
 void UDPEvents::operator()(
     Trace<cme_mdp::MDIncrementalRefreshSessionStatistics51> const &event, sbe::Frame const &frame) {
-  log::info<3>("HERE"sv);
   auto &[trace_info, value] = event;
   log::info<3>(
       "md_incremental_refresh_session_statistics_51={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
 }
 
 void UDPEvents::operator()(Trace<cme_mdp::MDIncrementalRefreshBookLongQty64> const &event, sbe::Frame const &frame) {
-  log::info<3>("HERE"sv);
   auto &[trace_info, value] = event;
   log::info<3>("md_incremental_refresh_book_long_qty_64={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
 }
 
 void UDPEvents::operator()(
     Trace<cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65> const &event, sbe::Frame const &frame) {
-  log::info<3>("HERE"sv);
   auto &[trace_info, value] = event;
   log::info<3>(
       "md_incremental_refresh_trade_summary_long_qty_65={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
 }
 
 void UDPEvents::operator()(Trace<cme_mdp::MDIncrementalRefreshVolumeLongQty66> const &event, sbe::Frame const &frame) {
-  log::info<3>("HERE"sv);
   auto &[trace_info, value] = event;
   log::info<3>("md_incremental_refresh_volume_long_qty_66={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
 }
 
 void UDPEvents::operator()(
     Trace<cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67> const &event, sbe::Frame const &frame) {
-  log::info<3>("HERE"sv);
   auto &[trace_info, value] = event;
   log::info<3>(
       "md_incremental_refresh_session_statistics_long_qty_67={}, frame={}"sv,
