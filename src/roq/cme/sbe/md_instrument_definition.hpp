@@ -308,7 +308,7 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFuture54> {
         R"(security_id_source={}, )"
         R"(security_Type="{}", )"
         R"(cfi_code="{}", )"
-        R"(maturity_month_year="{}", )"
+        R"(maturity_month_year={}, )"
         R"(currency="{}", )"
         R"(settl_currency="{}", )"
         R"(match_algorithm={}, )"
@@ -319,7 +319,7 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFuture54> {
         R"(main_fraction={}, )"
         R"(sub_fraction={}, )"
         R"(price_display_format={}, )"
-        R"(unit_of_measure={}, )"
+        R"(unit_of_measure="{}", )"
         R"(unit_of_measure_qty={}, )"
         R"(trading_reference_price={}, )"
         R"(settl_price_type={}, )"
@@ -348,17 +348,17 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFuture54> {
         value.applID(),
         value.marketSegmentID(),
         value.underlyingProduct(),
-        value.securityExchange(),
-        value.securityGroup(),
-        value.asset(),
-        value.symbol(),
+        value.getSecurityExchangeAsStringView(),
+        value.getSecurityGroupAsStringView(),
+        value.getAssetAsStringView(),
+        value.getSymbolAsStringView(),
         value.securityID(),
         value.securityIDSource(),
-        value.securityType(),
-        value.cFICode(),
+        value.getSecurityTypeAsStringView(),
+        value.getCFICodeAsStringView(),
         value.maturityMonthYear(),
-        value.currency(),
-        value.settlCurrency(),
+        value.getCurrencyAsStringView(),
+        value.getSettlCurrencyAsStringView(),
         value.matchAlgorithm(),
         value.minTradeVol(),
         value.maxTradeVol(),
@@ -367,7 +367,7 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFuture54> {
         value.mainFraction(),
         value.subFraction(),
         value.priceDisplayFormat(),
-        value.unitOfMeasure(),
+        value.getUnitOfMeasureAsStringView(),
         value.unitOfMeasureQty(),
         value.tradingReferencePrice(),
         value.settlPriceType(),
@@ -386,11 +386,7 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFuture54> {
         value.userDefinedInstrument(),
         value.tradingReferenceDate(),
         value.instrumentGUID());
-    // XXX binary message looks weird...
-    // fmt::join(roq::core::sbe::iterator{value.noEvents()}, roq::core::sbe::sentinel{}, ", "sv),
-    // fmt::join(roq::core::sbe::iterator{value.noMDFeedTypes()}, roq::core::sbe::sentinel{}, ", "sv),
-    // fmt::join(roq::core::sbe::iterator{value.noInstAttrib()}, roq::core::sbe::sentinel{}, ", "sv),
-    // fmt::join(roq::core::sbe::iterator{value.noLotTypeRules()}, roq::core::sbe::sentinel{}, ", "sv),
+    // XXX missing groups
   }
 };
 
@@ -404,13 +400,101 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionOption55> {
   template <typename Context>
   auto format(value_type &value, Context &context) const {
     using namespace std::literals;
-    value.sbeRewind();
+    value.sbeRewind();  // note!
     return fmt::format_to(
         context.out(),
         R"({{)"
-        R"(symbol="{}")"
+        R"(match_event_indicator={}, )"
+        R"(tot_num_reports={}, )"
+        R"(security_update_action={}, )"
+        R"(last_update_time={}, )"
+        R"(md_security_trading_status={}, )"
+        R"(appl_id={}, )"
+        R"(market_segment_id={}, )"
+        R"(underlying_product={}, )"
+        R"(security_exchange="{}", )"
+        R"(security_group="{}", )"
+        R"(asset="{}", )"
+        R"(symbol="{}", )"
+        R"(security_id={}, )"
+        R"(security_id_source={}, )"
+        R"(security_Type="{}", )"
+        R"(cfi_code="{}", )"
+        R"(put_or_call={}, )"
+        R"(maturity_month_year={}, )"
+        R"(currency="{}", )"
+        R"(strike_price={}, )"
+        R"(strike_currency="{}", )"
+        R"(settl_currency="{}", )"
+        R"(min_cab_price={}, )"
+        R"(match_algorithm={}, )"
+        R"(min_trade_vol={}, )"
+        R"(max_trade_vol={}, )"
+        R"(min_price_increment={}, )"
+        R"(min_price_increment_amount={}, )"
+        R"(display_factor={}, )"
+        R"(tick_rule={}, )"
+        R"(main_fraction={}, )"
+        R"(sub_fraction={}, )"
+        R"(price_display_format={}, )"
+        R"(unit_of_measure="{}", )"
+        R"(unit_of_measure_qty={}, )"
+        R"(trading_reference_price={}, )"
+        R"(settl_price_type={}, )"
+        R"(cleared_volume={}, )"
+        R"(open_interest_qty={}, )"
+        R"(low_limit_price={}, )"
+        R"(high_limit_price={}, )"
+        R"(user_defined_instrument={}, )"
+        R"(trading_reference_date={}, )"
+        R"(instrument_guid={}, )"
+        R"(...)"
         R"(}})"sv,
-        value.symbol());
+        value.matchEventIndicator(),
+        value.totNumReports(),
+        value.securityUpdateAction(),
+        value.lastUpdateTime(),
+        value.mDSecurityTradingStatus(),
+        value.applID(),
+        value.marketSegmentID(),
+        value.underlyingProduct(),
+        value.getSecurityExchangeAsStringView(),
+        value.getSecurityGroupAsStringView(),
+        value.getAssetAsStringView(),
+        value.getSymbolAsStringView(),
+        value.securityID(),
+        value.securityIDSource(),
+        value.getSecurityTypeAsStringView(),
+        value.getCFICodeAsStringView(),
+        value.putOrCall(),
+        value.maturityMonthYear(),
+        value.getCurrencyAsStringView(),
+        value.strikePrice(),
+        value.getStrikeCurrencyAsStringView(),
+        value.getSettlCurrencyAsStringView(),
+        value.minCabPrice(),
+        value.matchAlgorithm(),
+        value.minTradeVol(),
+        value.maxTradeVol(),
+        value.minPriceIncrement(),
+        value.minPriceIncrementAmount(),
+        value.displayFactor(),
+        value.tickRule(),
+        value.mainFraction(),
+        value.subFraction(),
+        value.priceDisplayFormat(),
+        value.getUnitOfMeasureAsStringView(),
+        value.unitOfMeasureQty(),
+        value.tradingReferencePrice(),
+        value.settlPriceType(),
+        value.clearedVolume(),
+        value.openInterestQty(),
+        value.lowLimitPrice(),
+        value.highLimitPrice(),
+        value.userDefinedInstrument(),
+        value.tradingReferenceDate(),
+        value.instrumentGUID());
+    // XXX missing groups
   }
 };
 
@@ -444,11 +528,11 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionSpread56> {
         R"(security_id_source={}, )"
         R"(security_Type="{}", )"
         R"(cfi_code="{}", )"
-        R"(maturity_month_year="{}", )"
+        R"(maturity_month_year={}, )"
         R"(currency="{}", )"
         R"(security_sub_type="{}", )"
-        R"(user_defined_instrument="{}", )"
-        R"(match_algorithm="{}", )"
+        R"(user_defined_instrument={}, )"
+        R"(match_algorithm={}, )"
         R"(min_trade_vol={}, )"
         R"(max_trade_vol={}, )"
         R"(min_price_increment={}, )"
@@ -482,17 +566,17 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionSpread56> {
         value.applID(),
         value.marketSegmentID(),
         value.underlyingProduct(),
-        value.securityExchange(),
-        value.securityGroup(),
-        value.asset(),
-        value.symbol(),
+        value.getSecurityExchangeAsStringView(),
+        value.getSecurityGroupAsStringView(),
+        value.getAssetAsStringView(),
+        value.getSymbolAsStringView(),
         value.securityID(),
         value.securityIDSource(),
-        value.securityType(),
-        value.cFICode(),
+        value.getSecurityTypeAsStringView(),
+        value.getCFICodeAsStringView(),
         value.maturityMonthYear(),
-        value.currency(),
-        value.securitySubType(),
+        value.getCurrencyAsStringView(),
+        value.getSecuritySubTypeAsStringView(),
         value.userDefinedInstrument(),
         value.matchAlgorithm(),
         value.minTradeVol(),
@@ -502,7 +586,7 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionSpread56> {
         value.priceDisplayFormat(),
         value.priceRatio(),
         value.tickRule(),
-        value.unitOfMeasure(),
+        value.getUnitOfMeasureAsStringView(),
         value.tradingReferencePrice(),
         value.settlPriceType(),
         value.openInterestQty(),
@@ -513,11 +597,11 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionSpread56> {
         value.mainFraction(),
         value.subFraction(),
         value.tradingReferenceDate(),
-        value.priceQuoteMethod(),
-        value.riskSet(),
-        value.marketSet(),
+        value.getPriceQuoteMethodAsStringView(),
+        value.getRiskSetAsStringView(),
+        value.getMarketSetAsStringView(),
         value.instrumentGUID(),
-        value.financialInstrumentFullName());
+        value.getFinancialInstrumentFullNameAsStringView());
     // XXX missing groups
   }
 };
@@ -562,7 +646,7 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFixedIncome57> {
         R"(main_fraction={}, )"
         R"(sub_fraction={}, )"
         R"(price_display_format={}, )"
-        R"(unit_of_measure={}, )"
+        R"(unit_of_measure="{}", )"
         R"(unit_of_measure_qty={}, )"
         R"(trading_reference_price={}, )"
         R"(trading_reference_date={}, )"
@@ -575,19 +659,19 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFixedIncome57> {
         R"(maturity_date={}, )"
         R"(coupon_rate={}, )"
         R"(par_value={}, )"
-        R"(coupon_frequency_unit={}, )"
+        R"(coupon_frequency_unit="{}", )"
         R"(coupon_frequency_period={}, )"
-        R"(coupon_day_count={}, )"
-        R"(country_of_issue={}, )"
-        R"(issuer={}, )"
+        R"(coupon_day_count="{}", )"
+        R"(country_of_issue="{}", )"
+        R"(issuer="{}", )"
         R"(financial_instrument_full_name="{}", )"
-        R"(security_alt_id={}, )"
+        R"(security_alt_id="{}", )"
         R"(security_alt_id_source={}, )"
-        R"(price_quote_method={}, )"
-        R"(party_role_clearing_org={}, )"
+        R"(price_quote_method="{}", )"
+        R"(party_role_clearing_org="{}", )"
         R"(user_defined_instrument={}, )"
-        R"(risk_set={}, )"
-        R"(market_set={}, )"
+        R"(risk_set="{}", )"
+        R"(market_set="{}", )"
         R"(instrument_guid={}, )"
         R"(...)"
         R"(}})"sv,
@@ -599,16 +683,16 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFixedIncome57> {
         value.applID(),
         value.marketSegmentID(),
         value.underlyingProduct(),
-        value.securityExchange(),
-        value.securityGroup(),
-        value.asset(),
-        value.symbol(),
+        value.getSecurityExchangeAsStringView(),
+        value.getSecurityGroupAsStringView(),
+        value.getAssetAsStringView(),
+        value.getSymbolAsStringView(),
         value.securityID(),
         value.securityIDSource(),
-        value.securityType(),
-        value.cFICode(),
-        value.currency(),
-        value.settlCurrency(),
+        value.getSecurityTypeAsStringView(),
+        value.getCFICodeAsStringView(),
+        value.getCurrencyAsStringView(),
+        value.getSettlCurrencyAsStringView(),
         value.matchAlgorithm(),
         value.minTradeVol(),
         value.maxTradeVol(),
@@ -617,7 +701,7 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFixedIncome57> {
         value.mainFraction(),
         value.subFraction(),
         value.priceDisplayFormat(),
-        value.unitOfMeasure(),
+        value.getUnitOfMeasureAsStringView(),
         value.unitOfMeasureQty(),
         value.tradingReferencePrice(),
         value.tradingReferenceDate(),
@@ -630,19 +714,19 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFixedIncome57> {
         value.maturityDate(),
         value.couponRate(),
         value.parValue(),
-        value.couponFrequencyUnit(),
+        value.getCouponFrequencyUnitAsStringView(),
         value.couponFrequencyPeriod(),
-        value.couponDayCount(),
-        value.countryOfIssue(),
-        value.issuer(),
-        value.financialInstrumentFullName(),
-        value.securityAltID(),
+        value.getCouponDayCountAsStringView(),
+        value.getCountryOfIssueAsStringView(),
+        value.getIssuerAsStringView(),
+        value.getFinancialInstrumentFullNameAsStringView(),
+        value.getSecurityAltIDAsStringView(),
         value.securityAltIDSource(),
-        value.priceQuoteMethod(),
-        value.partyRoleClearingOrg(),
+        value.getPriceQuoteMethodAsStringView(),
+        value.getPartyRoleClearingOrgAsStringView(),
         value.userDefinedInstrument(),
-        value.riskSet(),
-        value.marketSet(),
+        value.getRiskSetAsStringView(),
+        value.getMarketSetAsStringView(),
         value.instrumentGUID());
     // XXX missing groups
   }
@@ -676,7 +760,7 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionRepo58> {
         R"(symbol="{}", )"
         R"(security_id={}, )"
         R"(security_id_source={}, )"
-        R"(security_Type="{}", )"
+        R"(security_type="{}", )"
         R"(cfi_code="{}", )"
         R"(currency="{}", )"
         R"(settl_currency="{}", )"
@@ -685,27 +769,27 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionRepo58> {
         R"(max_trade_vol={}, )"
         R"(min_price_increment={}, )"
         R"(display_factor={}, )"
-        R"(unit_of_measure={}, )"
+        R"(unit_of_measure="{}", )"
         R"(unit_of_measure_qty={}, )"
         R"(trading_reference_price={}, )"
         R"(trading_reference_date={}, )"
         R"(high_limit_price={}, )"
         R"(low_limit_price={}, )"
         R"(max_price_variation={}, )"
-        R"(financial_instrument_full_name={}, )"
-        R"(party_role_clearing_org={}, )"
+        R"(financial_instrument_full_name="{}", )"
+        R"(party_role_clearing_org="{}", )"
         R"(start_date={}, )"
         R"(end_date={}, )"
-        R"(termination_type={}, )"
+        R"(termination_type="{}", )"
         R"(security_sub_type={}, )"
         R"(money_or_par={}, )"
         R"(max_no_of_substitutions={}, )"
-        R"(price_quote_method={}, )"
+        R"(price_quote_method="{}", )"
         R"(user_defined_instrument={}, )"
-        R"(risk_set={}, )"
-        R"(market_set={}, )"
+        R"(risk_set="{}", )"
+        R"(market_set="{}", )"
         R"(instrument_guid={}, )"
-        R"(term_code={}, )"
+        R"(term_code="{}", )"
         R"(...)"
         R"(}})"sv,
         value.matchEventIndicator(),
@@ -716,42 +800,42 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionRepo58> {
         value.applID(),
         value.marketSegmentID(),
         value.underlyingProduct(),
-        value.securityExchange(),
-        value.securityGroup(),
-        value.asset(),
-        value.symbol(),
+        value.getSecurityExchangeAsStringView(),
+        value.getSecurityGroupAsStringView(),
+        value.getAssetAsStringView(),
+        value.getSymbolAsStringView(),
         value.securityID(),
         value.securityIDSource(),
-        value.securityType(),
-        value.cFICode(),
-        value.currency(),
-        value.settlCurrency(),
+        value.getSecurityTypeAsStringView(),
+        value.getCFICodeAsStringView(),
+        value.getCurrencyAsStringView(),
+        value.getSettlCurrencyAsStringView(),
         value.matchAlgorithm(),
         value.minTradeVol(),
         value.maxTradeVol(),
         value.minPriceIncrement(),
         value.displayFactor(),
-        value.unitOfMeasure(),
+        value.getUnitOfMeasureAsStringView(),
         value.unitOfMeasureQty(),
         value.tradingReferencePrice(),
         value.tradingReferenceDate(),
         value.highLimitPrice(),
         value.lowLimitPrice(),
         value.maxPriceVariation(),
-        value.financialInstrumentFullName(),
-        value.partyRoleClearingOrg(),
+        value.getFinancialInstrumentFullNameAsStringView(),
+        value.getPartyRoleClearingOrgAsStringView(),
         value.startDate(),
         value.endDate(),
-        value.terminationType(),
+        value.getTerminationTypeAsStringView(),
         value.securitySubType(),
         value.moneyOrPar(),
         value.maxNoOfSubstitutions(),
-        value.priceQuoteMethod(),
+        value.getPriceQuoteMethodAsStringView(),
         value.userDefinedInstrument(),
-        value.riskSet(),
-        value.marketSet(),
+        value.getRiskSetAsStringView(),
+        value.getMarketSetAsStringView(),
         value.instrumentGUID(),
-        value.termCode());
+        value.getTermCodeAsStringView());
     // XXX missing groups
   }
 };
@@ -803,17 +887,17 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFX63> {
         R"(user_defined_instrument={}, )"
         R"(financial_instrument_full_name="{}", )"
         R"(fx_currency_symbol="{}", )"
-        R"(settl_type={}, )"
+        R"(settl_type="{}", )"
         R"(intervening_days={}, )"
-        R"(fx_benchmark_rate_fix={}, )"
+        R"(fx_benchmark_rate_fix="{}", )"
         R"(rate_source="{}", )"
-        R"(fix_rate_local_time={}, )"
-        R"(fix_rate_local_time_zone={}, )"
+        R"(fix_rate_local_time="{}", )"
+        R"(fix_rate_local_time_zone="{}", )"
         R"(min_quote_life={}, )"
         R"(max_price_discretion_offset={}, )"
         R"(instrument_guid={}, )"
         R"(maturity_month_year={}, )"
-        R"(settlement_locale={}, ")"
+        R"(settlement_locale="{}", ")"
         R"(...)"
         R"(}})"sv,
         value.matchEventIndicator(),
@@ -824,42 +908,42 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFX63> {
         value.applID(),
         value.marketSegmentID(),
         value.underlyingProduct(),
-        value.securityExchange(),
-        value.securityGroup(),
-        value.asset(),
-        value.symbol(),
+        value.getSecurityExchangeAsStringView(),
+        value.getSecurityGroupAsStringView(),
+        value.getAssetAsStringView(),
+        value.getSymbolAsStringView(),
         value.securityID(),
         value.securityIDSource(),
-        value.securityType(),
-        value.cFICode(),
-        value.currency(),
-        value.settlCurrency(),
-        value.priceQuoteCurrency(),
+        value.getSecurityTypeAsStringView(),
+        value.getCFICodeAsStringView(),
+        value.getCurrencyAsStringView(),
+        value.getSettlCurrencyAsStringView(),
+        value.getPriceQuoteCurrencyAsStringView(),
         value.matchAlgorithm(),
         value.minTradeVol(),
         value.maxTradeVol(),
         value.minPriceIncrement(),
         value.displayFactor(),
         value.pricePrecision(),
-        value.unitOfMeasure(),
+        value.getUnitOfMeasureAsStringView(),
         value.unitOfMeasureQty(),
         value.highLimitPrice(),
         value.lowLimitPrice(),
         value.maxPriceVariation(),
         value.userDefinedInstrument(),
-        value.financialInstrumentFullName(),
-        value.fXCurrencySymbol(),
-        value.settlType(),
+        value.getFinancialInstrumentFullNameAsStringView(),
+        value.getFXCurrencySymbolAsStringView(),
+        value.getSettlTypeAsStringView(),
         value.interveningDays(),
-        value.fXBenchmarkRateFix(),
-        value.rateSource(),
-        value.fixRateLocalTime(),
-        value.fixRateLocalTimeZone(),
+        value.getFXBenchmarkRateFixAsStringView(),
+        value.getRateSourceAsStringView(),
+        value.getFixRateLocalTimeAsStringView(),
+        value.getFixRateLocalTimeZoneAsStringView(),
         value.minQuoteLife(),
         value.maxPriceDiscretionOffset(),
         value.instrumentGUID(),
         value.maturityMonthYear(),
-        value.settlementLocale());
+        value.getSettlementLocaleAsStringView());
     // XXX missing groups
   }
 };
