@@ -126,7 +126,7 @@ void UDPEvents::operator()(io::net::udp::Receiver::Read const &read) {
   auto trace_info = server::create_trace_info();
   last_update_time_ = trace_info.source_receive_time;
   publish_stream_status(trace_info, ConnectionStatus::READY);  // first message will publish
-  while (receive_buffer_.append(*receiver_, read.available_bytes)) {
+  while (receive_buffer_.append(*receiver_)) {
     auto message = receive_buffer_.data();
     log::info<5>("received {} byte(s)"sv, std::size(message));
     if (!sbe::Parser::dispatch(*this, message, trace_info)) {

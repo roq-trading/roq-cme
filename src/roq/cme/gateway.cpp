@@ -24,12 +24,8 @@ auto create_udp_events(Gateway &gateway, io::Context &context, uint16_t &stream_
 }  // namespace
 
 Gateway::Gateway(server::Dispatcher &dispatcher, Config const &config)
-    : dispatcher_(dispatcher), master_account_(config.get_master_account()),
-      context_(io::engine::ContextFactory::create_libevent()), shared_(dispatcher_),
+    : dispatcher_(dispatcher), context_(io::engine::ContextFactory::create_libevent()), shared_(dispatcher_),
       udp_events_(create_udp_events(*this, *context_, ++stream_id_, shared_)) {
-  if (std::empty(master_account_) && !flags::Common::disable_master_account_check()) {
-    log::fatal("A master account is always required (due to FIX logon)"sv);
-  }
   if (!flags::FIX::fix_cancel_on_disconnect())
     log::warn("Orders will *NOT* be cancelled on disconnect"sv);
 }

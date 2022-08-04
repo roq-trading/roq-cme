@@ -61,7 +61,6 @@ class Gateway final : public server::Handler, public UDPEvents::Handler {
  private:
   server::Dispatcher &dispatcher_;
   // config
-  const std::string master_account_;
   // io
   std::unique_ptr<io::Context> context_;
   // shared
