@@ -24,7 +24,7 @@ struct MessageSize final {
   using value_type = uint16_t;
   explicit MessageSize(auto &buffer) {
     if (std::size(buffer) < sizeof(value_type))
-      throw RuntimeError("Unexpected: buffer too small"sv);
+      throw RuntimeError("Unexpected: buffer too small {}"sv, std::size(buffer));
     value_type tmp;
     std::memcpy(&tmp, std::data(buffer), sizeof(value_type));
     length = core::little_endian_to_host(tmp);
@@ -157,14 +157,15 @@ bool Parser::dispatch(Handler &handler, std::span<std::byte const> const &buffer
             }
             default: {
               log::warn("Unexpected: template_id={}"sv, template_id);
-              return false;
+              result = false;
+              return;
             }
           }
           message = message.subspan(length);
         }
       })) {
   } else {
-    return false;
+    result = false;
   }
   return result;
 }
