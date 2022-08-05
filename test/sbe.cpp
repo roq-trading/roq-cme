@@ -110,7 +110,7 @@ TEST_CASE("md_incremental_refresh_book_46_test_1", "[sbe]") {
             CHECK(item.mDPriceLevel() == 2);
             CHECK(item.mDUpdateAction() == cme_mdp::MDUpdateAction::Value::New);
             CHECK(item.mDEntryType() == cme_mdp::MDEntryTypeBook::Value::Offer);
-            CHECK(item.tradeableSize() == 0);
+            CHECK(item.tradeableSize() == cme_mdp::MDIncrementalRefreshBook46::NoMDEntries::tradeableSizeNullValue());
           });
           CHECK(no_md_entries_rows == 1);
           auto no_order_id_intries_rows = 0;
