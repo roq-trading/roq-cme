@@ -607,10 +607,10 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionSpread56> {
         value.subFraction(),
         value.tradingReferenceDate(),
         get_string_view(value.priceQuoteMethod(), value.priceQuoteMethodLength()),
-        get_binary(get_string_view(value.riskSet(), value.riskSetLength())),
-        get_binary(get_string_view(value.marketSet(), value.marketSetLength())),
+        get_string_view(value.riskSet(), value.riskSetLength()),
+        get_string_view(value.marketSet(), value.marketSetLength()),
         value.instrumentGUID(),
-        get_binary(get_string_view(value.financialInstrumentFullName(), value.financialInstrumentFullNameLength())));
+        get_string_view(value.financialInstrumentFullName(), value.financialInstrumentFullNameLength()));
     // XXX missing groups
   }
 };
@@ -731,14 +731,14 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFixedIncome57> {
         get_string_view(value.couponDayCount(), value.couponDayCountLength()),
         get_string_view(value.countryOfIssue(), value.countryOfIssueLength()),
         get_string_view(value.issuer(), value.issuerLength()),
-        get_binary(get_string_view(value.financialInstrumentFullName(), value.financialInstrumentFullNameLength())),
+        get_string_view(value.financialInstrumentFullName(), value.financialInstrumentFullNameLength()),
         get_string_view(value.securityAltID(), value.securityAltIDLength()),
         value.securityAltIDSource(),
         get_string_view(value.priceQuoteMethod(), value.priceQuoteMethodLength()),
         get_string_view(value.partyRoleClearingOrg(), value.partyRoleClearingOrgLength()),
         value.userDefinedInstrument(),
-        get_binary(get_string_view(value.riskSet(), value.riskSetLength())),
-        get_binary(get_string_view(value.marketSet(), value.marketSetLength())),
+        get_string_view(value.riskSet(), value.riskSetLength()),
+        get_string_view(value.marketSet(), value.marketSetLength()),
         value.instrumentGUID());
     // XXX missing groups
   }
@@ -837,7 +837,7 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionRepo58> {
         value.highLimitPrice(),
         value.lowLimitPrice(),
         value.maxPriceVariation(),
-        get_binary(get_string_view(value.financialInstrumentFullName(), value.financialInstrumentFullNameLength())),
+        get_string_view(value.financialInstrumentFullName(), value.financialInstrumentFullNameLength()),
         get_string_view(value.partyRoleClearingOrg(), value.partyRoleClearingOrgLength()),
         value.startDate(),
         value.endDate(),
@@ -847,8 +847,8 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionRepo58> {
         value.maxNoOfSubstitutions(),
         get_string_view(value.priceQuoteMethod(), value.priceQuoteMethodLength()),
         value.userDefinedInstrument(),
-        get_binary(get_string_view(value.riskSet(), value.riskSetLength())),
-        get_binary(get_string_view(value.marketSet(), value.marketSetLength())),
+        get_string_view(value.riskSet(), value.riskSetLength()),
+        get_string_view(value.marketSet(), value.marketSetLength()),
         value.instrumentGUID(),
         get_string_view(value.termCode(), value.termCodeLength()));
     // XXX missing groups
@@ -949,7 +949,7 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFX63> {
         value.lowLimitPrice(),
         value.maxPriceVariation(),
         value.userDefinedInstrument(),
-        get_binary(get_string_view(value.financialInstrumentFullName(), value.financialInstrumentFullNameLength())),
+        get_string_view(value.financialInstrumentFullName(), value.financialInstrumentFullNameLength()),
         get_string_view(value.fXCurrencySymbol(), value.fXCurrencySymbolLength()),
         get_string_view(value.settlType(), value.settlTypeLength()),
         value.interveningDays(),

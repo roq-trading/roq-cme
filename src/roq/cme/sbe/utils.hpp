@@ -15,8 +15,6 @@
 
 #include "roq/api.hpp"
 
-#include "roq/debug/hex/message.hpp"
-
 #include "roq/core/sbe/iterator.hpp"
 
 #include "roq/logging.hpp"
@@ -89,10 +87,6 @@ inline std::string_view get_string_view(char const *buffer, size_t length) {
     if (!iter || (*iter) == '\0')
       return {buffer, static_cast<size_t>(iter - buffer)};
   return {buffer, length};
-}
-
-inline auto get_binary(std::string_view const &value) {
-  return debug::hex::Message{reinterpret_cast<std::byte const *>(std::data(value)), std::size(value)};
 }
 }  // namespace sbe
 }  // namespace cme
