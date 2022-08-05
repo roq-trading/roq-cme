@@ -725,8 +725,6 @@ TEST_CASE("md_md_incremental_refresh_book_46_test_2", "[sbe]") {
       ++counter;
       auto &value = event.value;
       auto tmp = fmt::format("{}"sv, const_cast<cme_mdp::MDIncrementalRefreshBook46 &>(value));
-      fmt::print("{}\n"sv, tmp);
-      fmt::print("{}\n"sv, value);
     }
     void operator()(Trace<cme_mdp::MDIncrementalRefreshOrderBook47> const &, sbe::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp::MDIncrementalRefreshTradeSummary48> const &, sbe::Frame const &) override { FAIL(); }
