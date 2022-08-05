@@ -9,6 +9,8 @@
 #include <cme_mdp/MDInstrumentDefinitionRepo58.h>
 #include <cme_mdp/MDInstrumentDefinitionSpread56.h>
 
+#include "roq/debug/hex/message.hpp"
+
 #include "roq/core/sbe/iterator.hpp"
 
 #include "roq/cme/sbe/utils.hpp"
@@ -598,10 +600,10 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionSpread56> {
         value.subFraction(),
         value.tradingReferenceDate(),
         value.getPriceQuoteMethodAsStringView(),
-        value.getRiskSetAsStringView(),
-        value.getMarketSetAsStringView(),
+        roq::debug::hex::Message{value.getRiskSetAsStringView()},
+        roq::debug::hex::Message{value.getMarketSetAsStringView()},
         value.instrumentGUID(),
-        value.getFinancialInstrumentFullNameAsStringView());
+        roq::debug::hex::Message{value.getFinancialInstrumentFullNameAsStringView()});
     // XXX missing groups
   }
 };
@@ -719,14 +721,14 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFixedIncome57> {
         value.getCouponDayCountAsStringView(),
         value.getCountryOfIssueAsStringView(),
         value.getIssuerAsStringView(),
-        value.getFinancialInstrumentFullNameAsStringView(),
+        roq::debug::hex::Message{value.getFinancialInstrumentFullNameAsStringView()},
         value.getSecurityAltIDAsStringView(),
         value.securityAltIDSource(),
         value.getPriceQuoteMethodAsStringView(),
         value.getPartyRoleClearingOrgAsStringView(),
         value.userDefinedInstrument(),
-        value.getRiskSetAsStringView(),
-        value.getMarketSetAsStringView(),
+        roq::debug::hex::Message{value.getRiskSetAsStringView()},
+        roq::debug::hex::Message{value.getMarketSetAsStringView()},
         value.instrumentGUID());
     // XXX missing groups
   }
@@ -822,7 +824,7 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionRepo58> {
         value.highLimitPrice(),
         value.lowLimitPrice(),
         value.maxPriceVariation(),
-        value.getFinancialInstrumentFullNameAsStringView(),
+        roq::debug::hex::Message{value.getFinancialInstrumentFullNameAsStringView()},
         value.getPartyRoleClearingOrgAsStringView(),
         value.startDate(),
         value.endDate(),
@@ -832,8 +834,8 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionRepo58> {
         value.maxNoOfSubstitutions(),
         value.getPriceQuoteMethodAsStringView(),
         value.userDefinedInstrument(),
-        value.getRiskSetAsStringView(),
-        value.getMarketSetAsStringView(),
+        roq::debug::hex::Message{value.getRiskSetAsStringView()},
+        roq::debug::hex::Message{value.getMarketSetAsStringView()},
         value.instrumentGUID(),
         value.getTermCodeAsStringView());
     // XXX missing groups
@@ -931,7 +933,7 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFX63> {
         value.lowLimitPrice(),
         value.maxPriceVariation(),
         value.userDefinedInstrument(),
-        value.getFinancialInstrumentFullNameAsStringView(),
+        roq::debug::hex::Message{value.getFinancialInstrumentFullNameAsStringView()},
         value.getFXCurrencySymbolAsStringView(),
         value.getSettlTypeAsStringView(),
         value.interveningDays(),
