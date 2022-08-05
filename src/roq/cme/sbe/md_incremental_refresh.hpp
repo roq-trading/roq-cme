@@ -104,7 +104,7 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshVolume37> {
         value.actingVersion(),
         value.transactTime(),
         value.matchEventIndicator(),
-        fmt::join(roq::core::sbe::iterator{value.noMDEntries()}, roq::core::sbe::sentinel{}, ", "sv));
+        roq::cme::sbe::Group{value.noMDEntries()});
   }
 };
 
@@ -159,7 +159,7 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshBook46::NoOrderIDEntries> {
         context.out(),
         R"({{)"
         R"(order_id={}, )"
-        R"(md_order_priority={}, )"
+        R"(md_order_priority={})"
         R"(}})"sv,
         value.orderID(),
         value.mDOrderPriority());
@@ -177,20 +177,23 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshBook46> {
   auto format(value_type &value, Context &context) const {
     using namespace std::literals;
     value.sbeRewind();  // note!
-    return fmt::format_to(
+    fmt::format_to(
         context.out(),
         R"({{)"
         R"(version={}, )"
         R"(transact_time={}, )"
         R"(match_event_indicator={}, )"
-        R"(no_md_entries=[{}], )"
-        R"(no_order_id_entries=[{}])"
-        R"(}})"sv,
+        R"(no_md_entries=[{})"sv,
         value.actingVersion(),
         value.transactTime(),
         value.matchEventIndicator(),
-        fmt::join(roq::core::sbe::iterator{value.noMDEntries()}, roq::core::sbe::sentinel{}, ", "sv),
-        fmt::join(roq::core::sbe::iterator{value.noOrderIDEntries()}, roq::core::sbe::sentinel{}, ", "sv));
+        roq::cme::sbe::Group{value.noMDEntries()});
+    return fmt::format_to(
+        context.out(),
+        "], "
+        "no_order_id_entries=[{}]"
+        "}}"sv,
+        roq::cme::sbe::Group{value.noOrderIDEntries()});
   }
 };
 
@@ -249,7 +252,7 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshOrderBook47> {
         value.actingVersion(),
         value.transactTime(),
         value.matchEventIndicator(),
-        fmt::join(roq::core::sbe::iterator{value.noMDEntries()}, roq::core::sbe::sentinel{}, ", "sv));
+        roq::cme::sbe::Group{value.noMDEntries()});
   }
 };
 
@@ -276,7 +279,7 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshTradeSummary48::NoMDEntries> 
         R"(aggressor_side={}, )"
         R"(md_update_action={}, )"
         R"(md_entry_type={}, )"
-        R"(md_trade_entry_id={}, )"
+        R"(md_trade_entry_id={})"
         R"(}})"sv,
         const_cast<value_type &>(value).mDEntryPx(),
         value.mDEntrySize(),
@@ -322,20 +325,23 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshTradeSummary48> {
   auto format(value_type &value, Context &context) const {
     using namespace std::literals;
     value.sbeRewind();  // note!
-    return fmt::format_to(
+    fmt::format_to(
         context.out(),
         R"({{)"
         R"(version={}, )"
         R"(transact_time={}, )"
         R"(match_event_indicator={}, )"
-        R"(no_md_entries=[{}], )"
-        R"(no_order_id_entries=[{}])"
-        R"(}})"sv,
+        R"(no_md_entries=[{})"sv,
         value.actingVersion(),
         value.transactTime(),
         value.matchEventIndicator(),
-        fmt::join(roq::core::sbe::iterator{value.noMDEntries()}, roq::core::sbe::sentinel{}, ", "sv),
-        fmt::join(roq::core::sbe::iterator{value.noOrderIDEntries()}, roq::core::sbe::sentinel{}, ", "sv));
+        roq::cme::sbe::Group{value.noMDEntries()});
+    return fmt::format_to(
+        context.out(),
+        R"(], )"
+        R"(no_order_id_entries=[{}])"
+        R"(}})"sv,
+        roq::cme::sbe::Group{value.noOrderIDEntries()});
   }
 };
 
@@ -396,7 +402,7 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshDailyStatistics49> {
         value.actingVersion(),
         value.transactTime(),
         value.matchEventIndicator(),
-        fmt::join(roq::core::sbe::iterator{value.noMDEntries()}, roq::core::sbe::sentinel{}, ", "sv));
+        roq::cme::sbe::Group{value.noMDEntries()});
   }
 };
 
@@ -455,7 +461,7 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshLimitsBanding50> {
         value.actingVersion(),
         value.transactTime(),
         value.matchEventIndicator(),
-        fmt::join(roq::core::sbe::iterator{value.noMDEntries()}, roq::core::sbe::sentinel{}, ", "sv));
+        roq::cme::sbe::Group{value.noMDEntries()});
   }
 };
 
@@ -514,7 +520,7 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshSessionStatistics51> {
         value.actingVersion(),
         value.transactTime(),
         value.matchEventIndicator(),
-        fmt::join(roq::core::sbe::iterator{value.noMDEntries()}, roq::core::sbe::sentinel{}, ", "sv));
+        roq::cme::sbe::Group{value.noMDEntries()});
   }
 };
 
@@ -591,20 +597,23 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshBookLongQty64> {
   auto format(value_type &value, Context &context) const {
     using namespace std::literals;
     value.sbeRewind();  // note!
-    return fmt::format_to(
+    fmt::format_to(
         context.out(),
         R"({{)"
         R"(version={}, )"
         R"(transact_time={}, )"
         R"(match_event_indicator={}, )"
-        R"(no_md_entries=[{}], )"
-        R"(no_order_id_entries=[{}])"
-        R"(}})"sv,
+        R"(no_md_entries=[{})"sv,
         value.actingVersion(),
         value.transactTime(),
         value.matchEventIndicator(),
-        fmt::join(roq::core::sbe::iterator{value.noMDEntries()}, roq::core::sbe::sentinel{}, ", "sv),
-        fmt::join(roq::core::sbe::iterator{value.noOrderIDEntries()}, roq::core::sbe::sentinel{}, ", "sv));
+        roq::cme::sbe::Group{value.noMDEntries()});
+    return fmt::format_to(
+        context.out(),
+        R"(], )"
+        R"(no_order_id_entries=[{}])"
+        R"(}})"sv,
+        roq::cme::sbe::Group{value.noOrderIDEntries()});
   }
 };
 
@@ -677,20 +686,23 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65> {
   auto format(value_type &value, Context &context) const {
     using namespace std::literals;
     value.sbeRewind();  // note!
-    return fmt::format_to(
+    fmt::format_to(
         context.out(),
         R"({{)"
         R"(version={}, )"
         R"(transact_time={}, )"
         R"(match_event_indicator={}, )"
-        R"(no_md_entries=[{}], )"
-        R"(no_order_id_entries=[{}])"
-        R"(}})"sv,
+        R"(no_md_entries=[{})"sv,
         value.actingVersion(),
         value.transactTime(),
         value.matchEventIndicator(),
-        fmt::join(roq::core::sbe::iterator{value.noMDEntries()}, roq::core::sbe::sentinel{}, ", "sv),
-        fmt::join(roq::core::sbe::iterator{value.noOrderIDEntries()}, roq::core::sbe::sentinel{}, ", "sv));
+        roq::cme::sbe::Group{value.noMDEntries()});
+    return fmt::format_to(
+        context.out(),
+        R"(], )"
+        R"(no_order_id_entries=[{}])"
+        R"(}})"sv,
+        roq::cme::sbe::Group{value.noOrderIDEntries()});
   }
 };
 
@@ -745,7 +757,7 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshVolumeLongQty66> {
         value.actingVersion(),
         value.transactTime(),
         value.matchEventIndicator(),
-        fmt::join(roq::core::sbe::iterator{value.noMDEntries()}, roq::core::sbe::sentinel{}, ", "sv));
+        roq::cme::sbe::Group{value.noMDEntries()});
   }
 };
 
@@ -804,6 +816,6 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67> {
         value.actingVersion(),
         value.transactTime(),
         value.matchEventIndicator(),
-        fmt::join(roq::core::sbe::iterator{value.noMDEntries()}, roq::core::sbe::sentinel{}, ", "sv));
+        roq::cme::sbe::Group{value.noMDEntries()});
   }
 };

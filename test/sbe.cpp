@@ -577,3 +577,182 @@ TEST_CASE("md_instrument_definition_spread_56", "[sbe]") {
   CHECK(result == true);
   CHECK(handler.counter == 4);
 }
+
+TEST_CASE("md_md_incremental_refresh_book_46_test_1", "[sbe]") {
+  auto message =
+      "\xe0\x15\xcc\x17"
+      "\x00\x64\xec\x6e\x82\x65\x08\x17"
+      "\x58\x00"                          // message size (88)
+      "\x0b\x00"                          // block length (11)
+      "\x2e\x00"                          // template id (46 = MDIncrementalRefreshBook46)
+      "\x01\x00"                          // schema id (1)
+      "\x09\x00"                          // version (9)
+      "\x0f\xf0\xea\x6e\x82\x65\x08\x17"  // transact time
+      "\x04"                              // match event indicator
+      "\x00\x00"                          // padding (block length)
+      "\x20\x00"                          // block length (32)
+      "\x01"                              // group size (1)
+      "\x00\x25\x74\xaa\xf8\xff\xff\xff"  // md entry px
+      "\x34\x03\x00\x00"                  // md entry size
+      "\xde\x57\x00\x00"                  // security id
+      "\xc2\xb5\x4d\x00"                  // rpt seq
+      "\x11\x00\x00\x00"                  // number of orders
+      "\x01"                              // md price level
+      "\x01"                              // md update action
+      "\x30"                              // md entry type book
+      "\x00\x00\x00\x00"                  // tradeable size
+      "\x00"                              // padding (block length)
+      "\x18\x00"                          // block length (24)
+      "\x00\x00\x00\x00\x00"              // padding
+      "\x01"                              // group size (1)
+      "\x24\xae\xc8\xc5\x77\x07\x00\x00"  // order id
+      "\xa9\x88\x92\xf6\x0b\x00\x00\x00"  // md order priority
+      "\x6e\x00\x00\x00"                  // md display qty
+      "\x01"                              // reference id
+      "\x00"                              // order update action
+      "\x00\x00"                          // padding (block length)
+      "\x60\x00"                          // message size (96)
+      "\x0b\x00"                          // block length (11)
+      "\x2e\x00"                          // template id (46 = MDIncrementalRefreshBook46)
+      "\x01\x00"                          // schema id (1)
+      "\x09\x00"                          // version (9)
+      "\x0f\xf0\xea\x6e\x82\x65\x08\x17\x90\x00\x00\x20\x00\x02\x00\xe1\x14\x10\xfa\xff\xff\xff\xf2\x00\x00\x00\x5f\x54"
+      "\x00\x00\x6b\xd9\x22\x00\xff\xff\xff\x7f\x02\x01\x46\x00\x00\x00\x00\x00\x00\xd3\x1a\x3a\xfb\xff\xff\xff\x35\x03"
+      "\x00\x00\x34\x71\x00\x00\x41\xda\x2d\x00\xff\xff\xff\x7f\x01\x01\x45\x00\x00\x00\x00\x00\x18\x00\x00\x00\x00\x00"
+      "\x00\x00"sv;
+  CHECK(std::size(message) == 196);
+  struct MyHandler final : public sbe::Parser::Handler {
+    int counter = 0;
+    // - MDInstrumentDefinition
+    void operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDInstrumentDefinitionOption55> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDInstrumentDefinitionSpread56> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDInstrumentDefinitionFixedIncome57> const &, sbe::Frame const &) override {
+      FAIL();
+    }
+    void operator()(Trace<cme_mdp::MDInstrumentDefinitionRepo58> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDInstrumentDefinitionFX63> const &, sbe::Frame const &) override { FAIL(); }
+    // - SnapshotFullRefresh
+    void operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::SnapshotFullRefreshOrderBook53> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::SnapshotFullRefreshLongQty69> const &, sbe::Frame const &) override { FAIL(); }
+    // - MDIncrementalRefresh
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshVolume37> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &event, sbe::Frame const &) override {
+      ++counter;
+      auto &value = event.value;
+      auto tmp = fmt::format("{}"sv, value);
+      fmt::print("{}\n"sv, tmp);
+    }
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshOrderBook47> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshTradeSummary48> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshDailyStatistics49> const &, sbe::Frame const &) override {
+      FAIL();
+    }
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshLimitsBanding50> const &, sbe::Frame const &) override {
+      FAIL();
+    }
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshSessionStatistics51> const &, sbe::Frame const &) override {
+      FAIL();
+    }
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshBookLongQty64> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65> const &, sbe::Frame const &) override {
+      FAIL();
+    }
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshVolumeLongQty66> const &, sbe::Frame const &) override {
+      FAIL();
+    }
+    void operator()(
+        Trace<cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67> const &, sbe::Frame const &) override {
+      FAIL();
+    }
+  } handler;
+  std::span buffer{reinterpret_cast<std::byte const *>(std::data(message)), std::size(message)};
+  auto result = sbe::Parser::dispatch(handler, buffer, {});
+  CHECK(result == true);
+  CHECK(handler.counter == 2);
+}
+
+TEST_CASE("md_md_incremental_refresh_book_46_test_2", "[sbe]") {
+  /*
+  auto message =
+      "\xe0\x15\xcc\x17"
+      "\x00\x64\xec\x6e\x82\x65\x08\x17"
+      "\x58\x00"                          // message size (88)
+      "\x0b\x00"                          // block length (11)
+      "\x2e\x00"                          // template id (46 = MDIncrementalRefreshBook46)
+      "\x01\x00"                          // schema id (1)
+      "\x09\x00"                          // version (9)
+      "\x0f\xf0\xea\x6e\x82\x65\x08\x17"  // transact time
+      "\x04"                              // match event indicator
+      "\x00\x00"                          // padding (block length)
+      "\x20\x00"                          // block length (32)
+      "\x01"                              // group size (1)
+      "\x00\x25\x74\xaa\xf8\xff\xff\xff"  // md entry px
+      "\x34\x03\x00\x00"                  // md entry size
+      "\xde\x57\x00\x00"                  // security id
+      "\xc2\xb5\x4d\x00"                  // rpt seq
+      "\x11\x00\x00\x00"                  // number of orders
+                                          // */
+  auto message =
+      "\xaa\xdd\x0b\x18"
+      "\xf5\xa3\x09\x8f\x63\x69\x08\x17"
+      "\x58\x00"
+      "\x0b\x00"
+      "\x2e\x00"
+      "\x01\x00"
+      "\x09\x00"
+      "\xd1\x15\x08\x8f\x63\x69\x08\x17\x04\x00\x00\x20\x00\x01\x00\xf9\xfe\x8e\xd9\x08\x00\x00\x2c\x02\x00\x00\xbc\x53\x00\x00\x30\xee\xb3\x03\x12\x00\x00\x00\x01\x01\x31\x00\x00\x00\x00\x00\x18\x00\x00\x00\x00\x00\x00\x01\x3a\xaa\xcc\xc5\x77\x07\x00\x00\x95\xf0\xcd\xf6\x0b\x00\x00\x00\xc4\x00\x00\x00\x01\x01\x00\x00\xe0\x02\x0b\x00\x2e\x00\x01\x00\x09\x00\xd1\x15\x08\x8f\x63\x69\x08\x17\x90\x00\x00\x20\x00\x16\x00\x09\x7c\xf8\xd3\x08\x00\x00\xaa\x10\x00\x00\xab\x01\x00\x00\x5f\x6c\xdd\x02\xff\xff\xff\x7f\x02\x01\x46\x00\x00\x00\x00\x00\x00\x31\xeb\xec\xfb\xff\xff\xff\x2c\x02\x00\x00\x21\x02\x00\x00\x99\xf5\x7a\x00\xff\xff\xff\x7f\x01\x01\x46\x00\x00\x00\x00\x00\x00\x15\xf3\x3a\xd7\x08\x00\x00\xd8\x03\x00\x00\xb8\x15\x00\x00\xda\x3c\xef\x02\xff\xff\xff\x7f\x01\x01\x46\x00\x00\x00\x00\x00\x00\x31\xeb\xec\xfb\xff\xff\xff\x2a\x01\x00\x00\xf0\x1b\x00\x00\x62\x7d\x8d\x00\xff\xff\xff\x7f\x02\x01\x46\x00\x00\x00\x00\x00\x00\x35\xed\x0d\xcc\x08\x00\x00\x0a\x09\x00\x00\xc6\x44\x00\x00\xdc\xa7\x8f\x01\xff\xff\xff\x7f\x01\x01\x46\x00\x00\x00\x00\x00\x00\x9a\xba\x2b\xcc\x08\x00\x00\x77\x08\x00\x00\xc6\x44\x00\x00\xdd\xa7\x8f\x01\xff\xff\xff\x7f\x02\x01\x46\x00\x00\x00\x00\x00\x00\x4e\xee\x7b\xe8\xff\xff\xff\x2c\x02\x00\x00\x7e\x4a\x00\x00\xf2\xb3\x97\x00\xff\xff\xff\x7f\x01\x01\x45\x00\x00\x00\x00\x00\x00\xe9\x20\x5e\xe8\xff\xff\xff\x1b\x00\x00\x00\x7e\x4a\x00\x00\xf3\xb3\x97\x00\xff\xff\xff\x7f\x02\x01\x45\x00\x00\x00\x00\x00\x00\xdc\x9a\x38\xf6\xff\xff\xff\xba\x00\x00\x00\xd0\x50\x00\x00\x91\x55\x51\x00\xff\xff\xff\x7f\x02\x01\x45\x00\x00\x00\x00\x00\x00\x0d\x86\x25\xf2\xff\xff\xff\xc0\x02\x00\x00\x8c\x54\x00\x00\x7d\x22\x5b\x00\xff\xff\xff\x7f\x02\x01\x45\x00\x00\x00\x00\x00\x00\x6a\xe2\x27\xe6\xff\xff\xff\x2c\x02\x00\x00\xcc\x76\x00\x00\x14\x73\x89\x00\xff\xff\xff\x7f\x01\x01\x45\x00\x00\x00\x00\x00\x00\x3d\x62\x2f\xff\xff\xff\xff\xee\x01\x00\x00\x9a\x81\x00\x00\x98\xb6\x41\x00\xff\xff\xff\x7f\x01\x01\x46\x00\x00\x00\x00\x00\x00\xa2\x2f\x4d\xff\xff\xff\xff\x3e\x00\x00\x00\x9a\x81\x00\x00\x99\xb6\x41\x00\xff\xff\xff\x7f\x02\x01\x46\x00\x00\x00\x00\x00\x00\x58\xe2\x2a\xf0\xff\xff\xff\x84\x01\x00\x00\x07\x84\x00\x00\x79\x50\xbf\x00\xff\xff\xff\x7f\x02\x01\x45\x00\x00\x00\x00\x00\x00\x05\x76\xd1\xdc\x08\x00\x00\xf0\x0c\x00\x00\x4d\xdc\x00\x00\x5a\xaa\x89\x04\xff\xff\xff\x7f\x02\x01\x46\x00\x00\x00\x00\x00\x00\xc8\x13\xa2\xdd\x08\x00\x00\x12\x0b\x00\x00\x9f\x14\x01\x00\xa9\x56\xb3\x04\xff\xff\xff\x7f\x01\x01\x46\x00\x00\x00\x00\x00\x00\xf7\x7b\xfb\xdd\x08\x00\x00\x7f\x0b\x00\x00\x76\xb3\x01\x00\xdd\x84\x9a\x04\xff\xff\xff\x7f\x02\x01\x46\x00\x00\x00\x00\x00\x00\x60\x53\x46\xfc\xff\xff\xff\x88\x00\x00\x00\x21\xc6\x01\x00\x00\x80\x85\x00\xff\xff\xff\x7f\x02\x01\x46\x00\x00\x00\x00\x00\x00\xe4\x07\x4e\xdb\x08\x00\x00\x98\x0c\x00\x00\x26\xb5\x02\x00\xa5\xfc\x12\x04\xff\xff\xff\x7f\x02\x01\x46\x00\x00\x00\x00\x00\x00\x04\x02\x21\xd0\x08\x00\x00\xa9\x0b\x00\x00\x49\xf2\x02\x00\xdb\x98\x29\x02\xff\xff\xff\x7f\x02\x01\x46\x00\x00\x00\x00\x00\x00\x7d\xb7\x9c\xdf\x08\x00\x00\x3e\x08\x00\x00\x2d\xe1\x03\x00\x63\xfb\x62\x03\xff\xff\xff\x7f\x01\x01\x46\x00\x00\x00\x00\x00\x00\xe2\x84\xba\xdf\x08\x00\x00\xc8\x09\x00\x00\x2d\xe1\x03\x00\x64\xfb\x62\x03\xff\xff\xff\x7f\x02\x01\x46\x00\x00\x00\x00\x00\x18\x00\x00\x00\x00\x00\x00\x00"sv;
+  CHECK(std::size(message) == 836);
+  struct MyHandler final : public sbe::Parser::Handler {
+    int counter = 0;
+    // - MDInstrumentDefinition
+    void operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDInstrumentDefinitionOption55> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDInstrumentDefinitionSpread56> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDInstrumentDefinitionFixedIncome57> const &, sbe::Frame const &) override {
+      FAIL();
+    }
+    void operator()(Trace<cme_mdp::MDInstrumentDefinitionRepo58> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDInstrumentDefinitionFX63> const &, sbe::Frame const &) override { FAIL(); }
+    // - SnapshotFullRefresh
+    void operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::SnapshotFullRefreshOrderBook53> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::SnapshotFullRefreshLongQty69> const &, sbe::Frame const &) override { FAIL(); }
+    // - MDIncrementalRefresh
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshVolume37> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &event, sbe::Frame const &) override {
+      ++counter;
+      auto &value = event.value;
+      auto tmp = fmt::format("{}"sv, const_cast<cme_mdp::MDIncrementalRefreshBook46 &>(value));
+      fmt::print("{}\n"sv, tmp);
+      fmt::print("{}\n"sv, value);
+    }
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshOrderBook47> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshTradeSummary48> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshDailyStatistics49> const &, sbe::Frame const &) override {
+      FAIL();
+    }
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshLimitsBanding50> const &, sbe::Frame const &) override {
+      FAIL();
+    }
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshSessionStatistics51> const &, sbe::Frame const &) override {
+      FAIL();
+    }
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshBookLongQty64> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65> const &, sbe::Frame const &) override {
+      FAIL();
+    }
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshVolumeLongQty66> const &, sbe::Frame const &) override {
+      FAIL();
+    }
+    void operator()(
+        Trace<cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67> const &, sbe::Frame const &) override {
+      FAIL();
+    }
+  } handler;
+  std::span buffer{reinterpret_cast<std::byte const *>(std::data(message)), std::size(message)};
+  auto result = sbe::Parser::dispatch(handler, buffer, {});
+  CHECK(result == true);
+  CHECK(handler.counter == 2);
+}

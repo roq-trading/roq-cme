@@ -88,6 +88,21 @@ inline std::string_view get_string_view(char const *buffer, size_t length) {
       return {buffer, static_cast<size_t>(iter - buffer)};
   return {buffer, length};
 }
+
+template <typename T>
+struct Group final {
+  explicit Group(T &value) : value_(value) {}
+  auto format_to(auto &context) {
+    using namespace std::literals;
+    if (value_.count())
+      fmt::format_to(
+          context.out(), "{}"sv, fmt::join(roq::core::sbe::iterator{value_}, roq::core::sbe::sentinel{}, ", "sv));
+    return context.out();
+  }
+
+ private:
+  T &value_;
+};
 }  // namespace sbe
 }  // namespace cme
 }  // namespace roq
@@ -568,5 +583,20 @@ struct fmt::formatter<cme_mdp::MaturityMonthYear> {
         value.month(),
         value.day(),
         value.week());
+  }
+};
+
+// group
+
+template <typename T>
+struct fmt::formatter<roq::cme::sbe::Group<T>> {
+  using value_type = roq::cme::sbe::Group<T>;
+  template <typename Context>
+  constexpr auto parse(Context &context) {
+    return std::begin(context);
+  }
+  template <typename Context>
+  auto format(value_type &value, Context &context) const {
+    return value.format_to(context);
   }
 };

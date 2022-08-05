@@ -103,7 +103,7 @@ struct fmt::formatter<cme_mdp::SnapshotFullRefresh52> {
         value.highLimitPrice(),
         value.lowLimitPrice(),
         value.maxPriceVariation(),
-        fmt::join(roq::core::sbe::iterator{value.noMDEntries()}, roq::core::sbe::sentinel{}, ", "sv));
+        roq::cme::sbe::Group{value.noMDEntries()});
   }
 };
 
@@ -166,7 +166,7 @@ struct fmt::formatter<cme_mdp::SnapshotFullRefreshOrderBook53> {
         value.noChunks(),
         value.currentChunk(),
         value.transactTime(),
-        fmt::join(roq::core::sbe::iterator{value.noMDEntries()}, roq::core::sbe::sentinel{}, ", "sv));
+        roq::cme::sbe::Group{value.noMDEntries()});
   }
 };
 
@@ -241,7 +241,7 @@ struct fmt::formatter<cme_mdp::SnapshotFullRefreshLongQty69> {
         value.highLimitPrice(),
         value.lowLimitPrice(),
         value.maxPriceVariation(),
-        fmt::join(roq::core::sbe::iterator{value.noMDEntries()}, roq::core::sbe::sentinel{}, ", "sv));
+        roq::cme::sbe::Group{value.noMDEntries()});
   }
 };
 
