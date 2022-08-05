@@ -9,8 +9,6 @@
 #include <cme_mdp/MDInstrumentDefinitionRepo58.h>
 #include <cme_mdp/MDInstrumentDefinitionSpread56.h>
 
-#include "roq/debug/hex/message.hpp"
-
 #include "roq/core/sbe/iterator.hpp"
 
 #include "roq/cme/sbe/utils.hpp"
@@ -290,10 +288,12 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFuture54> {
   template <typename Context>
   auto format(value_type &value, Context &context) const {
     using namespace std::literals;
+    using namespace roq::cme::sbe;
     value.sbeRewind();  // note!
     return fmt::format_to(
         context.out(),
         R"({{)"
+        R"(version={}, )"
         R"(match_event_indicator={}, )"
         R"(tot_num_reports={}, )"
         R"(security_update_action={}, )"
@@ -342,6 +342,7 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFuture54> {
         R"(instrument_guid={}, )"
         R"(...)"
         R"(}})"sv,
+        value.actingVersion(),
         value.matchEventIndicator(),
         value.totNumReports(),
         value.securityUpdateAction(),
@@ -350,17 +351,17 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFuture54> {
         value.applID(),
         value.marketSegmentID(),
         value.underlyingProduct(),
-        value.getSecurityExchangeAsStringView(),
-        value.getSecurityGroupAsStringView(),
-        value.getAssetAsStringView(),
-        value.getSymbolAsStringView(),
+        get_string_view(value.securityExchange(), value.securityExchangeLength()),
+        get_string_view(value.securityGroup(), value.securityGroupLength()),
+        get_string_view(value.asset(), value.assetLength()),
+        get_string_view(value.symbol(), value.symbolLength()),
         value.securityID(),
         value.securityIDSource(),
-        value.getSecurityTypeAsStringView(),
-        value.getCFICodeAsStringView(),
+        get_string_view(value.securityType(), value.securityTypeLength()),
+        get_string_view(value.cFICode(), value.cFICodeLength()),
         value.maturityMonthYear(),
-        value.getCurrencyAsStringView(),
-        value.getSettlCurrencyAsStringView(),
+        get_string_view(value.currency(), value.currencyLength()),
+        get_string_view(value.settlCurrency(), value.settlCurrencyLength()),
         value.matchAlgorithm(),
         value.minTradeVol(),
         value.maxTradeVol(),
@@ -369,7 +370,7 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFuture54> {
         value.mainFraction(),
         value.subFraction(),
         value.priceDisplayFormat(),
-        value.getUnitOfMeasureAsStringView(),
+        get_string_view(value.unitOfMeasure(), value.unitOfMeasureLength()),
         value.unitOfMeasureQty(),
         value.tradingReferencePrice(),
         value.settlPriceType(),
@@ -402,10 +403,12 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionOption55> {
   template <typename Context>
   auto format(value_type &value, Context &context) const {
     using namespace std::literals;
+    using namespace roq::cme::sbe;
     value.sbeRewind();  // note!
     return fmt::format_to(
         context.out(),
         R"({{)"
+        R"(version={}, )"
         R"(match_event_indicator={}, )"
         R"(tot_num_reports={}, )"
         R"(security_update_action={}, )"
@@ -452,6 +455,7 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionOption55> {
         R"(instrument_guid={}, )"
         R"(...)"
         R"(}})"sv,
+        value.actingVersion(),
         value.matchEventIndicator(),
         value.totNumReports(),
         value.securityUpdateAction(),
@@ -460,20 +464,20 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionOption55> {
         value.applID(),
         value.marketSegmentID(),
         value.underlyingProduct(),
-        value.getSecurityExchangeAsStringView(),
-        value.getSecurityGroupAsStringView(),
-        value.getAssetAsStringView(),
-        value.getSymbolAsStringView(),
+        get_string_view(value.securityExchange(), value.securityExchangeLength()),
+        get_string_view(value.securityGroup(), value.securityGroupLength()),
+        get_string_view(value.asset(), value.assetLength()),
+        get_string_view(value.symbol(), value.symbolLength()),
         value.securityID(),
         value.securityIDSource(),
-        value.getSecurityTypeAsStringView(),
-        value.getCFICodeAsStringView(),
+        get_string_view(value.securityType(), value.securityTypeLength()),
+        get_string_view(value.cFICode(), value.cFICodeLength()),
         value.putOrCall(),
         value.maturityMonthYear(),
-        value.getCurrencyAsStringView(),
+        get_string_view(value.currency(), value.currencyLength()),
         value.strikePrice(),
-        value.getStrikeCurrencyAsStringView(),
-        value.getSettlCurrencyAsStringView(),
+        get_string_view(value.strikeCurrency(), value.strikeCurrencyLength()),
+        get_string_view(value.settlCurrency(), value.settlCurrencyLength()),
         value.minCabPrice(),
         value.matchAlgorithm(),
         value.minTradeVol(),
@@ -485,7 +489,7 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionOption55> {
         value.mainFraction(),
         value.subFraction(),
         value.priceDisplayFormat(),
-        value.getUnitOfMeasureAsStringView(),
+        get_string_view(value.unitOfMeasure(), value.unitOfMeasureLength()),
         value.unitOfMeasureQty(),
         value.tradingReferencePrice(),
         value.settlPriceType(),
@@ -510,10 +514,12 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionSpread56> {
   template <typename Context>
   auto format(value_type &value, Context &context) const {
     using namespace std::literals;
+    using namespace roq::cme::sbe;
     value.sbeRewind();  // note!
     return fmt::format_to(
         context.out(),
         R"({{)"
+        R"(version={}, )"
         R"(match_event_indicator={}, )"
         R"(tot_num_reports={}, )"
         R"(security_update_action={}, )"
@@ -560,6 +566,7 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionSpread56> {
         R"(financial_instrument_full_name="{}", )"
         R"(...)"
         R"(}})"sv,
+        value.actingVersion(),
         value.matchEventIndicator(),
         value.totNumReports(),
         value.securityUpdateAction(),
@@ -568,17 +575,17 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionSpread56> {
         value.applID(),
         value.marketSegmentID(),
         value.underlyingProduct(),
-        value.getSecurityExchangeAsStringView(),
-        value.getSecurityGroupAsStringView(),
-        value.getAssetAsStringView(),
-        value.getSymbolAsStringView(),
+        get_string_view(value.securityExchange(), value.securityExchangeLength()),
+        get_string_view(value.securityGroup(), value.securityGroupLength()),
+        get_string_view(value.asset(), value.assetLength()),
+        get_string_view(value.symbol(), value.symbolLength()),
         value.securityID(),
         value.securityIDSource(),
-        value.getSecurityTypeAsStringView(),
-        value.getCFICodeAsStringView(),
+        get_string_view(value.securityType(), value.securityTypeLength()),
+        get_string_view(value.cFICode(), value.cFICodeLength()),
         value.maturityMonthYear(),
-        value.getCurrencyAsStringView(),
-        value.getSecuritySubTypeAsStringView(),
+        get_string_view(value.currency(), value.currencyLength()),
+        get_string_view(value.securitySubType(), value.securitySubTypeLength()),
         value.userDefinedInstrument(),
         value.matchAlgorithm(),
         value.minTradeVol(),
@@ -588,7 +595,7 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionSpread56> {
         value.priceDisplayFormat(),
         value.priceRatio(),
         value.tickRule(),
-        value.getUnitOfMeasureAsStringView(),
+        get_string_view(value.unitOfMeasure(), value.unitOfMeasureLength()),
         value.tradingReferencePrice(),
         value.settlPriceType(),
         value.openInterestQty(),
@@ -599,11 +606,11 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionSpread56> {
         value.mainFraction(),
         value.subFraction(),
         value.tradingReferenceDate(),
-        value.getPriceQuoteMethodAsStringView(),
-        roq::debug::hex::Message{value.getRiskSetAsStringView()},
-        roq::debug::hex::Message{value.getMarketSetAsStringView()},
+        get_string_view(value.priceQuoteMethod(), value.priceQuoteMethodLength()),
+        get_string_view(value.riskSet(), value.riskSetLength()),
+        get_string_view(value.marketSet(), value.marketSetLength()),
         value.instrumentGUID(),
-        roq::debug::hex::Message{value.getFinancialInstrumentFullNameAsStringView()});
+        value.getFinancialInstrumentFullNameAsStringView());
     // XXX missing groups
   }
 };
@@ -618,10 +625,12 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFixedIncome57> {
   template <typename Context>
   auto format(value_type &value, Context &context) const {
     using namespace std::literals;
+    using namespace roq::cme::sbe;
     value.sbeRewind();  // note!
     return fmt::format_to(
         context.out(),
         R"({{)"
+        R"(version={}, )"
         R"(match_event_indicator={}, )"
         R"(tot_num_reports={}, )"
         R"(security_update_action={}, )"
@@ -677,6 +686,7 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFixedIncome57> {
         R"(instrument_guid={}, )"
         R"(...)"
         R"(}})"sv,
+        value.actingVersion(),
         value.matchEventIndicator(),
         value.totNumReports(),
         value.securityUpdateAction(),
@@ -685,16 +695,16 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFixedIncome57> {
         value.applID(),
         value.marketSegmentID(),
         value.underlyingProduct(),
-        value.getSecurityExchangeAsStringView(),
-        value.getSecurityGroupAsStringView(),
-        value.getAssetAsStringView(),
-        value.getSymbolAsStringView(),
+        get_string_view(value.securityExchange(), value.securityExchangeLength()),
+        get_string_view(value.securityGroup(), value.securityGroupLength()),
+        get_string_view(value.asset(), value.assetLength()),
+        get_string_view(value.symbol(), value.symbolLength()),
         value.securityID(),
         value.securityIDSource(),
-        value.getSecurityTypeAsStringView(),
-        value.getCFICodeAsStringView(),
-        value.getCurrencyAsStringView(),
-        value.getSettlCurrencyAsStringView(),
+        get_string_view(value.securityType(), value.securityTypeLength()),
+        get_string_view(value.cFICode(), value.cFICodeLength()),
+        get_string_view(value.currency(), value.currencyLength()),
+        get_string_view(value.settlCurrency(), value.settlCurrencyLength()),
         value.matchAlgorithm(),
         value.minTradeVol(),
         value.maxTradeVol(),
@@ -703,7 +713,7 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFixedIncome57> {
         value.mainFraction(),
         value.subFraction(),
         value.priceDisplayFormat(),
-        value.getUnitOfMeasureAsStringView(),
+        get_string_view(value.unitOfMeasure(), value.unitOfMeasureLength()),
         value.unitOfMeasureQty(),
         value.tradingReferencePrice(),
         value.tradingReferenceDate(),
@@ -716,19 +726,19 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFixedIncome57> {
         value.maturityDate(),
         value.couponRate(),
         value.parValue(),
-        value.getCouponFrequencyUnitAsStringView(),
+        get_string_view(value.couponFrequencyUnit(), value.couponFrequencyUnitLength()),
         value.couponFrequencyPeriod(),
-        value.getCouponDayCountAsStringView(),
-        value.getCountryOfIssueAsStringView(),
-        value.getIssuerAsStringView(),
-        roq::debug::hex::Message{value.getFinancialInstrumentFullNameAsStringView()},
-        value.getSecurityAltIDAsStringView(),
+        get_string_view(value.couponDayCount(), value.couponDayCountLength()),
+        get_string_view(value.countryOfIssue(), value.countryOfIssueLength()),
+        get_string_view(value.issuer(), value.issuerLength()),
+        get_string_view(value.financialInstrumentFullName(), value.financialInstrumentFullNameLength()),
+        get_string_view(value.securityAltID(), value.securityAltIDLength()),
         value.securityAltIDSource(),
-        value.getPriceQuoteMethodAsStringView(),
-        value.getPartyRoleClearingOrgAsStringView(),
+        get_string_view(value.priceQuoteMethod(), value.priceQuoteMethodLength()),
+        get_string_view(value.partyRoleClearingOrg(), value.partyRoleClearingOrgLength()),
         value.userDefinedInstrument(),
-        roq::debug::hex::Message{value.getRiskSetAsStringView()},
-        roq::debug::hex::Message{value.getMarketSetAsStringView()},
+        get_string_view(value.riskSet(), value.riskSetLength()),
+        get_string_view(value.marketSet(), value.marketSetLength()),
         value.instrumentGUID());
     // XXX missing groups
   }
@@ -744,10 +754,12 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionRepo58> {
   template <typename Context>
   auto format(value_type &value, Context &context) const {
     using namespace std::literals;
+    using namespace roq::cme::sbe;
     value.sbeRewind();  // note!
     return fmt::format_to(
         context.out(),
         R"({{)"
+        R"(version={}, )"
         R"(match_event_indicator={}, )"
         R"(tot_num_reports={}, )"
         R"(security_update_action={}, )"
@@ -794,6 +806,7 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionRepo58> {
         R"(term_code="{}", )"
         R"(...)"
         R"(}})"sv,
+        value.actingVersion(),
         value.matchEventIndicator(),
         value.totNumReports(),
         value.securityUpdateAction(),
@@ -802,40 +815,40 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionRepo58> {
         value.applID(),
         value.marketSegmentID(),
         value.underlyingProduct(),
-        value.getSecurityExchangeAsStringView(),
-        value.getSecurityGroupAsStringView(),
-        value.getAssetAsStringView(),
-        value.getSymbolAsStringView(),
+        get_string_view(value.securityExchange(), value.securityExchangeLength()),
+        get_string_view(value.securityGroup(), value.securityGroupLength()),
+        get_string_view(value.asset(), value.assetLength()),
+        get_string_view(value.symbol(), value.symbolLength()),
         value.securityID(),
         value.securityIDSource(),
-        value.getSecurityTypeAsStringView(),
-        value.getCFICodeAsStringView(),
-        value.getCurrencyAsStringView(),
-        value.getSettlCurrencyAsStringView(),
+        get_string_view(value.securityType(), value.securityTypeLength()),
+        get_string_view(value.cFICode(), value.cFICodeLength()),
+        get_string_view(value.currency(), value.currencyLength()),
+        get_string_view(value.settlCurrency(), value.settlCurrencyLength()),
         value.matchAlgorithm(),
         value.minTradeVol(),
         value.maxTradeVol(),
         value.minPriceIncrement(),
         value.displayFactor(),
-        value.getUnitOfMeasureAsStringView(),
+        get_string_view(value.unitOfMeasure(), value.unitOfMeasureLength()),
         value.unitOfMeasureQty(),
         value.tradingReferencePrice(),
         value.tradingReferenceDate(),
         value.highLimitPrice(),
         value.lowLimitPrice(),
         value.maxPriceVariation(),
-        roq::debug::hex::Message{value.getFinancialInstrumentFullNameAsStringView()},
-        value.getPartyRoleClearingOrgAsStringView(),
+        get_string_view(value.financialInstrumentFullName(), value.financialInstrumentFullNameLength()),
+        get_string_view(value.partyRoleClearingOrg(), value.partyRoleClearingOrgLength()),
         value.startDate(),
         value.endDate(),
-        value.getTerminationTypeAsStringView(),
+        get_string_view(value.terminationType(), value.terminationTypeLength()),
         value.securitySubType(),
         value.moneyOrPar(),
         value.maxNoOfSubstitutions(),
-        value.getPriceQuoteMethodAsStringView(),
+        get_string_view(value.priceQuoteMethod(), value.priceQuoteMethodLength()),
         value.userDefinedInstrument(),
-        roq::debug::hex::Message{value.getRiskSetAsStringView()},
-        roq::debug::hex::Message{value.getMarketSetAsStringView()},
+        get_string_view(value.riskSet(), value.riskSetLength()),
+        get_string_view(value.marketSet(), value.marketSetLength()),
         value.instrumentGUID(),
         value.getTermCodeAsStringView());
     // XXX missing groups
@@ -852,10 +865,12 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFX63> {
   template <typename Context>
   auto format(value_type &value, Context &context) const {
     using namespace std::literals;
+    using namespace roq::cme::sbe;
     value.sbeRewind();  // note!
     return fmt::format_to(
         context.out(),
         R"({{)"
+        R"(version={}, )"
         R"(match_event_indicator={}, )"
         R"(tot_num_reports={}, )"
         R"(security_update_action={}, )"
@@ -902,6 +917,7 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFX63> {
         R"(settlement_locale="{}", ")"
         R"(...)"
         R"(}})"sv,
+        value.actingVersion(),
         value.matchEventIndicator(),
         value.totNumReports(),
         value.securityUpdateAction(),
@@ -910,37 +926,37 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFX63> {
         value.applID(),
         value.marketSegmentID(),
         value.underlyingProduct(),
-        value.getSecurityExchangeAsStringView(),
-        value.getSecurityGroupAsStringView(),
-        value.getAssetAsStringView(),
-        value.getSymbolAsStringView(),
+        get_string_view(value.securityExchange(), value.securityExchangeLength()),
+        get_string_view(value.securityGroup(), value.securityGroupLength()),
+        get_string_view(value.asset(), value.assetLength()),
+        get_string_view(value.symbol(), value.symbolLength()),
         value.securityID(),
         value.securityIDSource(),
-        value.getSecurityTypeAsStringView(),
-        value.getCFICodeAsStringView(),
-        value.getCurrencyAsStringView(),
-        value.getSettlCurrencyAsStringView(),
-        value.getPriceQuoteCurrencyAsStringView(),
+        get_string_view(value.securityType(), value.securityTypeLength()),
+        get_string_view(value.cFICode(), value.cFICodeLength()),
+        get_string_view(value.currency(), value.currencyLength()),
+        get_string_view(value.settlCurrency(), value.settlCurrencyLength()),
+        get_string_view(value.priceQuoteCurrency(), value.priceQuoteCurrencyLength()),
         value.matchAlgorithm(),
         value.minTradeVol(),
         value.maxTradeVol(),
         value.minPriceIncrement(),
         value.displayFactor(),
         value.pricePrecision(),
-        value.getUnitOfMeasureAsStringView(),
+        get_string_view(value.unitOfMeasure(), value.unitOfMeasureLength()),
         value.unitOfMeasureQty(),
         value.highLimitPrice(),
         value.lowLimitPrice(),
         value.maxPriceVariation(),
         value.userDefinedInstrument(),
-        roq::debug::hex::Message{value.getFinancialInstrumentFullNameAsStringView()},
-        value.getFXCurrencySymbolAsStringView(),
-        value.getSettlTypeAsStringView(),
+        get_string_view(value.financialInstrumentFullName(), value.financialInstrumentFullNameLength()),
+        get_string_view(value.fXCurrencySymbol(), value.fXCurrencySymbolLength()),
+        get_string_view(value.settlType(), value.settlTypeLength()),
         value.interveningDays(),
-        value.getFXBenchmarkRateFixAsStringView(),
-        value.getRateSourceAsStringView(),
-        value.getFixRateLocalTimeAsStringView(),
-        value.getFixRateLocalTimeZoneAsStringView(),
+        get_string_view(value.fXBenchmarkRateFix(), value.fXBenchmarkRateFixLength()),
+        get_string_view(value.rateSource(), value.rateSourceLength()),
+        get_string_view(value.fixRateLocalTime(), value.fixRateLocalTimeLength()),
+        get_string_view(value.fixRateLocalTimeZone(), value.fixRateLocalTimeZoneLength()),
         value.minQuoteLife(),
         value.maxPriceDiscretionOffset(),
         value.instrumentGUID(),

@@ -82,6 +82,13 @@ inline double map(cme_mdp::PRICENULL9 const &value) {
   return static_cast<double>(mantissa) * std::pow(10.0, exponent);
 }
 
+inline std::string_view get_string_view(char const *buffer, size_t length) {
+  for (auto iter = buffer; iter < (buffer + length); ++iter)
+    if (!iter || (*iter) == '\0')
+      return {buffer, static_cast<size_t>(iter - buffer)};
+  return {buffer, length};
+}
+
 }  // namespace sbe
 }  // namespace cme
 }  // namespace roq
