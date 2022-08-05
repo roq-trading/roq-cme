@@ -96,10 +96,12 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshVolume37> {
     return fmt::format_to(
         context.out(),
         R"({{)"
+        R"(version={}, )"
         R"(transact_time={}, )"
         R"(match_event_indicator={}, )"
         R"(no_md_entries=[{}])"
         R"(}})"sv,
+        value.actingVersion(),
         value.transactTime(),
         value.matchEventIndicator(),
         fmt::join(roq::core::sbe::iterator{value.noMDEntries()}, roq::core::sbe::sentinel{}, ", "sv));
@@ -178,11 +180,13 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshBook46> {
     return fmt::format_to(
         context.out(),
         R"({{)"
+        R"(version={}, )"
         R"(transact_time={}, )"
         R"(match_event_indicator={}, )"
         R"(no_md_entries=[{}], )"
         R"(no_order_id_entries=[{}])"
         R"(}})"sv,
+        value.actingVersion(),
         value.transactTime(),
         value.matchEventIndicator(),
         fmt::join(roq::core::sbe::iterator{value.noMDEntries()}, roq::core::sbe::sentinel{}, ", "sv),
@@ -237,10 +241,12 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshOrderBook47> {
     return fmt::format_to(
         context.out(),
         R"({{)"
+        R"(version={}, )"
         R"(transact_time={}, )"
         R"(match_event_indicator={}, )"
         R"(no_md_entries=[{}])"
         R"(}})"sv,
+        value.actingVersion(),
         value.transactTime(),
         value.matchEventIndicator(),
         fmt::join(roq::core::sbe::iterator{value.noMDEntries()}, roq::core::sbe::sentinel{}, ", "sv));
@@ -319,11 +325,13 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshTradeSummary48> {
     return fmt::format_to(
         context.out(),
         R"({{)"
+        R"(version={}, )"
         R"(transact_time={}, )"
         R"(match_event_indicator={}, )"
         R"(no_md_entries=[{}], )"
         R"(no_order_id_entries=[{}])"
         R"(}})"sv,
+        value.actingVersion(),
         value.transactTime(),
         value.matchEventIndicator(),
         fmt::join(roq::core::sbe::iterator{value.noMDEntries()}, roq::core::sbe::sentinel{}, ", "sv),
@@ -380,10 +388,12 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshDailyStatistics49> {
     return fmt::format_to(
         context.out(),
         R"({{)"
+        R"(version={}, )"
         R"(transact_time={}, )"
         R"(match_event_indicator={}, )"
         R"(no_md_entries=[{}])"
         R"(}})"sv,
+        value.actingVersion(),
         value.transactTime(),
         value.matchEventIndicator(),
         fmt::join(roq::core::sbe::iterator{value.noMDEntries()}, roq::core::sbe::sentinel{}, ", "sv));
@@ -437,10 +447,12 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshLimitsBanding50> {
     return fmt::format_to(
         context.out(),
         R"({{)"
+        R"(version={}, )"
         R"(transact_time={}, )"
         R"(match_event_indicator={}, )"
         R"(no_md_entries=[{}])"
         R"(}})"sv,
+        value.actingVersion(),
         value.transactTime(),
         value.matchEventIndicator(),
         fmt::join(roq::core::sbe::iterator{value.noMDEntries()}, roq::core::sbe::sentinel{}, ", "sv));
@@ -494,10 +506,12 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshSessionStatistics51> {
     return fmt::format_to(
         context.out(),
         R"({{)"
+        R"(version={}, )"
         R"(transact_time={}, )"
         R"(match_event_indicator={}, )"
         R"(no_md_entries=[{}])"
         R"(}})"sv,
+        value.actingVersion(),
         value.transactTime(),
         value.matchEventIndicator(),
         fmt::join(roq::core::sbe::iterator{value.noMDEntries()}, roq::core::sbe::sentinel{}, ", "sv));
@@ -580,11 +594,13 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshBookLongQty64> {
     return fmt::format_to(
         context.out(),
         R"({{)"
+        R"(version={}, )"
         R"(transact_time={}, )"
         R"(match_event_indicator={}, )"
         R"(no_md_entries=[{}], )"
         R"(no_order_id_entries=[{}])"
         R"(}})"sv,
+        value.actingVersion(),
         value.transactTime(),
         value.matchEventIndicator(),
         fmt::join(roq::core::sbe::iterator{value.noMDEntries()}, roq::core::sbe::sentinel{}, ", "sv),
@@ -664,11 +680,13 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65> {
     return fmt::format_to(
         context.out(),
         R"({{)"
+        R"(version={}, )"
         R"(transact_time={}, )"
         R"(match_event_indicator={}, )"
         R"(no_md_entries=[{}], )"
         R"(no_order_id_entries=[{}])"
         R"(}})"sv,
+        value.actingVersion(),
         value.transactTime(),
         value.matchEventIndicator(),
         fmt::join(roq::core::sbe::iterator{value.noMDEntries()}, roq::core::sbe::sentinel{}, ", "sv),
@@ -719,10 +737,12 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshVolumeLongQty66> {
     return fmt::format_to(
         context.out(),
         R"({{)"
+        R"(version={}, )"
         R"(transact_time={}, )"
         R"(match_event_indicator={}, )"
         R"(no_md_entries=[{}])"
         R"(}})"sv,
+        value.actingVersion(),
         value.transactTime(),
         value.matchEventIndicator(),
         fmt::join(roq::core::sbe::iterator{value.noMDEntries()}, roq::core::sbe::sentinel{}, ", "sv));
@@ -776,10 +796,12 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67> {
     return fmt::format_to(
         context.out(),
         R"({{)"
+        R"(version={}, )"
         R"(transact_time={}, )"
         R"(match_event_indicator={}, )"
         R"(no_md_entries=[{}])"
         R"(}})"sv,
+        value.actingVersion(),
         value.transactTime(),
         value.matchEventIndicator(),
         fmt::join(roq::core::sbe::iterator{value.noMDEntries()}, roq::core::sbe::sentinel{}, ", "sv));

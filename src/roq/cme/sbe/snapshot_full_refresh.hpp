@@ -47,7 +47,7 @@ struct fmt::formatter<cme_mdp::SnapshotFullRefresh52::NoMDEntries> {
         R"(md_entry_size={}, )"
         R"(number_of_orders={}, )"
         R"(md_price_level={}, )"
-        R"(trading_reference_data={}, )"
+        R"(trading_reference_date={}, )"
         R"(open_close_settl_flag={}, )"
         R"(settl_price_type={}, )"
         R"(md_entry_type={})"
@@ -77,6 +77,7 @@ struct fmt::formatter<cme_mdp::SnapshotFullRefresh52> {
     return fmt::format_to(
         context.out(),
         R"({{)"
+        R"(version={}, )"
         R"(last_msg_seq_num_processed={}, )"
         R"(tot_num_reports={}, )"
         R"(security_id={}, )"
@@ -90,6 +91,7 @@ struct fmt::formatter<cme_mdp::SnapshotFullRefresh52> {
         R"(max_price_variation={}, )"
         R"(no_md_entries=[{}])"
         R"(}})"sv,
+        value.actingVersion(),
         value.lastMsgSeqNumProcessed(),
         value.totNumReports(),
         value.securityID(),
@@ -148,6 +150,7 @@ struct fmt::formatter<cme_mdp::SnapshotFullRefreshOrderBook53> {
     return fmt::format_to(
         context.out(),
         R"({{)"
+        R"(version={}, )"
         R"(last_msg_seq_num_processed={}, )"
         R"(tot_num_reports={}, )"
         R"(security_id={}, )"
@@ -156,6 +159,7 @@ struct fmt::formatter<cme_mdp::SnapshotFullRefreshOrderBook53> {
         R"(transact_time={}, )"
         R"(no_md_entries=[{}])"
         R"(}})"sv,
+        value.actingVersion(),
         value.lastMsgSeqNumProcessed(),
         value.totNumReports(),
         value.securityID(),
@@ -211,6 +215,7 @@ struct fmt::formatter<cme_mdp::SnapshotFullRefreshLongQty69> {
     return fmt::format_to(
         context.out(),
         R"({{)"
+        R"(versio={}, )"
         R"(last_msg_seq_num_processed={}, )"
         R"(tot_num_reports={}, )"
         R"(security_id={}, )"
@@ -224,6 +229,7 @@ struct fmt::formatter<cme_mdp::SnapshotFullRefreshLongQty69> {
         R"(max_price_variation={}, )"
         R"(no_md_entries=[{}])"
         R"(}})"sv,
+        value.actingVersion(),
         value.lastMsgSeqNumProcessed(),
         value.totNumReports(),
         value.securityID(),
