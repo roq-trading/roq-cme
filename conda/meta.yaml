@@ -23,7 +23,7 @@ requirements:
     - expat
     - roq-cme-mdp
     - roq-core
-    - roq-oss-abseil-cpp
+    - abseil-cpp
     - roq-oss-benchmark
     - roq-oss-brotli
     - roq-oss-catch2
