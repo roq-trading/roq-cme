@@ -102,7 +102,7 @@ TEST_CASE("md_incremental_refresh_book_46_test_1", "[sbe]") {
           auto no_md_entries_rows = 0;
           book.noMDEntries().forEach([&no_md_entries_rows](auto &item) {
             ++no_md_entries_rows;
-            CHECK(sbe::map(item.mDEntryPx()) == 66735.0_a);
+            CHECK(sbe::get_double(item.mDEntryPx()) == 66735.0_a);
             CHECK(item.mDEntrySize() == 2);
             CHECK(item.securityID() == 30975);
             CHECK(item.rptSeq() == 80734);
