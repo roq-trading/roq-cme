@@ -14,7 +14,7 @@ target_link_libraries(
   roq-core::roq-core
   roq-io::roq-io
   roq-logging::roq-logging
-  expat::expat
+  EXPAT::EXPAT
   Catch2::Catch2
   ${UUID_LIBRARIES}
   ${RT_LIBRARIES})

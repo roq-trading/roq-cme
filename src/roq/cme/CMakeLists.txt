@@ -44,7 +44,7 @@ target_link_libraries(
           absl::flags
           absl::flat_hash_map
           absl::flat_hash_set
-          expat::expat
+          EXPAT::EXPAT
           ${UUID_LIBRARIES}
           ${RT_LIBRARIES})
 
