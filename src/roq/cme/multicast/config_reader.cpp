@@ -1,6 +1,8 @@
 /* Copyright (c) 2017-2022, Hans Erik Thrane */
 
-#include "roq/cme/tools/conf_reader.hpp"
+#include "roq/cme/multicast/config_reader.hpp"
+
+#include <absl/strings/ascii.h>
 
 #include <fmt/ranges.h>
 
@@ -18,9 +20,17 @@ using namespace std::literals;
 
 namespace roq {
 namespace cme {
-namespace tools {
+namespace multicast {
 
-void ConfReader::read(Handler &handler, std::string_view const &filename) {
+namespace {
+void trim(auto &value) {
+  auto tmp_1 = absl::StripLeadingAsciiWhitespace(value);
+  auto tmp_2 = absl::StripTrailingAsciiWhitespace(tmp_1);
+  value = std::string{tmp_2};
+}
+}  // namespace
+
+void ConfigReader::read(Handler &handler, std::string_view const &filename) {
   core::filesystem::File file{filename, {core::filesystem::Flags::READ_ONLY}};
   core::memory::Mapping memory(
       std::size(file),
@@ -36,15 +46,15 @@ void ConfReader::read(Handler &handler, std::string_view const &filename) {
   dispatch(handler, {reinterpret_cast<char const *>(std::data(buffer)), std::size(buffer)});
 }
 
-void ConfReader::dispatch(Handler &handler, std::string_view const &buffer) {
+void ConfigReader::dispatch(Handler &handler, std::string_view const &buffer) {
   struct MyHandler final : public core::expat::Parser::Handler {
-    explicit MyHandler(ConfReader::Handler &handler) : handler_(handler) {}
+    explicit MyHandler(ConfigReader::Handler &handler) : handler_(handler) {}
     void operator()(core::expat::Parser::StartElement const &start_element) override {
       auto &[name, attributes] = start_element;
       if (name.compare("channel"sv) == 0) {  // channel
         for (auto &[key, value] : attributes) {
           if (key.compare("id"sv) == 0) {
-            channel_id_ = core::from_chars<decltype(channel_id_)>(value);
+            channel_id_.append(value);
           } else if (key.compare("label"sv) == 0) {
             channel_.label = value;
           }
@@ -65,6 +75,11 @@ void ConfReader::dispatch(Handler &handler, std::string_view const &buffer) {
         using enum ConnectionField;
         if (name.compare("type"sv) == 0) {
           connection_field_ = TYPE;
+          for (auto &[key, value] : attributes) {
+            if (key.compare("feed-type"sv) == 0) {
+              connection_.feed_type = value;
+            }
+          }
         } else if (name.compare("protocol"sv) == 0) {
           connection_field_ = PROTOCOL;
         } else if (name.compare("ip"sv) == 0) {
@@ -76,7 +91,7 @@ void ConfReader::dispatch(Handler &handler, std::string_view const &buffer) {
         } else if (name.compare("feed"sv) == 0) {
           connection_field_ = FEED;
         } else {
-          log::fatal(R"(Unexpected: connection.{})"sv, name);
+          log::warn(R"(Unexpected: connection.{})"sv, name);
         }
       }
     }
@@ -84,15 +99,39 @@ void ConfReader::dispatch(Handler &handler, std::string_view const &buffer) {
       auto &name = end_element.name;
       if (name.compare("connection"sv) == 0) {
         assert(!std::empty(connection_id_));
-        channel_.connections.try_emplace(std::move(connection_id_), std::move(connection_));
+        channel_.connections.try_emplace(connection_id_, connection_);
         connection_id_ = {};
-        connection_field_ = {};
         connection_ = {};
       } else if (name.compare("channel"sv) == 0) {
-        assert(channel_id_ != 0);
-        handler_(channel_id_, std::move(channel_));
-        channel_id_ = {};
+        assert(!std::empty(channel_id_));
+        handler_(channel_id_, channel_);
+        channel_id_.clear();
         channel_ = {};
+      } else {
+        switch (connection_field_) {
+          using enum ConnectionField;
+          case UNDEFINED:
+            break;
+          case TYPE:
+            trim(connection_.type);
+            break;
+          case PROTOCOL:
+            trim(connection_.protocol);
+            break;
+          case IP:
+            trim(connection_.ip);
+            break;
+          case HOST_IP:
+            // do nothing
+            break;
+          case PORT:
+            trim(connection_.port);
+            break;
+          case FEED:
+            trim(connection_.feed);
+            break;
+        }
+        connection_field_ = {};
       }
     }
     void operator()(core::expat::Parser::CharacterData const &character_data) override {
@@ -100,7 +139,7 @@ void ConfReader::dispatch(Handler &handler, std::string_view const &buffer) {
       switch (connection_field_) {
         using enum ConnectionField;
         case UNDEFINED:
-          log::fatal("Unexpeted"sv);
+          break;
         case TYPE:
           connection_.type.append(data);
           break;
@@ -115,8 +154,7 @@ void ConfReader::dispatch(Handler &handler, std::string_view const &buffer) {
           connection_.host_ips.emplace_back(data);
           break;
         case PORT:
-          // note! assumes full update
-          connection_.port = core::from_chars<decltype(connection_.port)>(data);
+          connection_.port.append(data);
           break;
         case FEED:
           connection_.feed.append(data);
@@ -125,9 +163,9 @@ void ConfReader::dispatch(Handler &handler, std::string_view const &buffer) {
     }
 
    private:
-    ConfReader::Handler &handler_;
+    ConfigReader::Handler &handler_;
     // state
-    uint32_t channel_id_ = {};
+    std::string channel_id_;
     Channel channel_ = {};
     std::string connection_id_;
     enum class ConnectionField {
@@ -145,6 +183,6 @@ void ConfReader::dispatch(Handler &handler, std::string_view const &buffer) {
   parser.parse(buffer, true);
 }
 
-}  // namespace tools
+}  // namespace multicast
 }  // namespace cme
 }  // namespace roq

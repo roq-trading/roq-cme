@@ -3,42 +3,20 @@
   "type": "flags",
   "values": [
     {
-      "name": "local_interface",
+      "name": "multicast_config_file",
+      "type": "std::string",
+      "validator": "roq::core::flags::Path<std::string>",
+      "description": "config file (path)"
+    },
+    {
+      "name": "multicast_channel_id",
+      "type": "std::string",
+      "description": "Multicast channel, e.g. 310"
+    },
+    {
+      "name": "multicast_local_interface",
       "type": "std::string",
       "description": "Multicast local interface"
-    },
-    {
-      "name": "multicast_address",
-      "type": "std::vector<std::string>",
-      "default": "239.111.111.1,239.111.111.3",
-      "description": "List of multicast addresses (comma-separated)"
-    },
-    {
-      "name": "multicast_port_events",
-      "type": "uint16_t",
-      "default": "6100",
-      "description": "Multicast port used for events"
-    },
-    {
-      "name": "multicast_port_snapshot",
-      "type": "uint16_t",
-      "default": "6101",
-      "description": "Multicast port for snapshot"
-    },
-    {
-      "name": "multicast_disable_top_of_book",
-      "type": "bool",
-      "description": "Default is to consume TopOfBook from the multicast feed"
-    },
-    {
-      "name": "multicast_disable_trade_summary",
-      "type": "bool",
-      "description": "Default is to consume TradeSummary from the multicast feed"
-    },
-    {
-      "name": "multicast_disable_market_by_price",
-      "type": "bool",
-      "description": "Default is to consume MarketByPrice from the multicast feed"
     },
     {
       "name": "multicast_timeout",

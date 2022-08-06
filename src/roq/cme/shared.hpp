@@ -21,6 +21,8 @@
 
 #include "roq/core/market/mbp_sequencer.hpp"
 
+#include "roq/cme/multicast/config.hpp"
+
 namespace roq {
 namespace cme {
 
@@ -30,7 +32,7 @@ struct Shared final {
   Shared(Shared &&) = default;
   Shared(Shared const &) = delete;
 
-  bool has_multicast() const { return multicast_; }
+  std::pair<std::string, uint16_t> get_multicast_config(multicast::Type, Priority) const;
 
   std::string_view next_request_id();
 
@@ -46,6 +48,9 @@ struct Shared final {
     return dispatcher_(std::forward<Args>(args)...);
   }
 
+ private:
+  multicast::Config multicast_config_;
+
  public:
   core::page_aligned_vector<Fill> fills;
   core::page_aligned_vector<MBPUpdate> bids, asks, final_bids, final_asks;
@@ -58,7 +63,6 @@ struct Shared final {
   server::Dispatcher &dispatcher_;
   uint32_t request_id_ = 0;
   core::stack::Buffer<char, 32> stack_buffer_;
-  bool const multicast_;
 
  public:
   core::limit::RateLimiter rate_limiter;

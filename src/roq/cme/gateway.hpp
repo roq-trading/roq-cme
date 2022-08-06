@@ -14,12 +14,18 @@
 
 #include "roq/cme/config.hpp"
 #include "roq/cme/shared.hpp"
-#include "roq/cme/udp_events.hpp"
+
+#include "roq/cme/udp_incremental.hpp"
+#include "roq/cme/udp_instrument_definition.hpp"
+#include "roq/cme/udp_mbp_market_recovery.hpp"
 
 namespace roq {
 namespace cme {
 
-class Gateway final : public server::Handler, public UDPEvents::Handler {
+class Gateway final : public server::Handler,
+                      public UDPInstrumentDefinition::Handler,
+                      public UDPMBPMarketRecovery::Handler,
+                      public UDPIncremental::Handler {
  public:
   Gateway(server::Dispatcher &, Config const &);
 
@@ -68,7 +74,9 @@ class Gateway final : public server::Handler, public UDPEvents::Handler {
   // seed
   uint16_t stream_id_ = {};
   // streams
-  std::unique_ptr<UDPEvents> udp_events_;
+  std::unique_ptr<UDPInstrumentDefinition> udp_instrument_definition_;
+  std::unique_ptr<UDPMBPMarketRecovery> udp_mbp_market_recovery_;
+  std::unique_ptr<UDPIncremental> udp_incremental_;
 };
 
 }  // namespace cme

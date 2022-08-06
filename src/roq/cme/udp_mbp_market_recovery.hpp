@@ -22,7 +22,7 @@
 namespace roq {
 namespace cme {
 
-class UDPEvents final : public io::net::udp::Receiver::Handler, public sbe::Parser::Handler {
+class UDPMBPMarketRecovery final : public io::net::udp::Receiver::Handler, public sbe::Parser::Handler {
  public:
   struct Handler {
     virtual void operator()(Trace<StreamStatus const> const &) = 0;
@@ -31,10 +31,10 @@ class UDPEvents final : public io::net::udp::Receiver::Handler, public sbe::Pars
     virtual void operator()(Trace<TradeSummary const> const &, bool is_last) = 0;
   };
 
-  UDPEvents(Handler &, io::Context &, uint16_t stream_id, Shared &);
+  UDPMBPMarketRecovery(Handler &, io::Context &, uint16_t stream_id, Shared &);
 
-  UDPEvents(UDPEvents const &) = delete;
-  UDPEvents(UDPEvents &&) = delete;
+  UDPMBPMarketRecovery(UDPMBPMarketRecovery const &) = delete;
+  UDPMBPMarketRecovery(UDPMBPMarketRecovery &&) = delete;
 
   void operator()(Event<Start> const &);
   void operator()(Event<Stop> const &);
@@ -86,10 +86,6 @@ class UDPEvents final : public io::net::udp::Receiver::Handler, public sbe::Pars
   // config
   const uint16_t stream_id_;
   const std::string name_;
-  bool const publish_top_of_book_;
-  bool const publish_market_by_price_;
-  bool const publish_trade_summary_;
-  Mask<SupportType> const supports_;
   // receiver
   std::unique_ptr<io::net::udp::Receiver> receiver_;
   io::Buffer receive_buffer_;

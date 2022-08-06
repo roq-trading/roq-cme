@@ -16,35 +16,53 @@ namespace roq {
 namespace cme {
 
 namespace {
-auto create_udp_events(Gateway &gateway, io::Context &context, uint16_t &stream_id, Shared &shared) {
-  if (shared.has_multicast())
-    return std::make_unique<UDPEvents>(gateway, context, stream_id, shared);
-  return std::unique_ptr<UDPEvents>{};
+auto create_udp_instrument_definition(Gateway &gateway, io::Context &context, uint16_t &stream_id, Shared &shared) {
+  return std::make_unique<UDPInstrumentDefinition>(gateway, context, stream_id, shared);
+}
+auto create_udp_mbp_market_recovery(Gateway &gateway, io::Context &context, uint16_t &stream_id, Shared &shared) {
+  return std::make_unique<UDPMBPMarketRecovery>(gateway, context, stream_id, shared);
+}
+auto create_udp_incremental(Gateway &gateway, io::Context &context, uint16_t &stream_id, Shared &shared) {
+  return std::make_unique<UDPIncremental>(gateway, context, stream_id, shared);
 }
 }  // namespace
 
 Gateway::Gateway(server::Dispatcher &dispatcher, Config const &)
     : dispatcher_(dispatcher), context_(io::engine::ContextFactory::create_libevent()), shared_(dispatcher_),
-      udp_events_(create_udp_events(*this, *context_, ++stream_id_, shared_)) {
+      udp_instrument_definition_(create_udp_instrument_definition(*this, *context_, ++stream_id_, shared_)),
+      udp_mbp_market_recovery_(create_udp_mbp_market_recovery(*this, *context_, ++stream_id_, shared_)),
+      udp_incremental_(create_udp_incremental(*this, *context_, ++stream_id_, shared_)) {
   if (!flags::FIX::fix_cancel_on_disconnect())
     log::warn("Orders will *NOT* be cancelled on disconnect"sv);
 }
 
 void Gateway::operator()(Event<Start> const &event) {
   log::info("Starting the gateway..."sv);
-  if (udp_events_)
-    (*udp_events_)(event);
+  if (udp_instrument_definition_)
+    (*udp_instrument_definition_)(event);
+  if (udp_mbp_market_recovery_)
+    (*udp_mbp_market_recovery_)(event);
+  if (udp_incremental_)
+    (*udp_incremental_)(event);
 }
 
 void Gateway::operator()(Event<Stop> const &event) {
   log::info("Stopping the gateway..."sv);
-  if (udp_events_)
-    (*udp_events_)(event);
+  if (udp_incremental_)
+    (*udp_incremental_)(event);
+  if (udp_mbp_market_recovery_)
+    (*udp_mbp_market_recovery_)(event);
+  if (udp_instrument_definition_)
+    (*udp_instrument_definition_)(event);
 }
 
 void Gateway::operator()(Event<Timer> const &event) {
-  if (udp_events_)
-    (*udp_events_)(event);
+  if (udp_instrument_definition_)
+    (*udp_instrument_definition_)(event);
+  if (udp_mbp_market_recovery_)
+    (*udp_mbp_market_recovery_)(event);
+  if (udp_incremental_)
+    (*udp_incremental_)(event);
   (*context_).drain();
 }
 
@@ -91,6 +109,9 @@ uint16_t Gateway::operator()(Event<CancelAllOrders> const &event, [[maybe_unused
 }
 
 void Gateway::operator()(metrics::Writer &writer) {
+  (*udp_instrument_definition_)(writer);
+  (*udp_mbp_market_recovery_)(writer);
+  (*udp_incremental_)(writer);
 }
 
 void Gateway::operator()(Trace<StreamStatus const> const &event) {

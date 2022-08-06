@@ -2,9 +2,18 @@ set(TARGET_NAME "${PROJECT_NAME}")
 
 add_subdirectory("flags")
 add_subdirectory("sbe")
+add_subdirectory("multicast")
 add_subdirectory("tools")
 
-set(SOURCES application.cpp config.cpp gateway.cpp shared.cpp udp_events.cpp main.cpp)
+set(SOURCES
+    application.cpp
+    config.cpp
+    gateway.cpp
+    shared.cpp
+    udp_incremental.cpp
+    udp_instrument_definition.cpp
+    udp_mbp_market_recovery.cpp
+    main.cpp)
 
 include(RoqAutogen)
 
@@ -34,6 +43,7 @@ target_link_libraries(
   "${TARGET_NAME}"
   PRIVATE "${PROJECT_NAME}-flags"
           "${PROJECT_NAME}-sbe"
+          "${PROJECT_NAME}-multicast"
           "${PROJECT_NAME}-tools"
           roq-server::roq-server
           roq-web::roq-web

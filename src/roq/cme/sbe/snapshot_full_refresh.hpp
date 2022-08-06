@@ -244,4 +244,3 @@ struct fmt::formatter<cme_mdp::SnapshotFullRefreshLongQty69> {
         roq::cme::sbe::Group{value.noMDEntries()});
   }
 };
-
