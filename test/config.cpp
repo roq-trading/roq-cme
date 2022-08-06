@@ -4,7 +4,7 @@
 
 #include <algorithm>
 
-#include "roq/cme/tools/conf_reader.hpp"
+#include "roq/cme/multicast/config_reader.hpp"
 
 using namespace std::literals;
 
@@ -46,12 +46,12 @@ TEST_CASE("config_reader", "[config]") {
                  R"(</connections>)"
                  R"(</channel>)"
                  R"(</configuration>)"sv;
-  struct MyHandler final : public tools::ConfReader::Handler {
+  struct MyHandler final : public multicast::ConfigReader::Handler {
     int counter = 0;
-    void operator()(uint32_t channel_id, tools::ConfReader::Channel &&channel) override {
+    void operator()(std::string_view const &channel_id, multicast::ConfigReader::Channel const &channel) override {
       switch (++counter) {
         case 1: {
-          CHECK(channel_id == 310);
+          CHECK(channel_id == "310"sv);
           CHECK(channel.label == "CME Globex Equity Futures"sv);
           REQUIRE(std::size(channel.products) == 2);
           CHECK(channel.products.find("ES"sv) != std::end(channel.products));
@@ -60,7 +60,9 @@ TEST_CASE("config_reader", "[config]") {
           REQUIRE(channel.connections.find("310H2A"sv) != std::end(channel.connections));
           REQUIRE(channel.connections.find("310IA"sv) != std::end(channel.connections));
           {
-            auto &connection = channel.connections["310H2A"sv];
+            auto iter = channel.connections.find("310H2A"sv);
+            REQUIRE(iter != std::end(channel.connections));
+            auto &connection = (*iter).second;
             CHECK(connection.type == "Historical Replay"sv);
             CHECK(connection.protocol == "TCP/IP"sv);
             CHECK(std::empty(connection.ip));
@@ -69,11 +71,13 @@ TEST_CASE("config_reader", "[config]") {
                 std::find(std::begin(connection.host_ips), std::end(connection.host_ips), "205.209.218.10"sv) !=
                 std::end(connection.host_ips));
             // 2nd is the same
-            CHECK(connection.port == 10000);
+            CHECK(connection.port == "10000"sv);
             CHECK(connection.feed == "A"sv);
           }
           {
-            auto &connection = channel.connections["310IA"sv];
+            auto iter = channel.connections.find("310IA"sv);
+            REQUIRE(iter != std::end(channel.connections));
+            auto &connection = (*iter).second;
             CHECK(connection.type == "Incremental"sv);
             CHECK(connection.protocol == "UDP/IP"sv);
             CHECK(connection.ip == "224.0.31.1"sv);
@@ -84,7 +88,7 @@ TEST_CASE("config_reader", "[config]") {
             CHECK(
                 std::find(std::begin(connection.host_ips), std::end(connection.host_ips), "205.209.221.70"sv) !=
                 std::end(connection.host_ips));
-            CHECK(connection.port == 14310);
+            CHECK(connection.port == "14310"sv);
             CHECK(connection.feed == "A"sv);
           }
           break;
@@ -92,6 +96,6 @@ TEST_CASE("config_reader", "[config]") {
       }
     }
   } handler;
-  tools::ConfReader::dispatch(handler, message);
+  multicast::ConfigReader::dispatch(handler, message);
   CHECK(handler.counter == 1);
 }
