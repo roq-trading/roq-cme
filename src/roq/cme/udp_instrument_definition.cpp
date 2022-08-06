@@ -136,6 +136,33 @@ void UDPInstrumentDefinition::operator()(
     Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
   log::info<5>("md_instrument_definition_future_54={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  ReferenceData reference_data{
+      .stream_id = stream_id_,
+      .exchange = sbe::get_string_view(value.securityExchange(), value.securityExchangeLength()),
+      .symbol = sbe::get_string_view(value.symbol(), value.symbolLength()),
+      .description = {},
+      .security_type = SecurityType::FUTURES,
+      .base_currency = {},
+      .quote_currency = {},
+      .margin_currency = {},
+      .commission_currency = {},
+      .tick_size = NaN,
+      .multiplier = NaN,
+      .min_notional = NaN,
+      .min_trade_vol = NaN,
+      .max_trade_vol = NaN,
+      .trade_vol_step_size = NaN,
+      .option_type = {},
+      .strike_currency = {},
+      .strike_price = NaN,
+      .underlying = {},
+      .time_zone = {},
+      .issue_date = {},
+      .settlement_date = {},
+      .expiry_datetime = {},
+      .expiry_datetime_utc = {},
+      .discard = false,
+  };
 }
 
 void UDPInstrumentDefinition::operator()(
