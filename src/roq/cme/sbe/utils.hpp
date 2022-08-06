@@ -46,40 +46,41 @@ inline size_t compute_length(cme_mdp::MessageHeader &value) {
 
 // types
 
-inline double map(cme_mdp::Decimal9 const &value) {
-  auto mantissa = value.mantissa();
-  auto exponent = value.exponent();
-  return static_cast<double>(mantissa) * std::pow(10.0, exponent);
+inline int32_t get_int32(int32_t value, int32_t null_value) {
+  if (value != null_value)
+    return value;
+  return {};
 }
 
-inline double map(cme_mdp::Decimal9NULL const &value) {
+inline double get_double(cme_mdp::Decimal9 const &value) {
   auto mantissa = value.mantissa();
-  if (mantissa == value.mantissaNullValue())
-    return roq::NaN;
-  auto exponent = value.exponent();
-  return static_cast<double>(mantissa) * std::pow(10.0, exponent);
+  return static_cast<double>(mantissa) * std::pow(10.0, value.exponent());
 }
 
-inline double map(cme_mdp::DecimalQty const &value) {
+inline double get_double(cme_mdp::Decimal9NULL const &value) {
   auto mantissa = value.mantissa();
-  if (mantissa == value.mantissaNullValue())
-    return roq::NaN;
-  auto exponent = value.exponent();
-  return static_cast<double>(mantissa) * std::pow(10.0, exponent);
+  if (mantissa != value.mantissaNullValue())
+    return static_cast<double>(mantissa) * std::pow(10.0, value.exponent());
+  return NaN;
 }
 
-inline double map(cme_mdp::PRICE9 const &value) {
+inline double get_double(cme_mdp::DecimalQty const &value) {
   auto mantissa = value.mantissa();
-  auto exponent = value.exponent();
-  return static_cast<double>(mantissa) * std::pow(10.0, exponent);
+  if (mantissa != value.mantissaNullValue())
+    return static_cast<double>(mantissa) * std::pow(10.0, value.exponent());
+  return NaN;
 }
 
-inline double map(cme_mdp::PRICENULL9 const &value) {
+inline double get_double(cme_mdp::PRICE9 const &value) {
   auto mantissa = value.mantissa();
-  if (mantissa == value.mantissaNullValue())
-    return roq::NaN;
-  auto exponent = value.exponent();
-  return static_cast<double>(mantissa) * std::pow(10.0, exponent);
+  return static_cast<double>(mantissa) * std::pow(10.0, value.exponent());
+}
+
+inline double get_double(cme_mdp::PRICENULL9 const &value) {
+  auto mantissa = value.mantissa();
+  if (mantissa != value.mantissaNullValue())
+    return static_cast<double>(mantissa) * std::pow(10.0, value.exponent());
+  return NaN;
 }
 
 inline std::string_view get_string_view(char const *buffer, size_t length) {
@@ -145,7 +146,7 @@ struct fmt::formatter<cme_mdp::Decimal9> {
   template <typename Context>
   auto format(value_type const &value, Context &context) const {
     using namespace std::literals;
-    return fmt::format_to(context.out(), R"({})"sv, roq::cme::sbe::map(value));
+    return fmt::format_to(context.out(), R"({})"sv, roq::cme::sbe::get_double(value));
   }
 };
 
@@ -159,7 +160,7 @@ struct fmt::formatter<cme_mdp::Decimal9NULL> {
   template <typename Context>
   auto format(value_type const &value, Context &context) const {
     using namespace std::literals;
-    return fmt::format_to(context.out(), R"({})"sv, roq::cme::sbe::map(value));
+    return fmt::format_to(context.out(), R"({})"sv, roq::cme::sbe::get_double(value));
   }
 };
 
@@ -173,7 +174,7 @@ struct fmt::formatter<cme_mdp::DecimalQty> {
   template <typename Context>
   auto format(value_type const &value, Context &context) const {
     using namespace std::literals;
-    return fmt::format_to(context.out(), R"({})"sv, roq::cme::sbe::map(value));
+    return fmt::format_to(context.out(), R"({})"sv, roq::cme::sbe::get_double(value));
   }
 };
 
@@ -187,7 +188,7 @@ struct fmt::formatter<cme_mdp::PRICE9> {
   template <typename Context>
   auto format(value_type const &value, Context &context) const {
     using namespace std::literals;
-    return fmt::format_to(context.out(), R"({})"sv, roq::cme::sbe::map(value));
+    return fmt::format_to(context.out(), R"({})"sv, roq::cme::sbe::get_double(value));
   }
 };
 
@@ -201,7 +202,7 @@ struct fmt::formatter<cme_mdp::PRICENULL9> {
   template <typename Context>
   auto format(value_type const &value, Context &context) const {
     using namespace std::literals;
-    return fmt::format_to(context.out(), R"({})"sv, roq::cme::sbe::map(value));
+    return fmt::format_to(context.out(), R"({})"sv, roq::cme::sbe::get_double(value));
   }
 };
 

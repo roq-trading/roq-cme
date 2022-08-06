@@ -70,6 +70,15 @@ struct Shared final {
   absl::flat_hash_set<Symbol> all_symbols;
   core::Symbols symbols;
   absl::node_hash_map<Symbol, core::market::MBP_Sequencer> mbp_collector;
+
+  // EXPERIMENTAL
+  struct Security final {
+    Exchange exchange;
+    Symbol symbol;
+    double display_factor = NaN;
+    bool discard = {};
+  };
+  absl::node_hash_map<int32_t, Security> securities;
 };
 
 }  // namespace cme
