@@ -46,10 +46,11 @@ inline size_t compute_length(cme_mdp::MessageHeader &value) {
 
 // types
 
-inline int32_t get_int32(int32_t value, int32_t null_value) {
+template <typename T>
+inline T get_int(T value, T null_value) {
   if (value != null_value)
     return value;
-  return {};
+  return T{};
 }
 
 inline double get_double(cme_mdp::Decimal9 const &value) {

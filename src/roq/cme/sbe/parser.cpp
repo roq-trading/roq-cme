@@ -85,19 +85,20 @@ bool Parser::dispatch(Handler &handler, std::span<std::byte const> const &buffer
               create_trace_and_dispatch(handler, trace_info, value, frame);
               break;
             }
-              // - SnapshotFullRefresh
+              // - MbP
             case cme_mdp::SnapshotFullRefresh52::SBE_TEMPLATE_ID: {
               cme_mdp::SnapshotFullRefresh52 value{std::data(tmp), std::size(tmp), block_length, version};
               create_trace_and_dispatch(handler, trace_info, value, frame);
               break;
             }
-            case cme_mdp::SnapshotFullRefreshOrderBook53::SBE_TEMPLATE_ID: {
-              cme_mdp::SnapshotFullRefreshOrderBook53 value{std::data(tmp), std::size(tmp), block_length, version};
+            case cme_mdp::SnapshotFullRefreshLongQty69::SBE_TEMPLATE_ID: {
+              cme_mdp::SnapshotFullRefreshLongQty69 value{std::data(tmp), std::size(tmp), block_length, version};
               create_trace_and_dispatch(handler, trace_info, value, frame);
               break;
             }
-            case cme_mdp::SnapshotFullRefreshLongQty69::SBE_TEMPLATE_ID: {
-              cme_mdp::SnapshotFullRefreshLongQty69 value{std::data(tmp), std::size(tmp), block_length, version};
+              // MbO
+            case cme_mdp::SnapshotFullRefreshOrderBook53::SBE_TEMPLATE_ID: {
+              cme_mdp::SnapshotFullRefreshOrderBook53 value{std::data(tmp), std::size(tmp), block_length, version};
               create_trace_and_dispatch(handler, trace_info, value, frame);
               break;
             }

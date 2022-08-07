@@ -47,7 +47,7 @@ include(GNUInstallDirs)
 
 find_package(absl REQUIRED)
 find_package(cppitertools REQUIRED)
-find_package(EXPAT REQUIRED)  # note! a cmake module takes precedence on macOS
+find_package(EXPAT REQUIRED) # note! a cmake module takes precedence on macOS
 find_package(fmt REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(re2 REQUIRED)

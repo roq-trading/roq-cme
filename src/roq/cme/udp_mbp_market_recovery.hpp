@@ -55,10 +55,11 @@ class UDPMBPMarketRecovery final : public io::net::udp::Receiver::Handler, publi
   void operator()(Trace<cme_mdp::MDInstrumentDefinitionFixedIncome57> const &, sbe::Frame const &) override;
   void operator()(Trace<cme_mdp::MDInstrumentDefinitionRepo58> const &, sbe::Frame const &) override;
   void operator()(Trace<cme_mdp::MDInstrumentDefinitionFX63> const &, sbe::Frame const &) override;
-  // - SnapshotFullRefresh
+  // - MbP
   void operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &, sbe::Frame const &) override;
-  void operator()(Trace<cme_mdp::SnapshotFullRefreshOrderBook53> const &, sbe::Frame const &) override;
   void operator()(Trace<cme_mdp::SnapshotFullRefreshLongQty69> const &, sbe::Frame const &) override;
+  // - MbO
+  void operator()(Trace<cme_mdp::SnapshotFullRefreshOrderBook53> const &, sbe::Frame const &) override;
   // - MDIncrementalRefresh
   void operator()(Trace<cme_mdp::MDIncrementalRefreshVolume37> const &, sbe::Frame const &) override;
   void operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &, sbe::Frame const &) override;
@@ -76,9 +77,6 @@ class UDPMBPMarketRecovery final : public io::net::udp::Receiver::Handler, publi
   void publish_stream_status(TraceInfo const &, ConnectionStatus connection_status);
 
   // utils
-  template <typename T, typename U>
-  static void emplace_back(const T &item, double multiplier, U &bids, U &asks);
-
   Aggregator &get_aggregator(uint16_t channel_id);
 
  private:

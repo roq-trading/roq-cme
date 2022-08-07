@@ -31,7 +31,7 @@ namespace roq {
 namespace cme {
 
 namespace {
-auto const NAME = "udpe"sv;
+auto const NAME = "udp_na"sv;
 
 Mask<SupportType> const SUPPORTS{
     SupportType::REFERENCE_DATA,
@@ -167,7 +167,7 @@ void UDPInstrumentDefinition::operator()(
         .margin_currency = {},
         .commission_currency = {},
         .tick_size = sbe::get_double(value.minPriceIncrement()),
-        .multiplier = utils::safe_cast(sbe::get_int32(value.contractMultiplier(), value.contractMultiplierNullValue())),
+        .multiplier = utils::safe_cast(sbe::get_int(value.contractMultiplier(), value.contractMultiplierNullValue())),
         .min_trade_vol = utils::safe_cast(value.minTradeVol()),
         .max_trade_vol = utils::safe_cast(value.maxTradeVol()),
         .trade_vol_step_size = NaN,
@@ -366,17 +366,19 @@ void UDPInstrumentDefinition::operator()(
     create_trace_and_dispatch(handler_, trace_info, reference_data, true);
   });
 }
-// - SnapshotFullRefresh
+// - MbP
 
 void UDPInstrumentDefinition::operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &, sbe::Frame const &) {
   log::fatal("Unexpected"sv);
 }
 
-void UDPInstrumentDefinition::operator()(Trace<cme_mdp::SnapshotFullRefreshOrderBook53> const &, sbe::Frame const &) {
+void UDPInstrumentDefinition::operator()(Trace<cme_mdp::SnapshotFullRefreshLongQty69> const &, sbe::Frame const &) {
   log::fatal("Unexpected"sv);
 }
 
-void UDPInstrumentDefinition::operator()(Trace<cme_mdp::SnapshotFullRefreshLongQty69> const &, sbe::Frame const &) {
+// - MbO
+
+void UDPInstrumentDefinition::operator()(Trace<cme_mdp::SnapshotFullRefreshOrderBook53> const &, sbe::Frame const &) {
   log::fatal("Unexpected"sv);
 }
 

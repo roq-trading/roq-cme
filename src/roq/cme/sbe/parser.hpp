@@ -26,10 +26,11 @@ struct Parser final {
     virtual void operator()(Trace<cme_mdp::MDInstrumentDefinitionFixedIncome57> const &, Frame const &) = 0;
     virtual void operator()(Trace<cme_mdp::MDInstrumentDefinitionRepo58> const &, Frame const &) = 0;
     virtual void operator()(Trace<cme_mdp::MDInstrumentDefinitionFX63> const &, Frame const &) = 0;
-    // - SnapshotFullRefresh
+    // - MbP
     virtual void operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &, Frame const &) = 0;
-    virtual void operator()(Trace<cme_mdp::SnapshotFullRefreshOrderBook53> const &, Frame const &) = 0;
     virtual void operator()(Trace<cme_mdp::SnapshotFullRefreshLongQty69> const &, Frame const &) = 0;
+    // - MbO
+    virtual void operator()(Trace<cme_mdp::SnapshotFullRefreshOrderBook53> const &, Frame const &) = 0;
     // - MDIncrementalRefresh
     virtual void operator()(Trace<cme_mdp::MDIncrementalRefreshVolume37> const &, Frame const &) = 0;
     virtual void operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &, Frame const &) = 0;

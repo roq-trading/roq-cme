@@ -30,11 +30,12 @@ namespace roq {
 namespace cme {
 
 namespace {
-auto const NAME = "udpe"sv;
+auto const NAME = "udp_ia"sv;
 
 Mask<SupportType> const SUPPORTS{
+    SupportType::TOP_OF_BOOK,
     SupportType::MARKET_BY_PRICE,
-    SupportType::TRADE_SUMMARY,
+    SupportType::STATISTICS,
 };
 
 struct create_metrics final : public core::metrics::Factory {
@@ -162,22 +163,25 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionFX63> const
   auto &[trace_info, value] = event;
   log::info<3>("md_instrument_definition_fx_63={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
 }
-// - SnapshotFullRefresh
+
+// - MbP
 
 void UDPIncremental::operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
   log::info<3>("snapshot_full_refresh_52={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
 }
 
+void UDPIncremental::operator()(Trace<cme_mdp::SnapshotFullRefreshLongQty69> const &event, sbe::Frame const &frame) {
+  auto &[trace_info, value] = event;
+  log::info<3>("snapshot_full_refresh_long_qty_69={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+}
+
+// MbO
+
 void UDPIncremental::operator()(Trace<cme_mdp::SnapshotFullRefreshOrderBook53> const &event, sbe::Frame const &frame) {
   log::info<3>("HERE"sv);
   auto &[trace_info, value] = event;
   log::info<3>("snapshot_full_refresh_order_book_53={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
-}
-
-void UDPIncremental::operator()(Trace<cme_mdp::SnapshotFullRefreshLongQty69> const &event, sbe::Frame const &frame) {
-  auto &[trace_info, value] = event;
-  log::info<3>("snapshot_full_refresh_long_qty_69={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
 }
 
 // - MDIncrementalRefresh
