@@ -122,6 +122,10 @@ void Gateway::operator()(Trace<ReferenceData const> const &event, bool is_last) 
   dispatcher_(event, is_last);
 }
 
+void Gateway::operator()(Trace<MarketStatus const> const &event, bool is_last) {
+  dispatcher_(event, is_last);
+}
+
 void Gateway::operator()(Trace<TopOfBook const> const &event, bool is_last) {
   dispatcher_(event, is_last);
 }

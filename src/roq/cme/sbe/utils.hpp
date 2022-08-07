@@ -23,6 +23,57 @@ namespace roq {
 namespace cme {
 namespace sbe {
 
+/*
+START_OF_DAY,         //!< No matching, no order actions
+PRE_OPEN,             //!< No matching, all order actions
+PRE_OPEN_NO_CANCEL,   //!< No matching, only new orders
+PRE_OPEN_FREEZE,      //!< Matching, no order actions
+OPEN,                 //!< Matching, all order actions
+FAST_MARKET,          //!< Same as Open, some settings could be relaxed by the exchange
+HALT,                 //!< No matching, only order cancellation
+CLOSE_NOT_FINAL,      //!< Same as Close, state required to support mid-session PreOpen
+PRE_CLOSE,            //!< No matching, all order actions
+PRE_CLOSE_NO_CANCEL,  //!< No matching, only new orders
+PRE_CLOSE_FREEZE,     //!< Matching, no order actions
+CLOSE,                //!< No matching, no order actions, good-for-day orders automatically canceled
+POST_CLOSE,           //!< No matching, all order actions (only with next-trading-day validity)
+END_OF_DAY,           //!< No matching, no order actions
+*/
+inline TradingStatus map_security_trading_status(cme_mdp::SecurityTradingStatus::Value value) {
+  switch (value) {
+    using enum cme_mdp::SecurityTradingStatus::Value;
+    case TradingHalt:
+      return TradingStatus::HALT;
+    case Close:
+      return TradingStatus::CLOSE;
+    case NewPriceIndication:
+      break;
+    case ReadyToTrade:
+      return TradingStatus::OPEN;
+    case NotAvailableForTrading:
+      return TradingStatus::CLOSE;  // ???
+    case UnknownorInvalid:
+      break;
+    case PreOpen:
+      return TradingStatus::PRE_OPEN;
+    case PreCross:
+      break;
+    case Cross:
+      break;
+    case PostClose:
+      return TradingStatus::POST_CLOSE;
+    case NoChange:
+      return TradingStatus::START_OF_DAY;  // ???
+    case PrivateWorkup:
+      break;
+    case PublicWorkup:
+      break;
+    case NULL_VALUE:
+      break;
+  }
+  return {};
+}
+
 inline Side map_book_side(cme_mdp::Side::Value value) {
   switch (value) {
     using enum cme_mdp::Side::Value;
@@ -33,7 +84,7 @@ inline Side map_book_side(cme_mdp::Side::Value value) {
     case NULL_VALUE:
       return Side::UNDEFINED;
   }
-  return Side::UNDEFINED;
+  return {};
 }
 
 template <typename T>

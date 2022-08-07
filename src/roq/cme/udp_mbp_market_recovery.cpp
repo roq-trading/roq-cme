@@ -270,7 +270,7 @@ void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::SnapshotFullRefresh52> cons
   auto &[trace_info, value] = event;
   log::info<5>("snapshot_full_refresh_52={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
   get_security(shared_, value, [&](auto &security) {
-    std::chrono::nanoseconds exchange_time_utc = {};  // value.transactTime()
+    std::chrono::nanoseconds exchange_time_utc{value.transactTime()};
     auto exchange_sequence = value.lastMsgSeqNumProcessed();
     TopOfBook top_of_book{
         .stream_id = stream_id_,
@@ -316,7 +316,7 @@ void UDPMBPMarketRecovery::operator()(
   auto &[trace_info, value] = event;
   log::info<5>("snapshot_full_refresh_long_qty_69={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
   get_security(shared_, value, [&](auto &security) {
-    std::chrono::nanoseconds exchange_time_utc = {};  // value.transactTime()
+    std::chrono::nanoseconds exchange_time_utc{value.transactTime()};
     auto exchange_sequence = value.lastMsgSeqNumProcessed();
     TopOfBook top_of_book{
         .stream_id = stream_id_,

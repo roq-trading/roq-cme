@@ -35,6 +35,7 @@ auto const NAME = "udp_na"sv;
 
 Mask<SupportType> const SUPPORTS{
     SupportType::REFERENCE_DATA,
+    SupportType::MARKET_STATUS,
 };
 
 struct create_metrics final : public core::metrics::Factory {
@@ -188,6 +189,13 @@ void UDPInstrumentDefinition::operator()(
         .discard = security.discard,
     };
     create_trace_and_dispatch(handler_, trace_info, reference_data, true);
+    MarketStatus const market_status{
+        .stream_id = stream_id_,
+        .exchange = security.exchange,
+        .symbol = security.symbol,
+        .trading_status = sbe::map_security_trading_status(value.mDSecurityTradingStatus()),
+    };
+    create_trace_and_dispatch(handler_, trace_info, market_status, true);
   });
 }
 
@@ -225,6 +233,13 @@ void UDPInstrumentDefinition::operator()(
         .discard = security.discard,
     };
     create_trace_and_dispatch(handler_, trace_info, reference_data, true);
+    MarketStatus const market_status{
+        .stream_id = stream_id_,
+        .exchange = security.exchange,
+        .symbol = security.symbol,
+        .trading_status = sbe::map_security_trading_status(value.mDSecurityTradingStatus()),
+    };
+    create_trace_and_dispatch(handler_, trace_info, market_status, true);
   });
 }
 
