@@ -48,8 +48,11 @@ struct Handler final : public ConfigReader::Handler {
       try {
         auto type = get_type(connection.feed_type);
         auto priority = get_priority(connection.feed);
-        auto port = core::from_chars<uint16_t>(connection.port);
-        connections_[channel_id][type].try_emplace(priority, connection.ip, port);
+        Config::Connection tmp{
+            .multicast_address = connection.ip,
+            .port = core::from_chars<uint16_t>(connection.port),
+        };
+        connections_[channel_id][type].try_emplace(priority, std::move(tmp));
       } catch (RuntimeError &e) {
         log::warn("Exception: {}"sv, e);
       }

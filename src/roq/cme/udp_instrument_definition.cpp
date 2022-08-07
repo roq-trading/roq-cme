@@ -84,11 +84,14 @@ void create_security(auto &shared, auto &value, Callback callback) {
   auto security_id = value.securityID();
   auto iter = shared.securities.find(security_id);
   if (iter == std::end(shared.securities)) {
-    auto exchange = sbe::get_string_view(value.securityExchange(), value.securityExchangeLength());
     auto symbol = sbe::get_string_view(value.symbol(), value.symbolLength());
-    auto display_factor = sbe::get_double(value.displayFactor());
-    auto discard = shared.discard_symbol(symbol);
-    iter = shared.securities.try_emplace(security_id, exchange, symbol, display_factor, discard).first;
+    Shared::Security security{
+        .exchange = sbe::get_string_view(value.securityExchange(), value.securityExchangeLength()),
+        .symbol = symbol,
+        .display_factor = sbe::get_double(value.displayFactor()),
+        .discard = shared.discard_symbol(symbol),
+    };
+    iter = shared.securities.try_emplace(security_id, std::move(security)).first;
     callback((*iter).second);
   }
 }
