@@ -76,6 +76,7 @@ TEST_CASE("md_incremental_refresh_book_46_test_1", "[sbe]") {
   CHECK(std::size(message) == 132);
   struct MyHandler final : public sbe::Parser::Handler {
     int counter = 0;
+    void operator()(Trace<cme_mdp::AdminHeartbeat12> const &, sbe::Frame const &) override { FAIL(); }
     // - MDInstrumentDefinition
     void operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &, sbe::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp::MDInstrumentDefinitionOption55> const &, sbe::Frame const &) override { FAIL(); }
@@ -272,6 +273,7 @@ TEST_CASE("md_incremental_refresh_book_46_test_2", "[sbe]") {
   CHECK(std::size(message) == 324);
   struct MyHandler final : public sbe::Parser::Handler {
     int counter = 0;
+    void operator()(Trace<cme_mdp::AdminHeartbeat12> const &, sbe::Frame const &) override { FAIL(); }
     // - MDInstrumentDefinition
     void operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &, sbe::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp::MDInstrumentDefinitionOption55> const &, sbe::Frame const &) override { FAIL(); }
@@ -428,6 +430,7 @@ TEST_CASE("md_instrument_definition_future_54", "[sbe]") {
   CHECK(std::size(message) == 1352);
   struct MyHandler final : public sbe::Parser::Handler {
     int counter = 0;
+    void operator()(Trace<cme_mdp::AdminHeartbeat12> const &, sbe::Frame const &) override { FAIL(); }
     // - MDInstrumentDefinition
     void operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &event, sbe::Frame const &) override {
       ++counter;
@@ -533,6 +536,7 @@ TEST_CASE("md_instrument_definition_spread_56", "[sbe]") {
   CHECK(std::size(message) == 1149);
   struct MyHandler final : public sbe::Parser::Handler {
     int counter = 0;
+    void operator()(Trace<cme_mdp::AdminHeartbeat12> const &, sbe::Frame const &) override { FAIL(); }
     // - MDInstrumentDefinition
     void operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &, sbe::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp::MDInstrumentDefinitionOption55> const &, sbe::Frame const &) override { FAIL(); }
@@ -623,6 +627,7 @@ TEST_CASE("md_md_incremental_refresh_book_46_test_1", "[sbe]") {
   CHECK(std::size(message) == 196);
   struct MyHandler final : public sbe::Parser::Handler {
     int counter = 0;
+    void operator()(Trace<cme_mdp::AdminHeartbeat12> const &, sbe::Frame const &) override { FAIL(); }
     // - MDInstrumentDefinition
     void operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &, sbe::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp::MDInstrumentDefinitionOption55> const &, sbe::Frame const &) override { FAIL(); }
@@ -706,6 +711,7 @@ TEST_CASE("md_md_incremental_refresh_book_46_test_2", "[sbe]") {
   CHECK(std::size(message) == 836);
   struct MyHandler final : public sbe::Parser::Handler {
     int counter = 0;
+    void operator()(Trace<cme_mdp::AdminHeartbeat12> const &, sbe::Frame const &) override { FAIL(); }
     // - MDInstrumentDefinition
     void operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &, sbe::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp::MDInstrumentDefinitionOption55> const &, sbe::Frame const &) override { FAIL(); }
@@ -753,4 +759,16 @@ TEST_CASE("md_md_incremental_refresh_book_46_test_2", "[sbe]") {
   auto result = sbe::Parser::dispatch(handler, buffer, {});
   CHECK(result == true);
   CHECK(handler.counter == 2);
+}
+
+TEST_CASE("xxx", "[sbe]") {
+  auto message =
+      "\x07\x02\x00\x00"
+      "\xbf\xa0\x13\xed\xfa\x0d\x09\x17"
+      "\x0a\x00"
+      "\x00\x00"
+      "\x0c\x00"  // template id (12 = AdminHeartbeat12)
+      "\x01\x00"
+      "\x09\x00"sv;
+  CHECK(std::size(message) == 22);
 }

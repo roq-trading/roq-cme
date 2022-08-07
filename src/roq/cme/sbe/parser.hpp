@@ -9,6 +9,7 @@
 
 #include "roq/cme/sbe/frame.hpp"
 
+#include "roq/cme/sbe/admin.hpp"
 #include "roq/cme/sbe/md_incremental_refresh.hpp"
 #include "roq/cme/sbe/md_instrument_definition.hpp"
 #include "roq/cme/sbe/snapshot_full_refresh.hpp"
@@ -19,6 +20,7 @@ namespace sbe {
 
 struct Parser final {
   struct Handler {
+    virtual void operator()(Trace<cme_mdp::AdminHeartbeat12> const &, Frame const &) = 0;
     // - MDInstrumentDefinition
     virtual void operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &, Frame const &) = 0;
     virtual void operator()(Trace<cme_mdp::MDInstrumentDefinitionOption55> const &, Frame const &) = 0;

@@ -148,6 +148,11 @@ void UDPInstrumentDefinition::operator()(io::net::udp::Receiver::Error const &er
 
 // sbe::Parser::Handler
 
+void UDPInstrumentDefinition::operator()(Trace<cme_mdp::AdminHeartbeat12> const &event, sbe::Frame const &frame) {
+  auto &[trace_info, value] = event;
+  log::info<5>("admin_heartbeat_12={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+}
+
 // - MDInstrumentDefinition
 
 void UDPInstrumentDefinition::operator()(
