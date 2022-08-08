@@ -39,6 +39,7 @@ void read_secdef(T &securities, D &dispatcher) {
           .discard = discard,
       };
       securities_.try_emplace(item.security_id, std::move(security));
+      double multiplier = item.multiplier == 0 ? NaN : utils::safe_cast<double>(item.multiplier);
       ReferenceData const reference_data{
           .stream_id = {},
           .exchange = item.exchange,
@@ -49,8 +50,8 @@ void read_secdef(T &securities, D &dispatcher) {
           .quote_currency = item.currency,
           .margin_currency = {},
           .commission_currency = {},
-          .tick_size = item.min_price_increment,
-          .multiplier = utils::safe_cast(item.multiplier),
+          .tick_size = item.min_price_increment * item.display_factor,
+          .multiplier = multiplier,
           .min_trade_vol = utils::safe_cast(item.min_trade_vol),
           .max_trade_vol = utils::safe_cast(item.max_trade_vol),
           .trade_vol_step_size = NaN,

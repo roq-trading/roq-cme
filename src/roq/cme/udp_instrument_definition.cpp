@@ -162,6 +162,9 @@ void UDPInstrumentDefinition::operator()(
   auto &value = event.value;
   log::info<5>("md_instrument_definition_future_54={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
   create_security(shared_, value, [&](auto &security) {
+    auto min_price_increment = sbe::get_double(value.minPriceIncrement());
+    auto contract_multiplier = sbe::get_int(value.contractMultiplier(), value.contractMultiplierNullValue());
+    double multiplier = contract_multiplier == 0 ? NaN : utils::safe_cast<double>(contract_multiplier);
     ReferenceData const reference_data{
         .stream_id = stream_id_,
         .exchange = security.exchange,
@@ -172,8 +175,8 @@ void UDPInstrumentDefinition::operator()(
         .quote_currency = sbe::get_string_view(value.currency(), value.currencyLength()),
         .margin_currency = {},
         .commission_currency = {},
-        .tick_size = sbe::get_double(value.minPriceIncrement()),
-        .multiplier = utils::safe_cast(sbe::get_int(value.contractMultiplier(), value.contractMultiplierNullValue())),
+        .tick_size = min_price_increment * security.display_factor,
+        .multiplier = multiplier,
         .min_trade_vol = utils::safe_cast(value.minTradeVol()),
         .max_trade_vol = utils::safe_cast(value.maxTradeVol()),
         .trade_vol_step_size = NaN,
@@ -205,6 +208,7 @@ void UDPInstrumentDefinition::operator()(
   auto &value = event.value;
   log::info<5>("md_instrument_definition_option_55={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
   create_security(shared_, value, [&](auto &security) {
+    auto min_price_increment = sbe::get_double(value.minPriceIncrement());
     ReferenceData const reference_data{
         .stream_id = stream_id_,
         .exchange = security.exchange,
@@ -215,7 +219,7 @@ void UDPInstrumentDefinition::operator()(
         .quote_currency = sbe::get_string_view(value.currency(), value.currencyLength()),
         .margin_currency = {},
         .commission_currency = {},
-        .tick_size = sbe::get_double(value.minPriceIncrement()),
+        .tick_size = min_price_increment * security.display_factor,
         .multiplier = NaN,
         .min_notional = NaN,
         .min_trade_vol = utils::safe_cast(value.minTradeVol()),
