@@ -92,13 +92,13 @@ bool get_security(auto &shared, auto &value, Callback callback) {
 }
 
 template <typename T>
-void emplace(MBPUpdate &result, T const &item) {
+void emplace(MBPUpdate &result, T const &item, auto &security) {
   auto price = sbe::get_double(const_cast<T &>(item).mDEntryPx());
   auto quantity = sbe::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue());
   auto number_of_orders = sbe::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue());
   auto price_level = sbe::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue());
   new (&result) MBPUpdate{
-      .price = utils::safe_cast(price),
+      .price = price * security.display_factor,
       .quantity = utils::safe_cast(quantity),
       .implied_quantity = NaN,
       .number_of_orders = utils::safe_cast(number_of_orders),
@@ -120,14 +120,14 @@ void emplace(Statistics &result, auto type, T const &item) {
 }
 
 template <typename T>
-void emplace_back(T const &item, auto &top_of_book, auto &bids, auto &asks, auto &statistics) {
+void emplace_back(T const &item, auto &security, auto &top_of_book, auto &bids, auto &asks, auto &statistics) {
   switch (item.mDEntryType()) {
     using enum cme_mdp::MDEntryType::Value;
     case Bid:
-      bids.emplace_back([&item](auto &result) { emplace(result, item); });
+      bids.emplace_back([&item, &security](auto &result) { emplace(result, item, security); });
       break;
     case Offer:
-      asks.emplace_back([&item](auto &result) { emplace(result, item); });
+      asks.emplace_back([&item, &security](auto &result) { emplace(result, item, security); });
       break;
     case Trade:
       break;
@@ -283,7 +283,7 @@ void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::SnapshotFullRefresh52> cons
     core::back_emplacer bids{shared_.bids}, asks{shared_.asks};
     core::back_emplacer statistics{shared_.statistics};
     value.noMDEntries().forEach(
-        [&](auto const &item) { emplace_back(item, top_of_book.layer, bids, asks, statistics); });
+        [&](auto const &item) { emplace_back(item, security, top_of_book.layer, bids, asks, statistics); });
     log::info<3>("top_of_book={}"sv, top_of_book);
     MarketByPriceUpdate const market_by_price_update{
         .stream_id = stream_id_,
@@ -329,7 +329,7 @@ void UDPMBPMarketRecovery::operator()(
     core::back_emplacer bids{shared_.bids}, asks{shared_.asks};
     core::back_emplacer statistics{shared_.statistics};
     value.noMDEntries().forEach(
-        [&](auto const &item) { emplace_back(item, top_of_book.layer, bids, asks, statistics); });
+        [&](auto const &item) { emplace_back(item, security, top_of_book.layer, bids, asks, statistics); });
     log::info<3>("top_of_book={}"sv, top_of_book);
     MarketByPriceUpdate const market_by_price_update{
         .stream_id = stream_id_,
