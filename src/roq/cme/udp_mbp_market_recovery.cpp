@@ -242,27 +242,27 @@ void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::AdminHeartbeat12> const &ev
 // - MDInstrumentDefinition
 
 void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &, sbe::Frame const &) {
-  log::fatal("Unexpected"sv);
+  log::warn<5>("Unexpected"sv);
 }
 
 void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::MDInstrumentDefinitionOption55> const &, sbe::Frame const &) {
-  log::fatal("Unexpected"sv);
+  log::warn<5>("Unexpected"sv);
 }
 
 void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::MDInstrumentDefinitionSpread56> const &, sbe::Frame const &) {
-  log::fatal("Unexpected"sv);
+  log::warn<5>("Unexpected"sv);
 }
 
 void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::MDInstrumentDefinitionFixedIncome57> const &, sbe::Frame const &) {
-  log::fatal("Unexpected"sv);
+  log::warn<5>("Unexpected"sv);
 }
 
 void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::MDInstrumentDefinitionRepo58> const &, sbe::Frame const &) {
-  log::fatal("Unexpected"sv);
+  log::warn<5>("Unexpected"sv);
 }
 
 void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::MDInstrumentDefinitionFX63> const &, sbe::Frame const &) {
-  log::fatal("Unexpected"sv);
+  log::warn<5>("Unexpected"sv);
 }
 // - SnapshotFullRefresh
 
@@ -360,57 +360,57 @@ void UDPMBPMarketRecovery::operator()(
 // - L3
 
 void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::SnapshotFullRefreshOrderBook53> const &, sbe::Frame const &) {
-  log::fatal("Unexpected"sv);
+  log::warn<5>("Unexpected"sv);
 }
 
 // - MDIncrementalRefresh
 
 void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::MDIncrementalRefreshVolume37> const &, sbe::Frame const &) {
-  log::fatal("Unexpected"sv);
+  log::warn<5>("Unexpected"sv);
 }
 
 void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &, sbe::Frame const &) {
-  log::fatal("Unexpected"sv);
+  log::warn<5>("Unexpected"sv);
 }
 
 void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::MDIncrementalRefreshOrderBook47> const &, sbe::Frame const &) {
-  log::fatal("Unexpected"sv);
+  log::warn<5>("Unexpected"sv);
 }
 
 void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::MDIncrementalRefreshTradeSummary48> const &, sbe::Frame const &) {
-  log::fatal("Unexpected"sv);
+  log::warn<5>("Unexpected"sv);
 }
 
 void UDPMBPMarketRecovery::operator()(
     Trace<cme_mdp::MDIncrementalRefreshDailyStatistics49> const &, sbe::Frame const &) {
-  log::fatal("Unexpected"sv);
+  log::warn<5>("Unexpected"sv);
 }
 
 void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::MDIncrementalRefreshLimitsBanding50> const &, sbe::Frame const &) {
-  log::fatal("Unexpected"sv);
+  log::warn<5>("Unexpected"sv);
 }
 
 void UDPMBPMarketRecovery::operator()(
     Trace<cme_mdp::MDIncrementalRefreshSessionStatistics51> const &, sbe::Frame const &) {
-  log::fatal("Unexpected"sv);
+  log::warn<5>("Unexpected"sv);
 }
 
 void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::MDIncrementalRefreshBookLongQty64> const &, sbe::Frame const &) {
-  log::fatal("Unexpected"sv);
+  log::warn<5>("Unexpected"sv);
 }
 
 void UDPMBPMarketRecovery::operator()(
     Trace<cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65> const &, sbe::Frame const &) {
-  log::fatal("Unexpected"sv);
+  log::warn<5>("Unexpected"sv);
 }
 
 void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::MDIncrementalRefreshVolumeLongQty66> const &, sbe::Frame const &) {
-  log::fatal("Unexpected"sv);
+  log::warn<5>("Unexpected"sv);
 }
 
 void UDPMBPMarketRecovery::operator()(
     Trace<cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67> const &, sbe::Frame const &) {
-  log::fatal("Unexpected"sv);
+  log::warn<5>("Unexpected"sv);
 }
 
 // - MDIncrementalRefresh

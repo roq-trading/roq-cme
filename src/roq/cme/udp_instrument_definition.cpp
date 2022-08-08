@@ -389,27 +389,27 @@ void UDPInstrumentDefinition::operator()(
 // - MbP
 
 void UDPInstrumentDefinition::operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &, sbe::Frame const &) {
-  log::fatal("Unexpected"sv);
+  log::warn<5>("Unexpected"sv);
 }
 
 void UDPInstrumentDefinition::operator()(Trace<cme_mdp::SnapshotFullRefreshLongQty69> const &, sbe::Frame const &) {
-  log::fatal("Unexpected"sv);
+  log::warn<5>("Unexpected"sv);
 }
 
 // - MbO
 
 void UDPInstrumentDefinition::operator()(Trace<cme_mdp::SnapshotFullRefreshOrderBook53> const &, sbe::Frame const &) {
-  log::fatal("Unexpected"sv);
+  log::warn<5>("Unexpected"sv);
 }
 
 // - MDIncrementalRefresh
 
 void UDPInstrumentDefinition::operator()(Trace<cme_mdp::MDIncrementalRefreshVolume37> const &, sbe::Frame const &) {
-  log::fatal("Unexpected"sv);
+  log::warn<5>("Unexpected"sv);
 }
 
 void UDPInstrumentDefinition::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &, sbe::Frame const &) {
-  log::fatal("Unexpected"sv);
+  log::warn<5>("Unexpected"sv);
 }
 
 void UDPInstrumentDefinition::operator()(Trace<cme_mdp::MDIncrementalRefreshOrderBook47> const &, sbe::Frame const &) {
@@ -418,42 +418,42 @@ void UDPInstrumentDefinition::operator()(Trace<cme_mdp::MDIncrementalRefreshOrde
 
 void UDPInstrumentDefinition::operator()(
     Trace<cme_mdp::MDIncrementalRefreshTradeSummary48> const &, sbe::Frame const &) {
-  log::fatal("Unexpected"sv);
+  log::warn<5>("Unexpected"sv);
 }
 
 void UDPInstrumentDefinition::operator()(
     Trace<cme_mdp::MDIncrementalRefreshDailyStatistics49> const &, sbe::Frame const &) {
-  log::fatal("Unexpected"sv);
+  log::warn<5>("Unexpected"sv);
 }
 
 void UDPInstrumentDefinition::operator()(
     Trace<cme_mdp::MDIncrementalRefreshLimitsBanding50> const &, sbe::Frame const &) {
-  log::fatal("Unexpected"sv);
+  log::warn<5>("Unexpected"sv);
 }
 
 void UDPInstrumentDefinition::operator()(
     Trace<cme_mdp::MDIncrementalRefreshSessionStatistics51> const &, sbe::Frame const &) {
-  log::fatal("Unexpected"sv);
+  log::warn<5>("Unexpected"sv);
 }
 
 void UDPInstrumentDefinition::operator()(
     Trace<cme_mdp::MDIncrementalRefreshBookLongQty64> const &, sbe::Frame const &) {
-  log::fatal("Unexpected"sv);
+  log::warn<5>("Unexpected"sv);
 }
 
 void UDPInstrumentDefinition::operator()(
     Trace<cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65> const &, sbe::Frame const &) {
-  log::fatal("Unexpected"sv);
+  log::warn<5>("Unexpected"sv);
 }
 
 void UDPInstrumentDefinition::operator()(
     Trace<cme_mdp::MDIncrementalRefreshVolumeLongQty66> const &, sbe::Frame const &) {
-  log::fatal("Unexpected"sv);
+  log::warn<5>("Unexpected"sv);
 }
 
 void UDPInstrumentDefinition::operator()(
     Trace<cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67> const &, sbe::Frame const &) {
-  log::fatal("Unexpected"sv);
+  log::warn<5>("Unexpected"sv);
 }
 
 // - MDIncrementalRefresh
