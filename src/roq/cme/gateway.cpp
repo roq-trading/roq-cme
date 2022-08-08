@@ -16,11 +16,19 @@ namespace cme {
 
 namespace {
 auto create_udp_instrument_definition(Gateway &gateway, io::Context &context, uint16_t &stream_id, Shared &shared) {
-  return std::make_unique<UDPInstrumentDefinition>(gateway, context, stream_id, shared);
+  if (std::empty(flags::Common::secdef_config_file()))
+    return std::make_unique<UDPInstrumentDefinition>(gateway, context, stream_id, shared);
+  log::warn("The instrument definitions channel is not needed when the secdef file was chosen"sv);
+  return std::unique_ptr<UDPInstrumentDefinition>{};
 }
+
 auto create_udp_mbp_market_recovery(Gateway &gateway, io::Context &context, uint16_t &stream_id, Shared &shared) {
-  return std::make_unique<UDPMBPMarketRecovery>(gateway, context, stream_id, shared);
+  if (flags::Multicast::multicast_is_premium())
+    return std::make_unique<UDPMBPMarketRecovery>(gateway, context, stream_id, shared);
+  log::warn("The MBP recovery channel is not needed for the conflated feed"sv);
+  return std::unique_ptr<UDPMBPMarketRecovery>{};
 }
+
 auto create_udp_incremental(Gateway &gateway, io::Context &context, uint16_t &stream_id, Shared &shared) {
   return std::make_unique<UDPIncremental>(gateway, context, stream_id, shared);
 }
@@ -132,7 +140,7 @@ void Gateway::operator()(Trace<MarketByPriceUpdate const> const &event, bool is_
       event, is_last, refresh, shared_.final_bids, shared_.final_asks, []([[maybe_unused]] auto &market_by_price) {});
 }
 
-void Gateway::operator()(Trace<TradeSummary const> const &event, bool is_last) {
+void Gateway::operator()(Trace<StatisticsUpdate const> const &event, bool is_last) {
   dispatcher_(event, is_last);
 }
 

@@ -28,7 +28,7 @@ class UDPMBPMarketRecovery final : public io::net::udp::Receiver::Handler, publi
     virtual void operator()(Trace<StreamStatus const> const &) = 0;
     virtual void operator()(Trace<TopOfBook const> const &, bool is_last) = 0;
     virtual void operator()(Trace<MarketByPriceUpdate const> const &, bool is_last, bool refresh) = 0;
-    virtual void operator()(Trace<TradeSummary const> const &, bool is_last) = 0;
+    virtual void operator()(Trace<StatisticsUpdate const> const &, bool is_last) = 0;
   };
 
   UDPMBPMarketRecovery(Handler &, io::Context &, uint16_t stream_id, Shared &);
@@ -77,9 +77,6 @@ class UDPMBPMarketRecovery final : public io::net::udp::Receiver::Handler, publi
  protected:
   void publish_stream_status(TraceInfo const &, ConnectionStatus connection_status);
 
-  // utils
-  Aggregator &get_aggregator(uint16_t channel_id);
-
  private:
   Handler &handler_;
   // config
@@ -98,9 +95,6 @@ class UDPMBPMarketRecovery final : public io::net::udp::Receiver::Handler, publi
   // cache
   Shared &shared_;
   ConnectionStatus connection_status_ = {};
-  absl::flat_hash_map<uint32_t, uint32_t> last_ticker_;
-  absl::flat_hash_map<uint32_t, uint32_t> last_trades_;
-  absl::node_hash_map<uint16_t, Aggregator> aggregator_;
   // state
   std::chrono::nanoseconds last_update_time_ = {};
 };

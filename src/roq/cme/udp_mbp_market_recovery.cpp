@@ -59,28 +59,6 @@ auto create_receiver(auto &handler, auto &context, auto &shared) {
   return receiver;
 }
 
-bool test_sequence(auto &cache, auto instrument_id, auto sequence_number) {
-  auto result = false;
-  const constexpr uint32_t midpoint = 1 << 31;
-  auto iter = cache.find(instrument_id);
-  if (iter != cache.end()) {
-    auto previous = (*iter).second;
-    if (previous < sequence_number) {
-      result = true;
-    } else if (sequence_number < midpoint && midpoint < previous) {
-      result = true;  // wraparound
-    } else {
-      // out of sequence
-    }
-  } else {
-    iter = cache.emplace(instrument_id, sequence_number).first;
-    result = true;
-  }
-  if (result)
-    (*iter).second = sequence_number;
-  return result;
-}
-
 template <typename Callback>
 bool get_security(auto &shared, auto &value, Callback callback) {
   auto security_id = value.securityID();
@@ -464,14 +442,6 @@ void UDPMBPMarketRecovery::publish_stream_status(TraceInfo const &trace_info, Co
   };
   log::info("stream_status={}"sv, stream_status);
   create_trace_and_dispatch(handler_, trace_info, stream_status);
-}
-
-Aggregator &UDPMBPMarketRecovery::get_aggregator(uint16_t channel_id) {
-  auto iter = aggregator_.find(channel_id);
-  if (iter == std::end(aggregator_)) {
-    iter = aggregator_.emplace(channel_id, server::Flags::cache_mbp_max_depth()).first;
-  }
-  return (*iter).second;
 }
 
 }  // namespace cme

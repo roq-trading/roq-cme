@@ -28,7 +28,7 @@ class UDPIncremental final : public io::net::udp::Receiver::Handler, public sbe:
     virtual void operator()(Trace<StreamStatus const> const &) = 0;
     virtual void operator()(Trace<TopOfBook const> const &, bool is_last) = 0;
     virtual void operator()(Trace<MarketByPriceUpdate const> const &, bool is_last, bool refresh) = 0;
-    virtual void operator()(Trace<TradeSummary const> const &, bool is_last) = 0;
+    virtual void operator()(Trace<StatisticsUpdate const> const &, bool is_last) = 0;
   };
 
   UDPIncremental(Handler &, io::Context &, uint16_t stream_id, Shared &);
@@ -77,12 +77,6 @@ class UDPIncremental final : public io::net::udp::Receiver::Handler, public sbe:
  protected:
   void publish_stream_status(TraceInfo const &, ConnectionStatus connection_status);
 
-  // utils
-  template <typename T, typename U>
-  static void emplace_back(const T &item, double multiplier, U &bids, U &asks);
-
-  Aggregator &get_aggregator(uint16_t channel_id);
-
  private:
   Handler &handler_;
   // config
@@ -101,9 +95,6 @@ class UDPIncremental final : public io::net::udp::Receiver::Handler, public sbe:
   // cache
   Shared &shared_;
   ConnectionStatus connection_status_ = {};
-  absl::flat_hash_map<uint32_t, uint32_t> last_ticker_;
-  absl::flat_hash_map<uint32_t, uint32_t> last_trades_;
-  absl::node_hash_map<uint16_t, Aggregator> aggregator_;
   // state
   std::chrono::nanoseconds last_update_time_ = {};
 };
