@@ -9,7 +9,7 @@ add_executable("${TARGET_NAME}" ${SOURCES})
 target_link_libraries(
   "${TARGET_NAME}"
   "${PROJECT_NAME}-multicast"
-  "${PROJECT_NAME}-tools"
+  "${PROJECT_NAME}-secdef"
   "${PROJECT_NAME}-sbe"
   roq-server::roq-server
   roq-core::roq-core
