@@ -108,9 +108,19 @@ void emplace(MBPUpdate &result, T const &item, auto &security) {
 }
 
 template <typename T>
-void emplace(Statistics &result, auto type, T const &item) {
+void emplace_price(Statistics &result, auto type, T const &item, auto factor) {
   auto value = sbe::get_double(const_cast<T &>(item).mDEntryPx());
-  // auto value = sbe::get_int(value.mDEntrySize(), value.mDEntrySizeNullValue());
+  new (&result) Statistics{
+      .type = type,
+      .value = value * factor,
+      .begin_time_utc = {},
+      .end_time_utc = {},
+  };
+}
+
+template <typename T>
+void emplace_size(Statistics &result, auto type, T const &item) {
+  auto value = sbe::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue());
   new (&result) Statistics{
       .type = type,
       .value = utils::safe_cast(value),
@@ -132,23 +142,31 @@ void emplace_back(T const &item, auto &security, auto &top_of_book, auto &bids, 
     case Trade:
       break;
     case OpenPrice:
-      statistics.emplace_back([&item](auto &result) { emplace(result, StatisticsType::OPEN_PRICE, item); });
+      statistics.emplace_back([&item, &security](auto &result) {
+        emplace_price(result, StatisticsType::OPEN_PRICE, item, security.display_factor);
+      });
       break;
     case SettlementPrice:
-      statistics.emplace_back([&item](auto &result) { emplace(result, StatisticsType::SETTLEMENT_PRICE, item); });
+      statistics.emplace_back([&item, &security](auto &result) {
+        emplace_price(result, StatisticsType::SETTLEMENT_PRICE, item, security.display_factor);
+      });
       break;
     case TradingSessionHighPrice:
-      statistics.emplace_back([&item](auto &result) { emplace(result, StatisticsType::HIGHEST_TRADED_PRICE, item); });
+      statistics.emplace_back([&item, &security](auto &result) {
+        emplace_price(result, StatisticsType::HIGHEST_TRADED_PRICE, item, security.display_factor);
+      });
       break;
     case TradingSessionLowPrice:
-      statistics.emplace_back([&item](auto &result) { emplace(result, StatisticsType::LOWEST_TRADED_PRICE, item); });
+      statistics.emplace_back([&item, &security](auto &result) {
+        emplace_price(result, StatisticsType::LOWEST_TRADED_PRICE, item, security.display_factor);
+      });
       break;
     case VWAP:
       break;
     case ClearedVolume:
       break;
     case OpenInterest:
-      statistics.emplace_back([&item](auto &result) { emplace(result, StatisticsType::OPEN_INTEREST, item); });
+      statistics.emplace_back([&item](auto &result) { emplace_size(result, StatisticsType::OPEN_INTEREST, item); });
       break;
     case ImpliedBid:
       break;
@@ -162,7 +180,9 @@ void emplace_back(T const &item, auto &security, auto &top_of_book, auto &bids, 
       break;
     case FixingPrice:
       // XXX need a new type?
-      statistics.emplace_back([&item](auto &result) { emplace(result, StatisticsType::CLOSE_PRICE, item); });
+      statistics.emplace_back([&item, &security](auto &result) {
+        emplace_price(result, StatisticsType::CLOSE_PRICE, item, security.display_factor);
+      });
       break;
     case ElectronicVolume:
       break;
@@ -170,12 +190,12 @@ void emplace_back(T const &item, auto &security, auto &top_of_book, auto &bids, 
       break;
     case MarketBestOffer: {
       auto price = sbe::get_double(const_cast<T &>(item).mDEntryPx());
-      top_of_book.ask_price = utils::safe_cast(price);
+      top_of_book.ask_price = price * security.display_factor;
       break;
     }
     case MarketBestBid: {
       auto price = sbe::get_double(const_cast<T &>(item).mDEntryPx());
-      top_of_book.bid_price = utils::safe_cast(price);
+      top_of_book.bid_price = price * security.display_factor;
       break;
     }
     case NULL_VALUE:
