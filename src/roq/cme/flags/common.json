@@ -30,16 +30,10 @@
       "description": "decode buffer size"
     },
     {
-      "name": "disable_deribit_143",
-      "type": "bool",
-      "default": false,
-      "description": "disable #143"
-    },
-    {
-      "name": "disable_master_account_check",
-      "type": "bool",
-      "default": false,
-      "description": "disable requirement for master account"
+      "name": "secdef_config_file",
+      "type": "std::string",
+      "validator": "roq::core::flags::Path<std::string>",
+      "description": "config file (path)"
     }
   ]
 }

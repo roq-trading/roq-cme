@@ -1,6 +1,6 @@
 /* Copyright (c) 2017-2022, Hans Erik Thrane */
 
-#include "roq/cme/tools/secdef_reader.hpp"
+#include "roq/cme/secdef/config_reader.hpp"
 
 #include "roq/logging.hpp"
 
@@ -14,7 +14,7 @@ using namespace std::literals;
 
 namespace roq {
 namespace cme {
-namespace tools {
+namespace secdef {
 
 void set(auto &result, auto &key, auto &value) {
   // XXX we could use discard to avoid conversion
@@ -56,7 +56,7 @@ void set(auto &result, auto &key, auto &value) {
   }
 }
 
-void SecDefReader::read(Handler &handler, std::string_view const &filename) {
+void ConfigReader::read(Handler &handler, std::string_view const &filename) {
   core::filesystem::File file{filename, {core::filesystem::Flags::READ_ONLY}};
   core::memory::Mapping memory(
       std::size(file),
@@ -72,7 +72,7 @@ void SecDefReader::read(Handler &handler, std::string_view const &filename) {
   dispatch(handler, {reinterpret_cast<char const *>(std::data(buffer)), std::size(buffer)});
 }
 
-void SecDefReader::dispatch(Handler &handler, std::string_view const &buffer) {
+void ConfigReader::dispatch(Handler &handler, std::string_view const &buffer) {
   auto tmp = buffer;
   SecDef sec_def = {};
   while (!std::empty(tmp)) {
@@ -89,6 +89,6 @@ void SecDefReader::dispatch(Handler &handler, std::string_view const &buffer) {
   }
 }
 
-}  // namespace tools
+}  // namespace secdef
 }  // namespace cme
 }  // namespace roq

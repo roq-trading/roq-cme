@@ -1,6 +1,6 @@
-set(TARGET_NAME "${PROJECT_NAME}-tools")
+set(TARGET_NAME "${PROJECT_NAME}-secdef")
 
-set(SOURCES secdef_reader.cpp)
+set(SOURCES config_reader.cpp)
 
 add_library("${TARGET_NAME}" STATIC ${SOURCES})
 

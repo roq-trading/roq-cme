@@ -3,7 +3,7 @@ set(TARGET_NAME "${PROJECT_NAME}")
 add_subdirectory("flags")
 add_subdirectory("sbe")
 add_subdirectory("multicast")
-add_subdirectory("tools")
+add_subdirectory("secdef")
 
 set(SOURCES
     application.cpp
@@ -44,7 +44,7 @@ target_link_libraries(
   PRIVATE "${PROJECT_NAME}-flags"
           "${PROJECT_NAME}-sbe"
           "${PROJECT_NAME}-multicast"
-          "${PROJECT_NAME}-tools"
+          "${PROJECT_NAME}-secdef"
           roq-server::roq-server
           roq-web::roq-web
           roq-io::roq-io

@@ -8,9 +8,9 @@
 
 namespace roq {
 namespace cme {
-namespace tools {
+namespace secdef {
 
-struct SecDefReader final {
+struct ConfigReader final {
   struct SecDef final {
     uint32_t security_id = {};
     // note! orderd to (mostly) align with ReferenceData
@@ -36,6 +36,6 @@ struct SecDefReader final {
   static void dispatch(Handler &, std::string_view const &buffer);
 };
 
-}  // namespace tools
+}  // namespace secdef
 }  // namespace cme
 }  // namespace roq

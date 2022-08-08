@@ -4,14 +4,78 @@
 
 #include "roq/logging.hpp"
 
+#include "roq/utils/safe_cast.hpp"
+
 #include "roq/cme/flags/common.hpp"
-#include "roq/cme/flags/fix.hpp"
 #include "roq/cme/flags/multicast.hpp"
+
+#include "roq/cme/secdef/config_reader.hpp"
 
 using namespace std::literals;
 
 namespace roq {
 namespace cme {
+
+namespace {
+size_t SLICE = 65536;
+
+template <typename T, typename D>
+void read_secdef(T &securities, D &dispatcher) {
+  auto config_file = flags::Common::secdef_config_file();
+  if (std::empty(config_file))
+    return;
+  log::info(R"(Reading instrument definitions from "{}"... (*** can be very slow ***))"sv, config_file);
+  struct Handler final : public secdef::ConfigReader::Handler {
+    Handler(T &securities, D &dispatcher) : securities_(securities), dispatcher_(dispatcher) {}
+    void operator()(secdef::ConfigReader::SecDef const &item) override {
+      auto discard = dispatcher_.discard_symbol(item.symbol);
+      // note! it's too much -- always discard
+      if (discard)
+        return;
+      Shared::Security security{
+          .exchange = item.exchange,
+          .symbol = item.symbol,
+          .display_factor = item.display_factor,
+          .discard = discard,
+      };
+      securities_.try_emplace(item.security_id, std::move(security));
+      ReferenceData const reference_data{
+          .stream_id = {},
+          .exchange = item.exchange,
+          .symbol = item.symbol,
+          .description = {},
+          .security_type = SecurityType::FUTURES,  // ???
+          .base_currency = {},
+          .quote_currency = item.currency,
+          .margin_currency = {},
+          .commission_currency = {},
+          .tick_size = item.min_price_increment,
+          .multiplier = utils::safe_cast(item.multiplier),
+          .min_trade_vol = utils::safe_cast(item.min_trade_vol),
+          .max_trade_vol = utils::safe_cast(item.max_trade_vol),
+          .trade_vol_step_size = NaN,
+          .option_type = {},
+          .strike_currency = {},
+          .strike_price = NaN,
+          .underlying = {},
+          .time_zone = {},
+          .issue_date = {},
+          .settlement_date = {},
+          .expiry_datetime = {},  // MaturityMonthYear ???
+          .expiry_datetime_utc = {},
+          .discard = security.discard,
+      };
+      auto trace_info = server::create_trace_info();
+      create_trace_and_dispatch(dispatcher_, trace_info, reference_data, true);
+    }
+
+   private:
+    T &securities_;
+    D &dispatcher_;
+  } handler{securities, dispatcher};
+  secdef::ConfigReader::read(handler, config_file);
+}
+}  // namespace
 
 Shared::Shared(server::Dispatcher &dispatcher)
     : multicast_config_(flags::Multicast::multicast_config_file()), fills(server::Flags::cache_fills_max_depth()),
@@ -19,7 +83,8 @@ Shared::Shared(server::Dispatcher &dispatcher)
       final_bids(server::Flags::cache_mbp_max_depth()), final_asks(server::Flags::cache_mbp_max_depth()),
       trades(server::Flags::cache_trades_max_depth()), statistics(magic_enum::enum_count<StatisticsType>()),
       dispatcher_(dispatcher), rate_limiter(flags::Common::request_limit(), flags::Common::request_limit_interval()),
-      symbols(flags::FIX::fix_market_data_max_subscriptions_per_stream()) {
+      symbols(SLICE) {
+  read_secdef(securities, dispatcher);
 }
 
 std::pair<std::string, uint16_t> Shared::get_multicast_config(multicast::Type type, Priority priority) const {

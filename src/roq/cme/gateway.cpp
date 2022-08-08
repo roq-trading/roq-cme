@@ -7,7 +7,6 @@
 #include "roq/io/engine/context_factory.hpp"
 
 #include "roq/cme/flags/common.hpp"
-#include "roq/cme/flags/fix.hpp"
 #include "roq/cme/flags/multicast.hpp"
 
 using namespace std::literals;
@@ -32,8 +31,6 @@ Gateway::Gateway(server::Dispatcher &dispatcher, Config const &)
       udp_instrument_definition_(create_udp_instrument_definition(*this, *context_, ++stream_id_, shared_)),
       udp_mbp_market_recovery_(create_udp_mbp_market_recovery(*this, *context_, ++stream_id_, shared_)),
       udp_incremental_(create_udp_incremental(*this, *context_, ++stream_id_, shared_)) {
-  if (!flags::FIX::fix_cancel_on_disconnect())
-    log::warn("Orders will *NOT* be cancelled on disconnect"sv);
 }
 
 void Gateway::operator()(Event<Start> const &event) {

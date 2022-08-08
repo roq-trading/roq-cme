@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
-NAME="deribit"
+NAME="cme"
 
 CONFIG_FILE="config/$NAME.toml"
+SECDEF_CONFIG_FILE="config/secdef.dat"
 MULTICAST_CONFIG_FILE="config/config.xml"
 
 # debug?
@@ -31,6 +32,7 @@ $PREFIX "./roq-cme" \
   --event_log_symlink \
 	--client_listen_address "$HOME/run/$NAME.sock" \
 	--metrics_listen_address "$HOME/run/${NAME}_metrics.sock" \
+  --secdef_config_file "$SECDEF_CONFIG_FILE" \
 	--multicast_channel_id "310" \
 	--multicast_config_file "$MULTICAST_CONFIG_FILE" \
 	--multicast_local_interface "1.2.3.4" \
