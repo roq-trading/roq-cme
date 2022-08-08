@@ -302,6 +302,7 @@ void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::SnapshotFullRefresh52> cons
     };
     core::back_emplacer bids{shared_.bids}, asks{shared_.asks};
     core::back_emplacer statistics{shared_.statistics};
+    value.sbeRewind();  // note!
     value.noMDEntries().forEach(
         [&](auto const &item) { emplace_back(item, security, top_of_book.layer, bids, asks, statistics); });
     if (!(std::isnan(top_of_book.layer.bid_price) && std::isnan(top_of_book.layer.ask_price)))
@@ -351,6 +352,7 @@ void UDPMBPMarketRecovery::operator()(
     };
     core::back_emplacer bids{shared_.bids}, asks{shared_.asks};
     core::back_emplacer statistics{shared_.statistics};
+    value.sbeRewind();  // note!
     value.noMDEntries().forEach(
         [&](auto const &item) { emplace_back(item, security, top_of_book.layer, bids, asks, statistics); });
     if (!(std::isnan(top_of_book.layer.bid_price) && std::isnan(top_of_book.layer.ask_price)))
