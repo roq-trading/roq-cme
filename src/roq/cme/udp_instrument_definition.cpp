@@ -133,8 +133,8 @@ void UDPInstrumentDefinition::operator()(io::net::udp::Receiver::Read const &) {
   publish_stream_status(trace_info, ConnectionStatus::READY);  // first message will publish
   while (receive_buffer_.append(*receiver_)) {
     auto message = receive_buffer_.data();
-    // log::info<5>("received {} byte(s)"sv, std::size(message));
-    // log::info<5>("{}"sv, debug::hex::Message{message});
+    log::info<5>("received {} byte(s)"sv, std::size(message));
+    log::info<5>("{}"sv, debug::hex::Message{message});
     if (!sbe::Parser::dispatch(*this, message, trace_info)) {
       log::warn("{}"sv, debug::hex::Message{message});
       log::fatal("Failed to parse message"sv);

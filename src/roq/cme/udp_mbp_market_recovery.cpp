@@ -238,8 +238,8 @@ void UDPMBPMarketRecovery::operator()(io::net::udp::Receiver::Read const &) {
   publish_stream_status(trace_info, ConnectionStatus::READY);  // first message will publish
   while (receive_buffer_.append(*receiver_)) {
     auto message = receive_buffer_.data();
-    // log::info<5>("received {} byte(s)"sv, std::size(message));
-    // log::info<5>("{}"sv, debug::hex::Message{message});
+    log::info<5>("received {} byte(s)"sv, std::size(message));
+    log::info<5>("{}"sv, debug::hex::Message{message});
     if (!sbe::Parser::dispatch(*this, message, trace_info)) {
       log::warn("{}"sv, debug::hex::Message{message});
       log::fatal("Failed to parse message"sv);
@@ -304,7 +304,8 @@ void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::SnapshotFullRefresh52> cons
     core::back_emplacer statistics{shared_.statistics};
     value.noMDEntries().forEach(
         [&](auto const &item) { emplace_back(item, security, top_of_book.layer, bids, asks, statistics); });
-    log::info<3>("top_of_book={}"sv, top_of_book);
+    if (!(std::isnan(top_of_book.layer.bid_price) && std::isnan(top_of_book.layer.ask_price)))
+      log::info<3>("top_of_book={}"sv, top_of_book);
     MarketByPriceUpdate const market_by_price_update{
         .stream_id = stream_id_,
         .exchange = security.exchange,
@@ -318,7 +319,8 @@ void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::SnapshotFullRefresh52> cons
         .quantity_decimals = {},
         .checksum = {},
     };
-    log::info<3>("market_by_price_update={}"sv, market_by_price_update);
+    if (!(std::empty(market_by_price_update.bids) && std::empty(market_by_price_update.bids)))
+      log::info<3>("market_by_price_update={}"sv, market_by_price_update);
     StatisticsUpdate const statistics_update{
         .stream_id = stream_id_,
         .exchange = security.exchange,
@@ -327,7 +329,8 @@ void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::SnapshotFullRefresh52> cons
         .update_type = UpdateType::SNAPSHOT,
         .exchange_time_utc = exchange_time_utc,
     };
-    log::info<3>("statistics_update={}"sv, statistics_update);
+    if (!std::empty(statistics_update.statistics))
+      log::info<3>("statistics_update={}"sv, statistics_update);
   });
 }
 
@@ -350,7 +353,8 @@ void UDPMBPMarketRecovery::operator()(
     core::back_emplacer statistics{shared_.statistics};
     value.noMDEntries().forEach(
         [&](auto const &item) { emplace_back(item, security, top_of_book.layer, bids, asks, statistics); });
-    log::info<3>("top_of_book={}"sv, top_of_book);
+    if (!(std::isnan(top_of_book.layer.bid_price) && std::isnan(top_of_book.layer.ask_price)))
+      log::info<3>("top_of_book={}"sv, top_of_book);
     MarketByPriceUpdate const market_by_price_update{
         .stream_id = stream_id_,
         .exchange = security.exchange,
@@ -364,7 +368,8 @@ void UDPMBPMarketRecovery::operator()(
         .quantity_decimals = {},
         .checksum = {},
     };
-    log::info<3>("market_by_price_update={}"sv, market_by_price_update);
+    if (!(std::empty(market_by_price_update.bids) && std::empty(market_by_price_update.bids)))
+      log::info<3>("market_by_price_update={}"sv, market_by_price_update);
     StatisticsUpdate const statistics_update{
         .stream_id = stream_id_,
         .exchange = security.exchange,
@@ -373,7 +378,8 @@ void UDPMBPMarketRecovery::operator()(
         .update_type = UpdateType::SNAPSHOT,
         .exchange_time_utc = exchange_time_utc,
     };
-    log::info<3>("statistics_update={}"sv, statistics_update);
+    if (!std::empty(statistics_update.statistics))
+      log::info<3>("statistics_update={}"sv, statistics_update);
   });
 }
 
