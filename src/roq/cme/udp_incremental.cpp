@@ -423,7 +423,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
   auto &value = event.value;
   log::info<3>("md_incremental_refresh_book_46={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
   value.sbeRewind();  // note!
-  uint32_t exchange_sequence = {};
+  uint32_t exchange_sequence = frame.sequence_number;
   std::chrono::nanoseconds exchange_time_utc{value.transactTime()};
   Layer layer = {};
   core::back_emplacer bids{shared_.bids}, asks{shared_.asks};
@@ -461,7 +461,6 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
         security = nullptr;
       }
     }
-    exchange_sequence = item.rptSeq();
     if (security)
       emplace_back(item, *security, layer, bids, asks);
   });
@@ -662,7 +661,7 @@ void UDPIncremental::publish_incremental_or_snapshot(
         bids,
         asks,
         exchange_sequence,
-        exchange_sequence - 1,
+        exchange_sequence,
         exchange_sequence - 1,
         [&](auto &bids, auto &asks) {  // update
           MarketByPriceUpdate const market_by_price_update{
