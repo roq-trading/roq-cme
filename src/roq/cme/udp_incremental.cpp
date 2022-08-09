@@ -104,6 +104,8 @@ void emplace(Trade &result, T const &item, auto &security) {
       .quantity = utils::safe_cast(quantity),
       .trade_id = {},
   };
+  auto trade_id = sbe::get_int(item.mDTradeEntryID(), item.mDTradeEntryIDNullValue());
+  fmt::format_to(std::back_inserter(result.trade_id), "{}"sv, trade_id);
 }
 
 template <typename T>
@@ -135,25 +137,11 @@ void emplace_size(Statistics &result, auto type, T const &item) {
 
 template <typename T>
 void statistics_emplace_back(auto &result, T const &item, auto &security) {
-  switch (item.mDEntryType()) {
-    using enum cme_mdp::MDEntryTypeDailyStatistics::Value;
-    case SettlementPrice:
-      result.emplace_back([&item, &security](auto &result) {
-        emplace_price(result, StatisticsType::SETTLEMENT_PRICE, item, security.display_factor);
-      });
-      break;
-    case ClearedVolume:
-      break;
-    case OpenInterest:
-      result.emplace_back([&item](auto &result) { emplace_size(result, StatisticsType::OPEN_INTEREST, item); });
-      break;
-    case FixingPrice:
-      // XXX need a new type?
-      result.emplace_back([&item, &security](auto &result) {
-        emplace_price(result, StatisticsType::CLOSE_PRICE, item, security.display_factor);
-      });
-    case NULL_VALUE:
-      break;
+  auto statistics_type = sbe::map(item.mDEntryType());
+  if (statistics_type == StatisticsType::OPEN_INTEREST) {
+    result.emplace_back([&](auto &result) { emplace_size(result, statistics_type, item); });
+  } else {
+    result.emplace_back([&](auto &result) { emplace_price(result, statistics_type, item, security.display_factor); });
   }
 }
 
@@ -519,6 +507,41 @@ void UDPIncremental::operator()(
   auto &[trace_info, value] = event;
   log::info<3>(
       "md_incremental_refresh_session_statistics_51={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  value.sbeRewind();  // note!
+  std::chrono::nanoseconds exchange_time_utc{value.transactTime()};
+  core::back_emplacer statistics{shared_.statistics};
+  auto dispatch = [&](auto &statistics, auto &security, auto is_last) {
+    StatisticsUpdate const statistics_update{
+        .stream_id = stream_id_,
+        .exchange = security.exchange,
+        .symbol = security.symbol,
+        .statistics = statistics,
+        .update_type = UpdateType::INCREMENTAL,
+        .exchange_time_utc = exchange_time_utc,
+    };
+    log::info<3>("statistics_update={}"sv, statistics_update);
+    create_trace_and_dispatch(handler_, trace_info, statistics_update, is_last);
+  };
+  int32_t previous_security_id = {};
+  Shared::Security *security = nullptr;
+  value.noMDEntries().forEach([&](auto const &item) {
+    auto security_id = item.securityID();
+    if (security_id != previous_security_id) {
+      if (!std::empty(statistics)) {
+        assert(security);
+        dispatch(statistics, *security, true);
+        statistics.clear();
+      }
+      previous_security_id = security_id;
+      get_security(shared_, item, [&security](auto &security_) { security = &security_; });
+    }
+    assert(security);
+    statistics_emplace_back(statistics, item, *security);
+  });
+  if (!std::empty(statistics)) {
+    assert(security);
+    dispatch(statistics, *security, true);
+  }
 }
 
 void UDPIncremental::operator()(
@@ -532,6 +555,39 @@ void UDPIncremental::operator()(
   auto &[trace_info, value] = event;
   log::info<3>(
       "md_incremental_refresh_trade_summary_long_qty_65={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  value.sbeRewind();  // note!
+  std::chrono::nanoseconds exchange_time_utc{value.transactTime()};
+  core::back_emplacer trades{shared_.trades};
+  auto dispatch = [&](auto &trades, auto &security, auto is_last) {
+    const TradeSummary trade_summary{
+        .stream_id = stream_id_,
+        .exchange = security.exchange,
+        .symbol = security.symbol,
+        .trades = trades,
+        .exchange_time_utc = exchange_time_utc,
+    };
+    create_trace_and_dispatch(handler_, trace_info, trade_summary, is_last);
+  };
+  int32_t previous_security_id = {};
+  Shared::Security *security = nullptr;
+  value.noMDEntries().forEach([&](auto const &item) {
+    auto security_id = item.securityID();
+    if (security_id != previous_security_id) {
+      if (!std::empty(trades)) {
+        assert(security);
+        dispatch(trades, *security, true);
+        trades.clear();
+      }
+      previous_security_id = security_id;
+      get_security(shared_, item, [&security](auto &security_) { security = &security_; });
+    }
+    assert(security);
+    trade_summary_emplace_back(trades, item, *security);
+  });
+  if (!std::empty(trades)) {
+    assert(security);
+    dispatch(trades, *security, true);
+  }
 }
 
 void UDPIncremental::operator()(
@@ -547,6 +603,41 @@ void UDPIncremental::operator()(
       "md_incremental_refresh_session_statistics_long_qty_67={}, frame={}"sv,
       const_cast<decltype(value) &>(value),
       frame);
+  value.sbeRewind();  // note!
+  std::chrono::nanoseconds exchange_time_utc{value.transactTime()};
+  core::back_emplacer statistics{shared_.statistics};
+  auto dispatch = [&](auto &statistics, auto &security, auto is_last) {
+    StatisticsUpdate const statistics_update{
+        .stream_id = stream_id_,
+        .exchange = security.exchange,
+        .symbol = security.symbol,
+        .statistics = statistics,
+        .update_type = UpdateType::INCREMENTAL,
+        .exchange_time_utc = exchange_time_utc,
+    };
+    log::info<3>("statistics_update={}"sv, statistics_update);
+    create_trace_and_dispatch(handler_, trace_info, statistics_update, is_last);
+  };
+  int32_t previous_security_id = {};
+  Shared::Security *security = nullptr;
+  value.noMDEntries().forEach([&](auto const &item) {
+    auto security_id = item.securityID();
+    if (security_id != previous_security_id) {
+      if (!std::empty(statistics)) {
+        assert(security);
+        dispatch(statistics, *security, true);
+        statistics.clear();
+      }
+      previous_security_id = security_id;
+      get_security(shared_, item, [&security](auto &security_) { security = &security_; });
+    }
+    assert(security);
+    statistics_emplace_back(statistics, item, *security);
+  });
+  if (!std::empty(statistics)) {
+    assert(security);
+    dispatch(statistics, *security, true);
+  }
 }
 
 // - MDIncrementalRefresh

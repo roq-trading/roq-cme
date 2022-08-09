@@ -38,6 +38,49 @@ inline Side map_side(cme_mdp::AggressorSide::Value value) {
   return {};
 }
 
+inline StatisticsType map(cme_mdp::MDEntryTypeDailyStatistics::Value value) {
+  switch (value) {
+    using enum cme_mdp::MDEntryTypeDailyStatistics::Value;
+    case SettlementPrice:
+      return StatisticsType::SETTLEMENT_PRICE;
+      break;
+    case ClearedVolume:
+      break;
+    case OpenInterest:
+      return StatisticsType::OPEN_INTEREST;
+      break;
+    case FixingPrice:
+      return StatisticsType::CLOSE_PRICE;
+    case NULL_VALUE:
+      break;
+  }
+  return {};
+}
+
+inline StatisticsType map(cme_mdp::MDEntryTypeStatistics::Value value) {
+  switch (value) {
+    using enum cme_mdp::MDEntryTypeStatistics::Value;
+    case OpenPrice:
+      return StatisticsType::OPEN_PRICE;
+      break;
+    case HighTrade:
+      return StatisticsType::HIGHEST_TRADED_PRICE;
+      break;
+    case LowTrade:
+      return StatisticsType::LOWEST_TRADED_PRICE;
+      break;
+    case VWAP:
+      break;
+    case HighestBid:
+      break;
+    case LowestOffer:
+      break;
+    case NULL_VALUE:
+      break;
+  }
+  return {};
+}
+
 /*
 START_OF_DAY,         //!< No matching, no order actions
 PRE_OPEN,             //!< No matching, all order actions
