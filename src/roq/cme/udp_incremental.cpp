@@ -145,8 +145,14 @@ void statistics_emplace_back(auto &result, T const &item, auto &security) {
   }
 }
 
-template <typename T>
-void emplace_back(T const &item, auto &security, auto &top_of_book, auto &bids, auto &asks, auto &statistics) {
+void emplace_back(
+    cme_mdp::SnapshotFullRefresh52::NoMDEntries const &item,
+    auto &security,
+    auto &layer,
+    auto &bids,
+    auto &asks,
+    auto &statistics) {
+  using value_type = typename std::remove_cvref<decltype(item)>::type;
   switch (item.mDEntryType()) {
     using enum cme_mdp::MDEntryType::Value;
     case Bid:
@@ -205,13 +211,45 @@ void emplace_back(T const &item, auto &security, auto &top_of_book, auto &bids, 
     case ThresholdLimitsandPriceBandVariation:
       break;
     case MarketBestOffer: {
-      auto price = sbe::get_double(const_cast<T &>(item).mDEntryPx());
-      top_of_book.ask_price = price * security.display_factor;
+      auto price = sbe::get_double(const_cast<value_type &>(item).mDEntryPx());
+      layer.ask_price = price * security.display_factor;
       break;
     }
     case MarketBestBid: {
-      auto price = sbe::get_double(const_cast<T &>(item).mDEntryPx());
-      top_of_book.bid_price = price * security.display_factor;
+      auto price = sbe::get_double(const_cast<value_type &>(item).mDEntryPx());
+      layer.bid_price = price * security.display_factor;
+      break;
+    }
+    case NULL_VALUE:
+      break;
+  }
+}
+
+void emplace_back(
+    cme_mdp::MDIncrementalRefreshBook46::NoMDEntries const &item, auto &security, auto &layer, auto &bids, auto &asks) {
+  using value_type = typename std::remove_cvref<decltype(item)>::type;
+  switch (item.mDEntryType()) {
+    using enum cme_mdp::MDEntryTypeBook::Value;
+    case Bid:
+      bids.emplace_back([&item, &security](auto &result) { emplace(result, item, security); });
+      break;
+    case Offer:
+      asks.emplace_back([&item, &security](auto &result) { emplace(result, item, security); });
+      break;
+    case ImpliedBid:
+      break;
+    case ImpliedOffer:
+      break;
+    case BookReset:  // XXX ????????????????????????
+      break;
+    case MarketBestOffer: {
+      auto price = sbe::get_double(const_cast<value_type &>(item).mDEntryPx());
+      layer.ask_price = price * security.display_factor;
+      break;
+    }
+    case MarketBestBid: {
+      auto price = sbe::get_double(const_cast<value_type &>(item).mDEntryPx());
+      layer.bid_price = price * security.display_factor;
       break;
     }
     case NULL_VALUE:
@@ -314,52 +352,52 @@ void UDPIncremental::operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &eve
   auto &trace_info = event.trace_info;
   auto &value = event.value;
   log::info<3>("snapshot_full_refresh_52={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  value.sbeRewind();  // note!
   get_security(shared_, value, [&](auto &security) {
     std::chrono::nanoseconds exchange_time_utc{value.transactTime()};
     auto exchange_sequence = value.lastMsgSeqNumProcessed();
-    TopOfBook top_of_book{
-        .stream_id = stream_id_,
-        .exchange = security.exchange,
-        .symbol = security.symbol,
-        .layer = {},
-        .exchange_time_utc = exchange_time_utc,
-        .exchange_sequence = exchange_sequence,
-    };
+    Layer layer = {};
     core::back_emplacer bids{shared_.bids}, asks{shared_.asks};
     core::back_emplacer statistics{shared_.statistics};
-    value.sbeRewind();  // note!
-    value.noMDEntries().forEach(
-        [&](auto const &item) { emplace_back(item, security, top_of_book.layer, bids, asks, statistics); });
-    if (!(std::isnan(top_of_book.layer.bid_price) && std::isnan(top_of_book.layer.ask_price))) {
+    value.noMDEntries().forEach([&](auto const &item) { emplace_back(item, security, layer, bids, asks, statistics); });
+    if (!(std::isnan(layer.bid_price) && std::isnan(layer.ask_price))) {
+      TopOfBook top_of_book{
+          .stream_id = stream_id_,
+          .exchange = security.exchange,
+          .symbol = security.symbol,
+          .layer = layer,
+          .exchange_time_utc = exchange_time_utc,
+          .exchange_sequence = exchange_sequence,
+      };
       log::info<3>("top_of_book={}"sv, top_of_book);
       create_trace_and_dispatch(handler_, trace_info, std::as_const(top_of_book), true);
     }
-    MarketByPriceUpdate const market_by_price_update{
-        .stream_id = stream_id_,
-        .exchange = security.exchange,
-        .symbol = security.symbol,
-        .bids = bids,
-        .asks = asks,
-        .update_type = UpdateType::SNAPSHOT,
-        .exchange_time_utc = exchange_time_utc,
-        .exchange_sequence = exchange_sequence,
-        .price_decimals = {},
-        .quantity_decimals = {},
-        .checksum = {},
-    };
-    if (!(std::empty(market_by_price_update.bids) && std::empty(market_by_price_update.bids))) {
+    if (!(std::empty(bids) && std::empty(bids))) {
+      MarketByPriceUpdate const market_by_price_update{
+          .stream_id = stream_id_,
+          .exchange = security.exchange,
+          .symbol = security.symbol,
+          .bids = bids,
+          .asks = asks,
+          .update_type = UpdateType::SNAPSHOT,
+          .exchange_time_utc = exchange_time_utc,
+          .exchange_sequence = exchange_sequence,
+          .price_decimals = {},
+          .quantity_decimals = {},
+          .checksum = {},
+      };
       log::info<3>("market_by_price_update={}"sv, market_by_price_update);
       create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true, false);
     }
-    StatisticsUpdate const statistics_update{
-        .stream_id = stream_id_,
-        .exchange = security.exchange,
-        .symbol = security.symbol,
-        .statistics = statistics,
-        .update_type = UpdateType::SNAPSHOT,
-        .exchange_time_utc = exchange_time_utc,
-    };
-    if (!std::empty(statistics_update.statistics)) {
+    if (!std::empty(statistics)) {
+      StatisticsUpdate const statistics_update{
+          .stream_id = stream_id_,
+          .exchange = security.exchange,
+          .symbol = security.symbol,
+          .statistics = statistics,
+          .update_type = UpdateType::SNAPSHOT,
+          .exchange_time_utc = exchange_time_utc,
+      };
       log::info<3>("statistics_update={}"sv, statistics_update);
       create_trace_and_dispatch(handler_, trace_info, statistics_update, true);
     }
@@ -398,12 +436,64 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshVolume37> con
 }
 
 void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &event, sbe::Frame const &frame) {
-  auto &[trace_info, value] = event;
+  auto &trace_info = event.trace_info;
+  auto &value = event.value;
   log::info<3>("md_incremental_refresh_book_46={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
-  /*
-  auto security_id = value.securityID();
-  auto &collector = shared_.mbp_collector[security_id];
-  */
+  value.sbeRewind();  // note!
+  uint32_t exchange_sequence = {};
+  std::chrono::nanoseconds exchange_time_utc{value.transactTime()};
+  Layer layer = {};
+  core::back_emplacer bids{shared_.bids}, asks{shared_.asks};
+  auto dispatch = [&](auto &security, auto is_last) {
+    if (!(std::isnan(layer.bid_price) && std::isnan(layer.ask_price))) {
+      TopOfBook top_of_book{
+          .stream_id = stream_id_,
+          .exchange = security.exchange,
+          .symbol = security.symbol,
+          .layer = layer,
+          .exchange_time_utc = exchange_time_utc,
+          .exchange_sequence = exchange_sequence,
+      };
+      log::info<3>("top_of_book={}"sv, top_of_book);
+      create_trace_and_dispatch(handler_, trace_info, std::as_const(top_of_book), is_last);
+      layer = {};
+    }
+    if (!(std::empty(bids) && std::empty(bids))) {
+      MarketByPriceUpdate const market_by_price_update{
+          .stream_id = stream_id_,
+          .exchange = security.exchange,
+          .symbol = security.symbol,
+          .bids = bids,
+          .asks = asks,
+          .update_type = UpdateType::SNAPSHOT,
+          .exchange_time_utc = exchange_time_utc,
+          .exchange_sequence = exchange_sequence,
+          .price_decimals = {},
+          .quantity_decimals = {},
+          .checksum = {},
+      };
+      log::info<3>("market_by_price_update={}"sv, market_by_price_update);
+      create_trace_and_dispatch(handler_, trace_info, market_by_price_update, is_last, false);
+      bids.clear();
+      asks.clear();
+    }
+  };
+  int32_t previous_security_id = {};
+  Shared::Security *security = nullptr;
+  value.noMDEntries().forEach([&](auto const &item) {
+    auto security_id = item.securityID();
+    if (security_id != previous_security_id) {
+      if (security)
+        dispatch(*security, true);
+      previous_security_id = security_id;
+      get_security(shared_, item, [&security](auto &security_) { security = &security_; });
+    }
+    assert(security);
+    exchange_sequence = item.rptSeq();
+    emplace_back(item, *security, layer, bids, asks);
+  });
+  if (security)
+    dispatch(*security, true);
 }
 
 void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshOrderBook47> const &event, sbe::Frame const &frame) {
@@ -505,36 +595,34 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event) {
   value.sbeRewind();  // note!
   std::chrono::nanoseconds exchange_time_utc{value.transactTime()};
   core::back_emplacer trades{shared_.trades};
-  auto dispatch = [&](auto &trades, auto &security, auto is_last) {
-    const TradeSummary trade_summary{
-        .stream_id = stream_id_,
-        .exchange = security.exchange,
-        .symbol = security.symbol,
-        .trades = trades,
-        .exchange_time_utc = exchange_time_utc,
-    };
-    create_trace_and_dispatch(handler_, trace_info, trade_summary, is_last);
+  auto dispatch = [&](auto &security, auto is_last) {
+    if (!std::empty(trades)) {
+      const TradeSummary trade_summary{
+          .stream_id = stream_id_,
+          .exchange = security.exchange,
+          .symbol = security.symbol,
+          .trades = trades,
+          .exchange_time_utc = exchange_time_utc,
+      };
+      create_trace_and_dispatch(handler_, trace_info, trade_summary, is_last);
+      trades.clear();
+    }
   };
   int32_t previous_security_id = {};
   Shared::Security *security = nullptr;
   value.noMDEntries().forEach([&](auto const &item) {
     auto security_id = item.securityID();
     if (security_id != previous_security_id) {
-      if (!std::empty(trades)) {
-        assert(security);
-        dispatch(trades, *security, true);
-        trades.clear();
-      }
+      if (security)
+        dispatch(*security, true);
       previous_security_id = security_id;
       get_security(shared_, item, [&security](auto &security_) { security = &security_; });
     }
     assert(security);
     trade_summary_emplace_back(trades, item, *security);
   });
-  if (!std::empty(trades)) {
-    assert(security);
-    dispatch(trades, *security, true);
-  }
+  if (security)
+    dispatch(*security, true);
 }
 
 template <typename T>
@@ -543,38 +631,36 @@ void UDPIncremental::dispatch_statistics(Trace<T> const &event) {
   value.sbeRewind();  // note!
   std::chrono::nanoseconds exchange_time_utc{value.transactTime()};
   core::back_emplacer statistics{shared_.statistics};
-  auto dispatch = [&](auto &statistics, auto &security, auto is_last) {
-    StatisticsUpdate const statistics_update{
-        .stream_id = stream_id_,
-        .exchange = security.exchange,
-        .symbol = security.symbol,
-        .statistics = statistics,
-        .update_type = UpdateType::INCREMENTAL,
-        .exchange_time_utc = exchange_time_utc,
-    };
-    log::info<3>("statistics_update={}"sv, statistics_update);
-    create_trace_and_dispatch(handler_, trace_info, statistics_update, is_last);
+  auto dispatch = [&](auto &security, auto is_last) {
+    if (!std::empty(statistics)) {
+      StatisticsUpdate const statistics_update{
+          .stream_id = stream_id_,
+          .exchange = security.exchange,
+          .symbol = security.symbol,
+          .statistics = statistics,
+          .update_type = UpdateType::INCREMENTAL,
+          .exchange_time_utc = exchange_time_utc,
+      };
+      log::info<3>("statistics_update={}"sv, statistics_update);
+      create_trace_and_dispatch(handler_, trace_info, statistics_update, is_last);
+      statistics.clear();
+    }
   };
   int32_t previous_security_id = {};
   Shared::Security *security = nullptr;
   value.noMDEntries().forEach([&](auto const &item) {
     auto security_id = item.securityID();
     if (security_id != previous_security_id) {
-      if (!std::empty(statistics)) {
-        assert(security);
-        dispatch(statistics, *security, true);
-        statistics.clear();
-      }
+      if (security)
+        dispatch(*security, true);
       previous_security_id = security_id;
       get_security(shared_, item, [&security](auto &security_) { security = &security_; });
     }
     assert(security);
     statistics_emplace_back(statistics, item, *security);
   });
-  if (!std::empty(statistics)) {
-    assert(security);
-    dispatch(statistics, *security, true);
-  }
+  if (security)
+    dispatch(*security, true);
 }
 
 }  // namespace cme
