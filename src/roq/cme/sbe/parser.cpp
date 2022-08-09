@@ -54,6 +54,11 @@ bool Parser::dispatch(Handler &handler, std::span<std::byte const> const &buffer
           assert(std::size(message) >= length);
           auto tmp = message.subspan(0, length);
           switch (template_id) {
+            case cme_mdp::ChannelReset4::SBE_TEMPLATE_ID: {
+              cme_mdp::ChannelReset4 value{std::data(tmp), std::size(tmp), block_length, version};
+              create_trace_and_dispatch(handler, trace_info, value, frame);
+              break;
+            }
             case cme_mdp::AdminHeartbeat12::SBE_TEMPLATE_ID: {
               cme_mdp::AdminHeartbeat12 value{std::data(tmp), std::size(tmp), block_length, version};
               create_trace_and_dispatch(handler, trace_info, value, frame);

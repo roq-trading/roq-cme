@@ -49,6 +49,7 @@ class UDPIncremental final : public io::net::udp::Receiver::Handler, public sbe:
 
  protected:
   // sbe::Parser::Handler
+  void operator()(Trace<cme_mdp::ChannelReset4> const &, sbe::Frame const &) override;
   void operator()(Trace<cme_mdp::AdminHeartbeat12> const &, sbe::Frame const &) override;
   // - MDInstrumentDefinition
   void operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &, sbe::Frame const &) override;

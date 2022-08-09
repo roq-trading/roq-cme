@@ -232,6 +232,12 @@ void UDPMBPMarketRecovery::operator()(io::net::udp::Receiver::Error const &error
 
 // sbe::Parser::Handler
 
+void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::ChannelReset4> const &event, sbe::Frame const &frame) {
+  auto &[trace_info, value] = event;
+  log::info<3>("channel_reset_4={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  log::info<3>("HERE"sv);
+}
+
 void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::AdminHeartbeat12> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
   log::info<5>("admin_heartbeat_12={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
@@ -266,40 +272,42 @@ void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::MDInstrumentDefinitionFX63>
 
 void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
-  log::info<5>("snapshot_full_refresh_52={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  log::info<3>("snapshot_full_refresh_52={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
   get_security(shared_, value, [&](auto &security) {
     std::chrono::nanoseconds exchange_time_utc{value.transactTime()};
     auto exchange_sequence = value.lastMsgSeqNumProcessed();
-    TopOfBook top_of_book{
-        .stream_id = stream_id_,
-        .exchange = security.exchange,
-        .symbol = security.symbol,
-        .layer = {},
-        .exchange_time_utc = exchange_time_utc,
-        .exchange_sequence = exchange_sequence,
-    };
+    Layer layer = {};
     core::back_emplacer bids{shared_.bids}, asks{shared_.asks};
     core::back_emplacer statistics{shared_.statistics};
     value.sbeRewind();  // note!
-    value.noMDEntries().forEach(
-        [&](auto const &item) { emplace_back(item, security, top_of_book.layer, bids, asks, statistics); });
-    if (!(std::isnan(top_of_book.layer.bid_price) && std::isnan(top_of_book.layer.ask_price)))
+    value.noMDEntries().forEach([&](auto const &item) { emplace_back(item, security, layer, bids, asks, statistics); });
+    if (!(std::isnan(layer.bid_price) && std::isnan(layer.ask_price))) {
+      TopOfBook top_of_book{
+          .stream_id = stream_id_,
+          .exchange = security.exchange,
+          .symbol = security.symbol,
+          .layer = layer,
+          .exchange_time_utc = exchange_time_utc,
+          .exchange_sequence = exchange_sequence,
+      };
       log::info<3>("top_of_book={}"sv, top_of_book);
-    MarketByPriceUpdate const market_by_price_update{
-        .stream_id = stream_id_,
-        .exchange = security.exchange,
-        .symbol = security.symbol,
-        .bids = bids,
-        .asks = asks,
-        .update_type = UpdateType::SNAPSHOT,
-        .exchange_time_utc = exchange_time_utc,
-        .exchange_sequence = exchange_sequence,
-        .price_decimals = {},
-        .quantity_decimals = {},
-        .checksum = {},
-    };
-    if (!(std::empty(market_by_price_update.bids) && std::empty(market_by_price_update.bids)))
+    }
+    if (!(std::empty(bids) && std::empty(bids))) {
+      MarketByPriceUpdate const market_by_price_update{
+          .stream_id = stream_id_,
+          .exchange = security.exchange,
+          .symbol = security.symbol,
+          .bids = bids,
+          .asks = asks,
+          .update_type = UpdateType::SNAPSHOT,
+          .exchange_time_utc = exchange_time_utc,
+          .exchange_sequence = exchange_sequence,
+          .price_decimals = {},
+          .quantity_decimals = {},
+          .checksum = {},
+      };
       log::info<3>("market_by_price_update={}"sv, market_by_price_update);
+    }
     if (!std::empty(statistics)) {
       StatisticsUpdate const statistics_update{
           .stream_id = stream_id_,
@@ -322,36 +330,38 @@ void UDPMBPMarketRecovery::operator()(
   get_security(shared_, value, [&](auto &security) {
     std::chrono::nanoseconds exchange_time_utc{value.transactTime()};
     auto exchange_sequence = value.lastMsgSeqNumProcessed();
-    TopOfBook top_of_book{
-        .stream_id = stream_id_,
-        .exchange = security.exchange,
-        .symbol = security.symbol,
-        .layer = {},
-        .exchange_time_utc = exchange_time_utc,
-        .exchange_sequence = exchange_sequence,
-    };
+    Layer layer = {};
     core::back_emplacer bids{shared_.bids}, asks{shared_.asks};
     core::back_emplacer statistics{shared_.statistics};
     value.sbeRewind();  // note!
-    value.noMDEntries().forEach(
-        [&](auto const &item) { emplace_back(item, security, top_of_book.layer, bids, asks, statistics); });
-    if (!(std::isnan(top_of_book.layer.bid_price) && std::isnan(top_of_book.layer.ask_price)))
+    value.noMDEntries().forEach([&](auto const &item) { emplace_back(item, security, layer, bids, asks, statistics); });
+    if (!(std::isnan(layer.bid_price) && std::isnan(layer.ask_price))) {
+      TopOfBook top_of_book{
+          .stream_id = stream_id_,
+          .exchange = security.exchange,
+          .symbol = security.symbol,
+          .layer = layer,
+          .exchange_time_utc = exchange_time_utc,
+          .exchange_sequence = exchange_sequence,
+      };
       log::info<3>("top_of_book={}"sv, top_of_book);
-    MarketByPriceUpdate const market_by_price_update{
-        .stream_id = stream_id_,
-        .exchange = security.exchange,
-        .symbol = security.symbol,
-        .bids = bids,
-        .asks = asks,
-        .update_type = UpdateType::SNAPSHOT,
-        .exchange_time_utc = exchange_time_utc,
-        .exchange_sequence = exchange_sequence,
-        .price_decimals = {},
-        .quantity_decimals = {},
-        .checksum = {},
-    };
-    if (!(std::empty(market_by_price_update.bids) && std::empty(market_by_price_update.bids)))
+    }
+    if (!(std::empty(bids) && std::empty(bids))) {
+      MarketByPriceUpdate const market_by_price_update{
+          .stream_id = stream_id_,
+          .exchange = security.exchange,
+          .symbol = security.symbol,
+          .bids = bids,
+          .asks = asks,
+          .update_type = UpdateType::SNAPSHOT,
+          .exchange_time_utc = exchange_time_utc,
+          .exchange_sequence = exchange_sequence,
+          .price_decimals = {},
+          .quantity_decimals = {},
+          .checksum = {},
+      };
       log::info<3>("market_by_price_update={}"sv, market_by_price_update);
+    }
     if (!std::empty(statistics)) {
       StatisticsUpdate const statistics_update{
           .stream_id = stream_id_,

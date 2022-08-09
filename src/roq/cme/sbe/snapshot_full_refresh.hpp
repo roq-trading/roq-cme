@@ -215,7 +215,7 @@ struct fmt::formatter<cme_mdp::SnapshotFullRefreshLongQty69> {
     return fmt::format_to(
         context.out(),
         R"({{)"
-        R"(versio={}, )"
+        R"(version={}, )"
         R"(last_msg_seq_num_processed={}, )"
         R"(tot_num_reports={}, )"
         R"(security_id={}, )"

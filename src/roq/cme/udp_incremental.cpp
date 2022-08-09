@@ -308,6 +308,12 @@ void UDPIncremental::operator()(io::net::udp::Receiver::Error const &error) {
 
 // sbe::Parser::Handler
 
+void UDPIncremental::operator()(Trace<cme_mdp::ChannelReset4> const &event, sbe::Frame const &frame) {
+  auto &[trace_info, value] = event;
+  log::info<3>("channel_reset_4={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  log::info<3>("HERE"sv);
+}
+
 void UDPIncremental::operator()(Trace<cme_mdp::AdminHeartbeat12> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
   log::info<5>("admin_heartbeat_12={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
@@ -318,32 +324,38 @@ void UDPIncremental::operator()(Trace<cme_mdp::AdminHeartbeat12> const &event, s
 void UDPIncremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
   log::info<3>("md_instrument_definition_future_54={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  log::info<3>("HERE"sv);
 }
 
 void UDPIncremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionOption55> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
   log::info<3>("md_instrument_definition_option_55={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  log::info<3>("HERE"sv);
 }
 
 void UDPIncremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionSpread56> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
   log::info<3>("md_instrument_definition_spread_56={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  log::info<3>("HERE"sv);
 }
 
 void UDPIncremental::operator()(
     Trace<cme_mdp::MDInstrumentDefinitionFixedIncome57> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
   log::info<3>("md_instrument_definition_fixed_income_57={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  log::info<3>("HERE"sv);
 }
 
 void UDPIncremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionRepo58> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
   log::info<3>("md_instrument_definition_repo_58={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  log::info<3>("HERE"sv);
 }
 
 void UDPIncremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionFX63> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
   log::info<3>("md_instrument_definition_fx_63={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  log::info<3>("HERE"sv);
 }
 
 // - MbP
@@ -407,6 +419,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &eve
 void UDPIncremental::operator()(Trace<cme_mdp::SnapshotFullRefreshLongQty69> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
   log::info<3>("snapshot_full_refresh_long_qty_69={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  log::info<3>("HERE"sv);
 }
 
 // MbO
@@ -414,6 +427,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::SnapshotFullRefreshLongQty69> con
 void UDPIncremental::operator()(Trace<cme_mdp::SnapshotFullRefreshOrderBook53> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
   log::info<3>("snapshot_full_refresh_order_book_53={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  log::info<3>("HERE"sv);
 }
 
 // - MDIncrementalRefresh
@@ -433,6 +447,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshVolume37> con
     create_trace_and_dispatch(handler_, trace_info, std::as_const(top_of_book), true);
   }
   */
+  log::info<3>("HERE"sv);
 }
 
 void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &event, sbe::Frame const &frame) {
@@ -503,6 +518,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshOrderBook47> 
   auto security_id = value.securityID();
   auto &collector = shared_.mbp_collector[security_id];
   */
+  log::info<3>("HERE"sv);
 }
 
 void UDPIncremental::operator()(
@@ -524,6 +540,7 @@ void UDPIncremental::operator()(
     Trace<cme_mdp::MDIncrementalRefreshLimitsBanding50> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
   log::info<3>("md_incremental_refresh_limits_banding_50={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  log::info<3>("HERE"sv);
 }
 
 void UDPIncremental::operator()(
@@ -538,6 +555,7 @@ void UDPIncremental::operator()(
     Trace<cme_mdp::MDIncrementalRefreshBookLongQty64> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
   log::info<3>("md_incremental_refresh_book_long_qty_64={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  log::info<3>("HERE"sv);
 }
 
 void UDPIncremental::operator()(
@@ -552,6 +570,7 @@ void UDPIncremental::operator()(
     Trace<cme_mdp::MDIncrementalRefreshVolumeLongQty66> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
   log::info<3>("md_incremental_refresh_volume_long_qty_66={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  log::info<3>("HERE"sv);
 }
 
 void UDPIncremental::operator()(
