@@ -85,6 +85,15 @@ class UDPIncremental final : public io::net::udp::Receiver::Handler, public sbe:
  protected:
   void publish_stream_status(TraceInfo const &, ConnectionStatus connection_status);
 
+  void publish_incremental_or_snapshot(
+      auto &trace_info,
+      auto security_id,
+      auto &security,
+      auto exchange_sequence,
+      auto exchange_time_utc,
+      auto &bids,
+      auto &asks);
+
  private:
   Handler &handler_;
   // config

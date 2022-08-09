@@ -60,8 +60,7 @@ auto create_receiver(auto &handler, auto &context, auto &shared) {
 }
 
 template <typename Callback>
-bool get_security(auto &shared, auto &value, Callback callback) {
-  auto security_id = value.securityID();
+bool get_security(auto &shared, auto security_id, Callback callback) {
   auto iter = shared.securities.find(security_id);
   if (iter == std::end(shared.securities))
     return false;
@@ -273,7 +272,8 @@ void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::MDInstrumentDefinitionFX63>
 void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
   log::info<3>("snapshot_full_refresh_52={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
-  get_security(shared_, value, [&](auto &security) {
+  auto security_id = value.securityID();
+  get_security(shared_, security_id, [&](auto &security) {
     std::chrono::nanoseconds exchange_time_utc{value.transactTime()};
     auto exchange_sequence = value.lastMsgSeqNumProcessed();
     Layer layer = {};
@@ -293,20 +293,7 @@ void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::SnapshotFullRefresh52> cons
       log::info<3>("top_of_book={}"sv, top_of_book);
     }
     if (!(std::empty(bids) && std::empty(bids))) {
-      MarketByPriceUpdate const market_by_price_update{
-          .stream_id = stream_id_,
-          .exchange = security.exchange,
-          .symbol = security.symbol,
-          .bids = bids,
-          .asks = asks,
-          .update_type = UpdateType::SNAPSHOT,
-          .exchange_time_utc = exchange_time_utc,
-          .exchange_sequence = exchange_sequence,
-          .price_decimals = {},
-          .quantity_decimals = {},
-          .checksum = {},
-      };
-      log::info<3>("market_by_price_update={}"sv, market_by_price_update);
+      publish_snapshot(trace_info, security_id, security, exchange_sequence, exchange_time_utc, bids, asks);
     }
     if (!std::empty(statistics)) {
       StatisticsUpdate const statistics_update{
@@ -327,7 +314,8 @@ void UDPMBPMarketRecovery::operator()(
     Trace<cme_mdp::SnapshotFullRefreshLongQty69> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
   log::info<5>("snapshot_full_refresh_long_qty_69={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
-  get_security(shared_, value, [&](auto &security) {
+  auto security_id = value.securityID();
+  get_security(shared_, security_id, [&](auto &security) {
     std::chrono::nanoseconds exchange_time_utc{value.transactTime()};
     auto exchange_sequence = value.lastMsgSeqNumProcessed();
     Layer layer = {};
@@ -347,20 +335,7 @@ void UDPMBPMarketRecovery::operator()(
       log::info<3>("top_of_book={}"sv, top_of_book);
     }
     if (!(std::empty(bids) && std::empty(bids))) {
-      MarketByPriceUpdate const market_by_price_update{
-          .stream_id = stream_id_,
-          .exchange = security.exchange,
-          .symbol = security.symbol,
-          .bids = bids,
-          .asks = asks,
-          .update_type = UpdateType::SNAPSHOT,
-          .exchange_time_utc = exchange_time_utc,
-          .exchange_sequence = exchange_sequence,
-          .price_decimals = {},
-          .quantity_decimals = {},
-          .checksum = {},
-      };
-      log::info<3>("market_by_price_update={}"sv, market_by_price_update);
+      publish_snapshot(trace_info, security_id, security, exchange_sequence, exchange_time_utc, bids, asks);
     }
     if (!std::empty(statistics)) {
       StatisticsUpdate const statistics_update{
@@ -456,6 +431,68 @@ void UDPMBPMarketRecovery::publish_stream_status(TraceInfo const &trace_info, Co
   };
   log::info("stream_status={}"sv, stream_status);
   create_trace_and_dispatch(handler_, trace_info, stream_status);
+}
+
+void UDPMBPMarketRecovery::publish_snapshot(
+    auto &trace_info,
+    auto security_id,
+    auto &security,
+    auto exchange_sequence,
+    auto exchange_time_utc,
+    auto &bids,
+    auto &asks) {
+  auto &collector = shared_.mbp_collector[security_id];
+  try {
+    collector(
+        bids,
+        asks,
+        exchange_sequence,
+        [&](auto &bids, auto &asks, auto exchange_sequence) {  // snapshot
+          log::info<1>(
+              R"(PUBLISH SNAPSHOT exchange="{}", symbol="{}", security_id={} (exchange_sequence={}))"sv,
+              security.exchange,
+              security.symbol,
+              security_id,
+              exchange_sequence);
+          const MarketByPriceUpdate market_by_price_update{
+              .stream_id = stream_id_,
+              .exchange = security.exchange,
+              .symbol = security.symbol,
+              .bids = bids,
+              .asks = asks,
+              .update_type = UpdateType::SNAPSHOT,
+              .exchange_time_utc = exchange_time_utc,
+              .exchange_sequence = collector.last_sequence(),
+              .price_decimals = {},
+              .quantity_decimals = {},
+              .checksum = {},
+          };
+          Trace event(trace_info, market_by_price_update);
+          shared_(
+              event, true, [&](auto &market_by_price) { collector.apply(market_by_price, exchange_sequence, false); });
+          shared_.mbp_resubscribe.erase(security_id);  // remove
+        },
+        [&](auto retries) {  // request
+          log::info<1>(
+              R"(REQUEST exchange="{}", symbol="{}", security_id={} (retries={}))"sv,
+              security.exchange,
+              security.symbol,
+              security_id,
+              retries);
+          /*
+          if (Flags::ws_mbp_request_max_retries() && Flags::ws_mbp_request_max_retries() < retries) {
+            log::fatal(R"(Unexpected: symbol="{}", retries={})"sv, symbol, retries);
+          }
+          */
+          shared_.mbp_resubscribe.emplace(security_id);
+        });
+  } catch (BadState &) {
+    log::warn(
+        R"(RESUBSCRIBE exchange="{}", symbol="{}", security_id={})"sv, security.exchange, security.symbol, security_id);
+    // XXX HANS publish stale
+    collector.clear();
+    shared_.mbp_resubscribe.emplace(security_id);
+  }
 }
 
 }  // namespace cme

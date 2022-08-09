@@ -70,6 +70,7 @@ struct Shared final {
   absl::flat_hash_set<Symbol> all_symbols;
   core::Symbols symbols;
   absl::node_hash_map<int32_t, core::market::MBP_Sequencer> mbp_collector;
+  absl::flat_hash_set<int32_t> mbp_resubscribe;
 
   // EXPERIMENTAL
   struct Security final {
