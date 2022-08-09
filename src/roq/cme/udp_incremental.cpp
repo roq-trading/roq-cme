@@ -435,19 +435,9 @@ void UDPIncremental::operator()(Trace<cme_mdp::SnapshotFullRefreshOrderBook53> c
 void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshVolume37> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
   log::info<3>("md_incremental_refresh_volume_37={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
-  /*
-  auto security_id = value.securityID();
-  auto &collector = shared_.mbp_collector[security_id];
-  core::back_emplacer bids{shared_.bids}, asks{shared_.asks};
-  value.sbeRewind();  // note!
-  value.noMDEntries().forEach(
-      [&](auto const &item) { emplace_back(item, security, top_of_book.layer, bids, asks, statistics); });
-  if (!(std::isnan(top_of_book.layer.bid_price) && std::isnan(top_of_book.layer.ask_price))) {
-    log::info<3>("top_of_book={}"sv, top_of_book);
-    create_trace_and_dispatch(handler_, trace_info, std::as_const(top_of_book), true);
-  }
-  */
-  log::info<3>("HERE"sv);
+  dispatch_statistics(event, [](auto &statistics, auto &item, [[maybe_unused]] auto &security) {
+    statistics.emplace_back([&](auto &result) { emplace_size(result, StatisticsType::TRADE_VOLUME, item); });
+  });
 }
 
 void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &event, sbe::Frame const &frame) {
@@ -536,7 +526,8 @@ void UDPIncremental::operator()(
   auto &[trace_info, value] = event;
   log::info<3>(
       "md_incremental_refresh_daily_statistics_49={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
-  dispatch_statistics(event);
+  dispatch_statistics(
+      event, [](auto &statistics, auto &item, auto &security) { statistics_emplace_back(statistics, item, security); });
 }
 
 void UDPIncremental::operator()(
@@ -551,7 +542,8 @@ void UDPIncremental::operator()(
   auto &[trace_info, value] = event;
   log::info<3>(
       "md_incremental_refresh_session_statistics_51={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
-  dispatch_statistics(event);
+  dispatch_statistics(
+      event, [](auto &statistics, auto &item, auto &security) { statistics_emplace_back(statistics, item, security); });
 }
 
 void UDPIncremental::operator()(
@@ -583,7 +575,8 @@ void UDPIncremental::operator()(
       "md_incremental_refresh_session_statistics_long_qty_67={}, frame={}"sv,
       const_cast<decltype(value) &>(value),
       frame);
-  dispatch_statistics(event);
+  dispatch_statistics(
+      event, [](auto &statistics, auto &item, auto &security) { statistics_emplace_back(statistics, item, security); });
 }
 
 // - MDIncrementalRefresh
@@ -650,8 +643,8 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event) {
     dispatch(*security, true);
 }
 
-template <typename T>
-void UDPIncremental::dispatch_statistics(Trace<T> const &event) {
+template <typename T, typename Callback>
+void UDPIncremental::dispatch_statistics(Trace<T> const &event, Callback callback) {
   auto &[trace_info, value] = event;
   value.sbeRewind();  // note!
   std::chrono::nanoseconds exchange_time_utc{value.transactTime()};
@@ -685,7 +678,7 @@ void UDPIncremental::dispatch_statistics(Trace<T> const &event) {
       }
     }
     if (security)
-      statistics_emplace_back(statistics, item, *security);
+      callback(statistics, item, *security);
   });
   if (security)
     dispatch(*security, true);

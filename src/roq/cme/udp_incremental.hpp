@@ -79,8 +79,8 @@ class UDPIncremental final : public io::net::udp::Receiver::Handler, public sbe:
   template <typename T>
   void dispatch_trade_summary(Trace<T> const &);
 
-  template <typename T>
-  void dispatch_statistics(Trace<T> const &);
+  template <typename T, typename Callback>
+  void dispatch_statistics(Trace<T> const &, Callback);
 
  protected:
   void publish_stream_status(TraceInfo const &, ConnectionStatus connection_status);
