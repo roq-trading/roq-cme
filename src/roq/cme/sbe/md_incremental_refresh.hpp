@@ -134,14 +134,14 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshBook46::NoMDEntries> {
         R"(tradeable_size={})"
         R"(}})"sv,
         const_cast<value_type &>(value).mDEntryPx(),
-        value.mDEntrySize(),
+        roq::cme::sbe::get_int(value.mDEntrySize(), value.mDEntrySizeNullValue()),
         value.securityID(),
         value.rptSeq(),
-        value.numberOfOrders(),
+        roq::cme::sbe::get_int(value.numberOfOrders(), value.numberOfOrdersNullValue()),
         value.mDPriceLevel(),
         value.mDUpdateAction(),
         value.mDEntryType(),
-        value.tradeableSize());
+        roq::cme::sbe::get_int(value.tradeableSize(), value.tradeableSizeNullValue()));
   }
 };
 
@@ -162,7 +162,7 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshBook46::NoOrderIDEntries> {
         R"(md_order_priority={})"
         R"(}})"sv,
         value.orderID(),
-        value.mDOrderPriority());
+        roq::cme::sbe::get_int(value.mDOrderPriority(), value.mDOrderPriority()));
   }
 };
 
@@ -220,10 +220,10 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshOrderBook47::NoMDEntries> {
         R"(md_update_action={}, )"
         R"(md_entry_type={})"
         R"(}})"sv,
-        value.orderID(),
-        value.mDOrderPriority(),
+        roq::cme::sbe::get_int(value.orderID(), value.orderIDNullValue()),
+        roq::cme::sbe::get_int(value.mDOrderPriority(), value.mDOrderPriorityNullValue()),
         const_cast<value_type &>(value).mDEntryPx(),
-        value.mDDisplayQty(),
+        roq::cme::sbe::get_int(value.mDDisplayQty(), value.mDDisplayQtyNullValue()),
         value.securityID(),
         value.mDUpdateAction(),
         value.mDEntryType());
@@ -289,7 +289,7 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshTradeSummary48::NoMDEntries> 
         value.aggressorSide(),
         value.mDUpdateAction(),
         value.mDEntryType(),
-        value.mDTradeEntryID());
+        roq::cme::sbe::get_int(value.mDTradeEntryID(), value.mDTradeEntryIDNullValue()));
   }
 };
 
@@ -370,7 +370,7 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshDailyStatistics49::NoMDEntrie
         R"(md_entry_type={})"
         R"(}})"sv,
         const_cast<value_type &>(value).mDEntryPx(),
-        value.mDEntrySize(),
+        roq::cme::sbe::get_int(value.mDEntrySize(), value.mDEntrySizeNullValue()),
         value.securityID(),
         value.rptSeq(),
         value.tradingReferenceDate(),
@@ -494,7 +494,7 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshSessionStatistics51::NoMDEntr
         value.openCloseSettlFlag(),
         value.mDUpdateAction(),
         value.mDEntryType(),
-        value.mDEntrySize());
+        roq::cme::sbe::get_int(value.mDEntrySize(), value.mDEntrySizeNullValue()));
   }
 };
 
@@ -549,10 +549,10 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshBookLongQty64::NoMDEntries> {
         R"(md_entry_type={})"
         R"(}})"sv,
         const_cast<value_type &>(value).mDEntryPx(),
-        value.mDEntrySize(),
+        roq::cme::sbe::get_int(value.mDEntrySize(), value.mDEntrySizeNullValue()),
         value.securityID(),
         value.rptSeq(),
-        value.numberOfOrders(),
+        roq::cme::sbe::get_int(value.numberOfOrders(), value.numberOfOrdersNullValue()),
         value.mDPriceLevel(),
         value.mDUpdateAction(),
         value.mDEntryType());
@@ -579,9 +579,9 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshBookLongQty64::NoOrderIDEntri
         R"(order_update_action={})"
         R"(}})"sv,
         value.orderID(),
-        value.mDOrderPriority(),
-        value.mDDisplayQty(),
-        value.referenceID(),
+        roq::cme::sbe::get_int(value.mDOrderPriority(), value.mDOrderPriorityNullValue()),
+        roq::cme::sbe::get_int(value.mDDisplayQty(), value.mDDisplayQtyNullValue()),
+        roq::cme::sbe::get_int(value.referenceID(), value.referenceIDNullValue()),
         value.orderUpdateAction());
   }
 };
@@ -785,7 +785,7 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67::N
         R"(md_entry_type={})"
         R"(}})"sv,
         const_cast<value_type &>(value).mDEntryPx(),
-        value.mDEntrySize(),
+        roq::cme::sbe::get_int(value.mDEntrySize(), value.mDEntrySizeNullValue()),
         value.securityID(),
         value.rptSeq(),
         value.openCloseSettlFlag(),

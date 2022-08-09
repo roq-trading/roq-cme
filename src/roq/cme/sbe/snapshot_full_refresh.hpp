@@ -52,10 +52,10 @@ struct fmt::formatter<cme_mdp::SnapshotFullRefresh52::NoMDEntries> {
         R"(settl_price_type={}, )"
         R"(md_entry_type={})"
         R"(}})"sv,
-        const_cast<value_type &>(value).mDEntryPx(),
-        value.mDEntrySize(),
-        value.numberOfOrders(),
-        value.mDPriceLevel(),
+        roq::cme::sbe::get_double(const_cast<value_type &>(value).mDEntryPx()),
+        roq::cme::sbe::get_int(value.mDEntrySize(), value.mDEntrySizeNullValue()),
+        roq::cme::sbe::get_int(value.numberOfOrders(), value.numberOfOrdersNullValue()),
+        roq::cme::sbe::get_int(value.mDPriceLevel(), value.mDPriceLevelNullValue()),
         value.tradingReferenceDate(),
         value.openCloseSettlFlag(),
         const_cast<value_type &>(value).settlPriceType(),
@@ -100,9 +100,9 @@ struct fmt::formatter<cme_mdp::SnapshotFullRefresh52> {
         value.lastUpdateTime(),
         value.tradeDate(),
         value.mDSecurityTradingStatus(),
-        value.highLimitPrice(),
-        value.lowLimitPrice(),
-        value.maxPriceVariation(),
+        roq::cme::sbe::get_double(value.highLimitPrice()),
+        roq::cme::sbe::get_double(value.lowLimitPrice()),
+        roq::cme::sbe::get_double(value.maxPriceVariation()),
         roq::cme::sbe::Group{value.noMDEntries()});
   }
 };
@@ -129,7 +129,7 @@ struct fmt::formatter<cme_mdp::SnapshotFullRefreshOrderBook53::NoMDEntries> {
         R"(md_entry_type={})"
         R"(}})"sv,
         value.orderID(),
-        value.mDOrderPriority(),
+        roq::cme::sbe::get_int(value.mDOrderPriority(), value.mDOrderPriorityNullValue()),
         const_cast<value_type &>(value).mDEntryPx(),
         value.mDDisplayQty(),
         value.mDEntryType());
@@ -193,9 +193,9 @@ struct fmt::formatter<cme_mdp::SnapshotFullRefreshLongQty69::NoMDEntries> {
         R"(md_entry_type={})"
         R"(}})"sv,
         const_cast<value_type &>(value).mDEntryPx(),
-        value.mDEntrySize(),
-        value.numberOfOrders(),
-        value.mDPriceLevel(),
+        roq::cme::sbe::get_int(value.mDEntrySize(), value.mDEntrySizeNullValue()),
+        roq::cme::sbe::get_int(value.numberOfOrders(), value.numberOfOrdersNullValue()),
+        roq::cme::sbe::get_int(value.mDPriceLevel(), value.mDPriceLevelNullValue()),
         value.openCloseSettlFlag(),
         value.mDEntryType());
   }
