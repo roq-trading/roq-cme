@@ -75,6 +75,12 @@ class UDPIncremental final : public io::net::udp::Receiver::Handler, public sbe:
   void operator()(Trace<cme_mdp::MDIncrementalRefreshVolumeLongQty66> const &, sbe::Frame const &) override;
   void operator()(Trace<cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67> const &, sbe::Frame const &) override;
 
+  template <typename T>
+  void dispatch_trade_summary(Trace<T> const &);
+
+  template <typename T>
+  void dispatch_statistics(Trace<T> const &);
+
  protected:
   void publish_stream_status(TraceInfo const &, ConnectionStatus connection_status);
 
