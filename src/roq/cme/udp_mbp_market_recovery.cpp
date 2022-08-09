@@ -443,6 +443,7 @@ void UDPMBPMarketRecovery::publish_snapshot(
     auto &asks) {
   auto &collector = shared_.mbp_collector[security_id];
   try {
+    log::info<1>("DEBUG exchange_sequence={}"sv, exchange_sequence);
     collector(
         bids,
         asks,
@@ -470,7 +471,9 @@ void UDPMBPMarketRecovery::publish_snapshot(
           Trace event(trace_info, market_by_price_update);
           shared_(
               event, true, [&](auto &market_by_price) { collector.apply(market_by_price, exchange_sequence, false); });
-          shared_.mbp_resubscribe.erase(security_id);  // remove
+          auto res = shared_.mbp_resubscribe.erase(security_id);  // remove
+          if (res > 0)
+            log::info<1>("DEBUG removed security_id={}"sv, security_id);
         },
         [&](auto retries) {  // request
           log::info<1>(
@@ -484,14 +487,18 @@ void UDPMBPMarketRecovery::publish_snapshot(
             log::fatal(R"(Unexpected: symbol="{}", retries={})"sv, symbol, retries);
           }
           */
-          shared_.mbp_resubscribe.emplace(security_id);
+          auto res = shared_.mbp_resubscribe.emplace(security_id);
+          if (res.second)
+            log::info<1>("DEBUG inserted security_id={}"sv, security_id);
         });
   } catch (BadState &) {
     log::warn(
         R"(RESUBSCRIBE exchange="{}", symbol="{}", security_id={})"sv, security.exchange, security.symbol, security_id);
     // XXX HANS publish stale
     collector.clear();
-    shared_.mbp_resubscribe.emplace(security_id);
+    auto res = shared_.mbp_resubscribe.emplace(security_id);
+    if (res.second)
+      log::info<1>("DEBUG inserted security_id={}"sv, security_id);
   }
 }
 
