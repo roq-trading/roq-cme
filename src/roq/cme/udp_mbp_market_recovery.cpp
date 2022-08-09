@@ -444,6 +444,8 @@ void UDPMBPMarketRecovery::publish_snapshot(
   auto &collector = shared_.mbp_collector[security_id];
   try {
     log::info<1>("DEBUG exchange_sequence={}"sv, exchange_sequence);
+    log::info<1>("DEBUG bids=[{}]"sv, fmt::join(static_cast<std::span<MBPUpdate>>(bids), ", "sv));
+    log::info<1>("DEBUG asks=[{}]"sv, fmt::join(static_cast<std::span<MBPUpdate>>(asks), ", "sv));
     collector(
         bids,
         asks,
