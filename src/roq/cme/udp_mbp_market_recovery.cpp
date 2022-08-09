@@ -300,16 +300,18 @@ void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::SnapshotFullRefresh52> cons
     };
     if (!(std::empty(market_by_price_update.bids) && std::empty(market_by_price_update.bids)))
       log::info<3>("market_by_price_update={}"sv, market_by_price_update);
-    StatisticsUpdate const statistics_update{
-        .stream_id = stream_id_,
-        .exchange = security.exchange,
-        .symbol = security.symbol,
-        .statistics = statistics,
-        .update_type = UpdateType::SNAPSHOT,
-        .exchange_time_utc = exchange_time_utc,
-    };
-    if (!std::empty(statistics_update.statistics))
+    if (!std::empty(statistics)) {
+      StatisticsUpdate const statistics_update{
+          .stream_id = stream_id_,
+          .exchange = security.exchange,
+          .symbol = security.symbol,
+          .statistics = statistics,
+          .update_type = UpdateType::SNAPSHOT,
+          .exchange_time_utc = exchange_time_utc,
+      };
       log::info<3>("statistics_update={}"sv, statistics_update);
+      create_trace_and_dispatch(handler_, trace_info, statistics_update, true);
+    }
   });
 }
 
@@ -350,16 +352,18 @@ void UDPMBPMarketRecovery::operator()(
     };
     if (!(std::empty(market_by_price_update.bids) && std::empty(market_by_price_update.bids)))
       log::info<3>("market_by_price_update={}"sv, market_by_price_update);
-    StatisticsUpdate const statistics_update{
-        .stream_id = stream_id_,
-        .exchange = security.exchange,
-        .symbol = security.symbol,
-        .statistics = statistics,
-        .update_type = UpdateType::SNAPSHOT,
-        .exchange_time_utc = exchange_time_utc,
-    };
-    if (!std::empty(statistics_update.statistics))
+    if (!std::empty(statistics)) {
+      StatisticsUpdate const statistics_update{
+          .stream_id = stream_id_,
+          .exchange = security.exchange,
+          .symbol = security.symbol,
+          .statistics = statistics,
+          .update_type = UpdateType::SNAPSHOT,
+          .exchange_time_utc = exchange_time_utc,
+      };
       log::info<3>("statistics_update={}"sv, statistics_update);
+      create_trace_and_dispatch(handler_, trace_info, statistics_update, true);
+    }
   });
 }
 
