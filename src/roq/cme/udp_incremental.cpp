@@ -658,9 +658,9 @@ void UDPIncremental::publish_incremental_or_snapshot(
     collector(
         bids,
         asks,
+        exchange_sequence - 1,
         exchange_sequence,
         exchange_sequence,
-        {},
         [&](auto &bids, auto &asks) {  // update
           MarketByPriceUpdate const market_by_price_update{
               .stream_id = stream_id_,
