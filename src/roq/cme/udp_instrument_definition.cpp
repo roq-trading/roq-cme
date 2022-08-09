@@ -160,7 +160,7 @@ void UDPInstrumentDefinition::operator()(
     Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &event, sbe::Frame const &frame) {
   auto &trace_info = event.trace_info;
   auto &value = event.value;
-  log::info<5>("md_instrument_definition_future_54={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  log::info<3>("md_instrument_definition_future_54={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
   create_security(shared_, value, [&](auto &security) {
     auto min_price_increment = sbe::get_double(value.minPriceIncrement());
     auto contract_multiplier = sbe::get_int(value.contractMultiplier(), value.contractMultiplierNullValue());
@@ -206,7 +206,7 @@ void UDPInstrumentDefinition::operator()(
     Trace<cme_mdp::MDInstrumentDefinitionOption55> const &event, sbe::Frame const &frame) {
   auto &trace_info = event.trace_info;
   auto &value = event.value;
-  log::info<5>("md_instrument_definition_option_55={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  log::info<3>("md_instrument_definition_option_55={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
   create_security(shared_, value, [&](auto &security) {
     auto min_price_increment = sbe::get_double(value.minPriceIncrement());
     ReferenceData const reference_data{
@@ -251,7 +251,7 @@ void UDPInstrumentDefinition::operator()(
     Trace<cme_mdp::MDInstrumentDefinitionSpread56> const &event, sbe::Frame const &frame) {
   auto &trace_info = event.trace_info;
   auto &value = event.value;
-  log::info<5>("md_instrument_definition_spread_56={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  log::info<3>("md_instrument_definition_spread_56={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
   create_security(shared_, value, [&](auto &security) {
     ReferenceData const reference_data{
         .stream_id = stream_id_,
@@ -287,7 +287,7 @@ void UDPInstrumentDefinition::operator()(
     Trace<cme_mdp::MDInstrumentDefinitionFixedIncome57> const &event, sbe::Frame const &frame) {
   auto &trace_info = event.trace_info;
   auto &value = event.value;
-  log::info<5>("md_instrument_definition_fixed_income_57={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  log::info<3>("md_instrument_definition_fixed_income_57={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
   create_security(shared_, value, [&](auto &security) {
     ReferenceData const reference_data{
         .stream_id = stream_id_,
@@ -323,7 +323,7 @@ void UDPInstrumentDefinition::operator()(
     Trace<cme_mdp::MDInstrumentDefinitionRepo58> const &event, sbe::Frame const &frame) {
   auto &trace_info = event.trace_info;
   auto &value = event.value;
-  log::info<5>("md_instrument_definition_repo_58={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  log::info<3>("md_instrument_definition_repo_58={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
   create_security(shared_, value, [&](auto &security) {
     ReferenceData const reference_data{
         .stream_id = stream_id_,
@@ -359,7 +359,7 @@ void UDPInstrumentDefinition::operator()(
     Trace<cme_mdp::MDInstrumentDefinitionFX63> const &event, sbe::Frame const &frame) {
   auto &trace_info = event.trace_info;
   auto &value = event.value;
-  log::info<5>("md_instrument_definition_fx_63={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  log::info<3>("md_instrument_definition_fx_63={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
   create_security(shared_, value, [&](auto &security) {
     ReferenceData const reference_data{
         .stream_id = stream_id_,
@@ -393,71 +393,71 @@ void UDPInstrumentDefinition::operator()(
 // - MbP
 
 void UDPInstrumentDefinition::operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &, sbe::Frame const &) {
-  log::warn<5>("Unexpected"sv);
+  log::warn<5>("Unexpected: template_id=52"sv);
 }
 
 void UDPInstrumentDefinition::operator()(Trace<cme_mdp::SnapshotFullRefreshLongQty69> const &, sbe::Frame const &) {
-  log::warn<5>("Unexpected"sv);
+  log::warn<5>("Unexpected: template_id=69"sv);
 }
 
 // - MbO
 
 void UDPInstrumentDefinition::operator()(Trace<cme_mdp::SnapshotFullRefreshOrderBook53> const &, sbe::Frame const &) {
-  log::warn<5>("Unexpected"sv);
+  log::warn<5>("Unexpected: template_id=53"sv);
 }
 
 // - MDIncrementalRefresh
 
 void UDPInstrumentDefinition::operator()(Trace<cme_mdp::MDIncrementalRefreshVolume37> const &, sbe::Frame const &) {
-  log::warn<5>("Unexpected"sv);
+  log::warn<5>("Unexpected: template_id=37"sv);
 }
 
 void UDPInstrumentDefinition::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &, sbe::Frame const &) {
-  log::warn<5>("Unexpected"sv);
+  log::warn<5>("Unexpected: template_id=46"sv);
 }
 
 void UDPInstrumentDefinition::operator()(Trace<cme_mdp::MDIncrementalRefreshOrderBook47> const &, sbe::Frame const &) {
-  log::fatal("Unexpected"sv);
+  log::warn("Unexpected: template_id=47"sv);
 }
 
 void UDPInstrumentDefinition::operator()(
     Trace<cme_mdp::MDIncrementalRefreshTradeSummary48> const &, sbe::Frame const &) {
-  log::warn<5>("Unexpected"sv);
+  log::warn<5>("Unexpected: template_id=48"sv);
 }
 
 void UDPInstrumentDefinition::operator()(
     Trace<cme_mdp::MDIncrementalRefreshDailyStatistics49> const &, sbe::Frame const &) {
-  log::warn<5>("Unexpected"sv);
+  log::warn<5>("Unexpected: template_id=49"sv);
 }
 
 void UDPInstrumentDefinition::operator()(
     Trace<cme_mdp::MDIncrementalRefreshLimitsBanding50> const &, sbe::Frame const &) {
-  log::warn<5>("Unexpected"sv);
+  log::warn<5>("Unexpected: template_id=50"sv);
 }
 
 void UDPInstrumentDefinition::operator()(
     Trace<cme_mdp::MDIncrementalRefreshSessionStatistics51> const &, sbe::Frame const &) {
-  log::warn<5>("Unexpected"sv);
+  log::warn<5>("Unexpected: template_id=51"sv);
 }
 
 void UDPInstrumentDefinition::operator()(
     Trace<cme_mdp::MDIncrementalRefreshBookLongQty64> const &, sbe::Frame const &) {
-  log::warn<5>("Unexpected"sv);
+  log::warn<5>("Unexpected: template_id=64"sv);
 }
 
 void UDPInstrumentDefinition::operator()(
     Trace<cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65> const &, sbe::Frame const &) {
-  log::warn<5>("Unexpected"sv);
+  log::warn<5>("Unexpected: template_id=65"sv);
 }
 
 void UDPInstrumentDefinition::operator()(
     Trace<cme_mdp::MDIncrementalRefreshVolumeLongQty66> const &, sbe::Frame const &) {
-  log::warn<5>("Unexpected"sv);
+  log::warn<5>("Unexpected: template_id=66"sv);
 }
 
 void UDPInstrumentDefinition::operator()(
     Trace<cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67> const &, sbe::Frame const &) {
-  log::warn<5>("Unexpected"sv);
+  log::warn<5>("Unexpected: template_id=67"sv);
 }
 
 // - MDIncrementalRefresh

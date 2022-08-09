@@ -24,11 +24,6 @@
       "validator": "roq::core::flags::TimePeriod",
       "default": "90s",
       "description": "Timeout when waiting for snapshot"
-    },
-    {
-      "name": "multicast_is_premium",
-      "type": "bool",
-      "description": "Is the feed premium? (will join the recovery channels)"
     }
   ]
 }

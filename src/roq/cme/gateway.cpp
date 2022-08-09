@@ -23,10 +23,7 @@ auto create_udp_instrument_definition(Gateway &gateway, io::Context &context, ui
 }
 
 auto create_udp_mbp_market_recovery(Gateway &gateway, io::Context &context, uint16_t &stream_id, Shared &shared) {
-  if (flags::Multicast::multicast_is_premium())
-    return std::make_unique<UDPMBPMarketRecovery>(gateway, context, stream_id, shared);
-  log::warn("The MBP recovery channel is not needed for the conflated feed"sv);
-  return std::unique_ptr<UDPMBPMarketRecovery>{};
+  return std::make_unique<UDPMBPMarketRecovery>(gateway, context, stream_id, shared);
 }
 
 auto create_udp_incremental(Gateway &gateway, io::Context &context, uint16_t &stream_id, Shared &shared) {
@@ -138,6 +135,10 @@ void Gateway::operator()(Trace<TopOfBook const> const &event, bool is_last) {
 void Gateway::operator()(Trace<MarketByPriceUpdate const> const &event, bool is_last, bool refresh) {
   dispatcher_(
       event, is_last, refresh, shared_.final_bids, shared_.final_asks, []([[maybe_unused]] auto &market_by_price) {});
+}
+
+void Gateway::operator()(Trace<TradeSummary const> const &event, bool is_last) {
+  dispatcher_(event, is_last);
 }
 
 void Gateway::operator()(Trace<StatisticsUpdate const> const &event, bool is_last) {

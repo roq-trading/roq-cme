@@ -61,12 +61,21 @@ auto create_receiver(auto &handler, auto &context, auto &shared) {
 
 template <typename Callback>
 bool get_security(auto &shared, auto &value, Callback callback) {
-  auto security_id = value.securityID();
-  auto iter = shared.securities.find(security_id);
-  if (iter == std::end(shared.securities))
-    return false;
-  callback((*iter).second);
-  return true;
+  if constexpr (utils::is_integer<decltype(value)>::value) {
+    auto security_id = value;
+    auto iter = shared.securities.find(security_id);
+    if (iter == std::end(shared.securities))
+      return false;
+    callback((*iter).second);
+    return true;
+  } else {
+    auto security_id = value.securityID();
+    auto iter = shared.securities.find(security_id);
+    if (iter == std::end(shared.securities))
+      return false;
+    callback((*iter).second);
+    return true;
+  }
 }
 
 template <typename T>
@@ -83,6 +92,23 @@ void emplace(MBPUpdate &result, T const &item, auto &security) {
       .update_action = {},
       .price_level = utils::safe_cast(price_level),
   };
+}
+
+template <typename T>
+void emplace(Trade &result, T const &item, auto &security) {
+  auto price = sbe::get_double(const_cast<T &>(item).mDEntryPx());
+  auto quantity = sbe::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue());
+  new (&result) Trade{
+      .side = sbe::map_side(item.aggressorSide()),
+      .price = price * security.display_factor,
+      .quantity = utils::safe_cast(quantity),
+      .trade_id = {},
+  };
+}
+
+template <typename T>
+void trade_summary_emplace_back(auto &result, T const &item, auto &security) {
+  result.emplace_back([&item, &security](auto &result) { emplace(result, item, security); });
 }
 
 template <typename T>
@@ -105,6 +131,30 @@ void emplace_size(Statistics &result, auto type, T const &item) {
       .begin_time_utc = {},
       .end_time_utc = {},
   };
+}
+
+template <typename T>
+void statistics_emplace_back(auto &result, T const &item, auto &security) {
+  switch (item.mDEntryType()) {
+    using enum cme_mdp::MDEntryTypeDailyStatistics::Value;
+    case SettlementPrice:
+      result.emplace_back([&item, &security](auto &result) {
+        emplace_price(result, StatisticsType::SETTLEMENT_PRICE, item, security.display_factor);
+      });
+      break;
+    case ClearedVolume:
+      break;
+    case OpenInterest:
+      result.emplace_back([&item](auto &result) { emplace_size(result, StatisticsType::OPEN_INTEREST, item); });
+      break;
+    case FixingPrice:
+      // XXX need a new type?
+      result.emplace_back([&item, &security](auto &result) {
+        emplace_price(result, StatisticsType::CLOSE_PRICE, item, security.display_factor);
+      });
+    case NULL_VALUE:
+      break;
+  }
 }
 
 template <typename T>
@@ -345,22 +395,75 @@ void UDPIncremental::operator()(Trace<cme_mdp::SnapshotFullRefreshOrderBook53> c
 void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshVolume37> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
   log::info<3>("md_incremental_refresh_volume_37={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  /*
+  auto security_id = value.securityID();
+  auto &collector = shared_.mbp_collector[security_id];
+  core::back_emplacer bids{shared_.bids}, asks{shared_.asks};
+  value.sbeRewind();  // note!
+  value.noMDEntries().forEach(
+      [&](auto const &item) { emplace_back(item, security, top_of_book.layer, bids, asks, statistics); });
+  if (!(std::isnan(top_of_book.layer.bid_price) && std::isnan(top_of_book.layer.ask_price))) {
+    log::info<3>("top_of_book={}"sv, top_of_book);
+    create_trace_and_dispatch(handler_, trace_info, std::as_const(top_of_book), true);
+  }
+  */
 }
 
 void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
   log::info<3>("md_incremental_refresh_book_46={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  /*
+  auto security_id = value.securityID();
+  auto &collector = shared_.mbp_collector[security_id];
+  */
 }
 
 void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshOrderBook47> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
   log::info<3>("md_incremental_refresh_order_book_47={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  /*
+  auto security_id = value.securityID();
+  auto &collector = shared_.mbp_collector[security_id];
+  */
 }
 
 void UDPIncremental::operator()(
     Trace<cme_mdp::MDIncrementalRefreshTradeSummary48> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
   log::info<3>("md_incremental_refresh_trade_summary_48={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  value.sbeRewind();  // note!
+  std::chrono::nanoseconds exchange_time_utc{value.transactTime()};
+  core::back_emplacer trades{shared_.trades};
+  auto dispatch = [&](auto &trades, auto &security, auto is_last) {
+    const TradeSummary trade_summary{
+        .stream_id = stream_id_,
+        .exchange = security.exchange,
+        .symbol = security.symbol,
+        .trades = trades,
+        .exchange_time_utc = exchange_time_utc,
+    };
+    create_trace_and_dispatch(handler_, trace_info, trade_summary, is_last);
+  };
+  int32_t previous_security_id = {};
+  Shared::Security *security = nullptr;
+  value.noMDEntries().forEach([&](auto const &item) {
+    auto security_id = item.securityID();
+    if (security_id != previous_security_id) {
+      if (!std::empty(trades)) {
+        assert(security);
+        dispatch(trades, *security, true);
+        trades.clear();
+      }
+      previous_security_id = security_id;
+      get_security(shared_, item, [&security](auto &security_) { security = &security_; });
+    }
+    assert(security);
+    trade_summary_emplace_back(trades, item, *security);
+  });
+  if (!std::empty(trades)) {
+    assert(security);
+    dispatch(trades, *security, true);
+  }
 }
 
 void UDPIncremental::operator()(
@@ -368,6 +471,41 @@ void UDPIncremental::operator()(
   auto &[trace_info, value] = event;
   log::info<3>(
       "md_incremental_refresh_daily_statistics_49={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  value.sbeRewind();  // note!
+  std::chrono::nanoseconds exchange_time_utc{value.transactTime()};
+  core::back_emplacer statistics{shared_.statistics};
+  auto dispatch = [&](auto &statistics, auto &security, auto is_last) {
+    StatisticsUpdate const statistics_update{
+        .stream_id = stream_id_,
+        .exchange = security.exchange,
+        .symbol = security.symbol,
+        .statistics = statistics,
+        .update_type = UpdateType::INCREMENTAL,
+        .exchange_time_utc = exchange_time_utc,
+    };
+    log::info<3>("statistics_update={}"sv, statistics_update);
+    create_trace_and_dispatch(handler_, trace_info, statistics_update, is_last);
+  };
+  int32_t previous_security_id = {};
+  Shared::Security *security = nullptr;
+  value.noMDEntries().forEach([&](auto const &item) {
+    auto security_id = item.securityID();
+    if (security_id != previous_security_id) {
+      if (!std::empty(statistics)) {
+        assert(security);
+        dispatch(statistics, *security, true);
+        statistics.clear();
+      }
+      previous_security_id = security_id;
+      get_security(shared_, item, [&security](auto &security_) { security = &security_; });
+    }
+    assert(security);
+    statistics_emplace_back(statistics, item, *security);
+  });
+  if (!std::empty(statistics)) {
+    assert(security);
+    dispatch(statistics, *security, true);
+  }
 }
 
 void UDPIncremental::operator()(

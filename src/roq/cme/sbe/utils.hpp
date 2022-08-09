@@ -23,6 +23,21 @@ namespace roq {
 namespace cme {
 namespace sbe {
 
+inline Side map_side(cme_mdp::AggressorSide::Value value) {
+  switch (value) {
+    using enum cme_mdp::AggressorSide::Value;
+    case NoAggressor:
+      break;
+    case Buy:
+      return Side::BUY;
+    case Sell:
+      return Side::SELL;
+    case NULL_VALUE:
+      break;
+  }
+  return {};
+}
+
 /*
 START_OF_DAY,         //!< No matching, no order actions
 PRE_OPEN,             //!< No matching, all order actions
