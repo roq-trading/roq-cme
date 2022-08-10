@@ -77,9 +77,9 @@ class Gateway final : public server::Handler,
   // seed
   uint16_t stream_id_ = {};
   // streams
-  std::unique_ptr<UDPInstrumentDefinition> udp_instrument_definition_;
-  std::unique_ptr<UDPMBPMarketRecovery> udp_mbp_market_recovery_;
-  std::unique_ptr<UDPIncremental> udp_incremental_;
+  std::vector<std::unique_ptr<UDPInstrumentDefinition>> udp_instrument_definition_;
+  std::vector<std::unique_ptr<UDPMBPMarketRecovery>> udp_mbp_market_recovery_;
+  std::vector<std::unique_ptr<UDPIncremental>> udp_incremental_;
 };
 
 }  // namespace cme

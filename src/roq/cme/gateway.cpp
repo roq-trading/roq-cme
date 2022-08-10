@@ -16,21 +16,31 @@ namespace cme {
 
 namespace {
 auto create_udp_instrument_definition(Gateway &gateway, io::Context &context, uint16_t &stream_id, Shared &shared) {
-  if (std::empty(flags::Common::secdef_config_file()))
-    return std::make_unique<UDPInstrumentDefinition>(
-        gateway, context, stream_id, shared, flags::Multicast::multicast_channel_id());
-  log::warn("The instrument definitions channel is not needed when the secdef file was chosen"sv);
-  return std::unique_ptr<UDPInstrumentDefinition>{};
+  std::vector<std::unique_ptr<UDPInstrumentDefinition>> result;
+  if (std::empty(flags::Common::secdef_config_file())) {
+    auto &channel_ids = flags::Multicast::multicast_channel_ids();
+    for (auto &channel_id : channel_ids)
+      result.emplace_back(std::make_unique<UDPInstrumentDefinition>(gateway, context, stream_id, shared, channel_id));
+  } else {
+    log::warn("The instrument definitions channel is not used when the secdef file was chosen"sv);
+  }
+  return result;
 }
 
 auto create_udp_mbp_market_recovery(Gateway &gateway, io::Context &context, uint16_t &stream_id, Shared &shared) {
-  return std::make_unique<UDPMBPMarketRecovery>(
-      gateway, context, stream_id, shared, flags::Multicast::multicast_channel_id());
+  std::vector<std::unique_ptr<UDPMBPMarketRecovery>> result;
+  auto &channel_ids = flags::Multicast::multicast_channel_ids();
+  for (auto &channel_id : channel_ids)
+    result.emplace_back(std::make_unique<UDPMBPMarketRecovery>(gateway, context, stream_id, shared, channel_id));
+  return result;
 }
 
 auto create_udp_incremental(Gateway &gateway, io::Context &context, uint16_t &stream_id, Shared &shared) {
-  return std::make_unique<UDPIncremental>(
-      gateway, context, stream_id, shared, flags::Multicast::multicast_channel_id());
+  std::vector<std::unique_ptr<UDPIncremental>> result;
+  auto &channel_ids = flags::Multicast::multicast_channel_ids();
+  for (auto &channel_id : channel_ids)
+    result.emplace_back(std::make_unique<UDPIncremental>(gateway, context, stream_id, shared, channel_id));
+  return result;
 }
 }  // namespace
 
@@ -43,31 +53,31 @@ Gateway::Gateway(server::Dispatcher &dispatcher, Config const &)
 
 void Gateway::operator()(Event<Start> const &event) {
   log::info("Starting the gateway..."sv);
-  if (udp_instrument_definition_)
-    (*udp_instrument_definition_)(event);
-  if (udp_mbp_market_recovery_)
-    (*udp_mbp_market_recovery_)(event);
-  if (udp_incremental_)
-    (*udp_incremental_)(event);
+  for (auto &item : udp_instrument_definition_)
+    (*item)(event);
+  for (auto &item : udp_mbp_market_recovery_)
+    (*item)(event);
+  for (auto &item : udp_incremental_)
+    (*item)(event);
 }
 
 void Gateway::operator()(Event<Stop> const &event) {
   log::info("Stopping the gateway..."sv);
-  if (udp_incremental_)
-    (*udp_incremental_)(event);
-  if (udp_mbp_market_recovery_)
-    (*udp_mbp_market_recovery_)(event);
-  if (udp_instrument_definition_)
-    (*udp_instrument_definition_)(event);
+  for (auto &item : udp_incremental_)
+    (*item)(event);
+  for (auto &item : udp_mbp_market_recovery_)
+    (*item)(event);
+  for (auto &item : udp_instrument_definition_)
+    (*item)(event);
 }
 
 void Gateway::operator()(Event<Timer> const &event) {
-  if (udp_instrument_definition_)
-    (*udp_instrument_definition_)(event);
-  if (udp_mbp_market_recovery_)
-    (*udp_mbp_market_recovery_)(event);
-  if (udp_incremental_)
-    (*udp_incremental_)(event);
+  for (auto &item : udp_instrument_definition_)
+    (*item)(event);
+  for (auto &item : udp_mbp_market_recovery_)
+    (*item)(event);
+  for (auto &item : udp_incremental_)
+    (*item)(event);
   (*context_).drain();
 }
 
@@ -114,9 +124,12 @@ uint16_t Gateway::operator()(Event<CancelAllOrders> const &event, [[maybe_unused
 }
 
 void Gateway::operator()(metrics::Writer &writer) {
-  (*udp_instrument_definition_)(writer);
-  (*udp_mbp_market_recovery_)(writer);
-  (*udp_incremental_)(writer);
+  for (auto &item : udp_instrument_definition_)
+    (*item)(writer);
+  for (auto &item : udp_mbp_market_recovery_)
+    (*item)(writer);
+  for (auto &item : udp_incremental_)
+    (*item)(writer);
 }
 
 void Gateway::operator()(Trace<StreamStatus const> const &event) {

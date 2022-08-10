@@ -9,9 +9,9 @@
       "description": "config file (path)"
     },
     {
-      "name": "multicast_channel_id",
-      "type": "std::string",
-      "description": "Multicast channel, e.g. 310"
+      "name": "multicast_channel_ids",
+      "type": "std::vector<std::string>",
+      "description": "Comma-seprated list of multicast channels, e.g. 310"
     },
     {
       "name": "multicast_local_interface",
