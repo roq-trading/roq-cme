@@ -149,18 +149,16 @@ void UDPInstrumentDefinition::operator()(io::net::udp::Receiver::Error const &er
 
 // sbe::Parser::Handler
 
-void UDPInstrumentDefinition::operator()(Trace<cme_mdp::ChannelReset4> const &event, sbe::Frame const &frame) {
-  auto &[trace_info, value] = event;
-  log::info<3>("channel_reset_4={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
-  log::info<3>("HERE"sv);
-}
-
 void UDPInstrumentDefinition::operator()(Trace<cme_mdp::AdminHeartbeat12> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
   log::info<5>("admin_heartbeat_12={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
 }
 
-// - MDInstrumentDefinition
+void UDPInstrumentDefinition::operator()(Trace<cme_mdp::ChannelReset4> const &event, sbe::Frame const &frame) {
+  auto &[trace_info, value] = event;
+  log::info<3>("channel_reset_4={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  log::info<1>("DEBUG: HERE"sv);
+}
 
 void UDPInstrumentDefinition::operator()(
     Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &event, sbe::Frame const &frame) {
@@ -396,77 +394,70 @@ void UDPInstrumentDefinition::operator()(
     create_trace_and_dispatch(handler_, trace_info, reference_data, true);
   });
 }
-// - MbP
 
 void UDPInstrumentDefinition::operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &, sbe::Frame const &) {
-  log::warn<5>("Unexpected: template_id=52"sv);
+  log::info<1>("DEBUG: HERE"sv);
 }
 
 void UDPInstrumentDefinition::operator()(Trace<cme_mdp::SnapshotFullRefreshLongQty69> const &, sbe::Frame const &) {
-  log::warn<5>("Unexpected: template_id=69"sv);
-}
-
-// - MbO
-
-void UDPInstrumentDefinition::operator()(Trace<cme_mdp::SnapshotFullRefreshOrderBook53> const &, sbe::Frame const &) {
-  log::warn<5>("Unexpected: template_id=53"sv);
-}
-
-// - MDIncrementalRefresh
-
-void UDPInstrumentDefinition::operator()(Trace<cme_mdp::MDIncrementalRefreshVolume37> const &, sbe::Frame const &) {
-  log::warn<5>("Unexpected: template_id=37"sv);
+  log::info<1>("DEBUG: HERE"sv);
 }
 
 void UDPInstrumentDefinition::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &, sbe::Frame const &) {
-  log::warn<5>("Unexpected: template_id=46"sv);
-}
-
-void UDPInstrumentDefinition::operator()(Trace<cme_mdp::MDIncrementalRefreshOrderBook47> const &, sbe::Frame const &) {
-  log::warn("Unexpected: template_id=47"sv);
-}
-
-void UDPInstrumentDefinition::operator()(
-    Trace<cme_mdp::MDIncrementalRefreshTradeSummary48> const &, sbe::Frame const &) {
-  log::warn<5>("Unexpected: template_id=48"sv);
-}
-
-void UDPInstrumentDefinition::operator()(
-    Trace<cme_mdp::MDIncrementalRefreshDailyStatistics49> const &, sbe::Frame const &) {
-  log::warn<5>("Unexpected: template_id=49"sv);
-}
-
-void UDPInstrumentDefinition::operator()(
-    Trace<cme_mdp::MDIncrementalRefreshLimitsBanding50> const &, sbe::Frame const &) {
-  log::warn<5>("Unexpected: template_id=50"sv);
-}
-
-void UDPInstrumentDefinition::operator()(
-    Trace<cme_mdp::MDIncrementalRefreshSessionStatistics51> const &, sbe::Frame const &) {
-  log::warn<5>("Unexpected: template_id=51"sv);
+  log::info<1>("DEBUG: HERE"sv);
 }
 
 void UDPInstrumentDefinition::operator()(
     Trace<cme_mdp::MDIncrementalRefreshBookLongQty64> const &, sbe::Frame const &) {
-  log::warn<5>("Unexpected: template_id=64"sv);
+  log::info<1>("DEBUG: HERE"sv);
+}
+
+void UDPInstrumentDefinition::operator()(Trace<cme_mdp::SnapshotFullRefreshOrderBook53> const &, sbe::Frame const &) {
+  log::info<1>("DEBUG: HERE"sv);
+}
+
+void UDPInstrumentDefinition::operator()(Trace<cme_mdp::MDIncrementalRefreshOrderBook47> const &, sbe::Frame const &) {
+  log::info<1>("DEBUG: HERE"sv);
+}
+
+void UDPInstrumentDefinition::operator()(
+    Trace<cme_mdp::MDIncrementalRefreshTradeSummary48> const &, sbe::Frame const &) {
+  log::info<1>("DEBUG: HERE"sv);
 }
 
 void UDPInstrumentDefinition::operator()(
     Trace<cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65> const &, sbe::Frame const &) {
-  log::warn<5>("Unexpected: template_id=65"sv);
+  log::info<1>("DEBUG: HERE"sv);
 }
 
 void UDPInstrumentDefinition::operator()(
-    Trace<cme_mdp::MDIncrementalRefreshVolumeLongQty66> const &, sbe::Frame const &) {
-  log::warn<5>("Unexpected: template_id=66"sv);
+    Trace<cme_mdp::MDIncrementalRefreshDailyStatistics49> const &, sbe::Frame const &) {
+  log::info<1>("DEBUG: HERE"sv);
+}
+
+void UDPInstrumentDefinition::operator()(
+    Trace<cme_mdp::MDIncrementalRefreshSessionStatistics51> const &, sbe::Frame const &) {
+  log::info<1>("DEBUG: HERE"sv);
 }
 
 void UDPInstrumentDefinition::operator()(
     Trace<cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67> const &, sbe::Frame const &) {
-  log::warn<5>("Unexpected: template_id=67"sv);
+  log::info<1>("DEBUG: HERE"sv);
 }
 
-// - MDIncrementalRefresh
+void UDPInstrumentDefinition::operator()(Trace<cme_mdp::MDIncrementalRefreshVolume37> const &, sbe::Frame const &) {
+  log::info<1>("DEBUG: HERE"sv);
+}
+
+void UDPInstrumentDefinition::operator()(
+    Trace<cme_mdp::MDIncrementalRefreshVolumeLongQty66> const &, sbe::Frame const &) {
+  log::info<1>("DEBUG: HERE"sv);
+}
+
+void UDPInstrumentDefinition::operator()(
+    Trace<cme_mdp::MDIncrementalRefreshLimitsBanding50> const &, sbe::Frame const &) {
+  log::info<1>("DEBUG: HERE"sv);
+}
 
 void UDPInstrumentDefinition::operator()(metrics::Writer &writer) {
   writer  //

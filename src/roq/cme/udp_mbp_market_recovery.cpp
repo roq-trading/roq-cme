@@ -232,43 +232,40 @@ void UDPMBPMarketRecovery::operator()(io::net::udp::Receiver::Error const &error
 
 // sbe::Parser::Handler
 
-void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::ChannelReset4> const &event, sbe::Frame const &frame) {
-  auto &[trace_info, value] = event;
-  log::info<3>("channel_reset_4={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
-  log::info<3>("HERE"sv);
-}
-
 void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::AdminHeartbeat12> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
   log::info<5>("admin_heartbeat_12={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
 }
 
-// - MDInstrumentDefinition
+void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::ChannelReset4> const &event, sbe::Frame const &frame) {
+  auto &[trace_info, value] = event;
+  log::info<3>("channel_reset_4={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  log::info<1>("DEBUG: HERE"sv);
+}
 
 void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &, sbe::Frame const &) {
-  log::warn<5>("Unexpected: template_id=54"sv);
+  log::info<1>("DEBUG: HERE"sv);
 }
 
 void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::MDInstrumentDefinitionOption55> const &, sbe::Frame const &) {
-  log::warn<5>("Unexpected: template_id=55"sv);
+  log::info<1>("DEBUG: HERE"sv);
 }
 
 void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::MDInstrumentDefinitionSpread56> const &, sbe::Frame const &) {
-  log::warn<5>("Unexpected: template_id=56"sv);
+  log::info<1>("DEBUG: HERE"sv);
 }
 
 void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::MDInstrumentDefinitionFixedIncome57> const &, sbe::Frame const &) {
-  log::warn<5>("Unexpected: template_id=57"sv);
+  log::info<1>("DEBUG: HERE"sv);
 }
 
 void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::MDInstrumentDefinitionRepo58> const &, sbe::Frame const &) {
-  log::warn<5>("Unexpected: template_id=58"sv);
+  log::info<1>("DEBUG: HERE"sv);
 }
 
 void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::MDInstrumentDefinitionFX63> const &, sbe::Frame const &) {
-  log::warn<5>("Unexpected: template_id=63"sv);
+  log::info<1>("DEBUG: HERE"sv);
 }
-// - SnapshotFullRefresh
 
 void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
@@ -283,6 +280,7 @@ void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::SnapshotFullRefresh52> cons
     value.sbeRewind();  // note!
     value.noMDEntries().forEach([&](auto const &item) { emplace_back(item, security, layer, bids, asks, statistics); });
     if (!(std::isnan(layer.bid_price) && std::isnan(layer.ask_price))) {
+      /* note! we don't publish
       TopOfBook top_of_book{
           .stream_id = stream_id_,
           .exchange = security.exchange,
@@ -291,10 +289,10 @@ void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::SnapshotFullRefresh52> cons
           .exchange_time_utc = exchange_time_utc,
           .exchange_sequence = exchange_sequence,
       };
-      log::info<3>("top_of_book={}"sv, top_of_book);
+      */
     }
     if (!(std::empty(bids) && std::empty(bids))) {
-      publish_snapshot(trace_info, security_id, security, exchange_sequence, exchange_time_utc, bids, asks);
+      dispatch_market_by_price(trace_info, security_id, security, exchange_sequence, exchange_time_utc, bids, asks);
     }
     if (!std::empty(statistics)) {
       StatisticsUpdate const statistics_update{
@@ -305,7 +303,6 @@ void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::SnapshotFullRefresh52> cons
           .update_type = UpdateType::SNAPSHOT,
           .exchange_time_utc = exchange_time_utc,
       };
-      log::info<3>("statistics_update={}"sv, statistics_update);
       create_trace_and_dispatch(handler_, trace_info, statistics_update, true);
     }
   });
@@ -325,6 +322,7 @@ void UDPMBPMarketRecovery::operator()(
     value.sbeRewind();  // note!
     value.noMDEntries().forEach([&](auto const &item) { emplace_back(item, security, layer, bids, asks, statistics); });
     if (!(std::isnan(layer.bid_price) && std::isnan(layer.ask_price))) {
+      /* note! we don't publish
       TopOfBook top_of_book{
           .stream_id = stream_id_,
           .exchange = security.exchange,
@@ -333,10 +331,10 @@ void UDPMBPMarketRecovery::operator()(
           .exchange_time_utc = exchange_time_utc,
           .exchange_sequence = exchange_sequence,
       };
-      log::info<3>("top_of_book={}"sv, top_of_book);
+      */
     }
     if (!(std::empty(bids) && std::empty(bids))) {
-      publish_snapshot(trace_info, security_id, security, exchange_sequence, exchange_time_utc, bids, asks);
+      dispatch_market_by_price(trace_info, security_id, security, exchange_sequence, exchange_time_utc, bids, asks);
     }
     if (!std::empty(statistics)) {
       StatisticsUpdate const statistics_update{
@@ -347,69 +345,62 @@ void UDPMBPMarketRecovery::operator()(
           .update_type = UpdateType::SNAPSHOT,
           .exchange_time_utc = exchange_time_utc,
       };
-      log::info<3>("statistics_update={}"sv, statistics_update);
       create_trace_and_dispatch(handler_, trace_info, statistics_update, true);
     }
   });
 }
 
-// - L3
-
-void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::SnapshotFullRefreshOrderBook53> const &, sbe::Frame const &) {
-  log::warn<5>("Unexpected: template_id=53"sv);
-}
-
-// - MDIncrementalRefresh
-
-void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::MDIncrementalRefreshVolume37> const &, sbe::Frame const &) {
-  log::warn<5>("Unexpected: template_id=37"sv);
-}
-
 void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &, sbe::Frame const &) {
-  log::warn<5>("Unexpected: template_id=46"sv);
-}
-
-void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::MDIncrementalRefreshOrderBook47> const &, sbe::Frame const &) {
-  log::warn<5>("Unexpected: template_id=47"sv);
-}
-
-void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::MDIncrementalRefreshTradeSummary48> const &, sbe::Frame const &) {
-  log::warn<5>("Unexpected: template_id=48"sv);
-}
-
-void UDPMBPMarketRecovery::operator()(
-    Trace<cme_mdp::MDIncrementalRefreshDailyStatistics49> const &, sbe::Frame const &) {
-  log::warn<5>("Unexpected: template_id=49"sv);
-}
-
-void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::MDIncrementalRefreshLimitsBanding50> const &, sbe::Frame const &) {
-  log::warn<5>("Unexpected: template_id=50"sv);
-}
-
-void UDPMBPMarketRecovery::operator()(
-    Trace<cme_mdp::MDIncrementalRefreshSessionStatistics51> const &, sbe::Frame const &) {
-  log::warn<5>("Unexpected: template_id=51"sv);
+  log::info<1>("DEBUG: HERE"sv);
 }
 
 void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::MDIncrementalRefreshBookLongQty64> const &, sbe::Frame const &) {
-  log::warn<5>("Unexpected: template_id=64"sv);
+  log::info<1>("DEBUG: HERE"sv);
+}
+
+void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::SnapshotFullRefreshOrderBook53> const &, sbe::Frame const &) {
+  log::info<1>("DEBUG: HERE"sv);
+}
+
+void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::MDIncrementalRefreshOrderBook47> const &, sbe::Frame const &) {
+  log::info<1>("DEBUG: HERE"sv);
+}
+
+void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::MDIncrementalRefreshTradeSummary48> const &, sbe::Frame const &) {
+  log::info<1>("DEBUG: HERE"sv);
 }
 
 void UDPMBPMarketRecovery::operator()(
     Trace<cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65> const &, sbe::Frame const &) {
-  log::warn<5>("Unexpected: template_id=65"sv);
+  log::info<1>("DEBUG: HERE"sv);
 }
 
-void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::MDIncrementalRefreshVolumeLongQty66> const &, sbe::Frame const &) {
-  log::warn<5>("Unexpected: template_id=66"sv);
+void UDPMBPMarketRecovery::operator()(
+    Trace<cme_mdp::MDIncrementalRefreshDailyStatistics49> const &, sbe::Frame const &) {
+  log::info<1>("DEBUG: HERE"sv);
+}
+
+void UDPMBPMarketRecovery::operator()(
+    Trace<cme_mdp::MDIncrementalRefreshSessionStatistics51> const &, sbe::Frame const &) {
+  log::info<1>("DEBUG: HERE"sv);
 }
 
 void UDPMBPMarketRecovery::operator()(
     Trace<cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67> const &, sbe::Frame const &) {
-  log::warn<5>("Unexpected: template_id=67"sv);
+  log::info<1>("DEBUG: HERE"sv);
 }
 
-// - MDIncrementalRefresh
+void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::MDIncrementalRefreshVolume37> const &, sbe::Frame const &) {
+  log::info<1>("DEBUG: HERE"sv);
+}
+
+void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::MDIncrementalRefreshVolumeLongQty66> const &, sbe::Frame const &) {
+  log::info<1>("DEBUG: HERE"sv);
+}
+
+void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::MDIncrementalRefreshLimitsBanding50> const &, sbe::Frame const &) {
+  log::info<1>("DEBUG: HERE"sv);
+}
 
 void UDPMBPMarketRecovery::operator()(metrics::Writer &writer) {
   writer  //
@@ -417,24 +408,7 @@ void UDPMBPMarketRecovery::operator()(metrics::Writer &writer) {
       .write(profile_.parse, metrics::PROFILE);
 }
 
-void UDPMBPMarketRecovery::publish_stream_status(TraceInfo const &trace_info, ConnectionStatus connection_status) {
-  if (!utils::update(connection_status_, connection_status))
-    return;
-  const StreamStatus stream_status{
-      .stream_id = stream_id_,
-      .account = {},
-      .supports = SUPPORTS,
-      .transport = Transport::UDP,
-      .protocol = Protocol::SBE,
-      .encoding = {Encoding::SBE},
-      .priority = Priority::PRIMARY,
-      .connection_status = connection_status_,
-  };
-  log::info("stream_status={}"sv, stream_status);
-  create_trace_and_dispatch(handler_, trace_info, stream_status);
-}
-
-void UDPMBPMarketRecovery::publish_snapshot(
+void UDPMBPMarketRecovery::dispatch_market_by_price(
     auto &trace_info,
     auto security_id,
     auto &security,
@@ -446,16 +420,13 @@ void UDPMBPMarketRecovery::publish_snapshot(
     return;
   auto &collector = shared_.mbp_collector[security_id];
   try {
-    log::info<1>("DEBUG exchange_sequence={}"sv, exchange_sequence);
-    // log::info<1>("DEBUG bids=[{}]"sv, fmt::join(static_cast<std::span<MBPUpdate>>(bids), ", "sv));
-    // log::info<1>("DEBUG asks=[{}]"sv, fmt::join(static_cast<std::span<MBPUpdate>>(asks), ", "sv));
     collector(
         bids,
         asks,
         exchange_sequence,
         [&](auto &bids, auto &asks, auto exchange_sequence) {  // snapshot
           log::info<1>(
-              R"(PUBLISH SNAPSHOT exchange="{}", symbol="{}", security_id={} (exchange_sequence={}))"sv,
+              R"(DEBUG: SNAPSHOT exchange="{}", symbol="{}", security_id={} (exchange_sequence={}))"sv,
               security.exchange,
               security.symbol,
               security_id,
@@ -478,11 +449,11 @@ void UDPMBPMarketRecovery::publish_snapshot(
               event, true, [&](auto &market_by_price) { collector.apply(market_by_price, exchange_sequence, false); });
           auto res = shared_.mbp_resubscribe.erase(security_id);  // remove
           if (res > 0)
-            log::info<1>("DEBUG removed security_id={}"sv, security_id);
+            log::info<1>("DEBUG: REMOVE security_id={}"sv, security_id);
         },
         [&](auto retries) {  // request
           log::info<1>(
-              R"(REQUEST exchange="{}", symbol="{}", security_id={} (retries={}))"sv,
+              R"(DEBUG: REQUEST exchange="{}", symbol="{}", security_id={} (retries={}))"sv,
               security.exchange,
               security.symbol,
               security_id,
@@ -494,7 +465,7 @@ void UDPMBPMarketRecovery::publish_snapshot(
           */
           auto res = shared_.mbp_resubscribe.emplace(security_id);
           if (res.second)
-            log::info<1>("DEBUG inserted security_id={}"sv, security_id);
+            log::info<1>("DEBUG: RESUBSCRIBE security_id={}"sv, security_id);
         });
   } catch (BadState &) {
     log::warn(
@@ -503,8 +474,25 @@ void UDPMBPMarketRecovery::publish_snapshot(
     collector.clear();
     auto res = shared_.mbp_resubscribe.emplace(security_id);
     if (res.second)
-      log::info<1>("DEBUG inserted security_id={}"sv, security_id);
+      log::info<1>("DEBUG: RESUBSCRIBE security_id={}"sv, security_id);
   }
+}
+
+void UDPMBPMarketRecovery::publish_stream_status(TraceInfo const &trace_info, ConnectionStatus connection_status) {
+  if (!utils::update(connection_status_, connection_status))
+    return;
+  const StreamStatus stream_status{
+      .stream_id = stream_id_,
+      .account = {},
+      .supports = SUPPORTS,
+      .transport = Transport::UDP,
+      .protocol = Protocol::SBE,
+      .encoding = {Encoding::SBE},
+      .priority = Priority::PRIMARY,
+      .connection_status = connection_status_,
+  };
+  log::info("stream_status={}"sv, stream_status);
+  create_trace_and_dispatch(handler_, trace_info, stream_status);
 }
 
 }  // namespace cme

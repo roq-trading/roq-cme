@@ -54,17 +54,18 @@ bool Parser::dispatch(Handler &handler, std::span<std::byte const> const &buffer
           assert(std::size(message) >= length);
           auto tmp = message.subspan(0, length);
           switch (template_id) {
-            case cme_mdp::ChannelReset4::SBE_TEMPLATE_ID: {
-              cme_mdp::ChannelReset4 value{std::data(tmp), std::size(tmp), block_length, version};
-              create_trace_and_dispatch(handler, trace_info, value, frame);
-              break;
-            }
+              // admin
             case cme_mdp::AdminHeartbeat12::SBE_TEMPLATE_ID: {
               cme_mdp::AdminHeartbeat12 value{std::data(tmp), std::size(tmp), block_length, version};
               create_trace_and_dispatch(handler, trace_info, value, frame);
               break;
             }
-              // - MDInstrumentDefinition
+            case cme_mdp::ChannelReset4::SBE_TEMPLATE_ID: {
+              cme_mdp::ChannelReset4 value{std::data(tmp), std::size(tmp), block_length, version};
+              create_trace_and_dispatch(handler, trace_info, value, frame);
+              break;
+            }
+              // instrument definitions
             case cme_mdp::MDInstrumentDefinitionFuture54::SBE_TEMPLATE_ID: {
               cme_mdp::MDInstrumentDefinitionFuture54 value{std::data(tmp), std::size(tmp), block_length, version};
               create_trace_and_dispatch(handler, trace_info, value, frame);
@@ -95,7 +96,7 @@ bool Parser::dispatch(Handler &handler, std::span<std::byte const> const &buffer
               create_trace_and_dispatch(handler, trace_info, value, frame);
               break;
             }
-              // - MbP
+              // market by price
             case cme_mdp::SnapshotFullRefresh52::SBE_TEMPLATE_ID: {
               cme_mdp::SnapshotFullRefresh52 value{std::data(tmp), std::size(tmp), block_length, version};
               create_trace_and_dispatch(handler, trace_info, value, frame);
@@ -106,20 +107,19 @@ bool Parser::dispatch(Handler &handler, std::span<std::byte const> const &buffer
               create_trace_and_dispatch(handler, trace_info, value, frame);
               break;
             }
-              // MbO
-            case cme_mdp::SnapshotFullRefreshOrderBook53::SBE_TEMPLATE_ID: {
-              cme_mdp::SnapshotFullRefreshOrderBook53 value{std::data(tmp), std::size(tmp), block_length, version};
-              create_trace_and_dispatch(handler, trace_info, value, frame);
-              break;
-            }
-              // - MDIncrementalRefresh
-            case cme_mdp::MDIncrementalRefreshVolume37::SBE_TEMPLATE_ID: {
-              cme_mdp::MDIncrementalRefreshVolume37 value{std::data(tmp), std::size(tmp), block_length, version};
-              create_trace_and_dispatch(handler, trace_info, value, frame);
-              break;
-            }
             case cme_mdp::MDIncrementalRefreshBook46::SBE_TEMPLATE_ID: {
               cme_mdp::MDIncrementalRefreshBook46 value{std::data(tmp), std::size(tmp), block_length, version};
+              create_trace_and_dispatch(handler, trace_info, value, frame);
+              break;
+            }
+            case cme_mdp::MDIncrementalRefreshBookLongQty64::SBE_TEMPLATE_ID: {
+              cme_mdp::MDIncrementalRefreshBookLongQty64 value{std::data(tmp), std::size(tmp), block_length, version};
+              create_trace_and_dispatch(handler, trace_info, value, frame);
+              break;
+            }
+              // market by order
+            case cme_mdp::SnapshotFullRefreshOrderBook53::SBE_TEMPLATE_ID: {
+              cme_mdp::SnapshotFullRefreshOrderBook53 value{std::data(tmp), std::size(tmp), block_length, version};
               create_trace_and_dispatch(handler, trace_info, value, frame);
               break;
             }
@@ -128,30 +128,9 @@ bool Parser::dispatch(Handler &handler, std::span<std::byte const> const &buffer
               create_trace_and_dispatch(handler, trace_info, value, frame);
               break;
             }
+              // trade summary
             case cme_mdp::MDIncrementalRefreshTradeSummary48::SBE_TEMPLATE_ID: {
               cme_mdp::MDIncrementalRefreshTradeSummary48 value{std::data(tmp), std::size(tmp), block_length, version};
-              create_trace_and_dispatch(handler, trace_info, value, frame);
-              break;
-            }
-            case cme_mdp::MDIncrementalRefreshDailyStatistics49::SBE_TEMPLATE_ID: {
-              cme_mdp::MDIncrementalRefreshDailyStatistics49 value{
-                  std::data(tmp), std::size(tmp), block_length, version};
-              create_trace_and_dispatch(handler, trace_info, value, frame);
-              break;
-            }
-            case cme_mdp::MDIncrementalRefreshLimitsBanding50::SBE_TEMPLATE_ID: {
-              cme_mdp::MDIncrementalRefreshLimitsBanding50 value{std::data(tmp), std::size(tmp), block_length, version};
-              create_trace_and_dispatch(handler, trace_info, value, frame);
-              break;
-            }
-            case cme_mdp::MDIncrementalRefreshSessionStatistics51::SBE_TEMPLATE_ID: {
-              cme_mdp::MDIncrementalRefreshSessionStatistics51 value{
-                  std::data(tmp), std::size(tmp), block_length, version};
-              create_trace_and_dispatch(handler, trace_info, value, frame);
-              break;
-            }
-            case cme_mdp::MDIncrementalRefreshBookLongQty64::SBE_TEMPLATE_ID: {
-              cme_mdp::MDIncrementalRefreshBookLongQty64 value{std::data(tmp), std::size(tmp), block_length, version};
               create_trace_and_dispatch(handler, trace_info, value, frame);
               break;
             }
@@ -161,14 +140,38 @@ bool Parser::dispatch(Handler &handler, std::span<std::byte const> const &buffer
               create_trace_and_dispatch(handler, trace_info, value, frame);
               break;
             }
-            case cme_mdp::MDIncrementalRefreshVolumeLongQty66::SBE_TEMPLATE_ID: {
-              cme_mdp::MDIncrementalRefreshVolumeLongQty66 value{std::data(tmp), std::size(tmp), block_length, version};
+              // statistcis
+            case cme_mdp::MDIncrementalRefreshDailyStatistics49::SBE_TEMPLATE_ID: {
+              cme_mdp::MDIncrementalRefreshDailyStatistics49 value{
+                  std::data(tmp), std::size(tmp), block_length, version};
+              create_trace_and_dispatch(handler, trace_info, value, frame);
+              break;
+            }
+            case cme_mdp::MDIncrementalRefreshSessionStatistics51::SBE_TEMPLATE_ID: {
+              cme_mdp::MDIncrementalRefreshSessionStatistics51 value{
+                  std::data(tmp), std::size(tmp), block_length, version};
               create_trace_and_dispatch(handler, trace_info, value, frame);
               break;
             }
             case cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67::SBE_TEMPLATE_ID: {
               cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67 value{
                   std::data(tmp), std::size(tmp), block_length, version};
+              create_trace_and_dispatch(handler, trace_info, value, frame);
+              break;
+            }
+            case cme_mdp::MDIncrementalRefreshVolume37::SBE_TEMPLATE_ID: {
+              cme_mdp::MDIncrementalRefreshVolume37 value{std::data(tmp), std::size(tmp), block_length, version};
+              create_trace_and_dispatch(handler, trace_info, value, frame);
+              break;
+            }
+            case cme_mdp::MDIncrementalRefreshVolumeLongQty66::SBE_TEMPLATE_ID: {
+              cme_mdp::MDIncrementalRefreshVolumeLongQty66 value{std::data(tmp), std::size(tmp), block_length, version};
+              create_trace_and_dispatch(handler, trace_info, value, frame);
+              break;
+            }
+              // misc
+            case cme_mdp::MDIncrementalRefreshLimitsBanding50::SBE_TEMPLATE_ID: {
+              cme_mdp::MDIncrementalRefreshLimitsBanding50 value{std::data(tmp), std::size(tmp), block_length, version};
               create_trace_and_dispatch(handler, trace_info, value, frame);
               break;
             }

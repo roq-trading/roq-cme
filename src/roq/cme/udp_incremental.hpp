@@ -49,32 +49,45 @@ class UDPIncremental final : public io::net::udp::Receiver::Handler, public sbe:
 
  protected:
   // sbe::Parser::Handler
-  void operator()(Trace<cme_mdp::ChannelReset4> const &, sbe::Frame const &) override;
+  // - admin
   void operator()(Trace<cme_mdp::AdminHeartbeat12> const &, sbe::Frame const &) override;
-  // - MDInstrumentDefinition
+  void operator()(Trace<cme_mdp::ChannelReset4> const &, sbe::Frame const &) override;
+  // - instrument definitions
   void operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &, sbe::Frame const &) override;
   void operator()(Trace<cme_mdp::MDInstrumentDefinitionOption55> const &, sbe::Frame const &) override;
   void operator()(Trace<cme_mdp::MDInstrumentDefinitionSpread56> const &, sbe::Frame const &) override;
   void operator()(Trace<cme_mdp::MDInstrumentDefinitionFixedIncome57> const &, sbe::Frame const &) override;
   void operator()(Trace<cme_mdp::MDInstrumentDefinitionRepo58> const &, sbe::Frame const &) override;
   void operator()(Trace<cme_mdp::MDInstrumentDefinitionFX63> const &, sbe::Frame const &) override;
-  // - MbP
+  // - market by price
   void operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &, sbe::Frame const &) override;
   void operator()(Trace<cme_mdp::SnapshotFullRefreshLongQty69> const &, sbe::Frame const &) override;
-  // - MbO
-  void operator()(Trace<cme_mdp::SnapshotFullRefreshOrderBook53> const &, sbe::Frame const &) override;
-  // - MDIncrementalRefresh
-  void operator()(Trace<cme_mdp::MDIncrementalRefreshVolume37> const &, sbe::Frame const &) override;
   void operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &, sbe::Frame const &) override;
-  void operator()(Trace<cme_mdp::MDIncrementalRefreshOrderBook47> const &, sbe::Frame const &) override;
-  void operator()(Trace<cme_mdp::MDIncrementalRefreshTradeSummary48> const &, sbe::Frame const &) override;
-  void operator()(Trace<cme_mdp::MDIncrementalRefreshDailyStatistics49> const &, sbe::Frame const &) override;
-  void operator()(Trace<cme_mdp::MDIncrementalRefreshLimitsBanding50> const &, sbe::Frame const &) override;
-  void operator()(Trace<cme_mdp::MDIncrementalRefreshSessionStatistics51> const &, sbe::Frame const &) override;
   void operator()(Trace<cme_mdp::MDIncrementalRefreshBookLongQty64> const &, sbe::Frame const &) override;
+  // - market by order
+  void operator()(Trace<cme_mdp::SnapshotFullRefreshOrderBook53> const &, sbe::Frame const &) override;
+  void operator()(Trace<cme_mdp::MDIncrementalRefreshOrderBook47> const &, sbe::Frame const &) override;
+  // - trade summary
+  void operator()(Trace<cme_mdp::MDIncrementalRefreshTradeSummary48> const &, sbe::Frame const &) override;
   void operator()(Trace<cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65> const &, sbe::Frame const &) override;
-  void operator()(Trace<cme_mdp::MDIncrementalRefreshVolumeLongQty66> const &, sbe::Frame const &) override;
+  // - statistics
+  void operator()(Trace<cme_mdp::MDIncrementalRefreshDailyStatistics49> const &, sbe::Frame const &) override;
+  void operator()(Trace<cme_mdp::MDIncrementalRefreshSessionStatistics51> const &, sbe::Frame const &) override;
   void operator()(Trace<cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67> const &, sbe::Frame const &) override;
+  void operator()(Trace<cme_mdp::MDIncrementalRefreshVolume37> const &, sbe::Frame const &) override;
+  void operator()(Trace<cme_mdp::MDIncrementalRefreshVolumeLongQty66> const &, sbe::Frame const &) override;
+  // - misc
+  void operator()(Trace<cme_mdp::MDIncrementalRefreshLimitsBanding50> const &, sbe::Frame const &) override;
+
+ protected:
+  void dispatch_market_by_price(
+      auto &trace_info,
+      auto security_id,
+      auto &security,
+      auto exchange_sequence,
+      auto exchange_time_utc,
+      auto &bids,
+      auto &asks);
 
   template <typename T>
   void dispatch_trade_summary(Trace<T> const &);
@@ -84,15 +97,6 @@ class UDPIncremental final : public io::net::udp::Receiver::Handler, public sbe:
 
  protected:
   void publish_stream_status(TraceInfo const &, ConnectionStatus connection_status);
-
-  void publish_incremental_or_snapshot(
-      auto &trace_info,
-      auto security_id,
-      auto &security,
-      auto exchange_sequence,
-      auto exchange_time_utc,
-      auto &bids,
-      auto &asks);
 
  private:
   Handler &handler_;
