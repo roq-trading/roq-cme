@@ -680,7 +680,8 @@ void UDPIncremental::dispatch_market_by_price(
 
 template <typename T>
 void UDPIncremental::dispatch_trade_summary(Trace<T> const &event) {
-  auto &[trace_info, value] = event;
+  auto &trace_info = event.trace_info;
+  auto &value = event.value;
   value.sbeRewind();  // note!
   std::chrono::nanoseconds exchange_time_utc{value.transactTime()};
   core::back_emplacer trades{shared_.trades};
@@ -719,7 +720,8 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event) {
 
 template <typename T, typename Callback>
 void UDPIncremental::dispatch_statistics(Trace<T> const &event, Callback callback) {
-  auto &[trace_info, value] = event;
+  auto &trace_info = event.trace_info;
+  auto &value = event.value;
   value.sbeRewind();  // note!
   std::chrono::nanoseconds exchange_time_utc{value.transactTime()};
   core::back_emplacer statistics{shared_.statistics};

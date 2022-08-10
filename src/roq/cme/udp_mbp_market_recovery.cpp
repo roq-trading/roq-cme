@@ -305,7 +305,8 @@ void UDPMBPMarketRecovery::operator()(
 
 void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &event, sbe::Frame const &frame) {
   profile_.snapshot_full_refresh([&]() {
-    auto &[trace_info, value] = event;
+    auto &trace_info = event.trace_info;
+    auto &value = event.value;
     log::info<5>("snapshot_full_refresh={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
     auto security_id = value.securityID();
     get_security(shared_, security_id, [&](auto &security) {
@@ -350,7 +351,8 @@ void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::SnapshotFullRefresh52> cons
 void UDPMBPMarketRecovery::operator()(
     Trace<cme_mdp::SnapshotFullRefreshLongQty69> const &event, sbe::Frame const &frame) {
   profile_.snapshot_full_refresh_long_qty([&]() {
-    auto &[trace_info, value] = event;
+    auto &trace_info = event.trace_info;
+    auto &value = event.value;
     log::info<5>("snapshot_full_refresh_long_qty={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
     auto security_id = value.securityID();
     get_security(shared_, security_id, [&](auto &security) {
