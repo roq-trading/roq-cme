@@ -273,6 +273,24 @@ UDPIncremental::UDPIncremental(Handler &handler, io::Context &context, uint16_t 
       },
       profile_{
           .parse = create_metrics(name_, "parse"sv),
+          .admin_heartbeat = create_metrics(name_, "admin_heartbeat"sv),
+          .channel_reset = create_metrics(name_, "channel_reset"sv),
+          .snapshot_full_refresh = create_metrics(name_, "snapshot_full_refresh"sv),
+          .snapshot_full_refresh_long_qty = create_metrics(name_, "snapshot_full_refresh_long_qty"sv),
+          .md_incremental_refresh_book = create_metrics(name_, "md_incremental_refresh_book"sv),
+          .md_incremental_refresh_book_long_qty = create_metrics(name_, "md_incremental_refresh_book_long_qty"sv),
+          .snapshot_full_refresh_order_book = create_metrics(name_, "snapshot_full_refresh_order_book"sv),
+          .md_incremental_refresh_order_book = create_metrics(name_, "md_incremental_refresh_order_book"sv),
+          .md_incremental_refresh_trade_summary = create_metrics(name_, "md_incremental_refresh_trade_summary"sv),
+          .md_incremental_refresh_trade_summary_long_qty =
+              create_metrics(name_, "md_incremental_refresh_trade_summary_long_qty"sv),
+          .md_incremental_refresh_daily_statistics = create_metrics(name_, "md_incremental_refresh_daily_statistics"sv),
+          .md_incremental_refresh_session_statistics =
+              create_metrics(name_, "md_incremental_refresh_session_statistics"sv),
+          .md_incremental_refresh_session_statistics_long_qty =
+              create_metrics(name_, "md_incremental_refresh_session_statistics_long_qty"sv),
+          .md_incremental_refresh_volume = create_metrics(name_, "md_incremental_refresh_volume"sv),
+          .md_incremental_refresh_volume_long_qty = create_metrics(name_, "md_incremental_refresh_volume_long_qty"sv),
       },
       shared_(shared) {
 }
@@ -318,236 +336,263 @@ void UDPIncremental::operator()(io::net::udp::Receiver::Error const &error) {
 // sbe::Parser::Handler
 
 void UDPIncremental::operator()(Trace<cme_mdp::AdminHeartbeat12> const &event, sbe::Frame const &frame) {
-  auto &[trace_info, value] = event;
-  log::info<5>("admin_heartbeat_12={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  profile_.admin_heartbeat([&]() {
+    auto &[trace_info, value] = event;
+    log::info<5>("admin_heartbeat={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  });
 }
 
 void UDPIncremental::operator()(Trace<cme_mdp::ChannelReset4> const &event, sbe::Frame const &frame) {
-  auto &[trace_info, value] = event;
-  log::info<3>("channel_reset_4={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
-  log::info<1>("DEBUG: HERE"sv);
+  profile_.channel_reset([&]() {
+    auto &[trace_info, value] = event;
+    log::info<5>("channel_reset={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+    log::info<1>("DEBUG: HERE"sv);
+  });
 }
 
 void UDPIncremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
-  log::info<3>("md_instrument_definition_future_54={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  log::info<5>("md_instrument_definition_future={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
   log::info<1>("DEBUG: HERE"sv);
 }
 
 void UDPIncremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionOption55> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
-  log::info<3>("md_instrument_definition_option_55={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  log::info<5>("md_instrument_definition_option={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
   log::info<1>("DEBUG: HERE"sv);
 }
 
 void UDPIncremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionSpread56> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
-  log::info<3>("md_instrument_definition_spread_56={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  log::info<5>("md_instrument_definition_spread={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
   log::info<1>("DEBUG: HERE"sv);
 }
 
 void UDPIncremental::operator()(
     Trace<cme_mdp::MDInstrumentDefinitionFixedIncome57> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
-  log::info<3>("md_instrument_definition_fixed_income_57={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  log::info<5>("md_instrument_definition_fixed_income={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
   log::info<1>("DEBUG: HERE"sv);
 }
 
 void UDPIncremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionRepo58> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
-  log::info<3>("md_instrument_definition_repo_58={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  log::info<5>("md_instrument_definition_repo={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
   log::info<1>("DEBUG: HERE"sv);
 }
 
 void UDPIncremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionFX63> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
-  log::info<3>("md_instrument_definition_fx_63={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  log::info<5>("md_instrument_definition_fx={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
   log::info<1>("DEBUG: HERE"sv);
 }
 
 void UDPIncremental::operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &event, sbe::Frame const &frame) {
-  auto &trace_info = event.trace_info;
-  auto &value = event.value;
-  log::info<3>("snapshot_full_refresh_52={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
-  value.sbeRewind();  // note!
-  auto security_id = value.securityID();
-  get_security(shared_, security_id, [&](auto &security) {
-    std::chrono::nanoseconds exchange_time_utc{value.transactTime()};
-    auto exchange_sequence = value.lastMsgSeqNumProcessed();
-    Layer layer = {};
-    core::back_emplacer bids{shared_.bids}, asks{shared_.asks};
-    core::back_emplacer statistics{shared_.statistics};
-    value.noMDEntries().forEach([&](auto const &item) { emplace_back(item, security, layer, bids, asks, statistics); });
-    if (!(std::isnan(layer.bid_price) && std::isnan(layer.ask_price))) {
-      TopOfBook top_of_book{
-          .stream_id = stream_id_,
-          .exchange = security.exchange,
-          .symbol = security.symbol,
-          .layer = layer,
-          .exchange_time_utc = exchange_time_utc,
-          .exchange_sequence = exchange_sequence,
-      };
-      create_trace_and_dispatch(handler_, trace_info, std::as_const(top_of_book), true);
-    }
-    if (!(std::empty(bids) && std::empty(bids))) {
-      log::info<1>("DEBUG: HERE"sv);
-      dispatch_market_by_price(trace_info, security_id, security, exchange_sequence, exchange_time_utc, bids, asks);
-    }
-    if (!std::empty(statistics)) {
-      StatisticsUpdate const statistics_update{
-          .stream_id = stream_id_,
-          .exchange = security.exchange,
-          .symbol = security.symbol,
-          .statistics = statistics,
-          .update_type = UpdateType::SNAPSHOT,
-          .exchange_time_utc = exchange_time_utc,
-      };
-      create_trace_and_dispatch(handler_, trace_info, statistics_update, true);
-    }
+  profile_.snapshot_full_refresh([&]() {
+    auto &trace_info = event.trace_info;
+    auto &value = event.value;
+    log::info<5>("snapshot_full_refresh={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+    value.sbeRewind();  // note!
+    auto security_id = value.securityID();
+    get_security(shared_, security_id, [&](auto &security) {
+      std::chrono::nanoseconds exchange_time_utc{value.transactTime()};
+      auto exchange_sequence = value.lastMsgSeqNumProcessed();
+      Layer layer = {};
+      core::back_emplacer bids{shared_.bids}, asks{shared_.asks};
+      core::back_emplacer statistics{shared_.statistics};
+      value.noMDEntries().forEach(
+          [&](auto const &item) { emplace_back(item, security, layer, bids, asks, statistics); });
+      if (!(std::isnan(layer.bid_price) && std::isnan(layer.ask_price))) {
+        TopOfBook top_of_book{
+            .stream_id = stream_id_,
+            .exchange = security.exchange,
+            .symbol = security.symbol,
+            .layer = layer,
+            .exchange_time_utc = exchange_time_utc,
+            .exchange_sequence = exchange_sequence,
+        };
+        create_trace_and_dispatch(handler_, trace_info, std::as_const(top_of_book), true);
+      }
+      if (!(std::empty(bids) && std::empty(bids))) {
+        log::info<1>("DEBUG: HERE"sv);
+        dispatch_market_by_price(trace_info, security_id, security, exchange_sequence, exchange_time_utc, bids, asks);
+      }
+      if (!std::empty(statistics)) {
+        StatisticsUpdate const statistics_update{
+            .stream_id = stream_id_,
+            .exchange = security.exchange,
+            .symbol = security.symbol,
+            .statistics = statistics,
+            .update_type = UpdateType::SNAPSHOT,
+            .exchange_time_utc = exchange_time_utc,
+        };
+        create_trace_and_dispatch(handler_, trace_info, statistics_update, true);
+      }
+    });
   });
 }
 
 void UDPIncremental::operator()(Trace<cme_mdp::SnapshotFullRefreshLongQty69> const &event, sbe::Frame const &frame) {
-  auto &[trace_info, value] = event;
-  log::info<3>("snapshot_full_refresh_long_qty_69={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
-  log::info<1>("DEBUG: HERE"sv);
+  profile_.snapshot_full_refresh_long_qty([&]() {
+    auto &[trace_info, value] = event;
+    log::info<5>("snapshot_full_refresh_long_qty={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+    log::info<1>("DEBUG: HERE"sv);
+  });
 }
 
 void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &event, sbe::Frame const &frame) {
-  auto &trace_info = event.trace_info;
-  auto &value = event.value;
-  log::info<3>("md_incremental_refresh_book_46={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
-  value.sbeRewind();  // note!
-  uint32_t exchange_sequence = frame.sequence_number;
-  std::chrono::nanoseconds exchange_time_utc{value.transactTime()};
-  Layer layer = {};
-  core::back_emplacer bids{shared_.bids}, asks{shared_.asks};
-  auto dispatch = [&](auto security_id, auto &security, auto is_last) {
-    if (!(std::isnan(layer.bid_price) && std::isnan(layer.ask_price))) {
-      TopOfBook top_of_book{
-          .stream_id = stream_id_,
-          .exchange = security.exchange,
-          .symbol = security.symbol,
-          .layer = layer,
-          .exchange_time_utc = exchange_time_utc,
-          .exchange_sequence = exchange_sequence,
-      };
-      create_trace_and_dispatch(handler_, trace_info, std::as_const(top_of_book), is_last);
-      layer = {};
-    }
-    if (!(std::empty(bids) && std::empty(bids))) {
-      dispatch_market_by_price(trace_info, security_id, security, exchange_sequence, exchange_time_utc, bids, asks);
-      bids.clear();
-      asks.clear();
-    }
-  };
-  int32_t security_id = {};
-  Shared::Security *security = nullptr;
-  value.noMDEntries().forEach([&](auto const &item) {
-    auto current_security_id = item.securityID();
-    if (current_security_id != security_id) {
-      if (security)
-        dispatch(security_id, *security, true);
-      security_id = current_security_id;
-      if (get_security(shared_, security_id, [&security](auto &security_) { security = &security_; })) {
-      } else {
-        security = nullptr;
+  profile_.md_incremental_refresh_book([&]() {
+    auto &trace_info = event.trace_info;
+    auto &value = event.value;
+    log::info<5>("md_incremental_refresh_book={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+    value.sbeRewind();  // note!
+    uint32_t exchange_sequence = frame.sequence_number;
+    std::chrono::nanoseconds exchange_time_utc{value.transactTime()};
+    Layer layer = {};
+    core::back_emplacer bids{shared_.bids}, asks{shared_.asks};
+    auto dispatch = [&](auto security_id, auto &security, auto is_last) {
+      if (!(std::isnan(layer.bid_price) && std::isnan(layer.ask_price))) {
+        TopOfBook top_of_book{
+            .stream_id = stream_id_,
+            .exchange = security.exchange,
+            .symbol = security.symbol,
+            .layer = layer,
+            .exchange_time_utc = exchange_time_utc,
+            .exchange_sequence = exchange_sequence,
+        };
+        create_trace_and_dispatch(handler_, trace_info, std::as_const(top_of_book), is_last);
+        layer = {};
       }
-    }
+      if (!(std::empty(bids) && std::empty(bids))) {
+        dispatch_market_by_price(trace_info, security_id, security, exchange_sequence, exchange_time_utc, bids, asks);
+        bids.clear();
+        asks.clear();
+      }
+    };
+    int32_t security_id = {};
+    Shared::Security *security = nullptr;
+    value.noMDEntries().forEach([&](auto const &item) {
+      auto current_security_id = item.securityID();
+      if (current_security_id != security_id) {
+        if (security)
+          dispatch(security_id, *security, true);
+        security_id = current_security_id;
+        if (get_security(shared_, security_id, [&security](auto &security_) { security = &security_; })) {
+        } else {
+          security = nullptr;
+        }
+      }
+      if (security)
+        emplace_back(item, *security, layer, bids, asks);
+    });
     if (security)
-      emplace_back(item, *security, layer, bids, asks);
+      dispatch(security_id, *security, true);
   });
-  if (security)
-    dispatch(security_id, *security, true);
 }
 
 void UDPIncremental::operator()(
     Trace<cme_mdp::MDIncrementalRefreshBookLongQty64> const &event, sbe::Frame const &frame) {
-  auto &[trace_info, value] = event;
-  log::info<3>("md_incremental_refresh_book_long_qty_64={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
-  log::info<1>("DEBUG: HERE"sv);
+  profile_.md_incremental_refresh_book_long_qty([&]() {
+    auto &[trace_info, value] = event;
+    log::info<5>("md_incremental_refresh_book_long_qty={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+    log::info<1>("DEBUG: HERE"sv);
+  });
 }
 
 void UDPIncremental::operator()(Trace<cme_mdp::SnapshotFullRefreshOrderBook53> const &event, sbe::Frame const &frame) {
-  auto &[trace_info, value] = event;
-  log::info<3>("snapshot_full_refresh_order_book_53={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  profile_.snapshot_full_refresh_order_book([&]() {
+    auto &[trace_info, value] = event;
+    log::info<5>("snapshot_full_refresh_order_book={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  });
 }
 
 void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshOrderBook47> const &event, sbe::Frame const &frame) {
-  auto &[trace_info, value] = event;
-  log::info<3>("md_incremental_refresh_order_book_47={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  profile_.md_incremental_refresh_order_book([&]() {
+    auto &[trace_info, value] = event;
+    log::info<5>("md_incremental_refresh_order_book={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  });
 }
 
 void UDPIncremental::operator()(
     Trace<cme_mdp::MDIncrementalRefreshTradeSummary48> const &event, sbe::Frame const &frame) {
-  auto &[trace_info, value] = event;
-  log::info<3>("md_incremental_refresh_trade_summary_48={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
-  dispatch_trade_summary(event);
+  profile_.md_incremental_refresh_trade_summary([&]() {
+    auto &[trace_info, value] = event;
+    log::info<5>("md_incremental_refresh_trade_summary={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+    dispatch_trade_summary(event);
+  });
 }
 
 void UDPIncremental::operator()(
     Trace<cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65> const &event, sbe::Frame const &frame) {
-  auto &[trace_info, value] = event;
-  log::info<3>(
-      "md_incremental_refresh_trade_summary_long_qty_65={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
-  dispatch_trade_summary(event);
+  profile_.md_incremental_refresh_trade_summary_long_qty([&]() {
+    auto &[trace_info, value] = event;
+    log::info<5>(
+        "md_incremental_refresh_trade_summary_long_qty={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+    dispatch_trade_summary(event);
+  });
 }
 
 void UDPIncremental::operator()(
     Trace<cme_mdp::MDIncrementalRefreshDailyStatistics49> const &event, sbe::Frame const &frame) {
-  auto &[trace_info, value] = event;
-  log::info<3>(
-      "md_incremental_refresh_daily_statistics_49={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
-  dispatch_statistics(
-      event, [](auto &statistics, auto &item, auto &security) { statistics_emplace_back(statistics, item, security); });
+  profile_.md_incremental_refresh_daily_statistics([&]() {
+    auto &[trace_info, value] = event;
+    log::info<5>("md_incremental_refresh_daily_statistics={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+    dispatch_statistics(event, [](auto &statistics, auto &item, auto &security) {
+      statistics_emplace_back(statistics, item, security);
+    });
+  });
 }
 
 void UDPIncremental::operator()(
     Trace<cme_mdp::MDIncrementalRefreshSessionStatistics51> const &event, sbe::Frame const &frame) {
-  auto &[trace_info, value] = event;
-  log::info<3>(
-      "md_incremental_refresh_session_statistics_51={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
-  dispatch_statistics(
-      event, [](auto &statistics, auto &item, auto &security) { statistics_emplace_back(statistics, item, security); });
+  profile_.md_incremental_refresh_session_statistics([&]() {
+    auto &[trace_info, value] = event;
+    log::info<5>(
+        "md_incremental_refresh_session_statistics={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+    dispatch_statistics(event, [](auto &statistics, auto &item, auto &security) {
+      statistics_emplace_back(statistics, item, security);
+    });
+  });
 }
 
 void UDPIncremental::operator()(
     Trace<cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67> const &event, sbe::Frame const &frame) {
-  auto &[trace_info, value] = event;
-  log::info<3>(
-      "md_incremental_refresh_session_statistics_long_qty_67={}, frame={}"sv,
-      const_cast<decltype(value) &>(value),
-      frame);
-  dispatch_statistics(
-      event, [](auto &statistics, auto &item, auto &security) { statistics_emplace_back(statistics, item, security); });
+  profile_.md_incremental_refresh_session_statistics_long_qty([&]() {
+    auto &[trace_info, value] = event;
+    log::info<5>(
+        "md_incremental_refresh_session_statistics_long_qty={}, frame={}"sv,
+        const_cast<decltype(value) &>(value),
+        frame);
+    dispatch_statistics(event, [](auto &statistics, auto &item, auto &security) {
+      statistics_emplace_back(statistics, item, security);
+    });
+  });
 }
 
 void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshVolume37> const &event, sbe::Frame const &frame) {
-  auto &[trace_info, value] = event;
-  log::info<3>("md_incremental_refresh_volume_37={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
-  dispatch_statistics(event, [](auto &statistics, auto &item, [[maybe_unused]] auto &security) {
-    statistics.emplace_back([&](auto &result) { emplace_size(result, StatisticsType::TRADE_VOLUME, item); });
+  profile_.md_incremental_refresh_volume([&]() {
+    auto &[trace_info, value] = event;
+    log::info<5>("md_incremental_refresh_volume={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+    dispatch_statistics(event, [](auto &statistics, auto &item, [[maybe_unused]] auto &security) {
+      statistics.emplace_back([&](auto &result) { emplace_size(result, StatisticsType::TRADE_VOLUME, item); });
+    });
   });
 }
 
 void UDPIncremental::operator()(
     Trace<cme_mdp::MDIncrementalRefreshVolumeLongQty66> const &event, sbe::Frame const &frame) {
-  auto &[trace_info, value] = event;
-  log::info<3>("md_incremental_refresh_volume_long_qty_66={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
-  log::info<1>("DEBUG: HERE"sv);
+  profile_.md_incremental_refresh_volume_long_qty([&]() {
+    auto &[trace_info, value] = event;
+    log::info<5>("md_incremental_refresh_volume_long_qty={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+    log::info<1>("DEBUG: HERE"sv);
+  });
 }
 
 void UDPIncremental::operator()(
     Trace<cme_mdp::MDIncrementalRefreshLimitsBanding50> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
-  log::info<3>("md_incremental_refresh_limits_banding_50={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  log::info<5>("md_incremental_refresh_limits_banding={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
   log::info<1>("DEBUG: HERE"sv);
-}
-
-void UDPIncremental::operator()(metrics::Writer &writer) {
-  writer  //
-      .write(counter_.disconnect, metrics::COUNTER)
-      .write(profile_.parse, metrics::PROFILE);
 }
 
 void UDPIncremental::dispatch_market_by_price(
@@ -727,6 +772,27 @@ void UDPIncremental::publish_stream_status(TraceInfo const &trace_info, Connecti
   };
   log::info("stream_status={}"sv, stream_status);
   create_trace_and_dispatch(handler_, trace_info, stream_status);
+}
+
+void UDPIncremental::operator()(metrics::Writer &writer) {
+  writer  //
+      .write(counter_.disconnect, metrics::COUNTER)
+      .write(profile_.parse, metrics::PROFILE)
+      .write(profile_.admin_heartbeat, metrics::PROFILE)
+      .write(profile_.channel_reset, metrics::PROFILE)
+      .write(profile_.snapshot_full_refresh, metrics::PROFILE)
+      .write(profile_.snapshot_full_refresh_long_qty, metrics::PROFILE)
+      .write(profile_.md_incremental_refresh_book, metrics::PROFILE)
+      .write(profile_.md_incremental_refresh_book_long_qty, metrics::PROFILE)
+      .write(profile_.snapshot_full_refresh_order_book, metrics::PROFILE)
+      .write(profile_.md_incremental_refresh_order_book, metrics::PROFILE)
+      .write(profile_.md_incremental_refresh_trade_summary, metrics::PROFILE)
+      .write(profile_.md_incremental_refresh_trade_summary_long_qty, metrics::PROFILE)
+      .write(profile_.md_incremental_refresh_daily_statistics, metrics::PROFILE)
+      .write(profile_.md_incremental_refresh_session_statistics, metrics::PROFILE)
+      .write(profile_.md_incremental_refresh_session_statistics_long_qty, metrics::PROFILE)
+      .write(profile_.md_incremental_refresh_volume, metrics::PROFILE)
+      .write(profile_.md_incremental_refresh_volume_long_qty, metrics::PROFILE);
 }
 
 }  // namespace cme

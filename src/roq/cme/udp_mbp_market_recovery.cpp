@@ -190,6 +190,10 @@ UDPMBPMarketRecovery::UDPMBPMarketRecovery(Handler &handler, io::Context &contex
       },
       profile_{
           .parse = create_metrics(name_, "parse"sv),
+          .admin_heartbeat = create_metrics(name_, "admin_heartbeat"sv),
+          .channel_reset = create_metrics(name_, "channel_resetparse"sv),
+          .snapshot_full_refresh = create_metrics(name_, "snapshot_full_refresh"sv),
+          .snapshot_full_refresh_long_qty = create_metrics(name_, "snapshot_full_refresh_long_qty"sv),
       },
       shared_(shared) {
 }
@@ -235,179 +239,235 @@ void UDPMBPMarketRecovery::operator()(io::net::udp::Receiver::Error const &error
 // sbe::Parser::Handler
 
 void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::AdminHeartbeat12> const &event, sbe::Frame const &frame) {
-  auto &[trace_info, value] = event;
-  log::info<5>("admin_heartbeat_12={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  profile_.admin_heartbeat([&]() {
+    auto &[trace_info, value] = event;
+    log::info<5>("admin_heartbeat={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  });
 }
 
 void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::ChannelReset4> const &event, sbe::Frame const &frame) {
+  profile_.channel_reset([&]() {
+    auto &[trace_info, value] = event;
+    log::info<5>("channel_reset={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+    log::info<1>("DEBUG: HERE"sv);
+  });
+}
+
+void UDPMBPMarketRecovery::operator()(
+    Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
-  log::info<3>("channel_reset_4={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  log::info<5>("md_instrument_definition_future={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
   log::info<1>("DEBUG: HERE"sv);
 }
 
-void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &, sbe::Frame const &) {
+void UDPMBPMarketRecovery::operator()(
+    Trace<cme_mdp::MDInstrumentDefinitionOption55> const &event, sbe::Frame const &frame) {
+  auto &[trace_info, value] = event;
+  log::info<5>("md_instrument_definition_option={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
   log::info<1>("DEBUG: HERE"sv);
 }
 
-void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::MDInstrumentDefinitionOption55> const &, sbe::Frame const &) {
+void UDPMBPMarketRecovery::operator()(
+    Trace<cme_mdp::MDInstrumentDefinitionSpread56> const &event, sbe::Frame const &frame) {
+  auto &[trace_info, value] = event;
+  log::info<5>("md_instrument_definition_spread={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
   log::info<1>("DEBUG: HERE"sv);
 }
 
-void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::MDInstrumentDefinitionSpread56> const &, sbe::Frame const &) {
+void UDPMBPMarketRecovery::operator()(
+    Trace<cme_mdp::MDInstrumentDefinitionFixedIncome57> const &event, sbe::Frame const &frame) {
+  auto &[trace_info, value] = event;
+  log::info<5>("md_instrument_definition_fixed_income={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
   log::info<1>("DEBUG: HERE"sv);
 }
 
-void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::MDInstrumentDefinitionFixedIncome57> const &, sbe::Frame const &) {
+void UDPMBPMarketRecovery::operator()(
+    Trace<cme_mdp::MDInstrumentDefinitionRepo58> const &event, sbe::Frame const &frame) {
+  auto &[trace_info, value] = event;
+  log::info<5>("md_instrument_definition_repo={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
   log::info<1>("DEBUG: HERE"sv);
 }
 
-void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::MDInstrumentDefinitionRepo58> const &, sbe::Frame const &) {
-  log::info<1>("DEBUG: HERE"sv);
-}
-
-void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::MDInstrumentDefinitionFX63> const &, sbe::Frame const &) {
+void UDPMBPMarketRecovery::operator()(
+    Trace<cme_mdp::MDInstrumentDefinitionFX63> const &event, sbe::Frame const &frame) {
+  auto &[trace_info, value] = event;
+  log::info<5>("md_instrument_definition_fx={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
   log::info<1>("DEBUG: HERE"sv);
 }
 
 void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &event, sbe::Frame const &frame) {
-  auto &[trace_info, value] = event;
-  log::info<3>("snapshot_full_refresh_52={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
-  auto security_id = value.securityID();
-  get_security(shared_, security_id, [&](auto &security) {
-    std::chrono::nanoseconds exchange_time_utc{value.transactTime()};
-    auto exchange_sequence = value.lastMsgSeqNumProcessed();
-    Layer layer = {};
-    core::back_emplacer bids{shared_.bids}, asks{shared_.asks};
-    core::back_emplacer statistics{shared_.statistics};
-    value.sbeRewind();  // note!
-    value.noMDEntries().forEach([&](auto const &item) { emplace_back(item, security, layer, bids, asks, statistics); });
-    if (!(std::isnan(layer.bid_price) && std::isnan(layer.ask_price))) {
-      /* note! we don't publish
-      TopOfBook top_of_book{
-          .stream_id = stream_id_,
-          .exchange = security.exchange,
-          .symbol = security.symbol,
-          .layer = layer,
-          .exchange_time_utc = exchange_time_utc,
-          .exchange_sequence = exchange_sequence,
-      };
-      */
-    }
-    if (!(std::empty(bids) && std::empty(bids))) {
-      dispatch_market_by_price(trace_info, security_id, security, exchange_sequence, exchange_time_utc, bids, asks);
-    }
-    if (!std::empty(statistics)) {
-      StatisticsUpdate const statistics_update{
-          .stream_id = stream_id_,
-          .exchange = security.exchange,
-          .symbol = security.symbol,
-          .statistics = statistics,
-          .update_type = UpdateType::SNAPSHOT,
-          .exchange_time_utc = exchange_time_utc,
-      };
-      create_trace_and_dispatch(handler_, trace_info, statistics_update, true);
-    }
+  profile_.snapshot_full_refresh([&]() {
+    auto &[trace_info, value] = event;
+    log::info<5>("snapshot_full_refresh={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+    auto security_id = value.securityID();
+    get_security(shared_, security_id, [&](auto &security) {
+      std::chrono::nanoseconds exchange_time_utc{value.transactTime()};
+      auto exchange_sequence = value.lastMsgSeqNumProcessed();
+      Layer layer = {};
+      core::back_emplacer bids{shared_.bids}, asks{shared_.asks};
+      core::back_emplacer statistics{shared_.statistics};
+      value.sbeRewind();  // note!
+      value.noMDEntries().forEach(
+          [&](auto const &item) { emplace_back(item, security, layer, bids, asks, statistics); });
+      if (!(std::isnan(layer.bid_price) && std::isnan(layer.ask_price))) {
+        /* note! we don't publish
+        TopOfBook top_of_book{
+            .stream_id = stream_id_,
+            .exchange = security.exchange,
+            .symbol = security.symbol,
+            .layer = layer,
+            .exchange_time_utc = exchange_time_utc,
+            .exchange_sequence = exchange_sequence,
+        };
+        */
+      }
+      if (!(std::empty(bids) && std::empty(bids))) {
+        dispatch_market_by_price(trace_info, security_id, security, exchange_sequence, exchange_time_utc, bids, asks);
+      }
+      if (!std::empty(statistics)) {
+        StatisticsUpdate const statistics_update{
+            .stream_id = stream_id_,
+            .exchange = security.exchange,
+            .symbol = security.symbol,
+            .statistics = statistics,
+            .update_type = UpdateType::SNAPSHOT,
+            .exchange_time_utc = exchange_time_utc,
+        };
+        create_trace_and_dispatch(handler_, trace_info, statistics_update, true);
+      }
+    });
   });
 }
 
 void UDPMBPMarketRecovery::operator()(
     Trace<cme_mdp::SnapshotFullRefreshLongQty69> const &event, sbe::Frame const &frame) {
-  auto &[trace_info, value] = event;
-  log::info<5>("snapshot_full_refresh_long_qty_69={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
-  auto security_id = value.securityID();
-  get_security(shared_, security_id, [&](auto &security) {
-    std::chrono::nanoseconds exchange_time_utc{value.transactTime()};
-    auto exchange_sequence = value.lastMsgSeqNumProcessed();
-    Layer layer = {};
-    core::back_emplacer bids{shared_.bids}, asks{shared_.asks};
-    core::back_emplacer statistics{shared_.statistics};
-    value.sbeRewind();  // note!
-    value.noMDEntries().forEach([&](auto const &item) { emplace_back(item, security, layer, bids, asks, statistics); });
-    if (!(std::isnan(layer.bid_price) && std::isnan(layer.ask_price))) {
-      /* note! we don't publish
-      TopOfBook top_of_book{
-          .stream_id = stream_id_,
-          .exchange = security.exchange,
-          .symbol = security.symbol,
-          .layer = layer,
-          .exchange_time_utc = exchange_time_utc,
-          .exchange_sequence = exchange_sequence,
-      };
-      */
-    }
-    if (!(std::empty(bids) && std::empty(bids))) {
-      dispatch_market_by_price(trace_info, security_id, security, exchange_sequence, exchange_time_utc, bids, asks);
-    }
-    if (!std::empty(statistics)) {
-      StatisticsUpdate const statistics_update{
-          .stream_id = stream_id_,
-          .exchange = security.exchange,
-          .symbol = security.symbol,
-          .statistics = statistics,
-          .update_type = UpdateType::SNAPSHOT,
-          .exchange_time_utc = exchange_time_utc,
-      };
-      create_trace_and_dispatch(handler_, trace_info, statistics_update, true);
-    }
+  profile_.snapshot_full_refresh_long_qty([&]() {
+    auto &[trace_info, value] = event;
+    log::info<5>("snapshot_full_refresh_long_qty={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+    auto security_id = value.securityID();
+    get_security(shared_, security_id, [&](auto &security) {
+      std::chrono::nanoseconds exchange_time_utc{value.transactTime()};
+      auto exchange_sequence = value.lastMsgSeqNumProcessed();
+      Layer layer = {};
+      core::back_emplacer bids{shared_.bids}, asks{shared_.asks};
+      core::back_emplacer statistics{shared_.statistics};
+      value.sbeRewind();  // note!
+      value.noMDEntries().forEach(
+          [&](auto const &item) { emplace_back(item, security, layer, bids, asks, statistics); });
+      if (!(std::isnan(layer.bid_price) && std::isnan(layer.ask_price))) {
+        /* note! we don't publish
+        TopOfBook top_of_book{
+            .stream_id = stream_id_,
+            .exchange = security.exchange,
+            .symbol = security.symbol,
+            .layer = layer,
+            .exchange_time_utc = exchange_time_utc,
+            .exchange_sequence = exchange_sequence,
+        };
+        */
+      }
+      if (!(std::empty(bids) && std::empty(bids))) {
+        dispatch_market_by_price(trace_info, security_id, security, exchange_sequence, exchange_time_utc, bids, asks);
+      }
+      if (!std::empty(statistics)) {
+        StatisticsUpdate const statistics_update{
+            .stream_id = stream_id_,
+            .exchange = security.exchange,
+            .symbol = security.symbol,
+            .statistics = statistics,
+            .update_type = UpdateType::SNAPSHOT,
+            .exchange_time_utc = exchange_time_utc,
+        };
+        create_trace_and_dispatch(handler_, trace_info, statistics_update, true);
+      }
+    });
   });
 }
 
-void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &, sbe::Frame const &) {
-  log::info<1>("DEBUG: HERE"sv);
-}
-
-void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::MDIncrementalRefreshBookLongQty64> const &, sbe::Frame const &) {
-  log::info<1>("DEBUG: HERE"sv);
-}
-
-void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::SnapshotFullRefreshOrderBook53> const &, sbe::Frame const &) {
-  log::info<1>("DEBUG: HERE"sv);
-}
-
-void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::MDIncrementalRefreshOrderBook47> const &, sbe::Frame const &) {
-  log::info<1>("DEBUG: HERE"sv);
-}
-
-void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::MDIncrementalRefreshTradeSummary48> const &, sbe::Frame const &) {
+void UDPMBPMarketRecovery::operator()(
+    Trace<cme_mdp::MDIncrementalRefreshBook46> const &event, sbe::Frame const &frame) {
+  auto &[trace_info, value] = event;
+  log::info<5>("md_incremental_refresh_book={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
   log::info<1>("DEBUG: HERE"sv);
 }
 
 void UDPMBPMarketRecovery::operator()(
-    Trace<cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65> const &, sbe::Frame const &) {
+    Trace<cme_mdp::MDIncrementalRefreshBookLongQty64> const &event, sbe::Frame const &frame) {
+  auto &[trace_info, value] = event;
+  log::info<5>("md_incremental_refresh_book_long_qty={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
   log::info<1>("DEBUG: HERE"sv);
 }
 
 void UDPMBPMarketRecovery::operator()(
-    Trace<cme_mdp::MDIncrementalRefreshDailyStatistics49> const &, sbe::Frame const &) {
+    Trace<cme_mdp::SnapshotFullRefreshOrderBook53> const &event, sbe::Frame const &frame) {
+  auto &[trace_info, value] = event;
+  log::info<5>("snapshot_full_refresh_order_book={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
   log::info<1>("DEBUG: HERE"sv);
 }
 
 void UDPMBPMarketRecovery::operator()(
-    Trace<cme_mdp::MDIncrementalRefreshSessionStatistics51> const &, sbe::Frame const &) {
+    Trace<cme_mdp::MDIncrementalRefreshOrderBook47> const &event, sbe::Frame const &frame) {
+  auto &[trace_info, value] = event;
+  log::info<5>("md_incremental_refresh_order_book={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
   log::info<1>("DEBUG: HERE"sv);
 }
 
 void UDPMBPMarketRecovery::operator()(
-    Trace<cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67> const &, sbe::Frame const &) {
+    Trace<cme_mdp::MDIncrementalRefreshTradeSummary48> const &event, sbe::Frame const &frame) {
+  auto &[trace_info, value] = event;
+  log::info<5>("md_incremental_refresh_trade_summary={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
   log::info<1>("DEBUG: HERE"sv);
 }
 
-void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::MDIncrementalRefreshVolume37> const &, sbe::Frame const &) {
+void UDPMBPMarketRecovery::operator()(
+    Trace<cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65> const &event, sbe::Frame const &frame) {
+  auto &[trace_info, value] = event;
+  log::info<5>(
+      "md_incremental_refresh_trade_summary_long_qty={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
   log::info<1>("DEBUG: HERE"sv);
 }
 
-void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::MDIncrementalRefreshVolumeLongQty66> const &, sbe::Frame const &) {
+void UDPMBPMarketRecovery::operator()(
+    Trace<cme_mdp::MDIncrementalRefreshDailyStatistics49> const &event, sbe::Frame const &frame) {
+  auto &[trace_info, value] = event;
+  log::info<5>("md_incremental_refresh_daily_statistics={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
   log::info<1>("DEBUG: HERE"sv);
 }
 
-void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::MDIncrementalRefreshLimitsBanding50> const &, sbe::Frame const &) {
+void UDPMBPMarketRecovery::operator()(
+    Trace<cme_mdp::MDIncrementalRefreshSessionStatistics51> const &event, sbe::Frame const &frame) {
+  auto &[trace_info, value] = event;
+  log::info<5>("md_incremental_refresh_session_statistics={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
   log::info<1>("DEBUG: HERE"sv);
 }
 
-void UDPMBPMarketRecovery::operator()(metrics::Writer &writer) {
-  writer  //
-      .write(counter_.disconnect, metrics::COUNTER)
-      .write(profile_.parse, metrics::PROFILE);
+void UDPMBPMarketRecovery::operator()(
+    Trace<cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67> const &event, sbe::Frame const &frame) {
+  auto &[trace_info, value] = event;
+  log::info<5>(
+      "md_incremental_refresh_session_statistics_long_qty={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  log::info<1>("DEBUG: HERE"sv);
+}
+
+void UDPMBPMarketRecovery::operator()(
+    Trace<cme_mdp::MDIncrementalRefreshVolume37> const &event, sbe::Frame const &frame) {
+  auto &[trace_info, value] = event;
+  log::info<5>("md_incremental_refresh_volume={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  log::info<1>("DEBUG: HERE"sv);
+}
+
+void UDPMBPMarketRecovery::operator()(
+    Trace<cme_mdp::MDIncrementalRefreshVolumeLongQty66> const &event, sbe::Frame const &frame) {
+  auto &[trace_info, value] = event;
+  log::info<5>("md_incremental_refresh_volume_long_qty={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  log::info<1>("DEBUG: HERE"sv);
+}
+
+void UDPMBPMarketRecovery::operator()(
+    Trace<cme_mdp::MDIncrementalRefreshLimitsBanding50> const &event, sbe::Frame const &frame) {
+  auto &[trace_info, value] = event;
+  log::info<5>("md_incremental_refresh_limits_banding={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  log::info<1>("DEBUG: HERE"sv);
 }
 
 void UDPMBPMarketRecovery::dispatch_market_by_price(
@@ -495,6 +555,16 @@ void UDPMBPMarketRecovery::publish_stream_status(TraceInfo const &trace_info, Co
   };
   log::info("stream_status={}"sv, stream_status);
   create_trace_and_dispatch(handler_, trace_info, stream_status);
+}
+
+void UDPMBPMarketRecovery::operator()(metrics::Writer &writer) {
+  writer  //
+      .write(counter_.disconnect, metrics::COUNTER)
+      .write(profile_.parse, metrics::PROFILE)
+      .write(profile_.admin_heartbeat, metrics::PROFILE)
+      .write(profile_.channel_reset, metrics::PROFILE)
+      .write(profile_.snapshot_full_refresh, metrics::PROFILE)
+      .write(profile_.snapshot_full_refresh_long_qty, metrics::PROFILE);
 }
 
 }  // namespace cme

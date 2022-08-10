@@ -104,7 +104,10 @@ class UDPMBPMarketRecovery final : public io::net::udp::Receiver::Handler, publi
     core::metrics::Counter disconnect;
   } counter_;
   struct {
-    core::metrics::Profile parse;
+    core::metrics::Profile parse,        //
+        admin_heartbeat, channel_reset,  //
+        snapshot_full_refresh, snapshot_full_refresh_long_qty;
+    ;
   } profile_;
   // cache
   Shared &shared_;

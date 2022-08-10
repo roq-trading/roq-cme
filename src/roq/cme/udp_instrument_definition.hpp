@@ -84,8 +84,6 @@ class UDPInstrumentDefinition final : public io::net::udp::Receiver::Handler, pu
   template <typename T, typename U>
   static void emplace_back(const T &item, double multiplier, U &bids, U &asks);
 
-  Aggregator &get_aggregator(uint16_t channel_id);
-
  private:
   Handler &handler_;
   // config
@@ -99,14 +97,17 @@ class UDPInstrumentDefinition final : public io::net::udp::Receiver::Handler, pu
     core::metrics::Counter disconnect;
   } counter_;
   struct {
-    core::metrics::Profile parse;
+    core::metrics::Profile parse, admin_heartbeat, channel_reset,  //
+        md_instrument_definition_future,                           //
+        md_instrument_definition_option,                           //
+        md_instrument_definition_spread,                           //
+        md_instrument_definition_fixed_income,                     //
+        md_instrument_definition_repo,                             //
+        md_instrument_definition_fx;
   } profile_;
   // cache
   Shared &shared_;
   ConnectionStatus connection_status_ = {};
-  absl::flat_hash_map<uint32_t, uint32_t> last_ticker_;
-  absl::flat_hash_map<uint32_t, uint32_t> last_trades_;
-  absl::node_hash_map<uint16_t, Aggregator> aggregator_;
   // state
   std::chrono::nanoseconds last_update_time_ = {};
 };
