@@ -664,7 +664,7 @@ void UDPIncremental::dispatch_market_by_price(
             log::fatal(R"(Unexpected: symbol="{}", retries={})"sv, symbol, retries);
           }
           */
-          auto res = shared_.mbp_resubscribe.emplace(security_id);
+          auto res = shared_.mbp_resubscribe.emplace(security_id, exchange_sequence);
           if (res.second)
             log::info<1>("DEBUG: RESUBSCRIBE security_id={}"sv, security_id);
         });
@@ -673,7 +673,7 @@ void UDPIncremental::dispatch_market_by_price(
         R"(RESUBSCRIBE exchange="{}", symbol="{}", security_id={})"sv, security.exchange, security.symbol, security_id);
     // XXX HANS publish stale
     collector.clear();
-    auto res = shared_.mbp_resubscribe.emplace(security_id);
+    auto res = shared_.mbp_resubscribe.emplace(security_id, exchange_sequence);
     if (res.second)
       log::info<1>("DEBUG: RESUBSCRIBE security_id={}"sv, security_id);
   }

@@ -480,8 +480,10 @@ void UDPMBPMarketRecovery::dispatch_market_by_price(
     auto exchange_time_utc,
     auto &bids,
     auto &asks) {
-  if (shared_.mbp_resubscribe.find(security_id) == std::end(shared_.mbp_resubscribe))
+  auto iter = shared_.mbp_resubscribe.find(security_id);
+  if (iter == std::end(shared_.mbp_resubscribe))
     return;
+  log::info<1>("DEBUG: SYNC request={}, snapshot={}"sv, (*iter).second, exchange_sequence);
   auto &collector = shared_.mbp_collector[security_id];
   try {
     collector(
@@ -522,12 +524,8 @@ void UDPMBPMarketRecovery::dispatch_market_by_price(
               security.symbol,
               security_id,
               retries);
-          /*
-          if (Flags::ws_mbp_request_max_retries() && Flags::ws_mbp_request_max_retries() < retries) {
-            log::fatal(R"(Unexpected: symbol="{}", retries={})"sv, symbol, retries);
-          }
-          */
-          auto res = shared_.mbp_resubscribe.emplace(security_id);
+          // note! wait for next snapshot
+          auto res = shared_.mbp_resubscribe.emplace(security_id, exchange_sequence);
           if (res.second)
             log::info<1>("DEBUG: RESUBSCRIBE security_id={}"sv, security_id);
         });
@@ -535,10 +533,7 @@ void UDPMBPMarketRecovery::dispatch_market_by_price(
     log::warn(
         R"(RESUBSCRIBE exchange="{}", symbol="{}", security_id={})"sv, security.exchange, security.symbol, security_id);
     // XXX HANS publish stale
-    collector.clear();
-    auto res = shared_.mbp_resubscribe.emplace(security_id);
-    if (res.second)
-      log::info<1>("DEBUG: RESUBSCRIBE security_id={}"sv, security_id);
+    collector.clear();  // note! wait for next incremental
   }
 }
 
