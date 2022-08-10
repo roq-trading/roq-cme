@@ -674,12 +674,13 @@ void UDPIncremental::publish_incremental_or_snapshot(
     log::info<1>("DEBUG exchange_sequence={}"sv, exchange_sequence);
     // log::info<1>("DEBUG bids=[{}]"sv, fmt::join(static_cast<std::span<MBPUpdate>>(bids), ", "sv));
     // log::info<1>("DEBUG asks=[{}]"sv, fmt::join(static_cast<std::span<MBPUpdate>>(asks), ", "sv));
+    auto last_exchange_sequence = collector.last_sequence();  // note! the protocol doesn't tell us
     collector(
         bids,
         asks,
         exchange_sequence,
         exchange_sequence,
-        exchange_sequence,
+        last_exchange_sequence,
         [&](auto &bids, auto &asks) {  // update
           MarketByPriceUpdate const market_by_price_update{
               .stream_id = stream_id_,
