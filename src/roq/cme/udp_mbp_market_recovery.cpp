@@ -73,14 +73,15 @@ void emplace(MBPUpdate &result, T const &item, auto &security) {
   auto price = sbe::get_double(const_cast<T &>(item).mDEntryPx());
   auto quantity = sbe::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue());
   auto number_of_orders = sbe::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue());
-  auto price_level = sbe::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue());
+  auto md_price_level = sbe::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue());
+  uint32_t price_level = md_price_level > 0 ? (md_price_level - 1) : 0;
   new (&result) MBPUpdate{
       .price = price * security.display_factor,
       .quantity = utils::safe_cast(quantity),
       .implied_quantity = NaN,
       .number_of_orders = utils::safe_cast(number_of_orders),
       .update_action = {},
-      .price_level = utils::safe_cast(price_level),
+      .price_level = price_level,
   };
 }
 
@@ -441,11 +442,13 @@ void UDPMBPMarketRecovery::publish_snapshot(
     auto exchange_time_utc,
     auto &bids,
     auto &asks) {
+  if (shared_.mbp_resubscribe.find(security_id) == std::end(shared_.mbp_resubscribe))
+    return;
   auto &collector = shared_.mbp_collector[security_id];
   try {
     log::info<1>("DEBUG exchange_sequence={}"sv, exchange_sequence);
-    log::info<1>("DEBUG bids=[{}]"sv, fmt::join(static_cast<std::span<MBPUpdate>>(bids), ", "sv));
-    log::info<1>("DEBUG asks=[{}]"sv, fmt::join(static_cast<std::span<MBPUpdate>>(asks), ", "sv));
+    // log::info<1>("DEBUG bids=[{}]"sv, fmt::join(static_cast<std::span<MBPUpdate>>(bids), ", "sv));
+    // log::info<1>("DEBUG asks=[{}]"sv, fmt::join(static_cast<std::span<MBPUpdate>>(asks), ", "sv));
     collector(
         bids,
         asks,

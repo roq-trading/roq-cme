@@ -132,6 +132,27 @@ inline TradingStatus map_security_trading_status(cme_mdp::SecurityTradingStatus:
   return {};
 }
 
+inline UpdateAction map(cme_mdp::MDUpdateAction::Value value) {
+  switch (value) {
+    using enum cme_mdp::MDUpdateAction::Value;
+    case New:
+      return UpdateAction::NEW;
+    case Change:
+      return UpdateAction::CHANGE;
+    case Delete:
+      return UpdateAction::DELETE;
+    case DeleteThru:
+      break;
+    case DeleteFrom:
+      break;
+    case Overlay:
+      break;
+    case NULL_VALUE:
+      break;
+  }
+  return {};
+}
+
 inline Side map_book_side(cme_mdp::Side::Value value) {
   switch (value) {
     using enum cme_mdp::Side::Value;
