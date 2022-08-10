@@ -31,7 +31,7 @@ namespace roq {
 namespace cme {
 
 namespace {
-auto const NAME = "SA"sv;
+auto const NAME = "S"sv;
 
 Mask<SupportType> const SUPPORTS{
     SupportType::TOP_OF_BOOK,
@@ -244,6 +244,12 @@ void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::AdminHeartbeat12> const &ev
   profile_.admin_heartbeat([&]() {
     auto &[trace_info, value] = event;
     log::info<5>("admin_heartbeat={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+    ExternalLatency const external_latency{
+        .stream_id = stream_id_,
+        .account = {},
+        .latency = trace_info.origin_create_time_utc - frame.sending_time,
+    };
+    create_trace_and_dispatch(handler_, trace_info, external_latency);
   });
 }
 

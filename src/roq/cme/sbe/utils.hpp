@@ -133,6 +133,7 @@ inline TradingStatus map_security_trading_status(cme_mdp::SecurityTradingStatus:
 }
 
 inline UpdateAction map(cme_mdp::MDUpdateAction::Value value) {
+  using namespace std::literals;
   switch (value) {
     using enum cme_mdp::MDUpdateAction::Value;
     case New:
@@ -142,10 +143,13 @@ inline UpdateAction map(cme_mdp::MDUpdateAction::Value value) {
     case Delete:
       return UpdateAction::DELETE;
     case DeleteThru:
+      log::warn("+++ USING DELETE_THRU +++"sv);
       break;
     case DeleteFrom:
+      log::warn("+++ USING DELETE_FROM +++"sv);
       break;
     case Overlay:
+      log::warn("+++ USING OVERLAY +++"sv);
       break;
     case NULL_VALUE:
       break;

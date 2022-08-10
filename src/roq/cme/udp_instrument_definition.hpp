@@ -26,6 +26,7 @@ class UDPInstrumentDefinition final : public io::net::udp::Receiver::Handler, pu
  public:
   struct Handler {
     virtual void operator()(Trace<StreamStatus const> const &) = 0;
+    virtual void operator()(Trace<ExternalLatency const> const &) = 0;
     virtual void operator()(Trace<ReferenceData const> const &, bool is_last) = 0;
     virtual void operator()(Trace<MarketStatus const> const &, bool is_last) = 0;
   };

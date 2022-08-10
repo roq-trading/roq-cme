@@ -136,6 +136,10 @@ void Gateway::operator()(Trace<StreamStatus const> const &event) {
   dispatcher_(event);
 }
 
+void Gateway::operator()(Trace<ExternalLatency const> const &event) {
+  dispatcher_(event);
+}
+
 void Gateway::operator()(Trace<ReferenceData const> const &event, bool is_last) {
   dispatcher_(event, is_last);
 }

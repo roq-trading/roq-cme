@@ -60,6 +60,7 @@ class Gateway final : public server::Handler,
   // many
 
   void operator()(Trace<StreamStatus const> const &) override;
+  void operator()(Trace<ExternalLatency const> const &) override;
   void operator()(Trace<ReferenceData const> const &, bool is_last) override;
   void operator()(Trace<MarketStatus const> const &, bool is_last) override;
   void operator()(Trace<TopOfBook const> const &, bool is_last) override;

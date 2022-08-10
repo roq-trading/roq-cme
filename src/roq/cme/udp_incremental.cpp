@@ -31,7 +31,7 @@ namespace roq {
 namespace cme {
 
 namespace {
-auto const NAME = "IA"sv;
+auto const NAME = "I"sv;
 
 Mask<SupportType> const SUPPORTS{
     SupportType::TOP_OF_BOOK,
@@ -69,27 +69,20 @@ bool get_security(auto &shared, auto security_id, Callback callback) {
   return true;
 }
 
-/*
-namespace {
-template <typename T, typename = void>
-struct has_md_update_action : std::false_type {};
-template <typename T>
-struct has_md_update_action<T, std::is_member_function_pointer<decltype(&T::mDUpdateAction, void())>::type>
-    : std::true_type {};
-}  // namespace
-*/
-
 template <typename T>
 void emplace(MBPUpdate &result, T const &item, auto &security) {
   auto price = sbe::get_double(const_cast<T &>(item).mDEntryPx());
   auto quantity = sbe::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue());
   auto number_of_orders = sbe::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue());
-  UpdateAction update_action = {};
-  /*
-  if constexpr (has_md_update_action<T>) {
-    update_action = sbe::map(item.mDUpdateAction());
-  }
-  */
+  auto update_action = [&]() {
+    constexpr bool has_md_update_action = requires(T const &t) {
+      t.mDUpdateAction();
+    };
+    if constexpr (has_md_update_action) {
+      return sbe::map(item.mDUpdateAction());
+    }
+    return UpdateAction{};
+  }();
   auto md_price_level = sbe::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue());
   uint32_t price_level = md_price_level > 0 ? (md_price_level - 1) : 0;
   new (&result) MBPUpdate{
@@ -341,6 +334,12 @@ void UDPIncremental::operator()(Trace<cme_mdp::AdminHeartbeat12> const &event, s
   profile_.admin_heartbeat([&]() {
     auto &[trace_info, value] = event;
     log::info<5>("admin_heartbeat={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+    ExternalLatency const external_latency{
+        .stream_id = stream_id_,
+        .account = {},
+        .latency = trace_info.origin_create_time_utc - frame.sending_time,
+    };
+    create_trace_and_dispatch(handler_, trace_info, external_latency);
   });
 }
 

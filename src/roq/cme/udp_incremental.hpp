@@ -26,6 +26,7 @@ class UDPIncremental final : public io::net::udp::Receiver::Handler, public sbe:
  public:
   struct Handler {
     virtual void operator()(Trace<StreamStatus const> const &) = 0;
+    virtual void operator()(Trace<ExternalLatency const> const &) = 0;
     virtual void operator()(Trace<TopOfBook const> const &, bool is_last) = 0;
     virtual void operator()(Trace<MarketByPriceUpdate const> const &, bool is_last, bool refresh) = 0;
     virtual void operator()(Trace<TradeSummary const> const &, bool is_last) = 0;
