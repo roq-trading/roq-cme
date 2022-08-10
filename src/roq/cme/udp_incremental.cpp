@@ -666,7 +666,7 @@ void UDPIncremental::dispatch_market_by_price(
           */
           auto res = shared_.mbp_resubscribe.emplace(security_id, exchange_sequence);
           if (res.second)
-            log::info<1>("DEBUG: RESUBSCRIBE security_id={}"sv, security_id);
+            log::info<1>("DEBUG: RESUBSCRIBE security_id={}, exchange_sequece={}"sv, security_id, exchange_sequence);
         });
   } catch (BadState &) {
     log::warn(
