@@ -483,7 +483,13 @@ void UDPMBPMarketRecovery::dispatch_market_by_price(
   auto iter = shared_.mbp_resubscribe.find(security_id);
   if (iter == std::end(shared_.mbp_resubscribe))
     return;
-  log::info<1>("DEBUG: SYNC request={}, snapshot={}"sv, (*iter).second, exchange_sequence);
+  log::info<1>(
+      R"(DEBUG: SYNC exchange="{}", symbol="{}", security_id={} (request={}, snapshot={}))"sv,
+      security.exchange,
+      security.symbol,
+      security_id,
+      (*iter).second,
+      exchange_sequence);
   auto &collector = shared_.mbp_collector[security_id];
   try {
     collector(
