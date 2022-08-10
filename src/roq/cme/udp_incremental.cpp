@@ -298,14 +298,16 @@ void UDPIncremental::operator()(io::net::udp::Receiver::Read const &) {
   last_update_time_ = trace_info.source_receive_time;
   publish_stream_status(trace_info, ConnectionStatus::READY);  // first message will publish
   while (receive_buffer_.append(*receiver_)) {
-    auto message = receive_buffer_.data();
-    log::info<5>("received {} byte(s)"sv, std::size(message));
-    log::info<5>("{}"sv, debug::hex::Message{message});
-    if (!sbe::Parser::dispatch(*this, message, trace_info)) {
-      log::warn("{}"sv, debug::hex::Message{message});
-      log::fatal("Failed to parse message"sv);
-    }
-    receive_buffer_.drain(std::size(message));
+    profile_.parse([&]() {
+      auto message = receive_buffer_.data();
+      log::info<5>("received {} byte(s)"sv, std::size(message));
+      log::info<5>("{}"sv, debug::hex::Message{message});
+      if (!sbe::Parser::dispatch(*this, message, trace_info)) {
+        log::warn("{}"sv, debug::hex::Message{message});
+        log::fatal("Failed to parse message"sv);
+      }
+      receive_buffer_.drain(std::size(message));
+    });
   }
 }
 
