@@ -31,7 +31,7 @@ class UDPMBPMarketRecovery final : public io::net::udp::Receiver::Handler, publi
     virtual void operator()(Trace<StatisticsUpdate const> const &, bool is_last) = 0;
   };
 
-  UDPMBPMarketRecovery(Handler &, io::Context &, uint16_t stream_id, Shared &);
+  UDPMBPMarketRecovery(Handler &, io::Context &, uint16_t stream_id, Shared &, std::string_view const &channel_id);
 
   UDPMBPMarketRecovery(UDPMBPMarketRecovery const &) = delete;
   UDPMBPMarketRecovery(UDPMBPMarketRecovery &&) = delete;

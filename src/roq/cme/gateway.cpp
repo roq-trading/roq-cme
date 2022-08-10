@@ -17,17 +17,20 @@ namespace cme {
 namespace {
 auto create_udp_instrument_definition(Gateway &gateway, io::Context &context, uint16_t &stream_id, Shared &shared) {
   if (std::empty(flags::Common::secdef_config_file()))
-    return std::make_unique<UDPInstrumentDefinition>(gateway, context, stream_id, shared);
+    return std::make_unique<UDPInstrumentDefinition>(
+        gateway, context, stream_id, shared, flags::Multicast::multicast_channel_id());
   log::warn("The instrument definitions channel is not needed when the secdef file was chosen"sv);
   return std::unique_ptr<UDPInstrumentDefinition>{};
 }
 
 auto create_udp_mbp_market_recovery(Gateway &gateway, io::Context &context, uint16_t &stream_id, Shared &shared) {
-  return std::make_unique<UDPMBPMarketRecovery>(gateway, context, stream_id, shared);
+  return std::make_unique<UDPMBPMarketRecovery>(
+      gateway, context, stream_id, shared, flags::Multicast::multicast_channel_id());
 }
 
 auto create_udp_incremental(Gateway &gateway, io::Context &context, uint16_t &stream_id, Shared &shared) {
-  return std::make_unique<UDPIncremental>(gateway, context, stream_id, shared);
+  return std::make_unique<UDPIncremental>(
+      gateway, context, stream_id, shared, flags::Multicast::multicast_channel_id());
 }
 }  // namespace
 

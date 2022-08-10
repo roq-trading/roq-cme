@@ -88,9 +88,9 @@ Shared::Shared(server::Dispatcher &dispatcher)
   read_secdef(securities, dispatcher);
 }
 
-std::pair<std::string, uint16_t> Shared::get_multicast_config(multicast::Type type, Priority priority) const {
+std::pair<std::string, uint16_t> Shared::get_multicast_config(
+    std::string_view const &channel_id, multicast::Type type, Priority priority) const {
   std::pair<std::string, uint16_t> result;
-  auto channel_id = flags::Multicast::multicast_channel_id();
   if (multicast_config_.find(channel_id, type, priority, [&](auto &connection) {
         result = {connection.multicast_address, connection.port};
       })) {

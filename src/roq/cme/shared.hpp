@@ -32,7 +32,8 @@ struct Shared final {
   Shared(Shared &&) = default;
   Shared(Shared const &) = delete;
 
-  std::pair<std::string, uint16_t> get_multicast_config(multicast::Type, Priority) const;
+  std::pair<std::string, uint16_t> get_multicast_config(
+      std::string_view const &channel_id, multicast::Type, Priority) const;
 
   std::string_view next_request_id();
 

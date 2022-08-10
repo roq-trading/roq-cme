@@ -30,7 +30,7 @@ class UDPInstrumentDefinition final : public io::net::udp::Receiver::Handler, pu
     virtual void operator()(Trace<MarketStatus const> const &, bool is_last) = 0;
   };
 
-  UDPInstrumentDefinition(Handler &, io::Context &, uint16_t stream_id, Shared &);
+  UDPInstrumentDefinition(Handler &, io::Context &, uint16_t stream_id, Shared &, std::string_view const &channel_id);
 
   UDPInstrumentDefinition(UDPInstrumentDefinition const &) = delete;
   UDPInstrumentDefinition(UDPInstrumentDefinition &&) = delete;

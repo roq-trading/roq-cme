@@ -31,7 +31,7 @@ namespace roq {
 namespace cme {
 
 namespace {
-auto const NAME = "udp_sa"sv;
+auto const NAME = "SA"sv;
 
 Mask<SupportType> const SUPPORTS{
     SupportType::TOP_OF_BOOK,
@@ -44,8 +44,9 @@ struct create_metrics final : public core::metrics::Factory {
       : core::metrics::Factory(server::Flags::name(), group, function) {}
 };
 
-auto create_receiver(auto &handler, auto &context, auto &shared) {
-  auto [multicast_address, port] = shared.get_multicast_config(multicast::Type::SNAPSHOT, Priority::PRIMARY);
+auto create_receiver(auto &handler, auto &context, auto &shared, auto &channel_id) {
+  auto [multicast_address, port] =
+      shared.get_multicast_config(channel_id, multicast::Type::SNAPSHOT, Priority::PRIMARY);
   log::info<0>("Create multicast socket port={}"sv, port);
   auto receiver = context.create_udp_receiver(handler, io::NetworkAddress{port});
   log::info<0>(R"(Local interface is "{}")"sv, flags::Multicast::multicast_local_interface());
@@ -182,9 +183,10 @@ void emplace_back(T const &item, auto &security, auto &top_of_book, auto &bids, 
 }
 }  // namespace
 
-UDPMBPMarketRecovery::UDPMBPMarketRecovery(Handler &handler, io::Context &context, uint16_t stream_id, Shared &shared)
-    : handler_(handler), stream_id_(stream_id), name_(fmt::format("{}:{}"sv, stream_id_, NAME)),
-      receiver_(create_receiver(*this, context, shared)),
+UDPMBPMarketRecovery::UDPMBPMarketRecovery(
+    Handler &handler, io::Context &context, uint16_t stream_id, Shared &shared, std::string_view const &channel_id)
+    : handler_(handler), stream_id_(stream_id), name_(fmt::format("{}:{}{}"sv, stream_id_, NAME, channel_id)),
+      receiver_(create_receiver(*this, context, shared, channel_id)),
       counter_{
           .disconnect = create_metrics(name_, "disconnect"sv),
       },
