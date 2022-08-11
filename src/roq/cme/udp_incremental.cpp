@@ -392,6 +392,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionFX63> const
 }
 
 void UDPIncremental::operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &event, sbe::Frame const &frame) {
+  channel_.last_sequence = frame.sequence_number;  // HANS
   profile_.snapshot_full_refresh([&]() {
     auto &trace_info = event.trace_info;
     auto &value = event.value;
@@ -445,6 +446,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::SnapshotFullRefreshLongQty69> con
 }
 
 void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &event, sbe::Frame const &frame) {
+  channel_.last_sequence = frame.sequence_number;  // HANS
   profile_.md_incremental_refresh_book([&]() {
     auto &trace_info = event.trace_info;
     auto &value = event.value;
@@ -511,6 +513,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::SnapshotFullRefreshOrderBook53> c
 }
 
 void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshOrderBook47> const &event, sbe::Frame const &frame) {
+  channel_.last_sequence = frame.sequence_number;  // HANS
   profile_.md_incremental_refresh_order_book([&]() {
     auto &[trace_info, value] = event;
     log::info<5>("md_incremental_refresh_order_book={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
@@ -519,6 +522,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshOrderBook47> 
 
 void UDPIncremental::operator()(
     Trace<cme_mdp::MDIncrementalRefreshTradeSummary48> const &event, sbe::Frame const &frame) {
+  channel_.last_sequence = frame.sequence_number;  // HANS
   profile_.md_incremental_refresh_trade_summary([&]() {
     auto &[trace_info, value] = event;
     log::info<5>("md_incremental_refresh_trade_summary={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
@@ -528,6 +532,7 @@ void UDPIncremental::operator()(
 
 void UDPIncremental::operator()(
     Trace<cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65> const &event, sbe::Frame const &frame) {
+  channel_.last_sequence = frame.sequence_number;  // HANS
   profile_.md_incremental_refresh_trade_summary_long_qty([&]() {
     auto &[trace_info, value] = event;
     log::info<5>(
@@ -538,6 +543,7 @@ void UDPIncremental::operator()(
 
 void UDPIncremental::operator()(
     Trace<cme_mdp::MDIncrementalRefreshDailyStatistics49> const &event, sbe::Frame const &frame) {
+  channel_.last_sequence = frame.sequence_number;  // HANS
   profile_.md_incremental_refresh_daily_statistics([&]() {
     auto &[trace_info, value] = event;
     log::info<5>("md_incremental_refresh_daily_statistics={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
@@ -549,6 +555,7 @@ void UDPIncremental::operator()(
 
 void UDPIncremental::operator()(
     Trace<cme_mdp::MDIncrementalRefreshSessionStatistics51> const &event, sbe::Frame const &frame) {
+  channel_.last_sequence = frame.sequence_number;  // HANS
   profile_.md_incremental_refresh_session_statistics([&]() {
     auto &[trace_info, value] = event;
     log::info<5>(
@@ -561,6 +568,7 @@ void UDPIncremental::operator()(
 
 void UDPIncremental::operator()(
     Trace<cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67> const &event, sbe::Frame const &frame) {
+  channel_.last_sequence = frame.sequence_number;  // HANS
   profile_.md_incremental_refresh_session_statistics_long_qty([&]() {
     auto &[trace_info, value] = event;
     log::info<5>(
@@ -574,6 +582,7 @@ void UDPIncremental::operator()(
 }
 
 void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshVolume37> const &event, sbe::Frame const &frame) {
+  channel_.last_sequence = frame.sequence_number;  // HANS
   profile_.md_incremental_refresh_volume([&]() {
     auto &[trace_info, value] = event;
     log::info<5>("md_incremental_refresh_volume={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
@@ -585,6 +594,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshVolume37> con
 
 void UDPIncremental::operator()(
     Trace<cme_mdp::MDIncrementalRefreshVolumeLongQty66> const &event, sbe::Frame const &frame) {
+  channel_.last_sequence = frame.sequence_number;  // HANS
   profile_.md_incremental_refresh_volume_long_qty([&]() {
     auto &[trace_info, value] = event;
     log::info<5>("md_incremental_refresh_volume_long_qty={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
@@ -669,7 +679,7 @@ void UDPIncremental::dispatch_market_by_price(
           */
           auto res = channel_.mbp_resubscribe.emplace(security_id, exchange_sequence);
           if (res.second)
-            log::info<1>("DEBUG: RESUBSCRIBE security_id={}, exchange_sequece={}"sv, security_id, exchange_sequence);
+            log::info<1>("DEBUG: RESUBSCRIBE security_id={}, exchange_sequence={}"sv, security_id, exchange_sequence);
         });
   } catch (BadState &) {
     log::warn(
