@@ -1,0 +1,10 @@
+missing:
+- reordering datagrams
+- A+B correlation
+- external latency?
+- sequence number overflow
+- special md update actions? (delete-thru, ...)
+- channel timeout
+- number of orders (not cached)
+- implied bid/offer (not processed)
+- join/leave recovery channel based on subscriptions
