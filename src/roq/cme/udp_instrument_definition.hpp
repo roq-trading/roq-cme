@@ -15,6 +15,7 @@
 #include "roq/server.hpp"
 
 #include "roq/cme/aggregator.hpp"
+#include "roq/cme/channel.hpp"
 #include "roq/cme/shared.hpp"
 
 #include "roq/cme/sbe/parser.hpp"
@@ -31,7 +32,7 @@ class UDPInstrumentDefinition final : public io::net::udp::Receiver::Handler, pu
     virtual void operator()(Trace<MarketStatus const> const &, bool is_last) = 0;
   };
 
-  UDPInstrumentDefinition(Handler &, io::Context &, uint16_t stream_id, Shared &, std::string_view const &channel_id);
+  UDPInstrumentDefinition(Handler &, io::Context &, uint16_t stream_id, Shared &, Channel &);
 
   UDPInstrumentDefinition(UDPInstrumentDefinition const &) = delete;
   UDPInstrumentDefinition(UDPInstrumentDefinition &&) = delete;
@@ -108,6 +109,7 @@ class UDPInstrumentDefinition final : public io::net::udp::Receiver::Handler, pu
   } profile_;
   // cache
   Shared &shared_;
+  Channel &channel_;
   ConnectionStatus connection_status_ = {};
   // state
   std::chrono::nanoseconds last_update_time_ = {};

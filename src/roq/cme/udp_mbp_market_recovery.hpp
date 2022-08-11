@@ -15,6 +15,7 @@
 #include "roq/server.hpp"
 
 #include "roq/cme/aggregator.hpp"
+#include "roq/cme/channel.hpp"
 #include "roq/cme/shared.hpp"
 
 #include "roq/cme/sbe/parser.hpp"
@@ -32,7 +33,7 @@ class UDPMBPMarketRecovery final : public io::net::udp::Receiver::Handler, publi
     virtual void operator()(Trace<StatisticsUpdate const> const &, bool is_last) = 0;
   };
 
-  UDPMBPMarketRecovery(Handler &, io::Context &, uint16_t stream_id, Shared &, std::string_view const &channel_id);
+  UDPMBPMarketRecovery(Handler &, io::Context &, uint16_t stream_id, Shared &, Channel &);
 
   UDPMBPMarketRecovery(UDPMBPMarketRecovery const &) = delete;
   UDPMBPMarketRecovery(UDPMBPMarketRecovery &&) = delete;
@@ -112,6 +113,7 @@ class UDPMBPMarketRecovery final : public io::net::udp::Receiver::Handler, publi
   } profile_;
   // cache
   Shared &shared_;
+  Channel &channel_;
   ConnectionStatus connection_status_ = {};
   // state
   std::chrono::nanoseconds last_update_time_ = {};

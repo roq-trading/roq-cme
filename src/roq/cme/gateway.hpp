@@ -12,6 +12,7 @@
 
 #include "roq/io/context.hpp"
 
+#include "roq/cme/channel.hpp"
 #include "roq/cme/config.hpp"
 #include "roq/cme/shared.hpp"
 
@@ -75,6 +76,7 @@ class Gateway final : public server::Handler,
   std::unique_ptr<io::Context> context_;
   // shared
   Shared shared_;
+  std::vector<Channel> channels_;
   // seed
   uint16_t stream_id_ = {};
   // streams

@@ -78,9 +78,9 @@ void create_security(auto &shared, auto &value, Callback callback) {
 }  // namespace
 
 UDPInstrumentDefinition::UDPInstrumentDefinition(
-    Handler &handler, io::Context &context, uint16_t stream_id, Shared &shared, std::string_view const &channel_id)
-    : handler_(handler), stream_id_(stream_id), name_(fmt::format("{}:{}{}"sv, stream_id_, NAME, channel_id)),
-      receiver_(create_receiver(*this, context, shared, channel_id)),
+    Handler &handler, io::Context &context, uint16_t stream_id, Shared &shared, Channel &channel)
+    : handler_(handler), stream_id_(stream_id), name_(fmt::format("{}:{}{}"sv, stream_id_, NAME, channel.channel_id)),
+      receiver_(create_receiver(*this, context, shared, channel.channel_id)),
       counter_{
           .disconnect = create_metrics(name_, "disconnect"sv),
       },
@@ -95,7 +95,7 @@ UDPInstrumentDefinition::UDPInstrumentDefinition(
           .md_instrument_definition_repo = create_metrics(name_, "md_instrument_definition_repo"sv),
           .md_instrument_definition_fx = create_metrics(name_, "md_instrument_definition_fx"sv),
       },
-      shared_(shared) {
+      shared_(shared), channel_(channel) {
 }
 
 void UDPInstrumentDefinition::operator()(Event<Start> const &) {

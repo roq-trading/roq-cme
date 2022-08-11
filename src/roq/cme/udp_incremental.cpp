@@ -65,7 +65,10 @@ bool get_security(auto &shared, auto security_id, Callback callback) {
   auto iter = shared.securities.find(security_id);
   if (iter == std::end(shared.securities))
     return false;
-  callback((*iter).second);
+  auto &security = (*iter).second;
+  if (security.discard)
+    return false;
+  callback(security);
   return true;
 }
 
@@ -260,9 +263,9 @@ void emplace_back(
 }  // namespace
 
 UDPIncremental::UDPIncremental(
-    Handler &handler, io::Context &context, uint16_t stream_id, Shared &shared, std::string_view const &channel_id)
-    : handler_(handler), stream_id_(stream_id), name_(fmt::format("{}:{}{}"sv, stream_id_, NAME, channel_id)),
-      receiver_(create_receiver(*this, context, shared, channel_id)),
+    Handler &handler, io::Context &context, uint16_t stream_id, Shared &shared, Channel &channel)
+    : handler_(handler), stream_id_(stream_id), name_(fmt::format("{}:{}{}"sv, stream_id_, NAME, channel.channel_id)),
+      receiver_(create_receiver(*this, context, shared, channel.channel_id)),
       counter_{
           .disconnect = create_metrics(name_, "disconnect"sv),
       },
@@ -287,7 +290,7 @@ UDPIncremental::UDPIncremental(
           .md_incremental_refresh_volume = create_metrics(name_, "md_incremental_refresh_volume"sv),
           .md_incremental_refresh_volume_long_qty = create_metrics(name_, "md_incremental_refresh_volume_long_qty"sv),
       },
-      shared_(shared) {
+      shared_(shared), channel_(channel) {
 }
 
 void UDPIncremental::operator()(Event<Start> const &) {
@@ -604,7 +607,7 @@ void UDPIncremental::dispatch_market_by_price(
     auto exchange_time_utc,
     auto &bids,
     auto &asks) {
-  auto &collector = shared_.mbp_collector[security_id];
+  auto &collector = channel_.mbp_collector[security_id];
   try {
     auto last_exchange_sequence = collector.last_sequence();  // note! the protocol doesn't tell us
     collector(
@@ -663,7 +666,7 @@ void UDPIncremental::dispatch_market_by_price(
             log::fatal(R"(Unexpected: symbol="{}", retries={})"sv, symbol, retries);
           }
           */
-          auto res = shared_.mbp_resubscribe.emplace(security_id, exchange_sequence);
+          auto res = channel_.mbp_resubscribe.emplace(security_id, exchange_sequence);
           if (res.second)
             log::info<1>("DEBUG: RESUBSCRIBE security_id={}, exchange_sequece={}"sv, security_id, exchange_sequence);
         });
@@ -672,7 +675,7 @@ void UDPIncremental::dispatch_market_by_price(
         R"(RESUBSCRIBE exchange="{}", symbol="{}", security_id={})"sv, security.exchange, security.symbol, security_id);
     // XXX HANS publish stale
     collector.clear();
-    auto res = shared_.mbp_resubscribe.emplace(security_id, exchange_sequence);
+    auto res = channel_.mbp_resubscribe.emplace(security_id, exchange_sequence);
     if (res.second)
       log::info<1>("DEBUG: RESUBSCRIBE security_id={}"sv, security_id);
   }

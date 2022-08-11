@@ -15,6 +15,7 @@
 #include "roq/server.hpp"
 
 #include "roq/cme/aggregator.hpp"
+#include "roq/cme/channel.hpp"
 #include "roq/cme/shared.hpp"
 
 #include "roq/cme/sbe/parser.hpp"
@@ -33,7 +34,7 @@ class UDPIncremental final : public io::net::udp::Receiver::Handler, public sbe:
     virtual void operator()(Trace<StatisticsUpdate const> const &, bool is_last) = 0;
   };
 
-  UDPIncremental(Handler &, io::Context &, uint16_t stream_id, Shared &, std::string_view const &channel_id);
+  UDPIncremental(Handler &, io::Context &, uint16_t stream_id, Shared &, Channel &);
 
   UDPIncremental(UDPIncremental const &) = delete;
   UDPIncremental(UDPIncremental &&) = delete;
@@ -126,6 +127,7 @@ class UDPIncremental final : public io::net::udp::Receiver::Handler, public sbe:
   } profile_;
   // cache
   Shared &shared_;
+  Channel &channel_;
   ConnectionStatus connection_status_ = {};
   // state
   std::chrono::nanoseconds last_update_time_ = {};

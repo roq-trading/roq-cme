@@ -15,40 +15,46 @@ namespace roq {
 namespace cme {
 
 namespace {
-auto create_udp_instrument_definition(Gateway &gateway, io::Context &context, uint16_t &stream_id, Shared &shared) {
+auto create_channels() {
+  std::vector<Channel> result;
+  auto &channel_ids = flags::Multicast::multicast_channel_ids();
+  for (auto &channel_id : channel_ids)
+    result.emplace_back(channel_id);
+  return result;
+}
+
+auto create_udp_instrument_definition(auto &gateway, auto &context, auto &stream_id, auto &shared, auto &channels) {
   std::vector<std::unique_ptr<UDPInstrumentDefinition>> result;
   if (std::empty(flags::Common::secdef_config_file())) {
-    auto &channel_ids = flags::Multicast::multicast_channel_ids();
-    for (auto &channel_id : channel_ids)
-      result.emplace_back(std::make_unique<UDPInstrumentDefinition>(gateway, context, stream_id, shared, channel_id));
+    for (auto &channel : channels)
+      result.emplace_back(std::make_unique<UDPInstrumentDefinition>(gateway, context, stream_id, shared, channel));
   } else {
     log::warn("The instrument definitions channel is not used when the secdef file was chosen"sv);
   }
   return result;
 }
 
-auto create_udp_mbp_market_recovery(Gateway &gateway, io::Context &context, uint16_t &stream_id, Shared &shared) {
+auto create_udp_mbp_market_recovery(auto &gateway, auto &context, auto &stream_id, auto &shared, auto &channels) {
   std::vector<std::unique_ptr<UDPMBPMarketRecovery>> result;
-  auto &channel_ids = flags::Multicast::multicast_channel_ids();
-  for (auto &channel_id : channel_ids)
-    result.emplace_back(std::make_unique<UDPMBPMarketRecovery>(gateway, context, stream_id, shared, channel_id));
+  for (auto &channel : channels)
+    result.emplace_back(std::make_unique<UDPMBPMarketRecovery>(gateway, context, stream_id, shared, channel));
   return result;
 }
 
-auto create_udp_incremental(Gateway &gateway, io::Context &context, uint16_t &stream_id, Shared &shared) {
+auto create_udp_incremental(auto &gateway, auto &context, auto &stream_id, auto &shared, auto &channels) {
   std::vector<std::unique_ptr<UDPIncremental>> result;
-  auto &channel_ids = flags::Multicast::multicast_channel_ids();
-  for (auto &channel_id : channel_ids)
-    result.emplace_back(std::make_unique<UDPIncremental>(gateway, context, stream_id, shared, channel_id));
+  for (auto &channel : channels)
+    result.emplace_back(std::make_unique<UDPIncremental>(gateway, context, stream_id, shared, channel));
   return result;
 }
 }  // namespace
 
 Gateway::Gateway(server::Dispatcher &dispatcher, Config const &)
     : dispatcher_(dispatcher), context_(io::engine::ContextFactory::create_libevent()), shared_(dispatcher_),
-      udp_instrument_definition_(create_udp_instrument_definition(*this, *context_, ++stream_id_, shared_)),
-      udp_mbp_market_recovery_(create_udp_mbp_market_recovery(*this, *context_, ++stream_id_, shared_)),
-      udp_incremental_(create_udp_incremental(*this, *context_, ++stream_id_, shared_)) {
+      channels_(create_channels()),
+      udp_instrument_definition_(create_udp_instrument_definition(*this, *context_, ++stream_id_, shared_, channels_)),
+      udp_mbp_market_recovery_(create_udp_mbp_market_recovery(*this, *context_, ++stream_id_, shared_, channels_)),
+      udp_incremental_(create_udp_incremental(*this, *context_, ++stream_id_, shared_, channels_)) {
 }
 
 void Gateway::operator()(Event<Start> const &event) {

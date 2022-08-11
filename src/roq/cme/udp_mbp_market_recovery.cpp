@@ -65,7 +65,10 @@ bool get_security(auto &shared, auto security_id, Callback callback) {
   auto iter = shared.securities.find(security_id);
   if (iter == std::end(shared.securities))
     return false;
-  callback((*iter).second);
+  auto &security = (*iter).second;
+  if (security.discard)
+    return false;
+  callback(security);
   return true;
 }
 
@@ -184,9 +187,9 @@ void emplace_back(T const &item, auto &security, auto &top_of_book, auto &bids, 
 }  // namespace
 
 UDPMBPMarketRecovery::UDPMBPMarketRecovery(
-    Handler &handler, io::Context &context, uint16_t stream_id, Shared &shared, std::string_view const &channel_id)
-    : handler_(handler), stream_id_(stream_id), name_(fmt::format("{}:{}{}"sv, stream_id_, NAME, channel_id)),
-      receiver_(create_receiver(*this, context, shared, channel_id)),
+    Handler &handler, io::Context &context, uint16_t stream_id, Shared &shared, Channel &channel)
+    : handler_(handler), stream_id_(stream_id), name_(fmt::format("{}:{}{}"sv, stream_id_, NAME, channel.channel_id)),
+      receiver_(create_receiver(*this, context, shared, channel.channel_id)),
       counter_{
           .disconnect = create_metrics(name_, "disconnect"sv),
       },
@@ -197,7 +200,7 @@ UDPMBPMarketRecovery::UDPMBPMarketRecovery(
           .snapshot_full_refresh = create_metrics(name_, "snapshot_full_refresh"sv),
           .snapshot_full_refresh_long_qty = create_metrics(name_, "snapshot_full_refresh_long_qty"sv),
       },
-      shared_(shared) {
+      shared_(shared), channel_(channel) {
 }
 
 void UDPMBPMarketRecovery::operator()(Event<Start> const &) {
@@ -488,8 +491,8 @@ void UDPMBPMarketRecovery::dispatch_market_by_price(
     auto exchange_time_utc,
     auto &bids,
     auto &asks) {
-  auto iter = shared_.mbp_resubscribe.find(security_id);
-  if (iter == std::end(shared_.mbp_resubscribe))
+  auto iter = channel_.mbp_resubscribe.find(security_id);
+  if (iter == std::end(channel_.mbp_resubscribe))
     return;
   log::info<1>(
       R"(DEBUG: SYNC exchange="{}", symbol="{}", security_id={} (request={}, snapshot={}))"sv,
@@ -498,7 +501,7 @@ void UDPMBPMarketRecovery::dispatch_market_by_price(
       security_id,
       (*iter).second,
       exchange_sequence);
-  auto &collector = shared_.mbp_collector[security_id];
+  auto &collector = channel_.mbp_collector[security_id];
   try {
     collector(
         bids,
@@ -527,7 +530,7 @@ void UDPMBPMarketRecovery::dispatch_market_by_price(
           Trace event(trace_info, market_by_price_update);
           shared_(
               event, true, [&](auto &market_by_price) { collector.apply(market_by_price, exchange_sequence, false); });
-          auto res = shared_.mbp_resubscribe.erase(security_id);  // remove
+          auto res = channel_.mbp_resubscribe.erase(security_id);  // remove
           if (res > 0)
             log::info<1>("DEBUG: REMOVE security_id={}"sv, security_id);
         },
@@ -539,7 +542,7 @@ void UDPMBPMarketRecovery::dispatch_market_by_price(
               security_id,
               retries);
           // note! wait for next snapshot
-          auto res = shared_.mbp_resubscribe.emplace(security_id, exchange_sequence);
+          auto res = channel_.mbp_resubscribe.emplace(security_id, exchange_sequence);
           if (res.second)
             log::info<1>("DEBUG: RESUBSCRIBE security_id={}, exchange_sequence={}"sv, security_id, exchange_sequence);
         });

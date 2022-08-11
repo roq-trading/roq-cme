@@ -19,8 +19,6 @@
 
 #include "roq/core/stack/buffer.hpp"
 
-#include "roq/core/market/mbp_sequencer.hpp"
-
 #include "roq/cme/multicast/config.hpp"
 
 namespace roq {
@@ -70,8 +68,6 @@ struct Shared final {
   absl::flat_hash_set<std::string> all_currencies;
   absl::flat_hash_set<Symbol> all_symbols;
   core::Symbols symbols;
-  absl::node_hash_map<int32_t, core::market::MBP_Sequencer> mbp_collector;
-  absl::flat_hash_map<int32_t, uint32_t> mbp_resubscribe;
 
   // EXPERIMENTAL
   struct Security final {
