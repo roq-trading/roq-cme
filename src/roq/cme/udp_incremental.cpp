@@ -613,8 +613,8 @@ void UDPIncremental::dispatch_market_by_price(
     auto exchange_time_utc,
     auto &bids,
     auto &asks) {
-  log::info<1>("DEBUG: bids=[{}]"sv, fmt::join(static_cast<std::span<MBPUpdate>>(bids), ", "sv));
-  log::info<1>("DEBUG: asks=[{}]"sv, fmt::join(static_cast<std::span<MBPUpdate>>(asks), ", "sv));
+  // log::info<1>("DEBUG: bids=[{}]"sv, fmt::join(static_cast<std::span<MBPUpdate>>(bids), ", "sv));
+  // log::info<1>("DEBUG: asks=[{}]"sv, fmt::join(static_cast<std::span<MBPUpdate>>(asks), ", "sv));
   channel_.mbp_last_sequence[security_id] = exchange_sequence;
   auto &collector = channel_.mbp_collector[security_id];
   try {
