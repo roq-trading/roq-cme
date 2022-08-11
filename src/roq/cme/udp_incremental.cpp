@@ -102,6 +102,28 @@ template <typename T>
 void emplace(Trade &result, T const &item, auto &security) {
   auto price = sbe::get_double(const_cast<T &>(item).mDEntryPx());
   auto quantity = sbe::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue());
+  auto md_update_action = item.mDUpdateAction();
+  switch (md_update_action) {
+    using enum cme_mdp::MDUpdateAction::Value;
+    case New:
+      break;
+    case Change:
+      break;
+    case Delete:
+      quantity = {};  // note! exchange tells us the old value
+      break;
+    case DeleteThru:
+      log::warn("+++ USING DELETE_THRU +++"sv);
+      break;
+    case DeleteFrom:
+      log::warn("+++ USING DELETE_FROM +++"sv);
+      break;
+    case Overlay:
+      log::warn("+++ USING OVERLAY +++"sv);
+      break;
+    case NULL_VALUE:
+      break;
+  }
   new (&result) Trade{
       .side = sbe::map_side(item.aggressorSide()),
       .price = price * security.display_factor,
