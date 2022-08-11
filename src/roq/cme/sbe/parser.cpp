@@ -37,6 +37,7 @@ struct MessageSize final {
 bool Parser::dispatch(Handler &handler, std::span<std::byte const> const &buffer, TraceInfo const &trace_info) {
   auto result = true;
   if (Frame::parse(buffer, [&](auto &frame) {
+        handler(frame);
         auto tmp = buffer.subspan(Frame::size());
         // SBE is not const-safe
         std::span message{reinterpret_cast<char *>(const_cast<std::byte *>(std::data(tmp))), std::size(tmp)};

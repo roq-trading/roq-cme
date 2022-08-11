@@ -51,6 +51,7 @@ class UDPIncremental final : public io::net::udp::Receiver::Handler, public sbe:
 
  protected:
   // sbe::Parser::Handler
+  void operator()(sbe::Frame const &) override;
   // - admin
   void operator()(Trace<cme_mdp::AdminHeartbeat12> const &, sbe::Frame const &) override;
   void operator()(Trace<cme_mdp::ChannelReset4> const &, sbe::Frame const &) override;

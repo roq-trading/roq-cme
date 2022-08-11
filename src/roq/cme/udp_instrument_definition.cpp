@@ -138,6 +138,9 @@ void UDPInstrumentDefinition::operator()(io::net::udp::Receiver::Error const &er
 
 // sbe::Parser::Handler
 
+void UDPInstrumentDefinition::operator()(sbe::Frame const &) {
+}
+
 void UDPInstrumentDefinition::operator()(Trace<cme_mdp::AdminHeartbeat12> const &event, sbe::Frame const &frame) {
   profile_.admin_heartbeat([&]() {
     auto &[trace_info, value] = event;

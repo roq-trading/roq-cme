@@ -20,6 +20,7 @@ namespace sbe {
 
 struct Parser final {
   struct Handler {
+    virtual void operator()(Frame const &) = 0;
     // admin
     virtual void operator()(Trace<cme_mdp::AdminHeartbeat12> const &, Frame const &) = 0;
     virtual void operator()(Trace<cme_mdp::ChannelReset4> const &, Frame const &) = 0;

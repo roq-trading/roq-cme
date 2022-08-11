@@ -256,6 +256,9 @@ void UDPMBPMarketRecovery::operator()(io::net::udp::Receiver::Error const &error
 
 // sbe::Parser::Handler
 
+void UDPMBPMarketRecovery::operator()(sbe::Frame const &) {
+}
+
 void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::AdminHeartbeat12> const &event, sbe::Frame const &frame) {
   profile_.admin_heartbeat([&]() {
     auto &[trace_info, value] = event;
