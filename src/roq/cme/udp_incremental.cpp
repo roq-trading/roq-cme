@@ -86,6 +86,8 @@ void emplace(MBPUpdate &result, T const &item, auto &security) {
     }
     return UpdateAction{};
   }();
+  if (update_action == UpdateAction::DELETE)
+    quantity = {};  // note! exchange gives us the *old* value / we need this to be zero
   auto md_price_level = sbe::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue());
   uint32_t price_level = md_price_level > 0 ? (md_price_level - 1) : 0;
   new (&result) MBPUpdate{
@@ -102,28 +104,6 @@ template <typename T>
 void emplace(Trade &result, T const &item, auto &security) {
   auto price = sbe::get_double(const_cast<T &>(item).mDEntryPx());
   auto quantity = sbe::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue());
-  auto md_update_action = item.mDUpdateAction();
-  switch (md_update_action) {
-    using enum cme_mdp::MDUpdateAction::Value;
-    case New:
-      break;
-    case Change:
-      break;
-    case Delete:
-      quantity = {};  // note! exchange tells us the old value
-      break;
-    case DeleteThru:
-      log::warn("+++ USING DELETE_THRU +++"sv);
-      break;
-    case DeleteFrom:
-      log::warn("+++ USING DELETE_FROM +++"sv);
-      break;
-    case Overlay:
-      log::warn("+++ USING OVERLAY +++"sv);
-      break;
-    case NULL_VALUE:
-      break;
-  }
   new (&result) Trade{
       .side = sbe::map_side(item.aggressorSide()),
       .price = price * security.display_factor,
