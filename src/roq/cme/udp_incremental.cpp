@@ -607,6 +607,7 @@ void UDPIncremental::dispatch_market_by_price(
     auto exchange_time_utc,
     auto &bids,
     auto &asks) {
+  channel_.mbp_last_sequence[security_id] = exchange_sequence;
   auto &collector = channel_.mbp_collector[security_id];
   try {
     auto last_exchange_sequence = collector.last_sequence();  // note! the protocol doesn't tell us
@@ -678,6 +679,7 @@ void UDPIncremental::dispatch_market_by_price(
     auto res = channel_.mbp_resubscribe.emplace(security_id, exchange_sequence);
     if (res.second)
       log::info<1>("DEBUG: RESUBSCRIBE security_id={}"sv, security_id);
+    channel_.mbp_last_sequence.erase(security_id);
   }
 }
 

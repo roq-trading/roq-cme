@@ -19,6 +19,12 @@ struct Channel final {
   Channel(Channel const &) = delete;
 
   const std::string channel_id;
+
+  // incremental
+  uint32_t last_sequence = {};
+  absl::flat_hash_map<int32_t, uint32_t> mbp_last_sequence;
+
+  // recovery
   absl::node_hash_map<int32_t, core::market::MBP_Sequencer> mbp_collector;
   absl::flat_hash_map<int32_t, uint32_t> mbp_resubscribe;
 };

@@ -72,6 +72,19 @@ bool get_security(auto &shared, auto security_id, Callback callback) {
   return true;
 }
 
+template <typename Callback>
+bool get_last_exchange_sequence(auto &channel, auto security_id, auto &value, Callback callback) {
+  auto last_processed = value.lastMsgSeqNumProcessed();
+  if (last_processed <= channel.last_sequence) {
+    auto iter = channel.mbp_last_sequence.find(security_id);
+    if (iter != std::end(channel.mbp_last_sequence)) {
+      callback((*iter).second);
+      return true;
+    }
+  }
+  return false;
+}
+
 template <typename T>
 void emplace(MBPUpdate &result, T const &item, auto &security) {
   auto price = sbe::get_double(const_cast<T &>(item).mDEntryPx());
@@ -313,40 +326,41 @@ void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::SnapshotFullRefresh52> cons
     log::info<5>("snapshot_full_refresh={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
     auto security_id = value.securityID();
     get_security(shared_, security_id, [&](auto &security) {
-      std::chrono::nanoseconds exchange_time_utc{value.transactTime()};
-      auto exchange_sequence = value.lastMsgSeqNumProcessed();
-      Layer layer = {};
-      core::back_emplacer bids{shared_.bids}, asks{shared_.asks};
-      core::back_emplacer statistics{shared_.statistics};
-      value.sbeRewind();  // note!
-      value.noMDEntries().forEach(
-          [&](auto const &item) { emplace_back(item, security, layer, bids, asks, statistics); });
-      if (!(std::isnan(layer.bid_price) && std::isnan(layer.ask_price))) {
-        /* note! we don't publish
-        TopOfBook top_of_book{
-            .stream_id = stream_id_,
-            .exchange = security.exchange,
-            .symbol = security.symbol,
-            .layer = layer,
-            .exchange_time_utc = exchange_time_utc,
-            .exchange_sequence = exchange_sequence,
-        };
-        */
-      }
-      if (!(std::empty(bids) && std::empty(bids))) {
-        dispatch_market_by_price(trace_info, security_id, security, exchange_sequence, exchange_time_utc, bids, asks);
-      }
-      if (!std::empty(statistics)) {
-        StatisticsUpdate const statistics_update{
-            .stream_id = stream_id_,
-            .exchange = security.exchange,
-            .symbol = security.symbol,
-            .statistics = statistics,
-            .update_type = UpdateType::SNAPSHOT,
-            .exchange_time_utc = exchange_time_utc,
-        };
-        create_trace_and_dispatch(handler_, trace_info, statistics_update, true);
-      }
+      get_last_exchange_sequence(channel_, security_id, value, [&](auto exchange_sequence) {
+        std::chrono::nanoseconds exchange_time_utc{value.transactTime()};
+        Layer layer = {};
+        core::back_emplacer bids{shared_.bids}, asks{shared_.asks};
+        core::back_emplacer statistics{shared_.statistics};
+        value.sbeRewind();  // note!
+        value.noMDEntries().forEach(
+            [&](auto const &item) { emplace_back(item, security, layer, bids, asks, statistics); });
+        if (!(std::isnan(layer.bid_price) && std::isnan(layer.ask_price))) {
+          /* note! we don't publish
+          TopOfBook top_of_book{
+              .stream_id = stream_id_,
+              .exchange = security.exchange,
+              .symbol = security.symbol,
+              .layer = layer,
+              .exchange_time_utc = exchange_time_utc,
+              .exchange_sequence = exchange_sequence,
+          };
+          */
+        }
+        if (!(std::empty(bids) && std::empty(bids))) {
+          dispatch_market_by_price(trace_info, security_id, security, exchange_sequence, exchange_time_utc, bids, asks);
+        }
+        if (!std::empty(statistics)) {
+          StatisticsUpdate const statistics_update{
+              .stream_id = stream_id_,
+              .exchange = security.exchange,
+              .symbol = security.symbol,
+              .statistics = statistics,
+              .update_type = UpdateType::SNAPSHOT,
+              .exchange_time_utc = exchange_time_utc,
+          };
+          create_trace_and_dispatch(handler_, trace_info, statistics_update, true);
+        }
+      });
     });
   });
 }
@@ -359,40 +373,41 @@ void UDPMBPMarketRecovery::operator()(
     log::info<5>("snapshot_full_refresh_long_qty={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
     auto security_id = value.securityID();
     get_security(shared_, security_id, [&](auto &security) {
-      std::chrono::nanoseconds exchange_time_utc{value.transactTime()};
-      auto exchange_sequence = value.lastMsgSeqNumProcessed();
-      Layer layer = {};
-      core::back_emplacer bids{shared_.bids}, asks{shared_.asks};
-      core::back_emplacer statistics{shared_.statistics};
-      value.sbeRewind();  // note!
-      value.noMDEntries().forEach(
-          [&](auto const &item) { emplace_back(item, security, layer, bids, asks, statistics); });
-      if (!(std::isnan(layer.bid_price) && std::isnan(layer.ask_price))) {
-        /* note! we don't publish
-        TopOfBook top_of_book{
-            .stream_id = stream_id_,
-            .exchange = security.exchange,
-            .symbol = security.symbol,
-            .layer = layer,
-            .exchange_time_utc = exchange_time_utc,
-            .exchange_sequence = exchange_sequence,
-        };
-        */
-      }
-      if (!(std::empty(bids) && std::empty(bids))) {
-        dispatch_market_by_price(trace_info, security_id, security, exchange_sequence, exchange_time_utc, bids, asks);
-      }
-      if (!std::empty(statistics)) {
-        StatisticsUpdate const statistics_update{
-            .stream_id = stream_id_,
-            .exchange = security.exchange,
-            .symbol = security.symbol,
-            .statistics = statistics,
-            .update_type = UpdateType::SNAPSHOT,
-            .exchange_time_utc = exchange_time_utc,
-        };
-        create_trace_and_dispatch(handler_, trace_info, statistics_update, true);
-      }
+      get_last_exchange_sequence(channel_, security_id, value, [&](auto exchange_sequence) {
+        std::chrono::nanoseconds exchange_time_utc{value.transactTime()};
+        Layer layer = {};
+        core::back_emplacer bids{shared_.bids}, asks{shared_.asks};
+        core::back_emplacer statistics{shared_.statistics};
+        value.sbeRewind();  // note!
+        value.noMDEntries().forEach(
+            [&](auto const &item) { emplace_back(item, security, layer, bids, asks, statistics); });
+        if (!(std::isnan(layer.bid_price) && std::isnan(layer.ask_price))) {
+          /* note! we don't publish
+          TopOfBook top_of_book{
+              .stream_id = stream_id_,
+              .exchange = security.exchange,
+              .symbol = security.symbol,
+              .layer = layer,
+              .exchange_time_utc = exchange_time_utc,
+              .exchange_sequence = exchange_sequence,
+          };
+          */
+        }
+        if (!(std::empty(bids) && std::empty(bids))) {
+          dispatch_market_by_price(trace_info, security_id, security, exchange_sequence, exchange_time_utc, bids, asks);
+        }
+        if (!std::empty(statistics)) {
+          StatisticsUpdate const statistics_update{
+              .stream_id = stream_id_,
+              .exchange = security.exchange,
+              .symbol = security.symbol,
+              .statistics = statistics,
+              .update_type = UpdateType::SNAPSHOT,
+              .exchange_time_utc = exchange_time_utc,
+          };
+          create_trace_and_dispatch(handler_, trace_info, statistics_update, true);
+        }
+      });
     });
   });
 }
