@@ -7,7 +7,7 @@ add_subdirectory("secdef")
 
 set(SOURCES
     application.cpp
-    buffer.cpp
+    channel.cpp
     config.cpp
     gateway.cpp
     shared.cpp

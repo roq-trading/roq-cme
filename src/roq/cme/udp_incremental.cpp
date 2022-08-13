@@ -311,10 +311,45 @@ void UDPIncremental::operator()(Event<Timer> const &event) {
   }
 }
 
+namespace {
+void drain(auto &handler, auto &receiver, auto &channel) {
+  using value_type = typename decltype(channel.buffer)::value_type;
+  for (auto stop = false; !stop;) {
+    if (channel.buffer.next([&](auto buffer) -> std::pair<size_t, value_type> {
+          auto bytes = receiver.recv(buffer);
+          if (bytes) {
+            bool hold = false;
+            value_type sequence = {};
+            if (sbe::Frame::parse({std::data(buffer), bytes}, [&](auto &frame) {
+                  if (!true)  // unexpected sequence
+                    hold = true;
+                })) {
+              if (hold)
+                return {bytes, sequence};  // out of sequence
+              return {};
+            } else {
+              return {};  // invalid frame
+            }
+          } else {
+            stop = true;
+            return {};  // done
+          }
+        })) {
+    } else {
+      // reset
+      channel.buffer.clear();
+    }
+  }
+}
+}  // namespace
+
 void UDPIncremental::operator()(io::net::udp::Receiver::Read const &) {
   auto trace_info = server::create_trace_info();
   last_update_time_ = trace_info.source_receive_time;
   publish_stream_status(trace_info, ConnectionStatus::READY);  // first message will publish
+
+  // drain(*this, *receiver_, channel_);
+
   while (receive_buffer_.append(*receiver_)) {
     profile_.parse([&]() {
       auto message = receive_buffer_.data();

@@ -9,16 +9,20 @@
 
 #include "roq/core/market/mbp_sequencer.hpp"
 
+#include "roq/cme/buffer.hpp"
+
 namespace roq {
 namespace cme {
 
 struct Channel final {
-  explicit Channel(std::string_view const &channel_id) : channel_id(channel_id) {}
+  explicit Channel(std::string_view const &channel_id);
 
   Channel(Channel &&) = default;
   Channel(Channel const &) = delete;
 
   const std::string channel_id;
+
+  Buffer<uint32_t> buffer;
 
   // incremental
   uint32_t last_sequence = {};

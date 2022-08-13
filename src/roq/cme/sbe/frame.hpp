@@ -19,7 +19,7 @@ struct Frame final {
   static size_t size() { return 12; }
 
   template <typename Callback>
-  static bool parse(std::span<std::byte const> const &buffer, Callback &&callback) {
+  static bool parse(std::span<std::byte const> const &buffer, Callback callback) {
     auto [result, frame] = parse_helper(buffer);
     if (result)
       callback(frame);
