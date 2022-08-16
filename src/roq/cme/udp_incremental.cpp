@@ -317,26 +317,31 @@ void drain(auto &handler, auto &receiver, auto &channel) {
   for (auto stop = false; !stop;) {
     if (channel.buffer.next([&](auto buffer) -> std::pair<size_t, value_type> {
           auto bytes = receiver.recv(buffer);
-          if (bytes) {
-            bool hold = false;
-            value_type sequence = {};
-            if (sbe::Frame::parse({std::data(buffer), bytes}, [&](auto &frame) {
-                  if (!true)  // unexpected sequence
-                    hold = true;
-                })) {
-              if (hold)
-                return {bytes, sequence};  // out of sequence
-              return {};
+          if (!bytes) {
+            // no data
+            stop = true;
+            return {};
+          }
+          bool hold = false;
+          value_type sequence = {};
+          if (sbe::Frame::parse({std::data(buffer), bytes}, [&](auto &frame) {
+                if (!true)  // unexpected sequence
+                  hold = true;
+              })) {
+            if (hold) {
+              // out of sequence
+              return {bytes, sequence};
             } else {
-              return {};  // invalid frame
+              // parse current frame
+              return {};
             }
           } else {
-            stop = true;
-            return {};  // done
+            // failed to parse
+            return {};
           }
         })) {
     } else {
-      // reset
+      // full: reset
       channel.buffer.clear();
     }
   }
