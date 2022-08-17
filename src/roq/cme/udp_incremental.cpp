@@ -333,8 +333,14 @@ void drain(auto &handler, auto &receiver, auto &channel, auto &trace_info) {
                 auto [ready, last_sequence_number] = channel.last_sequence;
                 if (ready) {
                   auto next_sequence_number = last_sequence_number + 1;
-                  drop = sequence_number < next_sequence_number;
                   hold = sequence_number > next_sequence_number;
+                  drop = sequence_number < next_sequence_number;
+                }
+                // test
+                if (!hold && !drop) {
+                  if ((sequence_number % 100) == 0) {
+                    log::warn<1>("DEBUG: *** SIMULATE REORDERING ***"sv);
+                  }
                 }
               })) {
             log::info<1>("DEBUG: drop={}, hold={}"sv, drop, hold);
