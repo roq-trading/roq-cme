@@ -75,7 +75,7 @@ bool get_security(auto &shared, auto security_id, Callback callback) {
 template <typename Callback>
 bool get_last_exchange_sequence(auto &channel, auto security_id, auto &value, Callback callback) {
   auto last_processed = value.lastMsgSeqNumProcessed();
-  if (last_processed <= channel.last_sequence) {
+  if (last_processed <= channel.last_sequence.second) {
     auto iter = channel.mbp_last_sequence.find(security_id);
     if (iter != std::end(channel.mbp_last_sequence)) {
       callback((*iter).second);

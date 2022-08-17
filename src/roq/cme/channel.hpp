@@ -25,7 +25,7 @@ struct Channel final {
   Buffer<uint32_t> buffer;
 
   // incremental
-  uint32_t last_sequence = {};
+  std::pair<bool, uint32_t> last_sequence = {};
   absl::flat_hash_map<int32_t, uint32_t> mbp_last_sequence;
 
   // recovery

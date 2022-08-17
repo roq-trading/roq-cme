@@ -312,37 +312,82 @@ void UDPIncremental::operator()(Event<Timer> const &event) {
 }
 
 namespace {
-void drain(auto &handler, auto &receiver, auto &channel) {
+void drain(auto &handler, auto &receiver, auto &channel, auto &trace_info) {
   using value_type = typename decltype(channel.buffer)::value_type;
   for (auto stop = false; !stop;) {
     if (channel.buffer.next([&](auto buffer) -> std::pair<size_t, value_type> {
+          // read into buffer
           auto bytes = receiver.recv(buffer);
+          log::info<1>("DEBUG: read {} byte(s)"sv, bytes);
           if (!bytes) {
-            // no data
             stop = true;
             return {};
           }
-          bool hold = false;
-          value_type sequence = {};
-          if (sbe::Frame::parse({std::data(buffer), bytes}, [&](auto &frame) {
-                if (!true)  // unexpected sequence
-                  hold = true;
+          // parse message
+          std::span message{std::data(buffer), bytes};
+          bool hold = false, drop = false;
+          value_type sequence_number = {};
+          if (sbe::Frame::parse(message, [&](auto &frame) {
+                // check sequence number
+                sequence_number = frame.sequence_number;
+                log::info<1>("DEBUG: sequence_number={}"sv, sequence_number);
+                auto [ready, last_sequence_number] = channel.last_sequence;
+                if (ready) {
+                  auto next_sequence_number = last_sequence_number + 1;
+                  drop = sequence_number < next_sequence_number;
+                  hold = sequence_number > next_sequence_number;
+                }
               })) {
-            if (hold) {
-              // out of sequence
-              return {bytes, sequence};
-            } else {
-              // parse current frame
+            log::info<1>("DEBUG: drop={}, hold={}"sv, drop, hold);
+            if (drop)
               return {};
+            if (hold)
+              return {bytes, sequence_number};
+            // parse this message
+            if (!sbe::Parser::dispatch(handler, message, trace_info)) {
+              log::warn("{}"sv, debug::hex::Message{message});
+              log::fatal("Failed to parse message"sv);
             }
+            channel.last_sequence = {true, sequence_number};
+            log::info<1>("DEBUG: last_sequence={}/{}"sv, channel.last_sequence.first, channel.last_sequence.second);
+            return {};
           } else {
-            // failed to parse
+            // failed to parse frame
+            log::warn("Unexpected: frame"sv);
             return {};
           }
         })) {
+      // successfully parsed a message
+      // now process any withheld messages
+      while (!stop) {
+        log::info<1>("DEBUG: last_sequence={}/{}"sv, channel.last_sequence.first, channel.last_sequence.second);
+        auto [ready, last_sequence_number] = channel.last_sequence;
+        if (ready) {
+          // check next sequence number
+          auto sequence_number = last_sequence_number + 1;
+          if (channel.buffer.get(sequence_number, [&](auto &message) {
+                log::info<1>("DEBUG: found {}"sv, sequence_number);
+                // parse this message
+                if (!sbe::Parser::dispatch(handler, message, trace_info)) {
+                  log::warn("{}"sv, debug::hex::Message{message});
+                  log::fatal("Failed to parse message"sv);
+                }
+                channel.last_sequence = {true, sequence_number};
+              })) {
+          } else {
+            // does not exist
+            stop = true;
+          }
+        } else {
+          // not ready
+          stop = true;
+        }
+      }
     } else {
-      // full: reset
+      // full: no available buffer
+      log::warn("Reset buffer due to full"sv);
       channel.buffer.clear();
+      channel.last_sequence = {};
     }
   }
 }
@@ -352,9 +397,9 @@ void UDPIncremental::operator()(io::net::udp::Receiver::Read const &) {
   auto trace_info = server::create_trace_info();
   last_update_time_ = trace_info.source_receive_time;
   publish_stream_status(trace_info, ConnectionStatus::READY);  // first message will publish
-
-  // drain(*this, *receiver_, channel_);
-
+  drain(*this, *receiver_, channel_, trace_info);
+  /*
+  // XXX drop receive_buffer_
   while (receive_buffer_.append(*receiver_)) {
     profile_.parse([&]() {
       auto message = receive_buffer_.data();
@@ -367,6 +412,7 @@ void UDPIncremental::operator()(io::net::udp::Receiver::Read const &) {
       receive_buffer_.drain(std::size(message));
     });
   }
+  */
 }
 
 void UDPIncremental::operator()(io::net::udp::Receiver::Error const &error) {
@@ -376,7 +422,7 @@ void UDPIncremental::operator()(io::net::udp::Receiver::Error const &error) {
 // sbe::Parser::Handler
 
 void UDPIncremental::operator()(sbe::Frame const &frame) {
-  channel_.last_sequence = frame.sequence_number;
+  channel_.last_sequence = {true, frame.sequence_number};
 }
 
 void UDPIncremental::operator()(Trace<cme_mdp::AdminHeartbeat12> const &event, sbe::Frame const &frame) {
