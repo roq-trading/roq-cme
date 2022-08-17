@@ -354,7 +354,7 @@ void drain(auto &handler, auto &receiver, auto &channel, auto &trace_info) {
           } else {
             // failed to parse frame
             log::warn("Unexpected: frame"sv);
-            return {};
+            return {};  // XXX not sure
           }
         })) {
       // successfully parsed a message

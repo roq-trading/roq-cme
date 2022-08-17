@@ -29,10 +29,10 @@ struct Buffer final {
     auto index = *std::rbegin(available_);
     auto buffer = buffer_from_index(index);
     auto [size, sequence] = callback(buffer);
-    if (!size || has(sequence))
-      return false;
-    taken_.emplace_back(index, size, sequence);
-    available_.pop_back();
+    if (size && !has(sequence)) {
+      taken_.emplace_back(index, size, sequence);
+      available_.pop_back();
+    }
     return !std::empty(available_);
   }
 
