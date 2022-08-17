@@ -389,6 +389,10 @@ void drain(auto &handler, auto &receiver, auto &channel, auto &trace_info) {
       channel.buffer.clear();
       channel.last_sequence = {};
     }
+    log::info<1>(
+        "DEBUG: buffer len(available)={}, len(taken)={}"sv,
+        channel.buffer.DEBUG_size_available(),
+        channel.buffer.DEBUG_size_taken());
   }
 }
 }  // namespace

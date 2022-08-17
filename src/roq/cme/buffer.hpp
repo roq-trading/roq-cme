@@ -20,6 +20,9 @@ struct Buffer final {
   Buffer(Buffer &&) = default;
   Buffer(Buffer const &) = delete;
 
+  size_t DEBUG_size_available() const { return std::size(available_); }
+  size_t DEBUG_size_taken() const { return std::size(taken_); }
+
   bool empty() const { return std::empty(taken_); }
 
   template <typename Callback>
