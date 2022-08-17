@@ -40,6 +40,12 @@
       "type": "uint32_t",
       "default": 0,
       "description": "test"
+    },
+    {
+      "name": "test_drop",
+      "type": "uint32_t",
+      "default": 0,
+      "description": "test"
     }
   ]
 }

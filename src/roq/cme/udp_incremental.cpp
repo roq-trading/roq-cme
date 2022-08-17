@@ -337,6 +337,12 @@ void drain(auto &handler, auto &receiver, auto &channel, auto &trace_info) {
                   drop = sequence_number < next_sequence_number;
                 }
                 // test
+                if (flags::Common::test_drop() && !hold && !drop) {
+                  if ((sequence_number % flags::Common::test_drop()) == 0) {
+                    log::warn<1>("DEBUG: *** SIMULATE DROP ***"sv);
+                    drop = true;
+                  }
+                }
                 if (flags::Common::test_reordering() && !hold && !drop) {
                   if ((sequence_number % flags::Common::test_reordering()) == 0) {
                     log::warn<1>("DEBUG: *** SIMULATE REORDERING ***"sv);
