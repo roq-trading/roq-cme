@@ -34,7 +34,7 @@ class UDPIncremental final : public io::net::udp::Receiver::Handler, public sbe:
     virtual void operator()(Trace<StatisticsUpdate const> const &, bool is_last) = 0;
   };
 
-  UDPIncremental(Handler &, io::Context &, uint16_t stream_id, Shared &, Channel &);
+  UDPIncremental(Handler &, io::Context &, uint16_t stream_id, Shared &, Channel &, Priority);
 
   UDPIncremental(UDPIncremental const &) = delete;
   UDPIncremental(UDPIncremental &&) = delete;

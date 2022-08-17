@@ -44,9 +44,8 @@ struct create_metrics final : public core::metrics::Factory {
       : core::metrics::Factory(server::Flags::name(), group, function) {}
 };
 
-auto create_receiver(auto &handler, auto &context, auto &shared, auto &channel_id) {
-  auto [multicast_address, port] =
-      shared.get_multicast_config(channel_id, multicast::Type::INCREMENTAL, Priority::PRIMARY);
+auto create_receiver(auto &handler, auto &context, auto &shared, auto &channel_id, Priority priority) {
+  auto [multicast_address, port] = shared.get_multicast_config(channel_id, multicast::Type::INCREMENTAL, priority);
   log::info<0>("Create multicast socket port={}"sv, port);
   auto receiver = context.create_udp_receiver(handler, io::NetworkAddress{port});
   log::info<0>(R"(Local interface is "{}")"sv, flags::Multicast::multicast_local_interface());
@@ -265,9 +264,9 @@ void emplace_back(
 }  // namespace
 
 UDPIncremental::UDPIncremental(
-    Handler &handler, io::Context &context, uint16_t stream_id, Shared &shared, Channel &channel)
+    Handler &handler, io::Context &context, uint16_t stream_id, Shared &shared, Channel &channel, Priority priority)
     : handler_(handler), stream_id_(stream_id), name_(fmt::format("{}:{}{}"sv, stream_id_, NAME, channel.channel_id)),
-      receiver_(create_receiver(*this, context, shared, channel.channel_id)),
+      receiver_(create_receiver(*this, context, shared, channel.channel_id, priority)),
       counter_{
           .disconnect = create_metrics(name_, "disconnect"sv),
       },

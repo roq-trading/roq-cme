@@ -27,7 +27,7 @@ auto create_udp_instrument_definition(auto &gateway, auto &context, auto &stream
   std::vector<std::unique_ptr<UDPInstrumentDefinition>> result;
   if (std::empty(flags::Common::secdef_config_file())) {
     for (auto &channel : channels)
-      result.emplace_back(std::make_unique<UDPInstrumentDefinition>(gateway, context, stream_id, shared, channel));
+      result.emplace_back(std::make_unique<UDPInstrumentDefinition>(gateway, context, ++stream_id, shared, channel));
   } else {
     log::warn("The instrument definitions channel is not used when the secdef file was chosen"sv);
   }
@@ -37,14 +37,18 @@ auto create_udp_instrument_definition(auto &gateway, auto &context, auto &stream
 auto create_udp_mbp_market_recovery(auto &gateway, auto &context, auto &stream_id, auto &shared, auto &channels) {
   std::vector<std::unique_ptr<UDPMBPMarketRecovery>> result;
   for (auto &channel : channels)
-    result.emplace_back(std::make_unique<UDPMBPMarketRecovery>(gateway, context, stream_id, shared, channel));
+    result.emplace_back(std::make_unique<UDPMBPMarketRecovery>(gateway, context, ++stream_id, shared, channel));
   return result;
 }
 
 auto create_udp_incremental(auto &gateway, auto &context, auto &stream_id, auto &shared, auto &channels) {
   std::vector<std::unique_ptr<UDPIncremental>> result;
-  for (auto &channel : channels)
-    result.emplace_back(std::make_unique<UDPIncremental>(gateway, context, stream_id, shared, channel));
+  for (auto &channel : channels) {
+    result.emplace_back(
+        std::make_unique<UDPIncremental>(gateway, context, ++stream_id, shared, channel, Priority::PRIMARY));
+    result.emplace_back(
+        std::make_unique<UDPIncremental>(gateway, context, ++stream_id, shared, channel, Priority::SECONDARY));
+  }
   return result;
 }
 }  // namespace
@@ -52,9 +56,9 @@ auto create_udp_incremental(auto &gateway, auto &context, auto &stream_id, auto 
 Gateway::Gateway(server::Dispatcher &dispatcher, Config const &)
     : dispatcher_(dispatcher), context_(io::engine::ContextFactory::create_libevent()), shared_(dispatcher_),
       channels_(create_channels()),
-      udp_instrument_definition_(create_udp_instrument_definition(*this, *context_, ++stream_id_, shared_, channels_)),
-      udp_mbp_market_recovery_(create_udp_mbp_market_recovery(*this, *context_, ++stream_id_, shared_, channels_)),
-      udp_incremental_(create_udp_incremental(*this, *context_, ++stream_id_, shared_, channels_)) {
+      udp_instrument_definition_(create_udp_instrument_definition(*this, *context_, stream_id_, shared_, channels_)),
+      udp_mbp_market_recovery_(create_udp_mbp_market_recovery(*this, *context_, stream_id_, shared_, channels_)),
+      udp_incremental_(create_udp_incremental(*this, *context_, stream_id_, shared_, channels_)) {
 }
 
 void Gateway::operator()(Event<Start> const &event) {
