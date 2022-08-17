@@ -400,6 +400,7 @@ void UDPIncremental::operator()(io::net::udp::Receiver::Read const &) {
   auto trace_info = server::create_trace_info();
   last_update_time_ = trace_info.source_receive_time;
   publish_stream_status(trace_info, ConnectionStatus::READY);  // first message will publish
+  log::info<1>("DEBUG: stream_id={}"sv, stream_id_);
   drain(*this, *receiver_, channel_, trace_info);
   /*
   // XXX drop receive_buffer_
