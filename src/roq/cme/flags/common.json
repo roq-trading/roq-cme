@@ -34,6 +34,12 @@
       "type": "std::string",
       "validator": "roq::core::flags::Path<std::string>",
       "description": "config file (path)"
+    },
+    {
+      "name": "test_reordering",
+      "type": "uint32_t",
+      "default": 0,
+      "description": "test"
     }
   ]
 }
