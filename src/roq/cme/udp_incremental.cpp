@@ -340,6 +340,7 @@ void drain(auto &handler, auto &receiver, auto &channel, auto &trace_info) {
                 if (!hold && !drop) {
                   if ((sequence_number % 100) == 0) {
                     log::warn<1>("DEBUG: *** SIMULATE REORDERING ***"sv);
+                    hold = true;
                   }
                 }
               })) {
