@@ -2,6 +2,8 @@
 
 #include "roq/cme/udp_incremental.hpp"
 
+#include <fmt/ranges.h>
+
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
@@ -311,7 +313,8 @@ void UDPIncremental::operator()(Event<Timer> const &event) {
 }
 
 namespace {
-void drain(auto &handler, auto &receiver, auto &channel, auto &trace_info) {
+// this is general logic
+void drain(auto &receiver, auto &channel, auto parse, auto reset) {
   using value_type = typename decltype(channel.buffer)::value_type;
   for (auto stop = false; !stop;) {
     if (channel.buffer.next([&](auto buffer) -> std::pair<size_t, value_type> {
@@ -336,7 +339,7 @@ void drain(auto &handler, auto &receiver, auto &channel, auto &trace_info) {
                   hold = sequence_number > next_sequence_number;
                   drop = sequence_number < next_sequence_number;
                 }
-                // test
+                // TEST >>>
                 if (flags::Common::test_drop() && !hold && !drop) {
                   if ((sequence_number % flags::Common::test_drop()) == 0) {
                     log::warn<1>("DEBUG: *** SIMULATE DROP ***"sv);
@@ -350,6 +353,7 @@ void drain(auto &handler, auto &receiver, auto &channel, auto &trace_info) {
                     stop = true;
                   }
                 }
+                // <<< TEST
               })) {
             log::info<1>("DEBUG: drop={}, hold={}"sv, drop, hold);
             if (drop)
@@ -357,23 +361,20 @@ void drain(auto &handler, auto &receiver, auto &channel, auto &trace_info) {
             if (hold)
               return {bytes, sequence_number};
             // parse this message
-            if (!sbe::Parser::dispatch(handler, message, trace_info)) {
-              log::warn("{}"sv, debug::hex::Message{message});
-              log::fatal("Failed to parse message"sv);
-            }
+            parse(message);
             channel.last_sequence = {true, sequence_number};
-            log::info<1>("DEBUG: last_sequence={}/{}"sv, channel.last_sequence.first, channel.last_sequence.second);
+            log::info<1>("DEBUG: last_sequence={}"sv, channel.last_sequence);
             return {};
           } else {
             // failed to parse frame
             log::warn("Unexpected: frame"sv);
-            return {};  // XXX not sure
+            return {};  // XXX not sure what to do here
           }
         })) {
       // successfully parsed a message
       // now process any withheld messages
       while (!stop) {
-        log::info<1>("DEBUG: last_sequence={}/{}"sv, channel.last_sequence.first, channel.last_sequence.second);
+        log::info<1>("DEBUG: last_sequence={}"sv, channel.last_sequence.first);
         auto [ready, last_sequence_number] = channel.last_sequence;
         if (ready) {
           // check next sequence number
@@ -381,10 +382,7 @@ void drain(auto &handler, auto &receiver, auto &channel, auto &trace_info) {
           if (channel.buffer.get(sequence_number, [&](auto &message) {
                 log::info<1>("DEBUG: found {}"sv, sequence_number);
                 // parse this message
-                if (!sbe::Parser::dispatch(handler, message, trace_info)) {
-                  log::warn("{}"sv, debug::hex::Message{message});
-                  log::fatal("Failed to parse message"sv);
-                }
+                parse(message);
                 channel.last_sequence = {true, sequence_number};
               })) {
           } else {
@@ -398,9 +396,11 @@ void drain(auto &handler, auto &receiver, auto &channel, auto &trace_info) {
       }
     } else {
       // full: no available buffer
-      log::warn("Reset buffer due to full"sv);
+      log::warn("*** RESET BUFFER DUE TO FULL ***"sv);
       channel.buffer.clear();
       channel.last_sequence = {};
+      reset();
+      // XXX resubscribe
     }
     log::info<1>(
         "DEBUG: buffer len(available)={}, len(taken)={}"sv,
@@ -415,22 +415,17 @@ void UDPIncremental::operator()(io::net::udp::Receiver::Read const &) {
   last_update_time_ = trace_info.source_receive_time;
   publish_stream_status(trace_info, ConnectionStatus::READY);  // first message will publish
   log::info<1>("DEBUG: stream_id={}"sv, stream_id_);
-  drain(*this, *receiver_, channel_, trace_info);
-  /*
-  // XXX drop receive_buffer_
-  while (receive_buffer_.append(*receiver_)) {
-    profile_.parse([&]() {
-      auto message = receive_buffer_.data();
-      log::info<5>("received {} byte(s)"sv, std::size(message));
-      log::info<5>("{}"sv, debug::hex::Message{message});
-      if (!sbe::Parser::dispatch(*this, message, trace_info)) {
-        log::warn("{}"sv, debug::hex::Message{message});
-        log::fatal("Failed to parse message"sv);
-      }
-      receive_buffer_.drain(std::size(message));
-    });
-  }
-  */
+  auto parse = [&](auto &message) {
+    if (!sbe::Parser::dispatch(*this, message, trace_info)) {
+      log::warn("{}"sv, debug::hex::Message{message});
+      log::fatal("Failed to parse message"sv);
+    }
+  };
+  auto reset = [&]() {
+    // resubscribe
+    log::warn("*** NEED RESUBSCRIPTION HERE ***"sv);
+  };
+  drain(*receiver_, channel_, parse, reset);
 }
 
 void UDPIncremental::operator()(io::net::udp::Receiver::Error const &error) {
