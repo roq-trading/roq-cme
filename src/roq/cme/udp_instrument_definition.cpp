@@ -43,16 +43,17 @@ struct create_metrics final : public core::metrics::Factory {
       : core::metrics::Factory(server::Flags::name(), group, function) {}
 };
 
-auto create_receiver(auto &handler, auto &context, auto &shared, auto &channel_id) {
+auto create_receiver(auto &handler, auto &context, auto &shared, auto &channel_id, auto priority) {
+  log::info(R"(Create channel_id="{}, priority={}")"sv, channel_id, priority);
   auto [multicast_address, port] =
-      shared.get_multicast_config(channel_id, multicast::Type::INSTRUMENT_REPLAY, Priority::PRIMARY);
-  log::info<0>("Create multicast socket port={}"sv, port);
+      shared.get_multicast_config(channel_id, multicast::Type::INSTRUMENT_REPLAY, priority);
+  log::info("Create multicast receiver port={}"sv, port);
   auto receiver = context.create_udp_receiver(handler, io::NetworkAddress{port});
-  log::info<0>(R"(Local interface is "{}")"sv, flags::Multicast::multicast_local_interface());
+  log::info(R"(Local interface is "{}")"sv, flags::Multicast::multicast_local_interface());
   std::string local_interface{flags::Multicast::multicast_local_interface()};
   struct in_addr local = {};
   local.s_addr = inet_addr(local_interface.c_str());
-  log::info<0>(R"(Add membership "{}")"sv, multicast_address);
+  log::info(R"(Add membership "{}")"sv, multicast_address);
   struct in_addr multicast = {};
   multicast.s_addr = inet_addr(multicast_address.c_str());
   (*receiver).add_membership(io::NetworkAddress{0, multicast}, io::NetworkAddress{0, local});
@@ -80,7 +81,7 @@ void create_security(auto &shared, auto &value, Callback callback) {
 UDPInstrumentDefinition::UDPInstrumentDefinition(
     Handler &handler, io::Context &context, uint16_t stream_id, Shared &shared, Channel &channel)
     : handler_(handler), stream_id_(stream_id), name_(fmt::format("{}:{}{}"sv, stream_id_, NAME, channel.channel_id)),
-      receiver_(create_receiver(*this, context, shared, channel.channel_id)),
+      receiver_(create_receiver(*this, context, shared, channel.channel_id, Priority::PRIMARY)),
       counter_{
           .disconnect = create_metrics(name_, "disconnect"sv),
       },
@@ -158,7 +159,6 @@ void UDPInstrumentDefinition::operator()(Trace<cme_mdp::ChannelReset4> const &ev
   profile_.channel_reset([&]() {
     auto &[trace_info, value] = event;
     log::info<5>("channel_reset={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
-    log::info<1>("DEBUG: HERE"sv);
   });
 }
 
@@ -412,49 +412,42 @@ void UDPInstrumentDefinition::operator()(
 void UDPInstrumentDefinition::operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
   log::info<5>("snapshot_full_refresh={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
-  log::info<1>("DEBUG: HERE"sv);
 }
 
 void UDPInstrumentDefinition::operator()(
     Trace<cme_mdp::SnapshotFullRefreshLongQty69> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
   log::info<5>("snapshot_full_refresh_long_qty={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
-  log::info<1>("DEBUG: HERE"sv);
 }
 
 void UDPInstrumentDefinition::operator()(
     Trace<cme_mdp::MDIncrementalRefreshBook46> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
   log::info<5>("md_incremental_refresh_book={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
-  log::info<1>("DEBUG: HERE"sv);
 }
 
 void UDPInstrumentDefinition::operator()(
     Trace<cme_mdp::MDIncrementalRefreshBookLongQty64> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
   log::info<5>("md_incremental_refresh_book_long_qty={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
-  log::info<1>("DEBUG: HERE"sv);
 }
 
 void UDPInstrumentDefinition::operator()(
     Trace<cme_mdp::SnapshotFullRefreshOrderBook53> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
   log::info<5>("snapshot_full_refresh_order_book={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
-  log::info<1>("DEBUG: HERE"sv);
 }
 
 void UDPInstrumentDefinition::operator()(
     Trace<cme_mdp::MDIncrementalRefreshOrderBook47> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
   log::info<5>("md_incremental_refresh_order_book={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
-  log::info<1>("DEBUG: HERE"sv);
 }
 
 void UDPInstrumentDefinition::operator()(
     Trace<cme_mdp::MDIncrementalRefreshTradeSummary48> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
   log::info<5>("md_incremental_refresh_trade_summary={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
-  log::info<1>("DEBUG: HERE"sv);
 }
 
 void UDPInstrumentDefinition::operator()(
@@ -462,21 +455,18 @@ void UDPInstrumentDefinition::operator()(
   auto &[trace_info, value] = event;
   log::info<5>(
       "md_incremental_refresh_trade_summary_long_qty={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
-  log::info<1>("DEBUG: HERE"sv);
 }
 
 void UDPInstrumentDefinition::operator()(
     Trace<cme_mdp::MDIncrementalRefreshDailyStatistics49> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
   log::info<5>("md_incremental_refresh_daily_statistics={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
-  log::info<1>("DEBUG: HERE"sv);
 }
 
 void UDPInstrumentDefinition::operator()(
     Trace<cme_mdp::MDIncrementalRefreshSessionStatistics51> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
   log::info<5>("md_incremental_refresh_session_statistics={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
-  log::info<1>("DEBUG: HERE"sv);
 }
 
 void UDPInstrumentDefinition::operator()(
@@ -484,28 +474,24 @@ void UDPInstrumentDefinition::operator()(
   auto &[trace_info, value] = event;
   log::info<5>(
       "md_incremental_refresh_session_statistics_long_qty={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
-  log::info<1>("DEBUG: HERE"sv);
 }
 
 void UDPInstrumentDefinition::operator()(
     Trace<cme_mdp::MDIncrementalRefreshVolume37> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
   log::info<5>("md_incremental_refresh_volume={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
-  log::info<1>("DEBUG: HERE"sv);
 }
 
 void UDPInstrumentDefinition::operator()(
     Trace<cme_mdp::MDIncrementalRefreshVolumeLongQty66> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
   log::info<5>("md_incremental_refresh_volume_long_qty={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
-  log::info<1>("DEBUG: HERE"sv);
 }
 
 void UDPInstrumentDefinition::operator()(
     Trace<cme_mdp::MDIncrementalRefreshLimitsBanding50> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
   log::info<5>("md_incremental_refresh_limits_banding={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
-  log::info<1>("DEBUG: HERE"sv);
 }
 
 void UDPInstrumentDefinition::publish_stream_status(TraceInfo const &trace_info, ConnectionStatus connection_status) {

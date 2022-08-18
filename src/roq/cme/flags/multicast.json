@@ -24,6 +24,18 @@
       "validator": "roq::core::flags::TimePeriod",
       "default": "90s",
       "description": "Timeout when waiting for snapshot"
+    },
+    {
+      "name": "multicast_buffer_size",
+      "type": "uint32_t",
+      "default": "2048",
+      "description": "Buffer size (at least the maximum possible size of a datagram)"
+    },
+    {
+      "name": "multicast_buffer_depth",
+      "type": "uint32_t",
+      "default": "8",
+      "description": "Multicast buffer depth (used for re-ordering)"
     }
   ]
 }

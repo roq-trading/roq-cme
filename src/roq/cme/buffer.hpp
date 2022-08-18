@@ -15,13 +15,10 @@ template <typename T>
 struct Buffer final {
   using value_type = T;
 
-  Buffer(size_t buffer_size, size_t repeat) : buffer_size_(buffer_size), buffer_(buffer_size * repeat) { initialize(); }
+  Buffer(size_t size, size_t depth) : buffer_size_(size), buffer_(size * depth) { initialize(); }
 
   Buffer(Buffer &&) = default;
   Buffer(Buffer const &) = delete;
-
-  size_t DEBUG_size_available() const { return std::size(available_); }
-  size_t DEBUG_size_taken() const { return std::size(taken_); }
 
   bool empty() const { return std::empty(taken_); }
 

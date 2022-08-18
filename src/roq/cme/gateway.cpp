@@ -19,7 +19,8 @@ auto create_channels() {
   std::vector<Channel> result;
   auto &channel_ids = flags::Multicast::multicast_channel_ids();
   for (auto &channel_id : channel_ids)
-    result.emplace_back(channel_id);
+    result.emplace_back(
+        channel_id, flags::Multicast::multicast_buffer_size(), flags::Multicast::multicast_buffer_depth());
   return result;
 }
 

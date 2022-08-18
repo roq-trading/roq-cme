@@ -47,14 +47,15 @@ struct create_metrics final : public core::metrics::Factory {
 };
 
 auto create_receiver(auto &handler, auto &context, auto &shared, auto &channel_id, Priority priority) {
+  log::info(R"(Create channel_id="{}, priority={}")"sv, channel_id, priority);
   auto [multicast_address, port] = shared.get_multicast_config(channel_id, multicast::Type::INCREMENTAL, priority);
-  log::info<0>("Create multicast socket port={}"sv, port);
+  log::info("Create multicast receiver port={}"sv, port);
   auto receiver = context.create_udp_receiver(handler, io::NetworkAddress{port});
-  log::info<0>(R"(Local interface is "{}")"sv, flags::Multicast::multicast_local_interface());
+  log::info(R"(Local interface is "{}")"sv, flags::Multicast::multicast_local_interface());
   std::string local_interface{flags::Multicast::multicast_local_interface()};
   struct in_addr local = {};
   local.s_addr = inet_addr(local_interface.c_str());
-  log::info<0>(R"(Add membership "{}")"sv, multicast_address);
+  log::info(R"(Add membership "{}")"sv, multicast_address);
   struct in_addr multicast = {};
   multicast.s_addr = inet_addr(multicast_address.c_str());
   (*receiver).add_membership(io::NetworkAddress{0, multicast}, io::NetworkAddress{0, local});
@@ -320,19 +321,20 @@ void drain(auto &receiver, auto &channel, auto parse, auto reset) {
     if (channel.buffer.next([&](auto buffer) -> std::pair<size_t, value_type> {
           // read into buffer
           auto bytes = receiver.recv(buffer);
-          log::info<1>("DEBUG: read {} byte(s)"sv, bytes);
+          log::info<5>("Received {} byte(s)"sv, bytes);
           if (!bytes) {
             stop = true;
             return {};
           }
           // parse message
           std::span message{std::data(buffer), bytes};
+          log::info<5>("{}"sv, debug::hex::Message{message});
           bool hold = false, drop = false;
           value_type sequence_number = {};
           if (sbe::Frame::parse(message, [&](auto &frame) {
                 // check sequence number
                 sequence_number = frame.sequence_number;
-                log::info<1>("DEBUG: sequence_number={}"sv, sequence_number);
+                log::info<5>("sequence_number={}"sv, sequence_number);
                 auto [ready, last_sequence_number] = channel.last_sequence;
                 if (ready) {
                   auto next_sequence_number = last_sequence_number + 1;
@@ -342,20 +344,19 @@ void drain(auto &receiver, auto &channel, auto parse, auto reset) {
                 // TEST >>>
                 if (flags::Common::test_drop() && !hold && !drop) {
                   if ((sequence_number % flags::Common::test_drop()) == 0) {
-                    log::warn<1>("DEBUG: *** SIMULATE DROP ***"sv);
+                    log::warn("DEBUG: *** SIMULATE DROP ***"sv);
                     drop = true;
                   }
                 }
                 if (flags::Common::test_reordering() && !hold && !drop) {
                   if ((sequence_number % flags::Common::test_reordering()) == 0) {
-                    log::warn<1>("DEBUG: *** SIMULATE REORDERING ***"sv);
+                    log::warn("DEBUG: *** SIMULATE REORDERING ***"sv);
                     hold = true;
                     stop = true;
                   }
                 }
                 // <<< TEST
               })) {
-            log::info<1>("DEBUG: drop={}, hold={}"sv, drop, hold);
             if (drop)
               return {};
             if (hold)
@@ -363,24 +364,21 @@ void drain(auto &receiver, auto &channel, auto parse, auto reset) {
             // parse this message
             parse(message);
             channel.last_sequence = {true, sequence_number};
-            log::info<1>("DEBUG: last_sequence={}"sv, channel.last_sequence);
             return {};
           } else {
             // failed to parse frame
-            log::warn("Unexpected: frame"sv);
+            log::warn("Unexpected"sv);
             return {};  // XXX not sure what to do here
           }
         })) {
       // successfully parsed a message
       // now process any withheld messages
       while (!stop) {
-        log::info<1>("DEBUG: last_sequence={}"sv, channel.last_sequence.first);
         auto [ready, last_sequence_number] = channel.last_sequence;
         if (ready) {
           // check next sequence number
           auto sequence_number = last_sequence_number + 1;
           if (channel.buffer.get(sequence_number, [&](auto &message) {
-                log::info<1>("DEBUG: found {}"sv, sequence_number);
                 // parse this message
                 parse(message);
                 channel.last_sequence = {true, sequence_number};
@@ -396,16 +394,12 @@ void drain(auto &receiver, auto &channel, auto parse, auto reset) {
       }
     } else {
       // full: no available buffer
-      log::warn("*** RESET BUFFER DUE TO FULL ***"sv);
+      log::warn<1>("*** RESET (BUFFER FULL) ***"sv);
       channel.buffer.clear();
       channel.last_sequence = {};
       reset();
       // XXX resubscribe
     }
-    log::info<1>(
-        "DEBUG: buffer len(available)={}, len(taken)={}"sv,
-        channel.buffer.DEBUG_size_available(),
-        channel.buffer.DEBUG_size_taken());
   }
 }
 }  // namespace
@@ -414,7 +408,6 @@ void UDPIncremental::operator()(io::net::udp::Receiver::Read const &) {
   auto trace_info = server::create_trace_info();
   last_update_time_ = trace_info.source_receive_time;
   publish_stream_status(trace_info, ConnectionStatus::READY);  // first message will publish
-  log::info<1>("DEBUG: stream_id={}"sv, stream_id_);
   auto parse = [&](auto &message) {
     if (!sbe::Parser::dispatch(*this, message, trace_info)) {
       log::warn("{}"sv, debug::hex::Message{message});
@@ -422,7 +415,7 @@ void UDPIncremental::operator()(io::net::udp::Receiver::Read const &) {
     }
   };
   auto reset = [&]() {
-    log::warn<1>("*** RESUBSCRIBE ***"sv);
+    log::warn<1>("*** RESUBSCRIBE ALL SYMBOLS ***"sv);
     for (auto &[security_id, collector] : channel_.mbp_collector) {
       if (collector.ready()) {
         get_security(shared_, security_id, [&](auto &security) {
@@ -443,6 +436,7 @@ void UDPIncremental::operator()(io::net::udp::Receiver::Read const &) {
         });
       }
       collector.clear();
+      channel_.mbp_last_sequence.erase(security_id);
     }
   };
   drain(*receiver_, channel_, parse, reset);
@@ -475,45 +469,38 @@ void UDPIncremental::operator()(Trace<cme_mdp::ChannelReset4> const &event, sbe:
   profile_.channel_reset([&]() {
     auto &[trace_info, value] = event;
     log::info<5>("channel_reset={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
-    log::info<1>("DEBUG: HERE"sv);
   });
 }
 
 void UDPIncremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
   log::info<5>("md_instrument_definition_future={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
-  log::info<1>("DEBUG: HERE"sv);
 }
 
 void UDPIncremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionOption55> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
   log::info<5>("md_instrument_definition_option={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
-  log::info<1>("DEBUG: HERE"sv);
 }
 
 void UDPIncremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionSpread56> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
   log::info<5>("md_instrument_definition_spread={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
-  log::info<1>("DEBUG: HERE"sv);
 }
 
 void UDPIncremental::operator()(
     Trace<cme_mdp::MDInstrumentDefinitionFixedIncome57> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
   log::info<5>("md_instrument_definition_fixed_income={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
-  log::info<1>("DEBUG: HERE"sv);
 }
 
 void UDPIncremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionRepo58> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
   log::info<5>("md_instrument_definition_repo={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
-  log::info<1>("DEBUG: HERE"sv);
 }
 
 void UDPIncremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionFX63> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
   log::info<5>("md_instrument_definition_fx={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
-  log::info<1>("DEBUG: HERE"sv);
 }
 
 void UDPIncremental::operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &event, sbe::Frame const &frame) {
@@ -543,7 +530,6 @@ void UDPIncremental::operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &eve
         create_trace_and_dispatch(handler_, trace_info, std::as_const(top_of_book), true);
       }
       if (!(std::empty(bids) && std::empty(bids))) {
-        log::info<1>("DEBUG: HERE"sv);
         dispatch_market_by_price(trace_info, security_id, security, exchange_sequence, exchange_time_utc, bids, asks);
       }
       if (!std::empty(statistics)) {
@@ -565,7 +551,6 @@ void UDPIncremental::operator()(Trace<cme_mdp::SnapshotFullRefreshLongQty69> con
   profile_.snapshot_full_refresh_long_qty([&]() {
     auto &[trace_info, value] = event;
     log::info<5>("snapshot_full_refresh_long_qty={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
-    log::info<1>("DEBUG: HERE"sv);
   });
 }
 
@@ -624,7 +609,6 @@ void UDPIncremental::operator()(
   profile_.md_incremental_refresh_book_long_qty([&]() {
     auto &[trace_info, value] = event;
     log::info<5>("md_incremental_refresh_book_long_qty={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
-    log::info<1>("DEBUG: HERE"sv);
   });
 }
 
@@ -713,7 +697,6 @@ void UDPIncremental::operator()(
   profile_.md_incremental_refresh_volume_long_qty([&]() {
     auto &[trace_info, value] = event;
     log::info<5>("md_incremental_refresh_volume_long_qty={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
-    log::info<1>("DEBUG: HERE"sv);
   });
 }
 
@@ -721,7 +704,6 @@ void UDPIncremental::operator()(
     Trace<cme_mdp::MDIncrementalRefreshLimitsBanding50> const &event, sbe::Frame const &frame) {
   auto &[trace_info, value] = event;
   log::info<5>("md_incremental_refresh_limits_banding={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
-  log::info<1>("DEBUG: HERE"sv);
 }
 
 void UDPIncremental::dispatch_market_by_price(
@@ -732,8 +714,6 @@ void UDPIncremental::dispatch_market_by_price(
     auto exchange_time_utc,
     auto &bids,
     auto &asks) {
-  // log::info<1>("DEBUG: bids=[{}]"sv, fmt::join(static_cast<std::span<MBPUpdate>>(bids), ", "sv));
-  // log::info<1>("DEBUG: asks=[{}]"sv, fmt::join(static_cast<std::span<MBPUpdate>>(asks), ", "sv));
   channel_.mbp_last_sequence[security_id] = exchange_sequence;
   auto &collector = channel_.mbp_collector[security_id];
   try {
@@ -755,12 +735,6 @@ void UDPIncremental::dispatch_market_by_price(
       create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true, false);
     };
     auto publish_snapshot = [&](auto &bids, auto &asks, auto exchange_sequence) {
-      log::info<1>(
-          R"(DEBUG: SNAPSHOT exchange="{}", symbol="{}", security_id={} (exchange_sequence={}))"sv,
-          security.exchange,
-          security.symbol,
-          security_id,
-          exchange_sequence);
       MarketByPriceUpdate const market_by_price_update{
           .stream_id = stream_id_,
           .exchange = security.exchange,
@@ -777,20 +751,8 @@ void UDPIncremental::dispatch_market_by_price(
       create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true, false);
     };
     auto request_snapshot = [&](auto retries) {
-      log::info<1>(
-          R"(DEBUG: REQUEST exchange="{}", symbol="{}", security_id={} (retries={}))"sv,
-          security.exchange,
-          security.symbol,
-          security_id,
-          retries);
-      /*
-      if (Flags::ws_mbp_request_max_retries() && Flags::ws_mbp_request_max_retries() < retries) {
-        log::fatal(R"(Unexpected: symbol="{}", retries={})"sv, symbol, retries);
-      }
-      */
-      auto res = channel_.mbp_resubscribe.emplace(security_id, exchange_sequence);
-      if (res.second)
-        log::info<1>("DEBUG: RESUBSCRIBE security_id={}, exchange_sequence={}"sv, security_id, exchange_sequence);
+      channel_.mbp_resubscribe.emplace(security_id, exchange_sequence);
+      channel_.mbp_last_sequence.erase(security_id);
     };
     collector(
         bids,
@@ -806,9 +768,7 @@ void UDPIncremental::dispatch_market_by_price(
         R"(RESUBSCRIBE exchange="{}", symbol="{}", security_id={})"sv, security.exchange, security.symbol, security_id);
     // XXX HANS publish stale
     collector.clear();
-    auto res = channel_.mbp_resubscribe.emplace(security_id, exchange_sequence);
-    if (res.second)
-      log::info<1>("DEBUG: RESUBSCRIBE security_id={}"sv, security_id);
+    channel_.mbp_resubscribe.emplace(security_id, exchange_sequence);
     channel_.mbp_last_sequence.erase(security_id);
   }
 }

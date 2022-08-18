@@ -15,7 +15,7 @@ namespace roq {
 namespace cme {
 
 struct Channel final {
-  explicit Channel(std::string_view const &channel_id);
+  Channel(std::string_view const &channel_id, size_t buffer_size, size_t buffer_depth);
 
   Channel(Channel &&) = default;
   Channel(Channel const &) = delete;

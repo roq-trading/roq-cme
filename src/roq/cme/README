@@ -1,6 +1,4 @@
 missing:
-- reordering datagrams
-- A+B correlation
 - external latency?
 - sequence number overflow
 - special md update actions? (delete-thru, ...)
