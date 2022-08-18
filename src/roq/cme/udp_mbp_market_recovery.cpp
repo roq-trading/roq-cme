@@ -513,7 +513,7 @@ void UDPMBPMarketRecovery::dispatch_market_by_price(
       shared_(event, true, [&](auto &market_by_price) { collector.apply(market_by_price, exchange_sequence, false); });
       channel_.mbp_resubscribe.erase(security_id);  // remove
     };
-    auto request_snapshot = [&](auto retries) {
+    auto request_snapshot = [&]([[maybe_unused]] auto retries) {
       // note! wait for next snapshot
       channel_.mbp_resubscribe.emplace(security_id, exchange_sequence);
     };

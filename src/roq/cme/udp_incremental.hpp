@@ -111,7 +111,7 @@ class UDPIncremental final : public io::net::udp::Receiver::Handler, public sbe:
   io::Buffer receive_buffer_;
   // metrics
   struct {
-    core::metrics::Counter disconnect;
+    core::metrics::Counter disconnect, sequence_reset;
   } counter_;
   struct {
     core::metrics::Profile parse,                                             //

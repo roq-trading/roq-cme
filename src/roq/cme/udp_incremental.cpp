@@ -272,6 +272,7 @@ UDPIncremental::UDPIncremental(
       receiver_(create_receiver(*this, context, shared, channel.channel_id, priority)),
       counter_{
           .disconnect = create_metrics(name_, "disconnect"sv),
+          .sequence_reset = create_metrics(name_, "sequence_reset"sv),
       },
       profile_{
           .parse = create_metrics(name_, "parse"sv),
@@ -415,6 +416,7 @@ void UDPIncremental::operator()(io::net::udp::Receiver::Read const &) {
     }
   };
   auto reset = [&]() {
+    ++counter_.sequence_reset;
     log::warn<1>("*** RESUBSCRIBE ALL SYMBOLS ***"sv);
     for (auto &[security_id, collector] : channel_.mbp_collector) {
       if (collector.ready()) {
@@ -750,7 +752,7 @@ void UDPIncremental::dispatch_market_by_price(
       };
       create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true, false);
     };
-    auto request_snapshot = [&](auto retries) {
+    auto request_snapshot = [&]([[maybe_unused]] auto retries) {
       channel_.mbp_resubscribe.emplace(security_id, exchange_sequence);
       channel_.mbp_last_sequence.erase(security_id);
     };
@@ -875,6 +877,7 @@ void UDPIncremental::publish_stream_status(TraceInfo const &trace_info, Connecti
 void UDPIncremental::operator()(metrics::Writer &writer) {
   writer  //
       .write(counter_.disconnect, metrics::COUNTER)
+      .write(counter_.sequence_reset, metrics::COUNTER)
       .write(profile_.parse, metrics::PROFILE)
       .write(profile_.admin_heartbeat, metrics::PROFILE)
       .write(profile_.channel_reset, metrics::PROFILE)
