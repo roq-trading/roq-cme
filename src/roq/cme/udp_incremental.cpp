@@ -422,8 +422,28 @@ void UDPIncremental::operator()(io::net::udp::Receiver::Read const &) {
     }
   };
   auto reset = [&]() {
-    // resubscribe
-    log::warn("*** NEED RESUBSCRIPTION HERE ***"sv);
+    log::warn<1>("*** RESUBSCRIBE ***"sv);
+    for (auto &[security_id, collector] : channel_.mbp_collector) {
+      if (collector.ready()) {
+        get_security(shared_, security_id, [&](auto &security) {
+          MarketByPriceUpdate const market_by_price_update{
+              .stream_id = stream_id_,
+              .exchange = security.exchange,
+              .symbol = security.symbol,
+              .bids = {},
+              .asks = {},
+              .update_type = UpdateType::STALE,
+              .exchange_time_utc = {},
+              .exchange_sequence = {},
+              .price_decimals = {},
+              .quantity_decimals = {},
+              .checksum = {},
+          };
+          create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true, false);
+        });
+      }
+      collector.clear();
+    }
   };
   drain(*receiver_, channel_, parse, reset);
 }
@@ -718,66 +738,69 @@ void UDPIncremental::dispatch_market_by_price(
   auto &collector = channel_.mbp_collector[security_id];
   try {
     auto last_exchange_sequence = collector.last_sequence();  // note! the protocol doesn't tell us
+    auto publish_update = [&](auto &bids, auto &asks) {
+      MarketByPriceUpdate const market_by_price_update{
+          .stream_id = stream_id_,
+          .exchange = security.exchange,
+          .symbol = security.symbol,
+          .bids = bids,
+          .asks = asks,
+          .update_type = UpdateType::INCREMENTAL,
+          .exchange_time_utc = exchange_time_utc,
+          .exchange_sequence = exchange_sequence,
+          .price_decimals = {},
+          .quantity_decimals = {},
+          .checksum = {},
+      };
+      create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true, false);
+    };
+    auto publish_snapshot = [&](auto &bids, auto &asks, auto exchange_sequence) {
+      log::info<1>(
+          R"(DEBUG: SNAPSHOT exchange="{}", symbol="{}", security_id={} (exchange_sequence={}))"sv,
+          security.exchange,
+          security.symbol,
+          security_id,
+          exchange_sequence);
+      MarketByPriceUpdate const market_by_price_update{
+          .stream_id = stream_id_,
+          .exchange = security.exchange,
+          .symbol = security.symbol,
+          .bids = bids,
+          .asks = asks,
+          .update_type = UpdateType::SNAPSHOT,
+          .exchange_time_utc = exchange_time_utc,
+          .exchange_sequence = exchange_sequence,
+          .price_decimals = {},
+          .quantity_decimals = {},
+          .checksum = {},
+      };
+      create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true, false);
+    };
+    auto request_snapshot = [&](auto retries) {
+      log::info<1>(
+          R"(DEBUG: REQUEST exchange="{}", symbol="{}", security_id={} (retries={}))"sv,
+          security.exchange,
+          security.symbol,
+          security_id,
+          retries);
+      /*
+      if (Flags::ws_mbp_request_max_retries() && Flags::ws_mbp_request_max_retries() < retries) {
+        log::fatal(R"(Unexpected: symbol="{}", retries={})"sv, symbol, retries);
+      }
+      */
+      auto res = channel_.mbp_resubscribe.emplace(security_id, exchange_sequence);
+      if (res.second)
+        log::info<1>("DEBUG: RESUBSCRIBE security_id={}, exchange_sequence={}"sv, security_id, exchange_sequence);
+    };
     collector(
         bids,
         asks,
         exchange_sequence,
         exchange_sequence,
         last_exchange_sequence,
-        [&](auto &bids, auto &asks) {  // update
-          MarketByPriceUpdate const market_by_price_update{
-              .stream_id = stream_id_,
-              .exchange = security.exchange,
-              .symbol = security.symbol,
-              .bids = bids,
-              .asks = asks,
-              .update_type = UpdateType::INCREMENTAL,
-              .exchange_time_utc = exchange_time_utc,
-              .exchange_sequence = exchange_sequence,
-              .price_decimals = {},
-              .quantity_decimals = {},
-              .checksum = {},
-          };
-          create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true, false);
-        },
-        [&](auto &bids, auto &asks, auto exchange_sequence) {  // snapshot
-          log::info<1>(
-              R"(DEBUG: SNAPSHOT exchange="{}", symbol="{}", security_id={} (exchange_sequence={}))"sv,
-              security.exchange,
-              security.symbol,
-              security_id,
-              exchange_sequence);
-          MarketByPriceUpdate const market_by_price_update{
-              .stream_id = stream_id_,
-              .exchange = security.exchange,
-              .symbol = security.symbol,
-              .bids = bids,
-              .asks = asks,
-              .update_type = UpdateType::SNAPSHOT,
-              .exchange_time_utc = exchange_time_utc,
-              .exchange_sequence = exchange_sequence,
-              .price_decimals = {},
-              .quantity_decimals = {},
-              .checksum = {},
-          };
-          create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true, false);
-        },
-        [&](auto retries) {  // request
-          log::info<1>(
-              R"(DEBUG: REQUEST exchange="{}", symbol="{}", security_id={} (retries={}))"sv,
-              security.exchange,
-              security.symbol,
-              security_id,
-              retries);
-          /*
-          if (Flags::ws_mbp_request_max_retries() && Flags::ws_mbp_request_max_retries() < retries) {
-            log::fatal(R"(Unexpected: symbol="{}", retries={})"sv, symbol, retries);
-          }
-          */
-          auto res = channel_.mbp_resubscribe.emplace(security_id, exchange_sequence);
-          if (res.second)
-            log::info<1>("DEBUG: RESUBSCRIBE security_id={}, exchange_sequence={}"sv, security_id, exchange_sequence);
-        });
+        publish_update,
+        publish_snapshot,
+        request_snapshot);
   } catch (BadState &) {
     log::warn(
         R"(RESUBSCRIBE exchange="{}", symbol="{}", security_id={})"sv, security.exchange, security.symbol, security_id);
