@@ -12,6 +12,7 @@
 #include "roq/cme/sbe/admin.hpp"
 #include "roq/cme/sbe/md_incremental_refresh.hpp"
 #include "roq/cme/sbe/md_instrument_definition.hpp"
+#include "roq/cme/sbe/security_status.hpp"
 #include "roq/cme/sbe/snapshot_full_refresh.hpp"
 
 namespace roq {
@@ -31,6 +32,8 @@ struct Parser final {
     virtual void operator()(Trace<cme_mdp::MDInstrumentDefinitionFixedIncome57> const &, Frame const &) = 0;
     virtual void operator()(Trace<cme_mdp::MDInstrumentDefinitionRepo58> const &, Frame const &) = 0;
     virtual void operator()(Trace<cme_mdp::MDInstrumentDefinitionFX63> const &, Frame const &) = 0;
+    // status
+    virtual void operator()(Trace<cme_mdp::SecurityStatus30> const &, Frame const &) = 0;
     // market by price
     virtual void operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &, Frame const &) = 0;
     virtual void operator()(Trace<cme_mdp::SnapshotFullRefreshLongQty69> const &, Frame const &) = 0;

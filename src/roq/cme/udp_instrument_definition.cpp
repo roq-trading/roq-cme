@@ -162,6 +162,11 @@ void UDPInstrumentDefinition::operator()(Trace<cme_mdp::ChannelReset4> const &ev
   });
 }
 
+void UDPInstrumentDefinition::operator()(Trace<cme_mdp::SecurityStatus30> const &event, sbe::Frame const &frame) {
+  auto &[trace_info, value] = event;
+  log::info<5>("security_status={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+}
+
 void UDPInstrumentDefinition::operator()(
     Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &event, sbe::Frame const &frame) {
   profile_.md_instrument_definition_future([&]() {

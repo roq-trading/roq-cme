@@ -278,6 +278,7 @@ UDPIncremental::UDPIncremental(
           .parse = create_metrics(name_, "parse"sv),
           .admin_heartbeat = create_metrics(name_, "admin_heartbeat"sv),
           .channel_reset = create_metrics(name_, "channel_reset"sv),
+          .security_status = create_metrics(name_, "security_status"sv),
           .snapshot_full_refresh = create_metrics(name_, "snapshot_full_refresh"sv),
           .snapshot_full_refresh_long_qty = create_metrics(name_, "snapshot_full_refresh_long_qty"sv),
           .md_incremental_refresh_book = create_metrics(name_, "md_incremental_refresh_book"sv),
@@ -471,6 +472,25 @@ void UDPIncremental::operator()(Trace<cme_mdp::ChannelReset4> const &event, sbe:
   profile_.channel_reset([&]() {
     auto &[trace_info, value] = event;
     log::info<5>("channel_reset={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+  });
+}
+
+void UDPIncremental::operator()(Trace<cme_mdp::SecurityStatus30> const &event, sbe::Frame const &frame) {
+  profile_.security_status([&]() {
+    auto &trace_info = event.trace_info;
+    auto &value = event.value;
+    log::info<5>("security_status={}, frame={}"sv, const_cast<decltype(value) &>(value), frame);
+    value.sbeRewind();  // note!
+    auto security_id = value.securityID();
+    get_security(shared_, security_id, [&](auto &security) {
+      MarketStatus market_status{
+          .stream_id = stream_id_,
+          .exchange = security.exchange,
+          .symbol = security.symbol,
+          .trading_status = sbe::map_security_trading_status(value.securityTradingStatus()),
+      };
+      create_trace_and_dispatch(handler_, trace_info, std::as_const(market_status), true);
+    });
   });
 }
 
@@ -881,6 +901,7 @@ void UDPIncremental::operator()(metrics::Writer &writer) {
       .write(profile_.parse, metrics::PROFILE)
       .write(profile_.admin_heartbeat, metrics::PROFILE)
       .write(profile_.channel_reset, metrics::PROFILE)
+      .write(profile_.security_status, metrics::PROFILE)
       .write(profile_.snapshot_full_refresh, metrics::PROFILE)
       .write(profile_.snapshot_full_refresh_long_qty, metrics::PROFILE)
       .write(profile_.md_incremental_refresh_book, metrics::PROFILE)

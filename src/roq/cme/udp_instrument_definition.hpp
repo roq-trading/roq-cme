@@ -53,6 +53,8 @@ class UDPInstrumentDefinition final : public io::net::udp::Receiver::Handler, pu
   // - admin
   void operator()(Trace<cme_mdp::AdminHeartbeat12> const &, sbe::Frame const &) override;
   void operator()(Trace<cme_mdp::ChannelReset4> const &, sbe::Frame const &) override;
+  // - security status
+  void operator()(Trace<cme_mdp::SecurityStatus30> const &, sbe::Frame const &) override;
   // - instrument definitions
   void operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &, sbe::Frame const &) override;
   void operator()(Trace<cme_mdp::MDInstrumentDefinitionOption55> const &, sbe::Frame const &) override;

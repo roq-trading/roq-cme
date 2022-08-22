@@ -28,6 +28,7 @@ class UDPIncremental final : public io::net::udp::Receiver::Handler, public sbe:
   struct Handler {
     virtual void operator()(Trace<StreamStatus const> const &) = 0;
     virtual void operator()(Trace<ExternalLatency const> const &) = 0;
+    virtual void operator()(Trace<MarketStatus const> const &, bool is_last) = 0;
     virtual void operator()(Trace<TopOfBook const> const &, bool is_last) = 0;
     virtual void operator()(Trace<MarketByPriceUpdate const> const &, bool is_last, bool refresh) = 0;
     virtual void operator()(Trace<TradeSummary const> const &, bool is_last) = 0;
@@ -55,6 +56,8 @@ class UDPIncremental final : public io::net::udp::Receiver::Handler, public sbe:
   // - admin
   void operator()(Trace<cme_mdp::AdminHeartbeat12> const &, sbe::Frame const &) override;
   void operator()(Trace<cme_mdp::ChannelReset4> const &, sbe::Frame const &) override;
+  // - security status
+  void operator()(Trace<cme_mdp::SecurityStatus30> const &, sbe::Frame const &) override;
   // - instrument definitions
   void operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &, sbe::Frame const &) override;
   void operator()(Trace<cme_mdp::MDInstrumentDefinitionOption55> const &, sbe::Frame const &) override;
@@ -116,6 +119,7 @@ class UDPIncremental final : public io::net::udp::Receiver::Handler, public sbe:
   struct {
     core::metrics::Profile parse,                                             //
         admin_heartbeat, channel_reset,                                       //
+        security_status,                                                      //
         snapshot_full_refresh, snapshot_full_refresh_long_qty,                //
         md_incremental_refresh_book, md_incremental_refresh_book_long_qty,    //
         snapshot_full_refresh_order_book, md_incremental_refresh_order_book,  //
