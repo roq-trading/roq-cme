@@ -79,7 +79,9 @@ TEST_CASE("md_incremental_refresh_book_46_test_1", "[sbe]") {
     void operator()(sbe::Frame const &) override {}
     void operator()(Trace<cme_mdp::ChannelReset4> const &, sbe::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp::AdminHeartbeat12> const &, sbe::Frame const &) override { FAIL(); }
-    // - MDInstrumentDefinition
+    // - security status
+    void operator()(Trace<cme_mdp::SecurityStatus30> const &, sbe::Frame const &) override { FAIL(); }
+    // - instrument definition
     void operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &, sbe::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp::MDInstrumentDefinitionOption55> const &, sbe::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp::MDInstrumentDefinitionSpread56> const &, sbe::Frame const &) override { FAIL(); }
@@ -278,7 +280,9 @@ TEST_CASE("md_incremental_refresh_book_46_test_2", "[sbe]") {
     void operator()(sbe::Frame const &) override {}
     void operator()(Trace<cme_mdp::ChannelReset4> const &, sbe::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp::AdminHeartbeat12> const &, sbe::Frame const &) override { FAIL(); }
-    // - MDInstrumentDefinition
+    // - security status
+    void operator()(Trace<cme_mdp::SecurityStatus30> const &, sbe::Frame const &) override { FAIL(); }
+    // - instrument definition
     void operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &, sbe::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp::MDInstrumentDefinitionOption55> const &, sbe::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp::MDInstrumentDefinitionSpread56> const &, sbe::Frame const &) override { FAIL(); }
@@ -437,7 +441,9 @@ TEST_CASE("md_instrument_definition_future_54", "[sbe]") {
     void operator()(sbe::Frame const &) override {}
     void operator()(Trace<cme_mdp::ChannelReset4> const &, sbe::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp::AdminHeartbeat12> const &, sbe::Frame const &) override { FAIL(); }
-    // - MDInstrumentDefinition
+    // - security status
+    void operator()(Trace<cme_mdp::SecurityStatus30> const &, sbe::Frame const &) override { FAIL(); }
+    // - instrument definition
     void operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &event, sbe::Frame const &) override {
       ++counter;
       auto &value = event.value;
@@ -545,7 +551,9 @@ TEST_CASE("md_instrument_definition_spread_56", "[sbe]") {
     void operator()(sbe::Frame const &) override {}
     void operator()(Trace<cme_mdp::ChannelReset4> const &, sbe::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp::AdminHeartbeat12> const &, sbe::Frame const &) override { FAIL(); }
-    // - MDInstrumentDefinition
+    // - security status
+    void operator()(Trace<cme_mdp::SecurityStatus30> const &, sbe::Frame const &) override { FAIL(); }
+    // - instrument definition
     void operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &, sbe::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp::MDInstrumentDefinitionOption55> const &, sbe::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp::MDInstrumentDefinitionSpread56> const &, sbe::Frame const &) override { ++counter; }
@@ -638,7 +646,9 @@ TEST_CASE("md_md_incremental_refresh_book_46_test_1", "[sbe]") {
     void operator()(sbe::Frame const &) override {}
     void operator()(Trace<cme_mdp::ChannelReset4> const &, sbe::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp::AdminHeartbeat12> const &, sbe::Frame const &) override { FAIL(); }
-    // - MDInstrumentDefinition
+    // - security status
+    void operator()(Trace<cme_mdp::SecurityStatus30> const &, sbe::Frame const &) override { FAIL(); }
+    // - instrument definition
     void operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &, sbe::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp::MDInstrumentDefinitionOption55> const &, sbe::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp::MDInstrumentDefinitionSpread56> const &, sbe::Frame const &) override { FAIL(); }
@@ -724,7 +734,9 @@ TEST_CASE("md_md_incremental_refresh_book_46_test_2", "[sbe]") {
     void operator()(sbe::Frame const &) override {}
     void operator()(Trace<cme_mdp::ChannelReset4> const &, sbe::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp::AdminHeartbeat12> const &, sbe::Frame const &) override { FAIL(); }
-    // - MDInstrumentDefinition
+    // - security status
+    void operator()(Trace<cme_mdp::SecurityStatus30> const &, sbe::Frame const &) override { FAIL(); }
+    // - instrument definition
     void operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &, sbe::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp::MDInstrumentDefinitionOption55> const &, sbe::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp::MDInstrumentDefinitionSpread56> const &, sbe::Frame const &) override { FAIL(); }
@@ -792,7 +804,9 @@ TEST_CASE("admin_heartbeat_12", "[sbe]") {
       auto &value = event.value;
       auto tmp = fmt::format("{}"sv, value);
     }
-    // - MDInstrumentDefinition
+    // - security status
+    void operator()(Trace<cme_mdp::SecurityStatus30> const &, sbe::Frame const &) override { FAIL(); }
+    // - instrument definition
     void operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &, sbe::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp::MDInstrumentDefinitionOption55> const &, sbe::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp::MDInstrumentDefinitionSpread56> const &, sbe::Frame const &) override { FAIL(); }
@@ -909,7 +923,9 @@ TEST_CASE("snapshot_full_refresh_52", "[sbe]") {
     void operator()(sbe::Frame const &) override {}
     void operator()(Trace<cme_mdp::ChannelReset4> const &, sbe::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp::AdminHeartbeat12> const &, sbe::Frame const &) override { FAIL(); }
-    // - MDInstrumentDefinition
+    // - security status
+    void operator()(Trace<cme_mdp::SecurityStatus30> const &, sbe::Frame const &) override { FAIL(); }
+    // - instrument definition
     void operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &, sbe::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp::MDInstrumentDefinitionOption55> const &, sbe::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp::MDInstrumentDefinitionSpread56> const &, sbe::Frame const &) override { FAIL(); }
