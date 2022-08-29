@@ -2,6 +2,14 @@
 
 #include "roq/cme/sbe/parser.hpp"
 
+#include <cme_mdp/AdminLogout16.h>
+#include <cme_mdp/CollateralMarketValue62.h>
+#include <cme_mdp/QuoteRequest39.h>
+#include <cme_mdp/SecurityStatusWorkup60.h>
+#include <cme_mdp/SnapshotFullRefreshTCP61.h>
+#include <cme_mdp/SnapshotFullRefreshTCPLongQty68.h>
+#include <cme_mdp/SnapshotRefreshTopOrders59.h>
+
 #include "roq/logging.hpp"
 
 #include "roq/debug/hex/message.hpp"
@@ -181,6 +189,16 @@ bool Parser::dispatch(Handler &handler, std::span<std::byte const> const &buffer
               create_trace_and_dispatch(handler, trace_info, value, frame);
               break;
             }
+            case cme_mdp::AdminLogout16::SBE_TEMPLATE_ID:
+            case cme_mdp::QuoteRequest39::SBE_TEMPLATE_ID:  // have seen
+            case cme_mdp::SnapshotRefreshTopOrders59::SBE_TEMPLATE_ID:
+            case cme_mdp::SecurityStatusWorkup60::SBE_TEMPLATE_ID:
+            case cme_mdp::SnapshotFullRefreshTCP61::SBE_TEMPLATE_ID:
+            case cme_mdp::CollateralMarketValue62::SBE_TEMPLATE_ID:
+            case cme_mdp::SnapshotFullRefreshTCPLongQty68::SBE_TEMPLATE_ID:
+              // don't parse / silent drop
+              log::warn("Drop: template_id={}"sv, template_id);
+              break;
             default: {
               log::warn("Unexpected: template_id={}"sv, template_id);
               result = false;
