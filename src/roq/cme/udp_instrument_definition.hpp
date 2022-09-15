@@ -26,10 +26,10 @@ namespace cme {
 class UDPInstrumentDefinition final : public io::net::udp::Receiver::Handler, public sbe::Parser::Handler {
  public:
   struct Handler {
-    virtual void operator()(Trace<StreamStatus const> const &) = 0;
-    virtual void operator()(Trace<ExternalLatency const> const &) = 0;
-    virtual void operator()(Trace<ReferenceData const> const &, bool is_last) = 0;
-    virtual void operator()(Trace<MarketStatus const> const &, bool is_last) = 0;
+    virtual void operator()(Trace<StreamStatus> const &) = 0;
+    virtual void operator()(Trace<ExternalLatency> const &) = 0;
+    virtual void operator()(Trace<ReferenceData> const &, bool is_last) = 0;
+    virtual void operator()(Trace<MarketStatus> const &, bool is_last) = 0;
   };
 
   UDPInstrumentDefinition(Handler &, io::Context &, uint16_t stream_id, Shared &, Channel &);

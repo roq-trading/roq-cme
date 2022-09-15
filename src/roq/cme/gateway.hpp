@@ -60,14 +60,14 @@ class Gateway final : public server::Handler,
 
   // many
 
-  void operator()(Trace<StreamStatus const> const &) override;
-  void operator()(Trace<ExternalLatency const> const &) override;
-  void operator()(Trace<ReferenceData const> const &, bool is_last) override;
-  void operator()(Trace<MarketStatus const> const &, bool is_last) override;
-  void operator()(Trace<TopOfBook const> const &, bool is_last) override;
-  void operator()(Trace<MarketByPriceUpdate const> const &, bool is_last, bool refresh) override;
-  void operator()(Trace<TradeSummary const> const &, bool is_last) override;
-  void operator()(Trace<StatisticsUpdate const> const &, bool is_last) override;
+  void operator()(Trace<StreamStatus> const &) override;
+  void operator()(Trace<ExternalLatency> const &) override;
+  void operator()(Trace<ReferenceData> const &, bool is_last) override;
+  void operator()(Trace<MarketStatus> const &, bool is_last) override;
+  void operator()(Trace<TopOfBook> const &, bool is_last) override;
+  void operator()(Trace<MarketByPriceUpdate> const &, bool is_last, bool refresh) override;
+  void operator()(Trace<TradeSummary> const &, bool is_last) override;
+  void operator()(Trace<StatisticsUpdate> const &, bool is_last) override;
 
  private:
   server::Dispatcher &dispatcher_;
