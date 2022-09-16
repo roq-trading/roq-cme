@@ -4,8 +4,6 @@
 
 #include <utility>
 
-#include "roq/io/engine/context_factory.hpp"
-
 #include "roq/cme/flags/common.hpp"
 #include "roq/cme/flags/multicast.hpp"
 
@@ -54,12 +52,11 @@ auto create_udp_incremental(auto &gateway, auto &context, auto &stream_id, auto 
 }
 }  // namespace
 
-Gateway::Gateway(server::Dispatcher &dispatcher, Config const &)
-    : dispatcher_(dispatcher), context_(io::engine::ContextFactory::create_libevent()), shared_(dispatcher_),
-      channels_(create_channels()),
-      udp_instrument_definition_(create_udp_instrument_definition(*this, *context_, stream_id_, shared_, channels_)),
-      udp_mbp_market_recovery_(create_udp_mbp_market_recovery(*this, *context_, stream_id_, shared_, channels_)),
-      udp_incremental_(create_udp_incremental(*this, *context_, stream_id_, shared_, channels_)) {
+Gateway::Gateway(server::Dispatcher &dispatcher, Config const &, io::Context &context)
+    : dispatcher_(dispatcher), context_(context), shared_(dispatcher_), channels_(create_channels()),
+      udp_instrument_definition_(create_udp_instrument_definition(*this, context_, stream_id_, shared_, channels_)),
+      udp_mbp_market_recovery_(create_udp_mbp_market_recovery(*this, context_, stream_id_, shared_, channels_)),
+      udp_incremental_(create_udp_incremental(*this, context_, stream_id_, shared_, channels_)) {
 }
 
 void Gateway::operator()(Event<Start> const &event) {
@@ -89,7 +86,6 @@ void Gateway::operator()(Event<Timer> const &event) {
     (*item)(event);
   for (auto &item : udp_incremental_)
     (*item)(event);
-  (*context_).drain();
 }
 
 void Gateway::operator()(Event<Connected> const &) {

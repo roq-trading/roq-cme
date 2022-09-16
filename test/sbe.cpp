@@ -99,13 +99,14 @@ TEST_CASE("md_incremental_refresh_book_46_test_1", "[sbe]") {
     void operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &event, sbe::Frame const &frame) override {
       CHECK(frame.sequence_number == 1044422);
       CHECK(frame.sending_time == 1659367870041719045ns);
-      auto &[trace_info, book] = event;
+      using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+      auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
       switch (++counter) {
         case 1: {
-          CHECK(book.transactTime() == 1659367870041633809);
-          book.sbeRewind();  // wtf!
+          CHECK(value.transactTime() == 1659367870041633809);
+          value.sbeRewind();  // wtf!
           auto no_md_entries_rows = 0;
-          book.noMDEntries().forEach([&no_md_entries_rows](auto &item) {
+          value.noMDEntries().forEach([&no_md_entries_rows](auto &item) {
             ++no_md_entries_rows;
             CHECK(sbe::get_double(item.mDEntryPx()) == 66735.0_a);
             CHECK(item.mDEntrySize() == 2);
@@ -119,7 +120,7 @@ TEST_CASE("md_incremental_refresh_book_46_test_1", "[sbe]") {
           });
           CHECK(no_md_entries_rows == 1);
           auto no_order_id_intries_rows = 0;
-          book.noOrderIDEntries().forEach([&no_order_id_intries_rows](auto &item) {
+          value.noOrderIDEntries().forEach([&no_order_id_intries_rows](auto &item) {
             ++no_order_id_intries_rows;
             CHECK(item.orderID() == 707132284827);
             CHECK(item.mDOrderPriority() == 16882484350);
@@ -131,10 +132,10 @@ TEST_CASE("md_incremental_refresh_book_46_test_1", "[sbe]") {
           break;
         }
         case 2: {
-          CHECK(book.transactTime() == 1659367870041633809);
-          book.sbeRewind();  // wtf!
-          book.noMDEntries().forEach([](auto &) { FAIL(); });
-          book.noOrderIDEntries().forEach([](auto &) { FAIL(); });
+          CHECK(value.transactTime() == 1659367870041633809);
+          value.sbeRewind();  // wtf!
+          value.noMDEntries().forEach([](auto &) { FAIL(); });
+          value.noOrderIDEntries().forEach([](auto &) { FAIL(); });
           break;
         }
       }
@@ -446,7 +447,8 @@ TEST_CASE("md_instrument_definition_future_54", "[sbe]") {
     // - instrument definition
     void operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &event, sbe::Frame const &) override {
       ++counter;
-      auto &value = event.value;
+      using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+      auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
       auto tmp = fmt::format("{}"sv, value);
     }
     void operator()(Trace<cme_mdp::MDInstrumentDefinitionOption55> const &, sbe::Frame const &) override { FAIL(); }
@@ -665,9 +667,9 @@ TEST_CASE("md_md_incremental_refresh_book_46_test_1", "[sbe]") {
     void operator()(Trace<cme_mdp::MDIncrementalRefreshVolume37> const &, sbe::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &event, sbe::Frame const &) override {
       ++counter;
-      auto &value = event.value;
-      auto tmp = fmt::format("{}"sv, value);
-      fmt::print("{}\n"sv, tmp);
+      using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+      auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
+      fmt::print("{}\n"sv, value);
     }
     void operator()(Trace<cme_mdp::MDIncrementalRefreshOrderBook47> const &, sbe::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp::MDIncrementalRefreshTradeSummary48> const &, sbe::Frame const &) override { FAIL(); }
@@ -937,7 +939,8 @@ TEST_CASE("snapshot_full_refresh_52", "[sbe]") {
     // - SnapshotFullRefresh
     void operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &event, sbe::Frame const &) override {
       ++counter;
-      auto &value = event.value;
+      using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+      auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
       auto tmp = fmt::format("{}"sv, value);
     }
     void operator()(Trace<cme_mdp::SnapshotFullRefreshOrderBook53> const &, sbe::Frame const &) override { FAIL(); }

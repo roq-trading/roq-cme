@@ -28,7 +28,7 @@ class Gateway final : public server::Handler,
                       public UDPMBPMarketRecovery::Handler,
                       public UDPIncremental::Handler {
  public:
-  Gateway(server::Dispatcher &, Config const &);
+  Gateway(server::Dispatcher &, Config const &, io::Context &);
 
   Gateway(Gateway &&) = delete;
   Gateway(Gateway const &) = delete;
@@ -73,7 +73,7 @@ class Gateway final : public server::Handler,
   server::Dispatcher &dispatcher_;
   // config
   // io
-  std::unique_ptr<io::Context> context_;
+  io::Context &context_;
   // shared
   Shared shared_;
   std::vector<Channel> channels_;

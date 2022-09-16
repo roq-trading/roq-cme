@@ -2,6 +2,8 @@
 
 #include "roq/cme/application.hpp"
 
+#include "roq/io/engine/context_factory.hpp"
+
 #include "roq/cme/config.hpp"
 #include "roq/cme/gateway.hpp"
 
@@ -16,6 +18,8 @@ int Application::main(int, char **) {
   log::info(R"(Parse config_file="{}")"sv, flags::Config::config_file());
   Config config(flags::Config::config_file(), flags::Config::secrets_file());
   log::info<1>("config={}"sv, config);
+  log::info("Prepare environment"sv);
+  auto context = io::engine::ContextFactory::create(server::Flags::io_backend());
   log::info("Starting the gateway..."sv);
   server::Settings settings{
       .package_name = ROQ_PACKAGE_NAME,
@@ -23,7 +27,7 @@ int Application::main(int, char **) {
       .api = {},
       .type = server::Type::ORDER_MANAGEMENT,
   };
-  server::Trading<Gateway>(settings, config).dispatch();
+  server::Trading<Gateway>(settings, config, *context).dispatch();
   return EXIT_SUCCESS;
 }
 
