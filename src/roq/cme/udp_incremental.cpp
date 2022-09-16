@@ -814,7 +814,7 @@ void UDPIncremental::dispatch_market_by_price(
 template <typename T>
 void UDPIncremental::dispatch_trade_summary(Trace<T> const &event) {
   auto &trace_info = event.trace_info;
-  using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+  using value_type = typename std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   value.sbeRewind();                                    // note!
   std::chrono::nanoseconds exchange_time_utc{value.transactTime()};
@@ -855,7 +855,7 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event) {
 template <typename T, typename Callback>
 void UDPIncremental::dispatch_statistics(Trace<T> const &event, Callback callback) {
   auto &trace_info = event.trace_info;
-  using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+  using value_type = typename std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   value.sbeRewind();                                    // note!
   std::chrono::nanoseconds exchange_time_utc{value.transactTime()};
