@@ -8,8 +8,8 @@
 #include "roq/core/metrics/counter.hpp"
 #include "roq/core/metrics/profile.hpp"
 
-#include "roq/io/buffer.hpp"
 #include "roq/io/context.hpp"
+
 #include "roq/io/net/udp/receiver.hpp"
 
 #include "roq/server.hpp"
@@ -111,7 +111,6 @@ class UDPIncremental final : public io::net::udp::Receiver::Handler, public sbe:
   const std::string name_;
   // receiver
   std::unique_ptr<io::net::udp::Receiver> receiver_;
-  io::Buffer receive_buffer_;
   // metrics
   struct {
     core::metrics::Counter disconnect, sequence_reset;

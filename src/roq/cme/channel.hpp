@@ -9,7 +9,7 @@
 
 #include "roq/core/market/mbp_sequencer.hpp"
 
-#include "roq/cme/buffer.hpp"
+#include "roq/core/udp/buffer.hpp"
 
 namespace roq {
 namespace cme {
@@ -22,7 +22,7 @@ struct Channel final {
 
   const std::string channel_id;
 
-  Buffer<uint32_t> buffer;
+  core::udp::Buffer<uint32_t> buffer;
 
   // incremental
   std::pair<bool, uint32_t> last_sequence = {};
