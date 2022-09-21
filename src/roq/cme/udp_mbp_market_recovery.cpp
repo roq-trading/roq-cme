@@ -48,7 +48,11 @@ auto create_receiver(auto &handler, auto &context, auto &shared, auto &channel_i
   log::info(R"(Create channel_id="{}, priority={}")"sv, channel_id, priority);
   auto [multicast_address, port] = shared.get_multicast_config(channel_id, multicast::Type::SNAPSHOT, priority);
   log::info("Create multicast receiver port={}"sv, port);
-  auto receiver = context.create_udp_receiver(handler, io::NetworkAddress{port});
+  auto network_address = io::NetworkAddress{port};
+  auto socket_options = Mask{
+      io::SocketOption::REUSE_ADDRESS,
+  };
+  auto receiver = context.create_udp_receiver(handler, network_address, socket_options);
   log::info(R"(Local interface is "{}")"sv, flags::Multicast::multicast_local_interface());
   std::string local_interface{flags::Multicast::multicast_local_interface()};
   struct in_addr local = {};
