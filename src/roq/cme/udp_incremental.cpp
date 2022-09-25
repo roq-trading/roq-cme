@@ -84,9 +84,7 @@ void emplace(MBPUpdate &result, T const &item, auto &security) {
   auto quantity = sbe::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue());
   auto number_of_orders = sbe::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue());
   auto update_action = [&]() {
-    constexpr bool has_md_update_action = requires(T const &t) {
-      t.mDUpdateAction();
-    };
+    constexpr bool has_md_update_action = requires(T const &t) { t.mDUpdateAction(); };
     if constexpr (has_md_update_action) {
       return sbe::map(item.mDUpdateAction());
     }
@@ -115,6 +113,8 @@ void emplace(Trade &result, T const &item, auto &security) {
       .price = price * security.display_factor,
       .quantity = utils::safe_cast(quantity),
       .trade_id = {},
+      .taker_order_id = {},
+      .maker_order_id = {},
   };
   auto trade_id = sbe::get_int(item.mDTradeEntryID(), item.mDTradeEntryIDNullValue());
   fmt::format_to(std::back_inserter(result.trade_id), "{}"sv, trade_id);
@@ -824,17 +824,18 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event) {
   std::chrono::nanoseconds exchange_time_utc{value.transactTime()};
   core::back_emplacer trades{shared_.trades};
   auto dispatch = [&](auto &security, auto is_last) {
-    if (!std::empty(trades)) {
-      const TradeSummary trade_summary{
-          .stream_id = stream_id_,
-          .exchange = security.exchange,
-          .symbol = security.symbol,
-          .trades = trades,
-          .exchange_time_utc = exchange_time_utc,
-      };
-      create_trace_and_dispatch(handler_, trace_info, trade_summary, is_last);
-      trades.clear();
-    }
+    if (std::empty(trades))
+      return;
+    const TradeSummary trade_summary{
+        .stream_id = stream_id_,
+        .exchange = security.exchange,
+        .symbol = security.symbol,
+        .trades = trades,
+        .exchange_time_utc = exchange_time_utc,
+        .exchange_sequence = {},  // note! NoMDEntries.RptSeq is the MD seqno
+    };
+    create_trace_and_dispatch(handler_, trace_info, trade_summary, is_last);
+    trades.clear();
   };
   int32_t security_id = {};
   Shared::Security *security = nullptr;
