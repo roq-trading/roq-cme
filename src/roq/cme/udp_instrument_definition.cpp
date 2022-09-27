@@ -30,6 +30,8 @@ using namespace std::literals;
 namespace roq {
 namespace cme {
 
+// === CONSTANTS ===
+
 namespace {
 auto const NAME = "N"sv;
 
@@ -37,11 +39,14 @@ Mask<SupportType> const SUPPORTS{
     SupportType::REFERENCE_DATA,
     SupportType::MARKET_STATUS,
 };
+}  // namespace
 
-struct create_metrics final : public core::metrics::Factory {
-  explicit create_metrics(std::string_view const &group, std::string_view const &function)
-      : core::metrics::Factory(server::Flags::name(), group, function) {}
-};
+// === HELPERS ===
+
+namespace {
+auto create_name(auto stream_id, auto const &channel_id) {
+  return fmt::format("{}:{}{}"sv, stream_id, NAME, channel_id);
+}
 
 auto create_receiver(auto &handler, auto &context, auto &shared, auto &channel_id, auto priority) {
   log::info(R"(Create channel_id="{}, priority={}")"sv, channel_id, priority);
@@ -64,6 +69,13 @@ auto create_receiver(auto &handler, auto &context, auto &shared, auto &channel_i
   return receiver;
 }
 
+struct create_metrics final : public core::metrics::Factory {
+  explicit create_metrics(auto const &group, auto const &function)
+      : core::metrics::Factory(server::Flags::name(), group, function) {}
+};
+
+// following are used from several places
+
 template <typename Callback>
 void create_security(auto &shared, auto &value, Callback callback) {
   auto security_id = value.securityID();
@@ -82,9 +94,11 @@ void create_security(auto &shared, auto &value, Callback callback) {
 }
 }  // namespace
 
+// === IMPLEMENTATION ===
+
 UDPInstrumentDefinition::UDPInstrumentDefinition(
     Handler &handler, io::Context &context, uint16_t stream_id, Shared &shared, Channel &channel)
-    : handler_(handler), stream_id_(stream_id), name_(fmt::format("{}:{}{}"sv, stream_id_, NAME, channel.channel_id)),
+    : handler_(handler), stream_id_(stream_id), name_(create_name(stream_id_, channel.channel_id)),
       receiver_(create_receiver(*this, context, shared, channel.channel_id, Priority::PRIMARY)),
       counter_{
           .disconnect = create_metrics(name_, "disconnect"sv),

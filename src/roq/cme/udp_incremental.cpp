@@ -32,6 +32,8 @@ using namespace std::literals;
 namespace roq {
 namespace cme {
 
+// === CONSTANTS ===
+
 namespace {
 auto const NAME = "I"sv;
 
@@ -40,11 +42,14 @@ Mask<SupportType> const SUPPORTS{
     SupportType::MARKET_BY_PRICE,
     SupportType::STATISTICS,
 };
+}  // namespace
 
-struct create_metrics final : public core::metrics::Factory {
-  explicit create_metrics(std::string_view const &group, std::string_view const &function)
-      : core::metrics::Factory(server::Flags::name(), group, function) {}
-};
+// === HELPERS ===
+
+namespace {
+auto create_name(auto stream_id, auto const &channel_id) {
+  return fmt::format("{}:{}{}"sv, stream_id, NAME, channel_id);
+}
 
 auto create_receiver(auto &handler, auto &context, auto &shared, auto &channel_id, Priority priority) {
   log::info(R"(Create channel_id="{}, priority={}")"sv, channel_id, priority);
@@ -66,6 +71,13 @@ auto create_receiver(auto &handler, auto &context, auto &shared, auto &channel_i
   return receiver;
 }
 
+struct create_metrics final : public core::metrics::Factory {
+  explicit create_metrics(auto const &group, auto const &function)
+      : core::metrics::Factory(server::Flags::name(), group, function) {}
+};
+
+// following are used from several places
+
 template <typename Callback>
 bool get_security(auto &shared, auto security_id, Callback callback) {
   auto iter = shared.securities.find(security_id);
@@ -78,13 +90,15 @@ bool get_security(auto &shared, auto security_id, Callback callback) {
   return true;
 }
 
-template <typename T>
-void emplace(MBPUpdate &result, T const &item, auto &security) {
-  auto price = sbe::get_double(const_cast<T &>(item).mDEntryPx());
+template <typename T, typename U, typename std::enable_if<std::is_same<T, MBPUpdate>::value, int>::type = 0>
+void emplace(T &result, U const &item, auto &security) {
+  auto price = sbe::get_double(const_cast<U &>(item).mDEntryPx());
   auto quantity = sbe::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue());
   auto number_of_orders = sbe::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue());
   auto update_action = [&]() {
-    constexpr bool has_md_update_action = requires(T const &t) { t.mDUpdateAction(); };
+    constexpr bool has_md_update_action = requires(U const &t) {
+      t.mDUpdateAction();
+    };
     if constexpr (has_md_update_action) {
       return sbe::map(item.mDUpdateAction());
     }
@@ -94,7 +108,7 @@ void emplace(MBPUpdate &result, T const &item, auto &security) {
     quantity = {};  // note! exchange gives us the *old* value / we need this to be zero
   auto md_price_level = sbe::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue());
   uint32_t price_level = md_price_level > 0 ? (md_price_level - 1) : 0;
-  new (&result) MBPUpdate{
+  new (&result) T{
       .price = price * security.display_factor,
       .quantity = utils::safe_cast(quantity),
       .implied_quantity = NaN,
@@ -104,11 +118,11 @@ void emplace(MBPUpdate &result, T const &item, auto &security) {
   };
 }
 
-template <typename T>
-void emplace(Trade &result, T const &item, auto &security) {
-  auto price = sbe::get_double(const_cast<T &>(item).mDEntryPx());
+template <typename T, typename U, typename std::enable_if<std::is_same<T, Trade>::value, int>::type = 0>
+void emplace(T &result, U const &item, auto &security) {
+  auto price = sbe::get_double(const_cast<U &>(item).mDEntryPx());
   auto quantity = sbe::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue());
-  new (&result) Trade{
+  new (&result) T{
       .side = sbe::map_side(item.aggressorSide()),
       .price = price * security.display_factor,
       .quantity = utils::safe_cast(quantity),
@@ -125,10 +139,10 @@ void trade_summary_emplace_back(auto &result, T const &item, auto &security) {
   result.emplace_back([&item, &security](auto &result) { emplace(result, item, security); });
 }
 
-template <typename T>
-void emplace_price(Statistics &result, auto type, T const &item, auto factor) {
-  auto value = sbe::get_double(const_cast<T &>(item).mDEntryPx());
-  new (&result) Statistics{
+template <typename T, typename U, typename std::enable_if<std::is_same<T, Statistics>::value, int>::type = 0>
+void emplace_price(T &result, auto type, U const &item, auto factor) {
+  auto value = sbe::get_double(const_cast<U &>(item).mDEntryPx());
+  new (&result) T{
       .type = type,
       .value = value * factor,
       .begin_time_utc = {},
@@ -136,10 +150,10 @@ void emplace_price(Statistics &result, auto type, T const &item, auto factor) {
   };
 }
 
-template <typename T>
-void emplace_size(Statistics &result, auto type, T const &item) {
+template <typename T, typename U, typename std::enable_if<std::is_same<T, Statistics>::value, int>::type = 0>
+void emplace_size(T &result, auto type, U const &item) {
   auto value = sbe::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue());
-  new (&result) Statistics{
+  new (&result) T{
       .type = type,
       .value = utils::safe_cast(value),
       .begin_time_utc = {},
@@ -270,9 +284,11 @@ void emplace_back(
 }
 }  // namespace
 
+// === IMPLEMENTATION ===
+
 UDPIncremental::UDPIncremental(
     Handler &handler, io::Context &context, uint16_t stream_id, Shared &shared, Channel &channel, Priority priority)
-    : handler_(handler), stream_id_(stream_id), name_(fmt::format("{}:{}{}"sv, stream_id_, NAME, channel.channel_id)),
+    : handler_(handler), stream_id_(stream_id), name_(create_name(stream_id_, channel.channel_id)),
       receiver_(create_receiver(*this, context, shared, channel.channel_id, priority)),
       counter_{
           .disconnect = create_metrics(name_, "disconnect"sv),
