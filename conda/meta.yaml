@@ -27,7 +27,7 @@ requirements:
     - abseil-cpp
     - roq-oss-benchmark
     - roq-oss-brotli
-    - roq-oss-catch2
+    - catch2
     - roq-oss-cppitertools
     - roq-oss-libsodium
     - roq-oss-libsodium
