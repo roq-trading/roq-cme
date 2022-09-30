@@ -776,36 +776,27 @@ void UDPIncremental::dispatch_market_by_price(
   auto &collector = channel_.mbp_collector[security_id];
   try {
     auto last_exchange_sequence = collector.last_sequence();  // note! the protocol doesn't tell us
-    auto publish_update = [&](auto &bids, auto &asks) {
-      MarketByPriceUpdate const market_by_price_update{
+    auto create_update = [&](auto &bids, auto &asks, auto update_type) {
+      return MarketByPriceUpdate{
           .stream_id = stream_id_,
           .exchange = security.exchange,
           .symbol = security.symbol,
           .bids = bids,
           .asks = asks,
-          .update_type = UpdateType::INCREMENTAL,
+          .update_type = update_type,
           .exchange_time_utc = exchange_time_utc,
           .exchange_sequence = exchange_sequence,
           .price_decimals = {},
           .quantity_decimals = {},
           .checksum = {},
       };
+    };
+    auto publish_update = [&](auto &bids, auto &asks) {
+      auto market_by_price_update = create_update(bids, asks, UpdateType::INCREMENTAL);
       create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true, false);
     };
-    auto publish_snapshot = [&](auto &bids, auto &asks, auto exchange_sequence) {
-      MarketByPriceUpdate const market_by_price_update{
-          .stream_id = stream_id_,
-          .exchange = security.exchange,
-          .symbol = security.symbol,
-          .bids = bids,
-          .asks = asks,
-          .update_type = UpdateType::SNAPSHOT,
-          .exchange_time_utc = exchange_time_utc,
-          .exchange_sequence = exchange_sequence,
-          .price_decimals = {},
-          .quantity_decimals = {},
-          .checksum = {},
-      };
+    auto publish_snapshot = [&](auto &bids, auto &asks, [[maybe_unused]] auto exchange_sequence) {
+      auto market_by_price_update = create_update(bids, asks, UpdateType::SNAPSHOT);
       create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true, false);
     };
     auto request_snapshot = [&]([[maybe_unused]] auto retries) {
