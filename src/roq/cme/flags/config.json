@@ -5,19 +5,19 @@
     {
       "name": "config_file",
       "type": "std::string",
-      "validator": "roq::core::flags::Path<std::string>",
+      "validator": "roq::core::flags::Path",
       "description": "config file (path)"
     },
     {
       "name": "secrets_file",
       "type": "std::string",
-      "validator": "roq::core::flags::Path<std::string>",
+      "validator": "roq::core::flags::Path",
       "description": "secrets file (path, optional)"
     },
     {
       "name": "exchange",
       "type": "std::string",
-      "validator": "roq::core::flags::NonEmpty<std::string>",
+      "validator": "roq::core::flags::NonEmpty",
       "default": "deribit",
       "description": "exchange identifier (string)"
     },

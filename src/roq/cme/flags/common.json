@@ -32,7 +32,7 @@
     {
       "name": "secdef_config_file",
       "type": "std::string",
-      "validator": "roq::core::flags::Path<std::string>",
+      "validator": "roq::core::flags::Path",
       "description": "config file (path)"
     },
     {
