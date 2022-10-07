@@ -2,12 +2,8 @@
 
 #include "roq/cme/application.hpp"
 
-#include "roq/io/engine/context_factory.hpp"
-
 #include "roq/cme/config.hpp"
 #include "roq/cme/gateway.hpp"
-
-#include "roq/cme/flags/config.hpp"
 
 using namespace std::literals;
 
@@ -15,12 +11,9 @@ namespace roq {
 namespace cme {
 
 int Application::main(int, char **) {
-  log::info(R"(Parse config_file="{}")"sv, flags::Config::config_file());
-  Config config(flags::Config::config_file(), flags::Config::secrets_file());
+  Config config;
   log::info<1>("config={}"sv, config);
-  log::info("Prepare environment"sv);
-  auto context = io::engine::ContextFactory::create(server::Flags::io_backend());
-  log::info("Starting the gateway..."sv);
+  auto context = server::create_io_context();
   server::Settings settings{
       .package_name = ROQ_PACKAGE_NAME,
       .build_number = ROQ_BUILD_NUMBER,

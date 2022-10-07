@@ -60,7 +60,7 @@ Gateway::Gateway(server::Dispatcher &dispatcher, Config const &, io::Context &co
 }
 
 void Gateway::operator()(Event<Start> const &event) {
-  log::info("Starting the gateway..."sv);
+  log::info("Starting..."sv);
   for (auto &item : udp_instrument_definition_)
     (*item)(event);
   for (auto &item : udp_mbp_market_recovery_)
@@ -70,7 +70,7 @@ void Gateway::operator()(Event<Start> const &event) {
 }
 
 void Gateway::operator()(Event<Stop> const &event) {
-  log::info("Stopping the gateway..."sv);
+  log::info("Stopping..."sv);
   for (auto &item : udp_incremental_)
     (*item)(event);
   for (auto &item : udp_mbp_market_recovery_)
