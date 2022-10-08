@@ -6,7 +6,7 @@
 
 #include "roq/core/charconv.hpp"
 
-#include "roq/core/filesystem/file.hpp"
+#include "roq/core/fs/file.hpp"
 
 #include "roq/core/memory/mapping.hpp"
 
@@ -57,7 +57,7 @@ void set(auto &result, auto &key, auto &value) {
 }
 
 void ConfigReader::read(Handler &handler, std::string_view const &filename) {
-  core::filesystem::File file{filename, {core::filesystem::Flags::READ_ONLY}};
+  core::fs::File file{filename, {core::fs::Flags::READ_ONLY}};
   core::memory::Mapping memory(
       std::size(file),
       {
