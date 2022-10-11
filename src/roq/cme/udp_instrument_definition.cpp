@@ -9,8 +9,6 @@
 #include "roq/utils/safe_cast.hpp"
 #include "roq/utils/update.hpp"
 
-#include "roq/core/back_emplacer.hpp"
-
 #include "roq/debug/hex/message.hpp"
 
 #include "roq/core/metrics/factory.hpp"

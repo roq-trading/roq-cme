@@ -12,6 +12,8 @@ using namespace std::literals;
 namespace roq {
 namespace cme {
 
+// === HELPERS ===
+
 namespace {
 auto create_channels() {
   std::vector<Channel> result;
@@ -51,6 +53,8 @@ auto create_udp_incremental(auto &gateway, auto &context, auto &stream_id, auto 
   return result;
 }
 }  // namespace
+
+// === IMPLEMENTATION ===
 
 Gateway::Gateway(server::Dispatcher &dispatcher, Config const &, io::Context &context)
     : dispatcher_(dispatcher), context_(context), shared_(dispatcher_), channels_(create_channels()),
@@ -102,7 +106,7 @@ void Gateway::operator()(Event<Disconnected> const &event) {
 uint16_t Gateway::operator()(
     Event<CreateOrder> const &event, oms::Order const &, [[maybe_unused]] std::string_view const &request_id) {
   assert(!std::empty(event.value.account));
-  throw oms::NotSupported("not supported"sv);
+  throw oms::NotSupported{"not supported"sv};
 }
 
 uint16_t Gateway::operator()(
@@ -112,7 +116,7 @@ uint16_t Gateway::operator()(
     [[maybe_unused]] std::string_view const &previous_request_id) {
   assert(!std::empty(event.value.account));
   assert(event.value.account == order.account);
-  throw oms::NotSupported("not supported"sv);
+  throw oms::NotSupported{"not supported"sv};
 }
 
 uint16_t Gateway::operator()(
@@ -122,12 +126,12 @@ uint16_t Gateway::operator()(
     [[maybe_unused]] std::string_view const &previous_request_id) {
   assert(!std::empty(event.value.account));
   assert(event.value.account == order.account);
-  throw oms::NotSupported("not supported"sv);
+  throw oms::NotSupported{"not supported"sv};
 }
 
 uint16_t Gateway::operator()(Event<CancelAllOrders> const &event, [[maybe_unused]] std::string_view const &request_id) {
   assert(!std::empty(event.value.account));
-  throw oms::NotSupported("not supported"sv);
+  throw oms::NotSupported{"not supported"sv};
 }
 
 void Gateway::operator()(metrics::Writer &writer) {
