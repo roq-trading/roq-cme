@@ -87,7 +87,7 @@ class UDPInstrumentDefinition final : public io::net::udp::Receiver::Handler, pu
 
   // utils
   template <typename T, typename U>
-  static void emplace_back(const T &item, double multiplier, U &bids, U &asks);
+  static void emplace_back(T const &item, double multiplier, U &bids, U &asks);
 
  private:
   Handler &handler_;
