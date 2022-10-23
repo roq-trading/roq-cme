@@ -164,7 +164,8 @@ TEST_CASE("md_incremental_refresh_book_46_test_1", "[sbe]") {
     }
   } handler;
   std::span buffer{reinterpret_cast<std::byte const *>(std::data(message)), std::size(message)};
-  sbe::Parser::dispatch(handler, buffer, {});
+  TraceInfo trace_info;
+  sbe::Parser::dispatch(handler, buffer, trace_info);
   CHECK(handler.counter == 2);
 }
 
@@ -323,7 +324,8 @@ TEST_CASE("md_incremental_refresh_book_46_test_2", "[sbe]") {
     }
   } handler;
   std::span buffer{reinterpret_cast<std::byte const *>(std::data(message)), std::size(message)};
-  sbe::Parser::dispatch(handler, buffer, {});
+  TraceInfo trace_info;
+  sbe::Parser::dispatch(handler, buffer, trace_info);
   CHECK(handler.counter == 2);
 }
 
@@ -489,7 +491,8 @@ TEST_CASE("md_instrument_definition_future_54", "[sbe]") {
     }
   } handler;
   std::span buffer{reinterpret_cast<std::byte const *>(std::data(message)), std::size(message)};
-  auto result = sbe::Parser::dispatch(handler, buffer, {});
+  TraceInfo trace_info;
+  auto result = sbe::Parser::dispatch(handler, buffer, trace_info);
   CHECK(result == true);
   CHECK(handler.counter == 5);
 }
@@ -595,7 +598,8 @@ TEST_CASE("md_instrument_definition_spread_56", "[sbe]") {
     }
   } handler;
   std::span buffer{reinterpret_cast<std::byte const *>(std::data(message)), std::size(message)};
-  auto result = sbe::Parser::dispatch(handler, buffer, {});
+  TraceInfo trace_info;
+  auto result = sbe::Parser::dispatch(handler, buffer, trace_info);
   CHECK(result == true);
   CHECK(handler.counter == 4);
 }
@@ -695,7 +699,8 @@ TEST_CASE("md_md_incremental_refresh_book_46_test_1", "[sbe]") {
     }
   } handler;
   std::span buffer{reinterpret_cast<std::byte const *>(std::data(message)), std::size(message)};
-  auto result = sbe::Parser::dispatch(handler, buffer, {});
+  TraceInfo trace_info;
+  auto result = sbe::Parser::dispatch(handler, buffer, trace_info);
   CHECK(result == true);
   CHECK(handler.counter == 2);
 }
@@ -782,7 +787,8 @@ TEST_CASE("md_md_incremental_refresh_book_46_test_2", "[sbe]") {
     }
   } handler;
   std::span buffer{reinterpret_cast<std::byte const *>(std::data(message)), std::size(message)};
-  auto result = sbe::Parser::dispatch(handler, buffer, {});
+  TraceInfo trace_info;
+  auto result = sbe::Parser::dispatch(handler, buffer, trace_info);
   CHECK(result == true);
   CHECK(handler.counter == 2);
 }
@@ -848,7 +854,8 @@ TEST_CASE("admin_heartbeat_12", "[sbe]") {
     }
   } handler;
   std::span buffer{reinterpret_cast<std::byte const *>(std::data(message)), std::size(message)};
-  auto result = sbe::Parser::dispatch(handler, buffer, {});
+  TraceInfo trace_info;
+  auto result = sbe::Parser::dispatch(handler, buffer, trace_info);
   CHECK(result == true);
   CHECK(handler.counter == 1);
 }
@@ -972,7 +979,8 @@ TEST_CASE("snapshot_full_refresh_52", "[sbe]") {
     }
   } handler;
   std::span buffer{reinterpret_cast<std::byte const *>(std::data(message)), std::size(message)};
-  auto result = sbe::Parser::dispatch(handler, buffer, {});
+  TraceInfo trace_info;
+  auto result = sbe::Parser::dispatch(handler, buffer, trace_info);
   CHECK(result == true);
   CHECK(handler.counter == 2);
 }

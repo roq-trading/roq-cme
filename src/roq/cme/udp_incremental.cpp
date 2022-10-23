@@ -318,7 +318,7 @@ UDPIncremental::UDPIncremental(
 }
 
 void UDPIncremental::operator()(Event<Start> const &) {
-  auto trace_info = server::create_trace_info();
+  TraceInfo trace_info;
   publish_stream_status(trace_info, ConnectionStatus::CONNECTING);
   last_update_time_ = trace_info.source_receive_time;
 }
@@ -425,7 +425,7 @@ void drain(auto &receiver, auto &channel, auto parse, auto reset) {
 }  // namespace
 
 void UDPIncremental::operator()(io::net::udp::Receiver::Read const &) {
-  auto trace_info = server::create_trace_info();
+  TraceInfo trace_info;
   last_update_time_ = trace_info.source_receive_time;
   publish_stream_status(trace_info, ConnectionStatus::READY);  // first message will publish
   auto parse = [&](auto &message) {

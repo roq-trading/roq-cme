@@ -66,7 +66,7 @@ void read_secdef(T &securities, D &dispatcher) {
           .expiry_datetime_utc = {},
           .discard = security.discard,
       };
-      auto trace_info = server::create_trace_info();
+      TraceInfo trace_info;
       create_trace_and_dispatch(dispatcher_, trace_info, reference_data, true);
     }
 
