@@ -28,7 +28,7 @@ auto get_type(auto &value) {
     return SNAPSHOT_MBO;
   if (value.compare("I"sv) == 0)
     return INCREMENTAL;
-  throw RuntimeError(R"(Unexpected: feed-type="{}")"sv, value);
+  throw RuntimeError{R"(Unexpected: feed-type="{}")"sv, value};
 }
 
 auto get_priority(auto &value) {
@@ -37,7 +37,7 @@ auto get_priority(auto &value) {
     return PRIMARY;
   if (value.compare("B"sv) == 0)
     return SECONDARY;
-  throw RuntimeError(R"(Unexpected: feed="{}")"sv, value);
+  throw RuntimeError{R"(Unexpected: feed="{}")"sv, value};
 }
 
 template <typename T>

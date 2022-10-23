@@ -2,10 +2,10 @@
 
 #pragma once
 
+#include <vector>
+
 #include "roq/logging.hpp"
 #include "roq/mbp_update.hpp"
-
-#include "roq/core/memory.hpp"
 
 namespace roq {
 namespace cme {
@@ -121,7 +121,7 @@ struct Aggregator final {
   uint32_t skip_instrument_id_ = {};
   uint64_t skip_change_id_ = {};
   // -- note! required here because book updates may span multiple packets
-  core::page_aligned_vector<MBPUpdate> bids_, asks_;
+  std::vector<MBPUpdate> bids_, asks_;
 };
 
 }  // namespace cme

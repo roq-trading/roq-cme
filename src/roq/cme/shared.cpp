@@ -95,11 +95,11 @@ std::pair<std::string, uint16_t> Shared::get_multicast_config(
         result = {connection.multicast_address, connection.port};
       })) {
   } else {
-    throw RuntimeError(
+    throw RuntimeError{
         R"(Unable to find multicast configuration using channel_id="{}", type={}, priority={})"sv,
         channel_id,
         magic_enum::enum_name(type),
-        priority);
+        priority};
   }
   return result;
 }

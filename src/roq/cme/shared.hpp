@@ -8,11 +8,11 @@
 
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "roq/api.hpp"
 #include "roq/server.hpp"
 
-#include "roq/core/memory.hpp"
 #include "roq/core/symbols.hpp"
 
 #include "roq/core/limit/rate_limiter.hpp"
@@ -51,10 +51,10 @@ struct Shared final {
   multicast::Config multicast_config_;
 
  public:
-  core::page_aligned_vector<Fill> fills;
-  core::page_aligned_vector<MBPUpdate> bids, asks, final_bids, final_asks;
-  core::page_aligned_vector<Trade> trades;
-  core::page_aligned_vector<Statistics> statistics;
+  std::vector<Fill> fills;
+  std::vector<MBPUpdate> bids, asks, final_bids, final_asks;
+  std::vector<Trade> trades;
+  std::vector<Statistics> statistics;
 
   absl::flat_hash_map<Symbol, double> multiplier;
 
