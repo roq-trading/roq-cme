@@ -35,7 +35,7 @@ namespace cme {
 namespace {
 auto const NAME = "S"sv;
 
-Mask<SupportType> const SUPPORTS{
+auto const SUPPORTS = Mask{
     SupportType::TOP_OF_BOOK,
     SupportType::MARKET_BY_PRICE,
     SupportType::STATISTICS,
@@ -219,8 +219,8 @@ void emplace_back(T const &item, auto &security, auto &top_of_book, auto &bids, 
 
 UDPMBPMarketRecovery::UDPMBPMarketRecovery(
     Handler &handler, io::Context &context, uint16_t stream_id, Shared &shared, Channel &channel)
-    : handler_(handler), stream_id_(stream_id), name_(create_name(stream_id_, channel.channel_id)),
-      receiver_(create_receiver(*this, context, shared, channel.channel_id, Priority::PRIMARY)),
+    : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_, channel.channel_id)},
+      receiver_{create_receiver(*this, context, shared, channel.channel_id, Priority::PRIMARY)},
       counter_{
           .disconnect = create_metrics(name_, "disconnect"sv),
       },
@@ -231,7 +231,7 @@ UDPMBPMarketRecovery::UDPMBPMarketRecovery(
           .snapshot_full_refresh = create_metrics(name_, "snapshot_full_refresh"sv),
           .snapshot_full_refresh_long_qty = create_metrics(name_, "snapshot_full_refresh_long_qty"sv),
       },
-      shared_(shared), channel_(channel) {
+      shared_{shared}, channel_{channel} {
 }
 
 void UDPMBPMarketRecovery::operator()(Event<Start> const &) {

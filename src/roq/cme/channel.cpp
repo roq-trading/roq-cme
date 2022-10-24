@@ -9,8 +9,10 @@ using namespace std::literals;
 namespace roq {
 namespace cme {
 
+// === IMPLEMENTATION ===
+
 Channel::Channel(std::string_view const &channel_id, size_t buffer_size, size_t buffer_depth)
-    : channel_id(channel_id), buffer(buffer_size, buffer_depth) {
+    : channel_id{channel_id}, buffer{buffer_size, buffer_depth} {
   log::info(R"(Create channel id="{}")"sv, channel_id);
 }
 

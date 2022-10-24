@@ -57,10 +57,10 @@ auto create_udp_incremental(auto &gateway, auto &context, auto &stream_id, auto 
 // === IMPLEMENTATION ===
 
 Gateway::Gateway(server::Dispatcher &dispatcher, Config const &, io::Context &context)
-    : dispatcher_(dispatcher), context_(context), shared_(dispatcher_), channels_(create_channels()),
-      udp_instrument_definition_(create_udp_instrument_definition(*this, context_, stream_id_, shared_, channels_)),
-      udp_mbp_market_recovery_(create_udp_mbp_market_recovery(*this, context_, stream_id_, shared_, channels_)),
-      udp_incremental_(create_udp_incremental(*this, context_, stream_id_, shared_, channels_)) {
+    : dispatcher_{dispatcher}, context_{context}, shared_{dispatcher_}, channels_{create_channels()},
+      udp_instrument_definition_{create_udp_instrument_definition(*this, context_, stream_id_, shared_, channels_)},
+      udp_mbp_market_recovery_{create_udp_mbp_market_recovery(*this, context_, stream_id_, shared_, channels_)},
+      udp_incremental_{create_udp_incremental(*this, context_, stream_id_, shared_, channels_)} {
 }
 
 void Gateway::operator()(Event<Start> const &event) {

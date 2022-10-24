@@ -37,7 +37,7 @@ namespace cme {
 namespace {
 auto const NAME = "I"sv;
 
-Mask<SupportType> const SUPPORTS{
+auto const SUPPORTS = Mask{
     SupportType::TOP_OF_BOOK,
     SupportType::MARKET_BY_PRICE,
     SupportType::STATISTICS,
@@ -286,8 +286,8 @@ void emplace_back(
 
 UDPIncremental::UDPIncremental(
     Handler &handler, io::Context &context, uint16_t stream_id, Shared &shared, Channel &channel, Priority priority)
-    : handler_(handler), stream_id_(stream_id), name_(create_name(stream_id_, channel.channel_id)),
-      receiver_(create_receiver(*this, context, shared, channel.channel_id, priority)),
+    : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_, channel.channel_id)},
+      receiver_{create_receiver(*this, context, shared, channel.channel_id, priority)},
       counter_{
           .disconnect = create_metrics(name_, "disconnect"sv),
           .sequence_reset = create_metrics(name_, "sequence_reset"sv),
@@ -314,7 +314,7 @@ UDPIncremental::UDPIncremental(
           .md_incremental_refresh_volume = create_metrics(name_, "md_incremental_refresh_volume"sv),
           .md_incremental_refresh_volume_long_qty = create_metrics(name_, "md_incremental_refresh_volume_long_qty"sv),
       },
-      shared_(shared), channel_(channel) {
+      shared_{shared}, channel_{channel} {
 }
 
 void UDPIncremental::operator()(Event<Start> const &) {

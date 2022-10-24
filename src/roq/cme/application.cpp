@@ -13,7 +13,7 @@ namespace cme {
 // === CONSTANTS ===
 
 namespace {
-server::Settings const SETTINGS{
+auto const SETTINGS = server::Settings{
     .package_name = ROQ_PACKAGE_NAME,
     .build_number = ROQ_BUILD_NUMBER,
     .api = {},

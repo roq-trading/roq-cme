@@ -16,7 +16,7 @@ namespace cme {
 // === CONSTANTS ===
 
 namespace {
-Mask const SUPPORTS{
+auto const SUPPORTS = Mask{
     SupportType::REFERENCE_DATA,
     SupportType::MARKET_STATUS,
     SupportType::TOP_OF_BOOK,
@@ -42,17 +42,15 @@ Account const &Config::get_master_account() const {
 
 std::string const &Config::get_access_key(Account const &account) const {
   auto iter = accounts.find(account);
-  if (iter == std::end(accounts)) {
+  if (iter == std::end(accounts))
     log::fatal(R"(Unknown account="{}")"sv, account);
-  }
   return (*iter).second.login;
 }
 
 std::string const &Config::get_access_secret(Account const &account) const {
   auto iter = accounts.find(account);
-  if (iter == std::end(accounts)) {
+  if (iter == std::end(accounts))
     log::fatal(R"(Unknown account="{}")"sv, account);
-  }
   return (*iter).second.secret;
 }
 
