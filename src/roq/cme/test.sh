@@ -32,7 +32,7 @@ $PREFIX "./roq-cme" \
   --event_log_dir "$HOME/var/lib/roq/data" \
   --event_log_symlink true \
   --client_listen_address "$HOME/run/$NAME.sock" \
-  --metrics_listen_address "$HOME/run/metrics/${NAME}.sock" \
+  --service_listen_address "$HOME/run/metrics/${NAME}.sock" \
   --secdef_config_file "$SECDEF_CONFIG_FILE" \
   --multicast_channel_id "310" \
   --multicast_config_file "$MULTICAST_CONFIG_FILE" \
