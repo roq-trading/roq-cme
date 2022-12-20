@@ -26,15 +26,13 @@ fi
 # launch
 
 $PREFIX "./roq-cme" \
-  --name "$NAME" \
-  --config_file "$CONFIG_FILE" \
-  --cache_dir "$HOME/var/lib/roq/cache" \
-  --event_log_dir "$HOME/var/lib/roq/data" \
-  --event_log_symlink true \
+  --name "cme" \
+  --config_file "config/cme.toml" \
   --client_listen_address "$HOME/run/$NAME.sock" \
   --service_listen_address "$HOME/run/metrics/${NAME}.sock" \
-  --secdef_config_file "$SECDEF_CONFIG_FILE" \
-  --multicast_channel_id "310" \
-  --multicast_config_file "$MULTICAST_CONFIG_FILE" \
+  --multicast_channel_ids "310" \
+  --multicast_config_file "config/config.xml" \
   --multicast_local_interface "1.2.3.4" \
   $@
+
+#  --secdef_config_file "$SECDEF_CONFIG_FILE" \
