@@ -6,7 +6,7 @@
       "name": "exchange",
       "type": "std::string",
       "validator": "roq::core::flags::NonEmpty",
-      "default": "deribit",
+      "default": "cme",
       "description": "exchange identifier (string)"
     },
     {

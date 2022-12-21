@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-
-curl -X GET "https://test.deribit.com/api/v2/public/get_currencies?" -H "Content-Type: application/json"
