@@ -96,7 +96,9 @@ void emplace(T &result, U const &item, auto &security) {
   auto quantity = sbe::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue());
   auto number_of_orders = sbe::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue());
   auto update_action = [&]() {
-    constexpr bool has_md_update_action = requires(U const &t) { t.mDUpdateAction(); };
+    constexpr bool has_md_update_action = requires(U const &t) {
+      t.mDUpdateAction();
+    };
     if constexpr (has_md_update_action) {
       return sbe::map(item.mDUpdateAction());
     }
