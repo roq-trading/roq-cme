@@ -33,8 +33,7 @@ $PREFIX "./roq-cme" \
   --event_log_symlink true \
   --client_listen_address "$HOME/run/$NAME.sock" \
   --service_listen_address "$HOME/run/metrics/${NAME}.sock" \
-  --secdef_config_file "$SECDEF_CONFIG_FILE" \
-  --multicast_channel_id "310" \
+  --multicast_channel_ids "310" \
   --multicast_config_file "$MULTICAST_CONFIG_FILE" \
   --multicast_local_interface "1.2.3.4" \
   $@
