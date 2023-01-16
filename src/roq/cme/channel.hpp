@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "roq/core/market/mbp_sequencer.hpp"
+#include "roq/core/mbp/sequencer.hpp"
 
 #include "roq/core/udp/buffer.hpp"
 
@@ -29,7 +29,7 @@ struct Channel final {
   absl::flat_hash_map<int32_t, uint32_t> mbp_last_sequence;
 
   // recovery
-  absl::node_hash_map<int32_t, core::market::MBP_Sequencer> mbp_collector;
+  absl::node_hash_map<int32_t, core::mbp::Sequencer> mbp_collector;
   absl::flat_hash_map<int32_t, uint32_t> mbp_resubscribe;
 };
 
