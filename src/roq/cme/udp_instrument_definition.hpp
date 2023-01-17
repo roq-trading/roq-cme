@@ -23,8 +23,7 @@
 namespace roq {
 namespace cme {
 
-class UDPInstrumentDefinition final : public io::net::udp::Receiver::Handler, public sbe::Parser::Handler {
- public:
+struct UDPInstrumentDefinition final : public io::net::udp::Receiver::Handler, public sbe::Parser::Handler {
   struct Handler {
     virtual void operator()(Trace<StreamStatus> const &) = 0;
     virtual void operator()(Trace<ExternalLatency> const &) = 0;

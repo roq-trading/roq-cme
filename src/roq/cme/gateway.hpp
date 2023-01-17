@@ -23,11 +23,10 @@
 namespace roq {
 namespace cme {
 
-class Gateway final : public server::Handler,
-                      public UDPInstrumentDefinition::Handler,
-                      public UDPMBPMarketRecovery::Handler,
-                      public UDPIncremental::Handler {
- public:
+struct Gateway final : public server::Handler,
+                       public UDPInstrumentDefinition::Handler,
+                       public UDPMBPMarketRecovery::Handler,
+                       public UDPIncremental::Handler {
   Gateway(server::Dispatcher &, Config const &, io::Context &);
 
   Gateway(Gateway &&) = delete;
