@@ -453,7 +453,7 @@ void UDPIncremental::operator()(io::net::udp::Receiver::Read const &) {
               .quantity_decimals = {},
               .checksum = {},
           };
-          create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true, false);
+          create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true);
         });
       }
       collector.clear();
@@ -791,11 +791,11 @@ void UDPIncremental::dispatch_market_by_price(
     };
     auto publish_update = [&](auto &bids, auto &asks) {
       auto market_by_price_update = create_update(bids, asks, UpdateType::INCREMENTAL);
-      create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true, false);
+      create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true);
     };
     auto publish_snapshot = [&](auto &bids, auto &asks, [[maybe_unused]] auto exchange_sequence) {
       auto market_by_price_update = create_update(bids, asks, UpdateType::SNAPSHOT);
-      create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true, false);
+      create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true);
     };
     auto request_snapshot = [&]([[maybe_unused]] auto retries) {
       channel_.mbp_resubscribe.emplace(security_id, exchange_sequence);
