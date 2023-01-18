@@ -283,7 +283,7 @@ void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::AdminHeartbeat12> const &ev
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("admin_heartbeat={}, frame={}"sv, value, frame);
-    ExternalLatency const external_latency{
+    auto external_latency = ExternalLatency{
         .stream_id = stream_id_,
         .account = {},
         .latency = trace_info.origin_create_time_utc - frame.sending_time,
@@ -380,7 +380,7 @@ void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::SnapshotFullRefresh52> cons
           dispatch_market_by_price(trace_info, security_id, security, exchange_sequence, exchange_time_utc, bids, asks);
         }
         if (!std::empty(statistics)) {
-          StatisticsUpdate const statistics_update{
+          auto statistics_update = StatisticsUpdate{
               .stream_id = stream_id_,
               .exchange = security.exchange,
               .symbol = security.symbol,
@@ -428,7 +428,7 @@ void UDPMBPMarketRecovery::operator()(
           dispatch_market_by_price(trace_info, security_id, security, exchange_sequence, exchange_time_utc, bids, asks);
         }
         if (!std::empty(statistics)) {
-          StatisticsUpdate const statistics_update{
+          auto statistics_update = StatisticsUpdate{
               .stream_id = stream_id_,
               .exchange = security.exchange,
               .symbol = security.symbol,
@@ -541,7 +541,7 @@ void UDPMBPMarketRecovery::dispatch_market_by_price(
   auto &collector = channel_.mbp_collector[security_id];
   try {
     auto publish_snapshot = [&](auto &bids, auto &asks, auto exchange_sequence) {
-      const MarketByPriceUpdate market_by_price_update{
+      auto market_by_price_update = MarketByPriceUpdate{
           .stream_id = stream_id_,
           .exchange = security.exchange,
           .symbol = security.symbol,
@@ -574,7 +574,7 @@ void UDPMBPMarketRecovery::dispatch_market_by_price(
 void UDPMBPMarketRecovery::publish_stream_status(TraceInfo const &trace_info, ConnectionStatus connection_status) {
   if (!utils::update(connection_status_, connection_status))
     return;
-  const StreamStatus stream_status{
+  auto stream_status = StreamStatus{
       .stream_id = stream_id_,
       .account = {},
       .supports = SUPPORTS,

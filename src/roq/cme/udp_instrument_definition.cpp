@@ -162,7 +162,7 @@ void UDPInstrumentDefinition::operator()(Trace<cme_mdp::AdminHeartbeat12> const 
   profile_.admin_heartbeat([&]() {
     auto &[trace_info, value] = event;
     log::info<5>("admin_heartbeat={}, frame={}"sv, value, frame);
-    ExternalLatency const external_latency{
+    auto external_latency = ExternalLatency{
         .stream_id = stream_id_,
         .account = {},
         .latency = trace_info.origin_create_time_utc - frame.sending_time,
@@ -195,7 +195,7 @@ void UDPInstrumentDefinition::operator()(
       auto min_price_increment = sbe::get_double(value.minPriceIncrement());
       auto contract_multiplier = sbe::get_int(value.contractMultiplier(), value.contractMultiplierNullValue());
       double multiplier = contract_multiplier == 0 ? NaN : utils::safe_cast<double>(contract_multiplier);
-      ReferenceData const reference_data{
+      auto reference_data = ReferenceData{
           .stream_id = stream_id_,
           .exchange = security.exchange,
           .symbol = security.symbol,
@@ -222,7 +222,7 @@ void UDPInstrumentDefinition::operator()(
           .discard = security.discard,
       };
       create_trace_and_dispatch(handler_, trace_info, reference_data, true);
-      MarketStatus const market_status{
+      auto market_status = MarketStatus{
           .stream_id = stream_id_,
           .exchange = security.exchange,
           .symbol = security.symbol,
@@ -242,7 +242,7 @@ void UDPInstrumentDefinition::operator()(
     log::info<5>("md_instrument_definition_option={}, frame={}"sv, value, frame);
     create_security(shared_, value, [&](auto &security) {
       auto min_price_increment = sbe::get_double(value.minPriceIncrement());
-      ReferenceData const reference_data{
+      auto reference_data = ReferenceData{
           .stream_id = stream_id_,
           .exchange = security.exchange,
           .symbol = security.symbol,
@@ -270,7 +270,7 @@ void UDPInstrumentDefinition::operator()(
           .discard = security.discard,
       };
       create_trace_and_dispatch(handler_, trace_info, reference_data, true);
-      MarketStatus const market_status{
+      auto market_status = MarketStatus{
           .stream_id = stream_id_,
           .exchange = security.exchange,
           .symbol = security.symbol,
@@ -289,7 +289,7 @@ void UDPInstrumentDefinition::operator()(
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("md_instrument_definition_spread={}, frame={}"sv, value, frame);
     create_security(shared_, value, [&](auto &security) {
-      ReferenceData const reference_data{
+      auto reference_data = ReferenceData{
           .stream_id = stream_id_,
           .exchange = security.exchange,
           .symbol = security.symbol,
@@ -328,7 +328,7 @@ void UDPInstrumentDefinition::operator()(
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("md_instrument_definition_fixed_income={}, frame={}"sv, value, frame);
     create_security(shared_, value, [&](auto &security) {
-      ReferenceData const reference_data{
+      auto reference_data = ReferenceData{
           .stream_id = stream_id_,
           .exchange = security.exchange,
           .symbol = security.symbol,
@@ -367,7 +367,7 @@ void UDPInstrumentDefinition::operator()(
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("md_instrument_definition_repo={}, frame={}"sv, value, frame);
     create_security(shared_, value, [&](auto &security) {
-      ReferenceData const reference_data{
+      auto reference_data = ReferenceData{
           .stream_id = stream_id_,
           .exchange = security.exchange,
           .symbol = security.symbol,
@@ -406,7 +406,7 @@ void UDPInstrumentDefinition::operator()(
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("md_instrument_definition_fx={}, frame={}"sv, value, frame);
     create_security(shared_, value, [&](auto &security) {
-      ReferenceData const reference_data{
+      auto reference_data = ReferenceData{
           .stream_id = stream_id_,
           .exchange = security.exchange,
           .symbol = security.symbol,
@@ -537,7 +537,7 @@ void UDPInstrumentDefinition::operator()(
 void UDPInstrumentDefinition::publish_stream_status(TraceInfo const &trace_info, ConnectionStatus connection_status) {
   if (!utils::update(connection_status_, connection_status))
     return;
-  const StreamStatus stream_status{
+  auto stream_status = StreamStatus{
       .stream_id = stream_id_,
       .account = {},
       .supports = SUPPORTS,

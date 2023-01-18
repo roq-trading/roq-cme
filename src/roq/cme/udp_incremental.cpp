@@ -440,7 +440,7 @@ void UDPIncremental::operator()(io::net::udp::Receiver::Read const &) {
     for (auto &[security_id, collector] : channel_.mbp_collector) {
       if (collector.ready()) {
         get_security(shared_, security_id, [&](auto &security) {
-          MarketByPriceUpdate const market_by_price_update{
+          auto market_by_price_update = MarketByPriceUpdate{
               .stream_id = stream_id_,
               .exchange = security.exchange,
               .symbol = security.symbol,
@@ -477,7 +477,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::AdminHeartbeat12> const &event, s
   profile_.admin_heartbeat([&]() {
     auto &[trace_info, value] = event;
     log::info<5>("admin_heartbeat={}, frame={}"sv, value, frame);
-    ExternalLatency const external_latency{
+    auto external_latency = ExternalLatency{
         .stream_id = stream_id_,
         .account = {},
         .latency = trace_info.origin_create_time_utc - frame.sending_time,
@@ -502,7 +502,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::SecurityStatus30> const &event, s
     value.sbeRewind();  // note!
     auto security_id = value.securityID();
     get_security(shared_, security_id, [&](auto &security) {
-      MarketStatus market_status{
+      auto market_status = MarketStatus{
           .stream_id = stream_id_,
           .exchange = security.exchange,
           .symbol = security.symbol,
@@ -567,7 +567,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &eve
       value.noMDEntries().forEach(
           [&](auto const &item) { emplace_back(item, security, layer, bids, asks, statistics); });
       if (!(std::isnan(layer.bid_price) && std::isnan(layer.ask_price))) {
-        TopOfBook top_of_book{
+        auto top_of_book = TopOfBook{
             .stream_id = stream_id_,
             .exchange = security.exchange,
             .symbol = security.symbol,
@@ -581,7 +581,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &eve
         dispatch_market_by_price(trace_info, security_id, security, exchange_sequence, exchange_time_utc, bids, asks);
       }
       if (!std::empty(statistics)) {
-        StatisticsUpdate const statistics_update{
+        auto statistics_update = StatisticsUpdate{
             .stream_id = stream_id_,
             .exchange = security.exchange,
             .symbol = security.symbol,
@@ -616,7 +616,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
     core::back_emplacer bids{shared_.bids}, asks{shared_.asks};
     auto dispatch = [&](auto security_id, auto &security, auto is_last) {
       if (!(std::isnan(layer.bid_price) && std::isnan(layer.ask_price))) {
-        TopOfBook top_of_book{
+        auto top_of_book = TopOfBook{
             .stream_id = stream_id_,
             .exchange = security.exchange,
             .symbol = security.symbol,
@@ -774,8 +774,8 @@ void UDPIncremental::dispatch_market_by_price(
   auto &collector = channel_.mbp_collector[security_id];
   try {
     auto last_exchange_sequence = collector.last_sequence();  // note! the protocol doesn't tell us
-    auto create_update = [&](auto &bids, auto &asks, auto update_type) {
-      return MarketByPriceUpdate{
+    auto create_update = [&](auto &bids, auto &asks, auto update_type) -> MarketByPriceUpdate {
+      return {
           .stream_id = stream_id_,
           .exchange = security.exchange,
           .symbol = security.symbol,
@@ -831,7 +831,7 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event) {
   auto dispatch = [&](auto &security, auto is_last) {
     if (std::empty(trades))
       return;
-    const TradeSummary trade_summary{
+    auto trade_summary = TradeSummary{
         .stream_id = stream_id_,
         .exchange = security.exchange,
         .symbol = security.symbol,
@@ -872,7 +872,7 @@ void UDPIncremental::dispatch_statistics(Trace<T> const &event, Callback callbac
   core::back_emplacer statistics{shared_.statistics};
   auto dispatch = [&](auto &security, auto is_last) {
     if (!std::empty(statistics)) {
-      StatisticsUpdate const statistics_update{
+      auto statistics_update = StatisticsUpdate{
           .stream_id = stream_id_,
           .exchange = security.exchange,
           .symbol = security.symbol,
@@ -908,7 +908,7 @@ void UDPIncremental::dispatch_statistics(Trace<T> const &event, Callback callbac
 void UDPIncremental::publish_stream_status(TraceInfo const &trace_info, ConnectionStatus connection_status) {
   if (!utils::update(connection_status_, connection_status))
     return;
-  const StreamStatus stream_status{
+  auto stream_status = StreamStatus{
       .stream_id = stream_id_,
       .account = {},
       .supports = SUPPORTS,

@@ -82,6 +82,8 @@ struct Gateway final : public server::Handler,
   std::vector<std::unique_ptr<UDPInstrumentDefinition>> udp_instrument_definition_;
   std::vector<std::unique_ptr<UDPMBPMarketRecovery>> udp_mbp_market_recovery_;
   std::vector<std::unique_ptr<UDPIncremental>> udp_incremental_;
+  // cache
+  std::vector<MBPUpdate> bids_, asks_;
 };
 
 }  // namespace cme
