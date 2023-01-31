@@ -46,6 +46,12 @@
       "type": "uint32_t",
       "default": 0,
       "description": "test"
+    },
+    {
+      "name": "test_inversion",
+      "type": "bool",
+      "default": false,
+      "description": "test"
     }
   ]
 }
