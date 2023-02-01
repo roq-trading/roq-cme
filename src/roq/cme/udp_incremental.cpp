@@ -777,8 +777,11 @@ void UDPIncremental::dispatch_market_by_price(
     auto create_update = [&](auto &bids, auto &asks, auto update_type) -> MarketByPriceUpdate {
       if (flags::Common::test_inversion()) [[unlikely]] {
         if (!std::empty(bids) && !std::empty(asks)) {
-          if (utils::compare(asks[0].price, bids[0].price) <= 0) {
-            log::info("*** INVERSION *** {} {}"sv, bids[0].price, asks[0].price);
+          auto &bid = bids[0];
+          auto &ask = asks[0];
+          if (bid.update_action != UpdateAction::DELETE && ask.update_action != UpdateAction::DELETE &&
+              utils::compare(ask.price, bid.price) <= 0) {
+            log::info("*** INVERSION *** {} {}"sv, bid.price, ask.price);
           }
         }
         if (!std::empty(asks) && utils::compare(asks[0].price, 100.0) < 0)
