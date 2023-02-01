@@ -429,9 +429,13 @@ void UDPIncremental::operator()(io::net::udp::Receiver::Read const &) {
   last_update_time_ = trace_info.source_receive_time;
   publish_stream_status(trace_info, ConnectionStatus::READY);  // first message will publish
   auto parse = [&](auto &message) {
+    log_this_message_ = false;  // DEBUG
     if (!sbe::Parser::dispatch(*this, message, trace_info)) {
       log::warn("{}"sv, debug::hex::Message{message});
       log::fatal("Failed to parse message"sv);
+    }
+    if (log_this_message_) {  // DEBUG
+      log::info("{}"sv, debug::hex::Message{message});
     }
   };
   auto reset = [&]() {
@@ -782,10 +786,13 @@ void UDPIncremental::dispatch_market_by_price(
           if (bid.update_action != UpdateAction::DELETE && ask.update_action != UpdateAction::DELETE &&
               utils::compare(ask.price, bid.price) <= 0) {
             log::info("*** INVERSION *** {} {}"sv, bid.price, ask.price);
+            log_this_message_ = true;  // DEBUG
           }
         }
-        if (!std::empty(asks) && utils::compare(asks[0].price, 100.0) < 0)
+        if (!std::empty(asks) && utils::compare(asks[0].price, 100.0) < 0) {
           log::info("*** INVERSION ***  {}"sv, asks[0].price);
+          log_this_message_ = true;  // DEBUG
+        }
       }
       return {
           .stream_id = stream_id_,
