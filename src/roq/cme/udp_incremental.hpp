@@ -83,6 +83,7 @@ struct UDPIncremental final : public io::net::udp::Receiver::Handler, public sbe
   void operator()(Trace<cme_mdp::MDIncrementalRefreshVolumeLongQty66> const &, sbe::Frame const &) override;
   // - misc
   void operator()(Trace<cme_mdp::MDIncrementalRefreshLimitsBanding50> const &, sbe::Frame const &) override;
+  void operator()(Trace<cme_mdp::QuoteRequest39> const &, sbe::Frame const &) override;
 
  protected:
   void dispatch_market_by_price(
@@ -125,8 +126,9 @@ struct UDPIncremental final : public io::net::udp::Receiver::Handler, public sbe
         md_incremental_refresh_trade_summary_long_qty,  //
         md_incremental_refresh_daily_statistics,        //
         md_incremental_refresh_session_statistics,
-        md_incremental_refresh_session_statistics_long_qty,  //
-        md_incremental_refresh_volume, md_incremental_refresh_volume_long_qty;
+        md_incremental_refresh_session_statistics_long_qty,                     //
+        md_incremental_refresh_volume, md_incremental_refresh_volume_long_qty,  //
+        quote_request;
   } profile_;
   // cache
   Shared &shared_;

@@ -534,6 +534,12 @@ void UDPInstrumentDefinition::operator()(
   log::info<5>("md_incremental_refresh_limits_banding={}, frame={}"sv, value, frame);
 }
 
+void UDPInstrumentDefinition::operator()(Trace<cme_mdp::QuoteRequest39> const &event, sbe::Frame const &frame) {
+  using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+  auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
+  log::info<5>("quote_request={}, frame={}"sv, value, frame);
+}
+
 void UDPInstrumentDefinition::publish_stream_status(TraceInfo const &trace_info, ConnectionStatus connection_status) {
   if (!utils::update(connection_status_, connection_status))
     return;

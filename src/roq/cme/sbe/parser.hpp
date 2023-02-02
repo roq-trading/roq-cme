@@ -12,6 +12,7 @@
 #include "roq/cme/sbe/admin.hpp"
 #include "roq/cme/sbe/md_incremental_refresh.hpp"
 #include "roq/cme/sbe/md_instrument_definition.hpp"
+#include "roq/cme/sbe/quote_request.hpp"
 #include "roq/cme/sbe/security_status.hpp"
 #include "roq/cme/sbe/snapshot_full_refresh.hpp"
 
@@ -53,6 +54,7 @@ struct Parser final {
     virtual void operator()(Trace<cme_mdp::MDIncrementalRefreshVolumeLongQty66> const &, Frame const &) = 0;
     // misc
     virtual void operator()(Trace<cme_mdp::MDIncrementalRefreshLimitsBanding50> const &, Frame const &) = 0;
+    virtual void operator()(Trace<cme_mdp::QuoteRequest39> const &, Frame const &) = 0;
   };
 
   static bool dispatch(Handler &, std::span<std::byte const> const &buffer, TraceInfo const &);

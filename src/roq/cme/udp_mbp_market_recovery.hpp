@@ -81,6 +81,7 @@ struct UDPMBPMarketRecovery final : public io::net::udp::Receiver::Handler, publ
   void operator()(Trace<cme_mdp::MDIncrementalRefreshVolumeLongQty66> const &, sbe::Frame const &) override;
   // - misc
   void operator()(Trace<cme_mdp::MDIncrementalRefreshLimitsBanding50> const &, sbe::Frame const &) override;
+  void operator()(Trace<cme_mdp::QuoteRequest39> const &, sbe::Frame const &) override;
 
  protected:
   void dispatch_market_by_price(

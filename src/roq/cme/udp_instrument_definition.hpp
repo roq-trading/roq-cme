@@ -80,6 +80,7 @@ struct UDPInstrumentDefinition final : public io::net::udp::Receiver::Handler, p
   void operator()(Trace<cme_mdp::MDIncrementalRefreshVolumeLongQty66> const &, sbe::Frame const &) override;
   // - misc
   void operator()(Trace<cme_mdp::MDIncrementalRefreshLimitsBanding50> const &, sbe::Frame const &) override;
+  void operator()(Trace<cme_mdp::QuoteRequest39> const &, sbe::Frame const &) override;
 
  protected:
   void publish_stream_status(TraceInfo const &, ConnectionStatus connection_status);

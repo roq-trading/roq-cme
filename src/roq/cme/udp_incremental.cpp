@@ -313,6 +313,7 @@ UDPIncremental::UDPIncremental(
               create_metrics(name_, "md_incremental_refresh_session_statistics_long_qty"sv),
           .md_incremental_refresh_volume = create_metrics(name_, "md_incremental_refresh_volume"sv),
           .md_incremental_refresh_volume_long_qty = create_metrics(name_, "md_incremental_refresh_volume_long_qty"sv),
+          .quote_request = create_metrics(name_, "quote_request"sv),
       },
       shared_{shared}, channel_{channel} {
 }
@@ -604,6 +605,14 @@ void UDPIncremental::operator()(Trace<cme_mdp::SnapshotFullRefreshLongQty69> con
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("snapshot_full_refresh_long_qty={}, frame={}"sv, value, frame);
+  });
+}
+
+void UDPIncremental::operator()(Trace<cme_mdp::QuoteRequest39> const &event, sbe::Frame const &frame) {
+  profile_.quote_request([&]() {
+    using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+    auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
+    log::info<5>("quote_request={}, frame={}"sv, value, frame);
   });
 }
 
@@ -961,7 +970,8 @@ void UDPIncremental::operator()(metrics::Writer &writer) {
       .write(profile_.md_incremental_refresh_session_statistics, metrics::PROFILE)
       .write(profile_.md_incremental_refresh_session_statistics_long_qty, metrics::PROFILE)
       .write(profile_.md_incremental_refresh_volume, metrics::PROFILE)
-      .write(profile_.md_incremental_refresh_volume_long_qty, metrics::PROFILE);
+      .write(profile_.md_incremental_refresh_volume_long_qty, metrics::PROFILE)
+      .write(profile_.quote_request, metrics::PROFILE);
 }
 
 }  // namespace cme
