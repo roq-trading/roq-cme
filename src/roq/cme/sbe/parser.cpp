@@ -190,11 +190,8 @@ bool Parser::dispatch(Handler &handler, std::span<std::byte const> const &buffer
               break;
             }
             case cme_mdp::QuoteRequest39::SBE_TEMPLATE_ID: {
-              log::warn("{}"sv, debug::hex::Message{buffer});
-              /* XXX not until we have a unit test
               cme_mdp::QuoteRequest39 value{std::data(tmp), std::size(tmp), block_length, version};
               create_trace_and_dispatch(handler, trace_info, value, frame);
-              */
               break;
             }
             case cme_mdp::AdminLogout16::SBE_TEMPLATE_ID:

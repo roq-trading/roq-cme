@@ -992,3 +992,68 @@ TEST_CASE("snapshot_full_refresh_52", "[sbe]") {
   CHECK(result == true);
   CHECK(handler.counter == 2);
 }
+
+TEST_CASE("quote_request_39", "[sbe]") {
+  auto message =
+      "\xb2\xd6\x24\x04\xc1\x40\xf1\x58\xd4\x58\x40\x17\x50\x00\x23\x00\x27\x00\x01\x00\x09\x00\x99\x6e\xea\x58\xd4\x58\x40\x17\x43\x4d\x45\x30\x30\x36\x39\x39\x34\x38\x36\x37\x38\x34\x33\x32\x35\x35\x38\x00\x00\x00\x00\x80\x00\x00\x00\x20\x00\x01\x5a\x54\x4d\x33\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x5e\xac\x0a\x00\xff\xff\xff\x7f\x01\x7f\x00\x00"sv;
+  CHECK(std::size(message) == 92);
+  struct MyHandler final : public sbe::Parser::Handler {
+    int counter = 0;
+    void operator()(sbe::Frame const &) override {}
+    void operator()(Trace<cme_mdp::ChannelReset4> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::AdminHeartbeat12> const &, sbe::Frame const &) override { FAIL(); }
+    // - security status
+    void operator()(Trace<cme_mdp::SecurityStatus30> const &, sbe::Frame const &) override { FAIL(); }
+    // - instrument definition
+    void operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDInstrumentDefinitionOption55> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDInstrumentDefinitionSpread56> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDInstrumentDefinitionFixedIncome57> const &, sbe::Frame const &) override {
+      FAIL();
+    }
+    void operator()(Trace<cme_mdp::MDInstrumentDefinitionRepo58> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDInstrumentDefinitionFX63> const &, sbe::Frame const &) override { FAIL(); }
+    // - SnapshotFullRefresh
+    void operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::SnapshotFullRefreshOrderBook53> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::SnapshotFullRefreshLongQty69> const &, sbe::Frame const &) override { FAIL(); }
+    // - MDIncrementalRefresh
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshVolume37> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshOrderBook47> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshTradeSummary48> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshDailyStatistics49> const &, sbe::Frame const &) override {
+      FAIL();
+    }
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshLimitsBanding50> const &, sbe::Frame const &) override {
+      FAIL();
+    }
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshSessionStatistics51> const &, sbe::Frame const &) override {
+      FAIL();
+    }
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshBookLongQty64> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65> const &, sbe::Frame const &) override {
+      FAIL();
+    }
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshVolumeLongQty66> const &, sbe::Frame const &) override {
+      FAIL();
+    }
+    void operator()(
+        Trace<cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67> const &, sbe::Frame const &) override {
+      FAIL();
+    }
+    void operator()(Trace<cme_mdp::QuoteRequest39> const &event, sbe::Frame const &) override {
+      ++counter;
+      using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+      auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
+      auto tmp = fmt::format("{}"sv, value);
+      // fmt::print("{}\n", tmp);
+    }
+  } handler;
+  std::span buffer{reinterpret_cast<std::byte const *>(std::data(message)), std::size(message)};
+  TraceInfo trace_info;
+  auto result = sbe::Parser::dispatch(handler, buffer, trace_info);
+  CHECK(result == true);
+  CHECK(handler.counter == 1);
+}
+
