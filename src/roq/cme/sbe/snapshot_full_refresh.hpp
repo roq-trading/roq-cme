@@ -24,6 +24,14 @@ inline size_t compute_length(cme_mdp::SnapshotFullRefresh52 &value) {
   return value.computeLength(no_md_entries_length);
 }
 
+template <>
+inline size_t compute_length(cme_mdp::SnapshotFullRefreshOrderBook53 &value) {
+  // NoMDEntries
+  auto no_md_entries_length = value.noMDEntries().count();
+  value.noMDEntries().forEach([](auto &e) { e.skip(); });
+  return value.computeLength(no_md_entries_length);
+}
+
 }  // namespace sbe
 }  // namespace cme
 }  // namespace roq

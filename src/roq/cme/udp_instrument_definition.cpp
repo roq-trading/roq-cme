@@ -192,9 +192,12 @@ void UDPInstrumentDefinition::operator()(
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("md_instrument_definition_future={}, frame={}"sv, value, frame);
     create_security(shared_, value, [&](auto &security) {
+      auto quote_currency = sbe::get_string_view(value.currency(), value.currencyLength());
       auto min_price_increment = sbe::get_double(value.minPriceIncrement());
       auto contract_multiplier = sbe::get_int(value.contractMultiplier(), value.contractMultiplierNullValue());
-      double multiplier = contract_multiplier == 0 ? NaN : utils::safe_cast<double>(contract_multiplier);
+      auto multiplier = contract_multiplier == 0 ? NaN : utils::safe_cast<double>(contract_multiplier);
+      auto min_trade_vol = utils::safe_cast(value.minTradeVol());
+      auto max_trade_vol = utils::safe_cast(value.maxTradeVol());
       auto reference_data = ReferenceData{
           .stream_id = stream_id_,
           .exchange = security.exchange,
@@ -202,13 +205,13 @@ void UDPInstrumentDefinition::operator()(
           .description = {},
           .security_type = SecurityType::FUTURES,
           .base_currency = {},
-          .quote_currency = sbe::get_string_view(value.currency(), value.currencyLength()),
+          .quote_currency = quote_currency,
           .margin_currency = {},
           .commission_currency = {},
           .tick_size = min_price_increment * security.display_factor,
           .multiplier = multiplier,
-          .min_trade_vol = utils::safe_cast(value.minTradeVol()),
-          .max_trade_vol = utils::safe_cast(value.maxTradeVol()),
+          .min_trade_vol = min_trade_vol,
+          .max_trade_vol = max_trade_vol,
           .trade_vol_step_size = NaN,
           .option_type = {},
           .strike_currency = {},
@@ -222,13 +225,16 @@ void UDPInstrumentDefinition::operator()(
           .discard = security.discard,
       };
       create_trace_and_dispatch(handler_, trace_info, reference_data, true);
-      auto market_status = MarketStatus{
-          .stream_id = stream_id_,
-          .exchange = security.exchange,
-          .symbol = security.symbol,
-          .trading_status = sbe::map_security_trading_status(value.mDSecurityTradingStatus()),
-      };
-      create_trace_and_dispatch(handler_, trace_info, market_status, true);
+      if (!security.discard) {
+        auto trading_status = sbe::map_security_trading_status(value.mDSecurityTradingStatus());
+        auto market_status = MarketStatus{
+            .stream_id = stream_id_,
+            .exchange = security.exchange,
+            .symbol = security.symbol,
+            .trading_status = trading_status,
+        };
+        create_trace_and_dispatch(handler_, trace_info, market_status, true);
+      }
     });
   });
 }
@@ -241,7 +247,11 @@ void UDPInstrumentDefinition::operator()(
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("md_instrument_definition_option={}, frame={}"sv, value, frame);
     create_security(shared_, value, [&](auto &security) {
+      auto quote_currency = sbe::get_string_view(value.currency(), value.currencyLength());
       auto min_price_increment = sbe::get_double(value.minPriceIncrement());
+      auto min_trade_vol = utils::safe_cast(value.minTradeVol());
+      auto max_trade_vol = utils::safe_cast(value.maxTradeVol());
+      auto strike_currency = sbe::get_string_view(value.strikeCurrency(), value.strikeCurrencyLength());
       auto reference_data = ReferenceData{
           .stream_id = stream_id_,
           .exchange = security.exchange,
@@ -249,17 +259,17 @@ void UDPInstrumentDefinition::operator()(
           .description = {},
           .security_type = SecurityType::OPTION,
           .base_currency = {},
-          .quote_currency = sbe::get_string_view(value.currency(), value.currencyLength()),
+          .quote_currency = quote_currency,
           .margin_currency = {},
           .commission_currency = {},
           .tick_size = min_price_increment * security.display_factor,
           .multiplier = NaN,
           .min_notional = NaN,
-          .min_trade_vol = utils::safe_cast(value.minTradeVol()),
-          .max_trade_vol = utils::safe_cast(value.maxTradeVol()),
+          .min_trade_vol = min_trade_vol,
+          .max_trade_vol = max_trade_vol,
           .trade_vol_step_size = NaN,
           .option_type = {},
-          .strike_currency = sbe::get_string_view(value.strikeCurrency(), value.strikeCurrencyLength()),
+          .strike_currency = strike_currency,
           .strike_price = NaN,
           .underlying = {},
           .time_zone = {},
@@ -270,13 +280,16 @@ void UDPInstrumentDefinition::operator()(
           .discard = security.discard,
       };
       create_trace_and_dispatch(handler_, trace_info, reference_data, true);
-      auto market_status = MarketStatus{
-          .stream_id = stream_id_,
-          .exchange = security.exchange,
-          .symbol = security.symbol,
-          .trading_status = sbe::map_security_trading_status(value.mDSecurityTradingStatus()),
-      };
-      create_trace_and_dispatch(handler_, trace_info, market_status, true);
+      if (!security.discard) {
+        auto trading_status = sbe::map_security_trading_status(value.mDSecurityTradingStatus());
+        auto market_status = MarketStatus{
+            .stream_id = stream_id_,
+            .exchange = security.exchange,
+            .symbol = security.symbol,
+            .trading_status = trading_status,
+        };
+        create_trace_and_dispatch(handler_, trace_info, market_status, true);
+      }
     });
   });
 }
@@ -289,6 +302,10 @@ void UDPInstrumentDefinition::operator()(
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("md_instrument_definition_spread={}, frame={}"sv, value, frame);
     create_security(shared_, value, [&](auto &security) {
+      auto quote_currency = sbe::get_string_view(value.currency(), value.currencyLength());
+      auto tick_size = sbe::get_double(value.minPriceIncrement());
+      auto min_trade_vol = utils::safe_cast(value.minTradeVol());
+      auto max_trade_vol = utils::safe_cast(value.maxTradeVol());
       auto reference_data = ReferenceData{
           .stream_id = stream_id_,
           .exchange = security.exchange,
@@ -296,13 +313,13 @@ void UDPInstrumentDefinition::operator()(
           .description = {},
           .security_type = SecurityType::FUTURES,
           .base_currency = {},
-          .quote_currency = sbe::get_string_view(value.currency(), value.currencyLength()),
+          .quote_currency = quote_currency,
           .margin_currency = {},
           .commission_currency = {},
-          .tick_size = sbe::get_double(value.minPriceIncrement()),
+          .tick_size = tick_size,
           .multiplier = NaN,
-          .min_trade_vol = utils::safe_cast(value.minTradeVol()),
-          .max_trade_vol = utils::safe_cast(value.maxTradeVol()),
+          .min_trade_vol = min_trade_vol,
+          .max_trade_vol = max_trade_vol,
           .trade_vol_step_size = NaN,
           .option_type = {},
           .strike_currency = {},
@@ -328,6 +345,10 @@ void UDPInstrumentDefinition::operator()(
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("md_instrument_definition_fixed_income={}, frame={}"sv, value, frame);
     create_security(shared_, value, [&](auto &security) {
+      auto quote_currency = sbe::get_string_view(value.currency(), value.currencyLength());
+      auto tick_size = sbe::get_double(value.minPriceIncrement());
+      auto min_trade_vol = utils::safe_cast(value.minTradeVol());
+      auto max_trade_vol = utils::safe_cast(value.maxTradeVol());
       auto reference_data = ReferenceData{
           .stream_id = stream_id_,
           .exchange = security.exchange,
@@ -335,13 +356,13 @@ void UDPInstrumentDefinition::operator()(
           .description = {},
           .security_type = SecurityType::FUTURES,
           .base_currency = {},
-          .quote_currency = sbe::get_string_view(value.currency(), value.currencyLength()),
+          .quote_currency = quote_currency,
           .margin_currency = {},
           .commission_currency = {},
-          .tick_size = sbe::get_double(value.minPriceIncrement()),
+          .tick_size = tick_size,
           .multiplier = NaN,
-          .min_trade_vol = utils::safe_cast(value.minTradeVol()),
-          .max_trade_vol = utils::safe_cast(value.maxTradeVol()),
+          .min_trade_vol = min_trade_vol,
+          .max_trade_vol = max_trade_vol,
           .trade_vol_step_size = NaN,
           .option_type = {},
           .strike_currency = {},
@@ -367,6 +388,10 @@ void UDPInstrumentDefinition::operator()(
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("md_instrument_definition_repo={}, frame={}"sv, value, frame);
     create_security(shared_, value, [&](auto &security) {
+      auto quote_currency = sbe::get_string_view(value.currency(), value.currencyLength());
+      auto tick_size = sbe::get_double(value.minPriceIncrement());
+      auto min_trade_vol = utils::safe_cast(value.minTradeVol());
+      auto max_trade_vol = utils::safe_cast(value.maxTradeVol());
       auto reference_data = ReferenceData{
           .stream_id = stream_id_,
           .exchange = security.exchange,
@@ -374,13 +399,13 @@ void UDPInstrumentDefinition::operator()(
           .description = {},
           .security_type = SecurityType::FUTURES,
           .base_currency = {},
-          .quote_currency = sbe::get_string_view(value.currency(), value.currencyLength()),
+          .quote_currency = quote_currency,
           .margin_currency = {},
           .commission_currency = {},
-          .tick_size = sbe::get_double(value.minPriceIncrement()),
+          .tick_size = tick_size,
           .multiplier = NaN,
-          .min_trade_vol = utils::safe_cast(value.minTradeVol()),
-          .max_trade_vol = utils::safe_cast(value.maxTradeVol()),
+          .min_trade_vol = min_trade_vol,
+          .max_trade_vol = max_trade_vol,
           .trade_vol_step_size = NaN,
           .option_type = {},
           .strike_currency = {},
@@ -406,6 +431,10 @@ void UDPInstrumentDefinition::operator()(
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("md_instrument_definition_fx={}, frame={}"sv, value, frame);
     create_security(shared_, value, [&](auto &security) {
+      auto quote_currency = sbe::get_string_view(value.currency(), value.currencyLength());
+      auto tick_size = sbe::get_double(value.minPriceIncrement());
+      auto min_trade_vol = utils::safe_cast(value.minTradeVol());
+      auto max_trade_vol = utils::safe_cast(value.maxTradeVol());
       auto reference_data = ReferenceData{
           .stream_id = stream_id_,
           .exchange = security.exchange,
@@ -413,13 +442,13 @@ void UDPInstrumentDefinition::operator()(
           .description = {},
           .security_type = SecurityType::FUTURES,
           .base_currency = {},
-          .quote_currency = sbe::get_string_view(value.currency(), value.currencyLength()),
+          .quote_currency = quote_currency,
           .margin_currency = {},
           .commission_currency = {},
-          .tick_size = sbe::get_double(value.minPriceIncrement()),
+          .tick_size = tick_size,
           .multiplier = NaN,
-          .min_trade_vol = utils::safe_cast(value.minTradeVol()),
-          .max_trade_vol = utils::safe_cast(value.maxTradeVol()),
+          .min_trade_vol = min_trade_vol,
+          .max_trade_vol = max_trade_vol,
           .trade_vol_step_size = NaN,
           .option_type = {},
           .strike_currency = {},
