@@ -444,7 +444,6 @@ TEST_CASE("complex", "[incremental]") {
     void operator()(Trace<cme_mdp::SnapshotFullRefreshLongQty69> const &, sbe::Frame const &) override { FAIL(); }
     // - MDIncrementalRefresh
     void operator()(Trace<cme_mdp::MDIncrementalRefreshVolume37> const &event, sbe::Frame const &) override {
-      // HANS ??? WHAT IS THIS ???
       using value_type = std::remove_cvref<decltype(event)>::type::value_type;
       auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
       switch (++count_37) {
@@ -460,7 +459,7 @@ TEST_CASE("complex", "[incremental]") {
                 CHECK(item.securityID() == 492654);
                 CHECK(item.rptSeq() == 597793);
                 CHECK(item.mDUpdateAction() == cme_mdp::MDUpdateAction::Value::New);
-                // CHECK(item.mDEntryType().rawValue() == 'e'); // note! constant
+                // CHECK(item.mDEntryType().rawValue() == 'e'); // note! constant MDEntryTypeVol
                 break;
             }
           });
