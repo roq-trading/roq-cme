@@ -65,6 +65,7 @@ struct Gateway final : public server::Handler,
   void operator()(Trace<MarketStatus> const &, bool is_last) override;
   void operator()(Trace<TopOfBook> const &, bool is_last) override;
   void operator()(Trace<MarketByPriceUpdate> const &, bool is_last) override;
+  void operator()(Trace<MarketByOrderUpdate> const &, bool is_last) override;
   void operator()(Trace<TradeSummary> const &, bool is_last) override;
   void operator()(Trace<StatisticsUpdate> const &, bool is_last) override;
 
@@ -84,6 +85,7 @@ struct Gateway final : public server::Handler,
   std::vector<std::unique_ptr<UDPIncremental>> udp_incremental_;
   // cache
   std::vector<MBPUpdate> bids_, asks_;
+  std::vector<MBOUpdate> mbo_bids_, mbo_asks_;
 };
 
 }  // namespace cme

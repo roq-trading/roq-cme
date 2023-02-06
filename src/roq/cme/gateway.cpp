@@ -168,6 +168,11 @@ void Gateway::operator()(Trace<MarketByPriceUpdate> const &event, bool is_last) 
   dispatcher_(event, is_last, bids_, asks_, callback);
 }
 
+void Gateway::operator()(Trace<MarketByOrderUpdate> const &event, bool is_last) {
+  auto callback = []([[maybe_unused]] auto &market_by_price) {};
+  dispatcher_(event, is_last, mbo_bids_, mbo_asks_, callback);
+}
+
 void Gateway::operator()(Trace<TradeSummary> const &event, bool is_last) {
   dispatcher_(event, is_last);
 }

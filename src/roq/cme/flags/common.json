@@ -52,6 +52,12 @@
       "type": "bool",
       "default": false,
       "description": "test"
+    },
+    {
+      "name": "test_mbo",
+      "type": "bool",
+      "default": false,
+      "description": "test"
     }
   ]
 }

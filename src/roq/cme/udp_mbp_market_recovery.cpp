@@ -376,7 +376,7 @@ void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::SnapshotFullRefresh52> cons
           };
           */
         }
-        if (!(std::empty(bids) && std::empty(bids))) {
+        if (!(std::empty(bids) && std::empty(asks))) {
           dispatch_market_by_price(trace_info, security_id, security, exchange_sequence, exchange_time_utc, bids, asks);
         }
         if (!std::empty(statistics)) {
@@ -424,7 +424,7 @@ void UDPMBPMarketRecovery::operator()(
           };
           */
         }
-        if (!(std::empty(bids) && std::empty(bids))) {
+        if (!(std::empty(bids) && std::empty(asks))) {
           dispatch_market_by_price(trace_info, security_id, security, exchange_sequence, exchange_time_utc, bids, asks);
         }
         if (!std::empty(statistics)) {

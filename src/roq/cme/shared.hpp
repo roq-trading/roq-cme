@@ -53,6 +53,7 @@ struct Shared final {
  public:
   std::vector<Fill> fills;
   std::vector<MBPUpdate> bids, asks;
+  std::vector<MBOUpdate> mbo_bids, mbo_asks;
   std::vector<Trade> trades;
   std::vector<Statistics> statistics;
 

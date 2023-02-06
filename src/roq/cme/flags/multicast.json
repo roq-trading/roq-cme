@@ -11,7 +11,7 @@
     {
       "name": "multicast_channel_ids",
       "type": "std::vector<std::string>",
-      "description": "Comma-seprated list of multicast channels, e.g. 310"
+      "description": "Comma-separated list of multicast channels, e.g. 310"
     },
     {
       "name": "multicast_local_interface",

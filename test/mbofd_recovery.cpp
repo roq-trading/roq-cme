@@ -16,7 +16,7 @@ using namespace Catch::literals;
 using namespace roq;
 using namespace roq::cme;
 
-TEST_CASE("simple", "[snapshot_full_refresh_order_book_53]") {
+TEST_CASE("simple", "[mbofd_recovery]") {
   auto message =
       "\xf2\x01\x00\x00"                  // sequence number
       "\x6e\xfc\x55\x7a\xb9\x29\x41\x17"  // sending time

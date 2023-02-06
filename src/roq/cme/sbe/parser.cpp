@@ -154,7 +154,7 @@ bool Parser::dispatch(Handler &handler, std::span<std::byte const> const &buffer
               create_trace_and_dispatch(handler, trace_info, value, frame);
               break;
             }
-              // statistcis
+              // statistics
             case cme_mdp::MDIncrementalRefreshDailyStatistics49::SBE_TEMPLATE_ID: {
               cme_mdp::MDIncrementalRefreshDailyStatistics49 value{
                   std::data(tmp), std::size(tmp), block_length, version};

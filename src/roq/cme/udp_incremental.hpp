@@ -30,6 +30,7 @@ struct UDPIncremental final : public io::net::udp::Receiver::Handler, public sbe
     virtual void operator()(Trace<MarketStatus> const &, bool is_last) = 0;
     virtual void operator()(Trace<TopOfBook> const &, bool is_last) = 0;
     virtual void operator()(Trace<MarketByPriceUpdate> const &, bool is_last) = 0;
+    virtual void operator()(Trace<MarketByOrderUpdate> const &, bool is_last) = 0;
     virtual void operator()(Trace<TradeSummary> const &, bool is_last) = 0;
     virtual void operator()(Trace<StatisticsUpdate> const &, bool is_last) = 0;
   };
@@ -87,6 +88,15 @@ struct UDPIncremental final : public io::net::udp::Receiver::Handler, public sbe
 
  protected:
   void dispatch_market_by_price(
+      auto &trace_info,
+      auto security_id,
+      auto &security,
+      auto exchange_sequence,
+      auto exchange_time_utc,
+      auto &bids,
+      auto &asks);
+
+  void dispatch_market_by_order(
       auto &trace_info,
       auto security_id,
       auto &security,

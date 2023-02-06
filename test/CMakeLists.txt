@@ -1,6 +1,6 @@
 set(TARGET_NAME "${PROJECT_NAME}-test")
 
-set(SOURCES config.cpp sbe.cpp secdef.cpp snapshot_full_refresh_order_book_53.cpp main.cpp)
+set(SOURCES config.cpp sbe.cpp secdef.cpp incremental.cpp mbofd_recovery.cpp main.cpp)
 
 roq_gitignore(OUTPUT ".gitignore" SOURCES "${TARGET_NAME}")
 
