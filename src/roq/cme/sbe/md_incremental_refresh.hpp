@@ -159,10 +159,16 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshBook46::NoOrderIDEntries> {
         context.out(),
         R"({{)"
         R"(order_id={}, )"
-        R"(md_order_priority={})"
+        R"(md_order_priority={}, )"
+        R"(md_display_qty={}, )"
+        R"(reference_id={}, )"
+        R"(order_update_action={})"
         R"(}})"sv,
         value.orderID(),
-        roq::cme::sbe::get_int(value.mDOrderPriority(), value.mDOrderPriority()));
+        roq::cme::sbe::get_int(value.mDOrderPriority(), value.mDOrderPriorityNullValue()),
+        roq::cme::sbe::get_int(value.mDDisplayQty(), value.mDDisplayQtyNullValue()),
+        roq::cme::sbe::get_int(value.referenceID(), value.referenceIDNullValue()),
+        value.orderUpdateAction());
   }
 };
 
@@ -307,7 +313,7 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshTradeSummary48::NoOrderIDEntr
         context.out(),
         R"({{)"
         R"(order_id={}, )"
-        R"(last_qty={}, )"
+        R"(last_qty={})"
         R"(}})"sv,
         value.orderID(),
         value.lastQty());

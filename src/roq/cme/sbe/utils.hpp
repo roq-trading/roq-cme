@@ -23,6 +23,29 @@ namespace roq {
 namespace cme {
 namespace sbe {
 
+inline Side map(cme_mdp::MDEntryTypeBook::Value value) {
+  switch (value) {
+    using enum cme_mdp::MDEntryTypeBook::Value;
+    case Bid:
+      return Side::BUY;
+    case Offer:
+      return Side::SELL;
+    case ImpliedBid:
+      break;
+    case ImpliedOffer:
+      break;
+    case BookReset:
+      break;
+    case MarketBestOffer:
+      break;
+    case MarketBestBid:
+      break;
+    case NULL_VALUE:
+      break;
+  }
+  return {};
+}
+
 inline Side map_side(cme_mdp::AggressorSide::Value value) {
   switch (value) {
     using enum cme_mdp::AggressorSide::Value;
@@ -151,6 +174,22 @@ inline UpdateAction map(cme_mdp::MDUpdateAction::Value value) {
     case Overlay:
       log::warn("+++ USING OVERLAY +++"sv);
       break;
+    case NULL_VALUE:
+      break;
+  }
+  return {};
+}
+
+inline UpdateAction map(cme_mdp::OrderUpdateAction::Value value) {
+  using namespace std::literals;
+  switch (value) {
+    using enum cme_mdp::OrderUpdateAction::Value;
+    case New:
+      return UpdateAction::NEW;
+    case Update:
+      return UpdateAction::CHANGE;
+    case Delete:
+      return UpdateAction::DELETE;
     case NULL_VALUE:
       break;
   }

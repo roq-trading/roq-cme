@@ -282,13 +282,63 @@ void emplace_back(
 }
 
 void emplace_back(
+    cme_mdp::MDIncrementalRefreshBook46::NoOrderIDEntries const &item, auto &security, auto &bids, auto &asks) {
+  /*
+  using value_type = typename std::remove_cvref<decltype(item)>::type;
+  auto create_update = [&]() {
+    auto price = sbe::get_double(const_cast<value_type &>(item).mDEntryPx());
+    auto remaining_quantity = sbe::get_int(item.mDDisplayQty(), item.mDDisplayQtyNullValue());
+    auto priority = sbe::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue());
+    auto order_id = sbe::get_int(item.orderID(), item.orderIDNullValue());
+    auto action = sbe::map(item.orderUpdateAction());
+    auto result = MBOUpdate{
+        .price = price * security.display_factor,
+        .remaining_quantity = static_cast<double>(remaining_quantity),
+        .priority = priority,
+        .order_id = {},
+        .action = action,
+        .reason = {},
+    };
+    fmt::format_to(std::back_inserter(result.order_id), "{}"sv, order_id);
+    return result;
+  };
+  using value_type = typename std::remove_cvref<decltype(item)>::type;
+  switch (item.mDEntryType()) {
+    using enum cme_mdp::MDEntryTypeBook::Value;
+    case Bid: {
+      auto update = create_update();
+      bids.emplace_back(std::move(update));
+      break;
+    }
+    case Offer: {
+      auto update = create_update();
+      asks.emplace_back(std::move(update));
+      break;
+    }
+    case ImpliedBid:
+      break;
+    case ImpliedOffer:
+      break;
+    case BookReset:  // XXX ????????????????????????
+      break;
+    case MarketBestOffer:
+      break;
+    case MarketBestBid:
+      break;
+    case NULL_VALUE:
+      break;
+  }
+  */
+}
+
+void emplace_back(
     cme_mdp::MDIncrementalRefreshOrderBook47::NoMDEntries const &item, auto &security, auto &bids, auto &asks) {
   using value_type = typename std::remove_cvref<decltype(item)>::type;
   auto create_update = [&]() {
     auto price = sbe::get_double(const_cast<value_type &>(item).mDEntryPx());
-    auto remaining_quantity = sbe::get_int<int32_t>(item.mDDisplayQty(), item.mDDisplayQtyNullValue());
-    auto priority = sbe::get_int<uint64_t>(item.mDOrderPriority(), item.mDOrderPriorityNullValue());
-    auto order_id = sbe::get_int<uint64_t>(item.orderID(), item.orderIDNullValue());
+    auto remaining_quantity = sbe::get_int(item.mDDisplayQty(), item.mDDisplayQtyNullValue());
+    auto priority = sbe::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue());
+    auto order_id = sbe::get_int(item.orderID(), item.orderIDNullValue());
     auto action = sbe::map(item.mDUpdateAction());
     auto result = MBOUpdate{
         .price = price * security.display_factor,
@@ -694,24 +744,50 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
         asks.clear();
       }
     };
-    int32_t security_id = {};
-    Shared::Security *security = nullptr;
-    value.noMDEntries().forEach([&](auto const &item) {
-      auto current_security_id = item.securityID();
-      if (current_security_id != security_id) {
-        if (security)
-          dispatch(security_id, *security, true);
-        security_id = current_security_id;
-        if (get_security(shared_, security_id, [&security](auto &security_2) { security = &security_2; })) {
-        } else {
-          security = nullptr;
+    entries_46_.clear();
+    {  // MBO
+      int32_t security_id = {};
+      Shared::Security *security = nullptr;
+      value.noMDEntries().forEach([&](auto const &item) {
+        auto current_security_id = item.securityID();
+        if (current_security_id != security_id) {
+          if (security)
+            dispatch(security_id, *security, true);
+          security_id = current_security_id;
+          if (get_security(shared_, security_id, [&security](auto &security_2) { security = &security_2; })) {
+          } else {
+            security = nullptr;
+          }
         }
-      }
+        if (security)
+          emplace_back(item, *security, layer, bids, asks);
+        // MBO
+        using value_type = typename std::remove_cvref<decltype(item)>::type;
+        auto price = sbe::get_double(const_cast<value_type &>(item).mDEntryPx());
+        auto side = sbe::map(item.mDEntryType());
+        entries_46_.emplace_back(security_id, side, price);
+      });
       if (security)
-        emplace_back(item, *security, layer, bids, asks);
-    });
-    if (security)
-      dispatch(security_id, *security, true);
+        dispatch(security_id, *security, true);
+    }
+    {  // MBP
+      auto &bids = shared_.mbo_bids;
+      auto &asks = shared_.mbo_asks;
+      bids.clear();
+      asks.clear();
+      value.noOrderIDEntries().forEach([&](auto const &item) {
+        auto reference_id = item.referenceID();
+        if (reference_id == item.referenceIDNullValue())
+          return;
+        log::info("DEBUG reference_id={}, len={}"sv, reference_id, std::size(entries_46_));
+        if (!(reference_id < std::size(entries_46_))) {
+          log::warn("DEBUG HERE"sv);
+          return;
+        }
+        auto [security_id, side, price] = entries_46_[reference_id];
+        log::info("DEBUG security_id={}, side={}, price={}"sv, security_id, side, price);
+      });
+    }
   });
 }
 
