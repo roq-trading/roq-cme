@@ -105,20 +105,20 @@ TEST_CASE("batched", "[incremental]") {
             switch (++no_md_entries_rows) {
               case 1:
                 CHECK(sbe::get_double(item.mDEntryPx()) == -0.21875_a);
-                CHECK(sbe::get_int<int32_t>(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 2);
-                CHECK(sbe::get_int<int32_t>(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 1);
-                CHECK(sbe::get_int<int8_t>(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 1);
-                CHECK(sbe::get_int<uint16_t>(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
+                CHECK(sbe::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 2);
+                CHECK(sbe::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 1);
+                CHECK(sbe::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 1);
+                CHECK(sbe::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
                 CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
                 CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::Bid);
                 break;
               case 2:
                 CHECK(sbe::get_double(item.mDEntryPx()) == -0.234375_a);
-                CHECK(sbe::get_int<int32_t>(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 4);
-                CHECK(sbe::get_int<int32_t>(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 2);
-                CHECK(sbe::get_int<int8_t>(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 2);
-                CHECK(sbe::get_int<uint16_t>(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
+                CHECK(sbe::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 4);
+                CHECK(sbe::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 2);
+                CHECK(sbe::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 2);
+                CHECK(sbe::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
                 CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
                 CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::Bid);
@@ -126,21 +126,20 @@ TEST_CASE("batched", "[incremental]") {
               // ...
               case 31:
                 CHECK(sbe::get_double(item.mDEntryPx()) == -0.09375_a);
-                CHECK(sbe::get_int<int32_t>(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 0);
-                CHECK(sbe::get_int<int32_t>(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
-                CHECK(sbe::get_int<int8_t>(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 0);
-                CHECK(sbe::get_int<uint16_t>(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
+                CHECK(sbe::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 0);
+                CHECK(sbe::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
+                CHECK(sbe::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 0);
+                CHECK(sbe::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
                 CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::DailyOpenPrice);
                 CHECK(item.settlPriceType().nullValue());
                 CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::OpenPrice);
                 break;
               case 32:
                 CHECK(sbe::get_double(item.mDEntryPx()) == 0.0_a);
-                CHECK(sbe::get_int<int32_t>(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 0);
-                CHECK(sbe::get_int<int32_t>(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
-                CHECK(sbe::get_int<int8_t>(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 0);
-                CHECK(
-                    sbe::get_int<uint16_t>(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 19391);
+                CHECK(sbe::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 0);
+                CHECK(sbe::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
+                CHECK(sbe::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 0);
+                CHECK(sbe::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 19391);
                 CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().rawValue() == 3);  // note! 3 == intraday
                 CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::SettlementPrice);
@@ -168,20 +167,20 @@ TEST_CASE("batched", "[incremental]") {
             switch (++no_md_entries_rows) {
               case 1:
                 CHECK(sbe::get_double(item.mDEntryPx()) == -0.140625_a);
-                CHECK(sbe::get_int<int32_t>(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 2);
-                CHECK(sbe::get_int<int32_t>(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
-                CHECK(sbe::get_int<int8_t>(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 1);
-                CHECK(sbe::get_int<uint16_t>(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
+                CHECK(sbe::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 2);
+                CHECK(sbe::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
+                CHECK(sbe::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 1);
+                CHECK(sbe::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
                 CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
                 CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::ImpliedBid);
                 break;
               case 2:
                 CHECK(sbe::get_double(item.mDEntryPx()) == -0.14453125_a);
-                CHECK(sbe::get_int<int32_t>(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 2);
-                CHECK(sbe::get_int<int32_t>(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
-                CHECK(sbe::get_int<int8_t>(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 2);
-                CHECK(sbe::get_int<uint16_t>(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
+                CHECK(sbe::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 2);
+                CHECK(sbe::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
+                CHECK(sbe::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 2);
+                CHECK(sbe::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
                 CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
                 CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::ImpliedBid);
@@ -189,21 +188,20 @@ TEST_CASE("batched", "[incremental]") {
               // ...
               case 4:
                 CHECK(sbe::get_double(item.mDEntryPx()) == -0.12109375_a);
-                CHECK(sbe::get_int<int32_t>(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 3);
-                CHECK(sbe::get_int<int32_t>(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
-                CHECK(sbe::get_int<int8_t>(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 2);
-                CHECK(sbe::get_int<uint16_t>(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
+                CHECK(sbe::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 3);
+                CHECK(sbe::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
+                CHECK(sbe::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 2);
+                CHECK(sbe::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
                 CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
                 CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::ImpliedOffer);
                 break;
               case 5:
                 CHECK(sbe::get_double(item.mDEntryPx()) == 0.0_a);
-                CHECK(sbe::get_int<int32_t>(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 0);
-                CHECK(sbe::get_int<int32_t>(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
-                CHECK(sbe::get_int<int8_t>(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 0);
-                CHECK(
-                    sbe::get_int<uint16_t>(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 19391);
+                CHECK(sbe::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 0);
+                CHECK(sbe::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
+                CHECK(sbe::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 0);
+                CHECK(sbe::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 19391);
                 CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().rawValue() == 3);  // note! 3 == intraday
                 CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::SettlementPrice);
@@ -309,7 +307,7 @@ TEST_CASE("simple", "[incremental]") {
                 CHECK(item.aggressorSide() == cme_mdp::AggressorSide::Value::Sell);
                 CHECK(item.mDUpdateAction() == cme_mdp::MDUpdateAction::Value::New);
                 // CHECK(item.mDEntryType().rawValue() == 2); // note! constant
-                CHECK(sbe::get_int<uint32_t>(item.mDTradeEntryID(), item.mDTradeEntryIDNullValue()) == 782562);
+                CHECK(sbe::get_int(item.mDTradeEntryID(), item.mDTradeEntryIDNullValue()) == 782562);
                 break;
             }
           });
@@ -480,14 +478,14 @@ TEST_CASE("complex", "[incremental]") {
             switch (++no_md_entries_rows) {
               case 1:
                 CHECK(sbe::get_double(item.mDEntryPx()) == 108.7578125_a);
-                CHECK(sbe::get_int<int32_t>(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 303);
+                CHECK(sbe::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 303);
                 CHECK(item.securityID() == 492654);
                 CHECK(item.rptSeq() == 597794);
-                CHECK(sbe::get_int<int32_t>(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 39);
+                CHECK(sbe::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 39);
                 CHECK(item.mDPriceLevel() == 1);
                 CHECK(item.mDUpdateAction() == cme_mdp::MDUpdateAction::Value::Change);
                 CHECK(item.mDEntryType() == cme_mdp::MDEntryTypeBook::Value::Bid);
-                CHECK(sbe::get_int<int32_t>(item.tradeableSize(), item.tradeableSizeNullValue()) == 0);
+                CHECK(sbe::get_int(item.tradeableSize(), item.tradeableSizeNullValue()) == 0);
                 break;
             }
           });
@@ -497,9 +495,9 @@ TEST_CASE("complex", "[incremental]") {
             switch (++no_order_id_entries) {
               case 1:
                 CHECK(item.orderID() == 8411686969321);
-                CHECK(sbe::get_int<uint64_t>(item.mDOrderPriority(), item.mDOrderPriorityNullValue()) == 20492778632);
-                CHECK(sbe::get_int<int32_t>(item.mDDisplayQty(), item.mDDisplayQtyNullValue()) == 46);
-                CHECK(sbe::get_int<uint8_t>(item.referenceID(), item.referenceIDNullValue()) == 1);
+                CHECK(sbe::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue()) == 20492778632);
+                CHECK(sbe::get_int(item.mDDisplayQty(), item.mDDisplayQtyNullValue()) == 46);
+                CHECK(sbe::get_int(item.referenceID(), item.referenceIDNullValue()) == 1);
                 CHECK(item.orderUpdateAction() == cme_mdp::OrderUpdateAction::Value::Update);
                 break;
             }
@@ -515,26 +513,26 @@ TEST_CASE("complex", "[incremental]") {
             switch (++no_md_entries_rows) {
               case 1:
                 CHECK(sbe::get_double(item.mDEntryPx()) == 0.078125_a);
-                CHECK(sbe::get_int<int32_t>(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 303);
+                CHECK(sbe::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 303);
                 CHECK(item.securityID() == 8827);
                 CHECK(item.rptSeq() == 894013);
-                CHECK(sbe::get_int<int32_t>(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
+                CHECK(sbe::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
                 CHECK(item.mDPriceLevel() == 1);
                 CHECK(item.mDUpdateAction() == cme_mdp::MDUpdateAction::Value::Change);
                 CHECK(item.mDEntryType() == cme_mdp::MDEntryTypeBook::Value::ImpliedBid);
-                CHECK(sbe::get_int<int32_t>(item.tradeableSize(), item.tradeableSizeNullValue()) == 0);
+                CHECK(sbe::get_int(item.tradeableSize(), item.tradeableSizeNullValue()) == 0);
                 break;
               // ...
               case 12:
                 CHECK(sbe::get_double(item.mDEntryPx()) == 113.96875_a);
-                CHECK(sbe::get_int<int32_t>(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 53);
+                CHECK(sbe::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 53);
                 CHECK(item.securityID() == 397730);
                 CHECK(item.rptSeq() == 1260473);
-                CHECK(sbe::get_int<int32_t>(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
+                CHECK(sbe::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
                 CHECK(item.mDPriceLevel() == 2);
                 CHECK(item.mDUpdateAction() == cme_mdp::MDUpdateAction::Value::Change);
                 CHECK(item.mDEntryType() == cme_mdp::MDEntryTypeBook::Value::ImpliedBid);
-                CHECK(sbe::get_int<int32_t>(item.tradeableSize(), item.tradeableSizeNullValue()) == 0);
+                CHECK(sbe::get_int(item.tradeableSize(), item.tradeableSizeNullValue()) == 0);
                 break;
             }
           });
@@ -553,14 +551,14 @@ TEST_CASE("complex", "[incremental]") {
             switch (++no_md_entries_rows) {
               case 1:
                 CHECK(sbe::get_double(item.mDEntryPx()) == 114.0_a);
-                CHECK(sbe::get_int<int32_t>(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 2395);
+                CHECK(sbe::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 2395);
                 CHECK(item.securityID() == 397730);
                 CHECK(item.rptSeq() == 1260476);
-                CHECK(sbe::get_int<int32_t>(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 138);
+                CHECK(sbe::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 138);
                 CHECK(item.mDPriceLevel() == 1);
                 CHECK(item.mDUpdateAction() == cme_mdp::MDUpdateAction::Value::Change);
                 CHECK(item.mDEntryType() == cme_mdp::MDEntryTypeBook::Value::Bid);
-                CHECK(sbe::get_int<int32_t>(item.tradeableSize(), item.tradeableSizeNullValue()) == 0);
+                CHECK(sbe::get_int(item.tradeableSize(), item.tradeableSizeNullValue()) == 0);
                 break;
             }
           });
@@ -584,19 +582,19 @@ TEST_CASE("complex", "[incremental]") {
           value.noMDEntries().forEach([&no_md_entries_rows](auto &item) {
             switch (++no_md_entries_rows) {
               case 1:
-                CHECK(sbe::get_int<uint64_t>(item.orderID(), item.orderIDNullValue()) == 8411677212257);
-                CHECK(sbe::get_int<uint64_t>(item.mDOrderPriority(), item.mDOrderPriorityNullValue()) == 20477446525);
+                CHECK(sbe::get_int(item.orderID(), item.orderIDNullValue()) == 8411677212257);
+                CHECK(sbe::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue()) == 20477446525);
                 CHECK(sbe::get_double(item.mDEntryPx()) == 114.0_a);
-                CHECK(sbe::get_int<int32_t>(item.mDDisplayQty(), item.mDDisplayQtyNullValue()) == 3);
+                CHECK(sbe::get_int(item.mDDisplayQty(), item.mDDisplayQtyNullValue()) == 3);
                 CHECK(item.securityID() == 397730);
                 CHECK(item.mDUpdateAction() == cme_mdp::MDUpdateAction::Value::Delete);
                 CHECK(item.mDEntryType() == cme_mdp::MDEntryTypeBook::Value::Bid);
                 break;
               case 2:
-                CHECK(sbe::get_int<uint64_t>(item.orderID(), item.orderIDNullValue()) == 8411677273574);
-                CHECK(sbe::get_int<uint64_t>(item.mDOrderPriority(), item.mDOrderPriorityNullValue()) == 20477532317);
+                CHECK(sbe::get_int(item.orderID(), item.orderIDNullValue()) == 8411677273574);
+                CHECK(sbe::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue()) == 20477532317);
                 CHECK(sbe::get_double(item.mDEntryPx()) == 114.0_a);
-                CHECK(sbe::get_int<int32_t>(item.mDDisplayQty(), item.mDDisplayQtyNullValue()) == 283);
+                CHECK(sbe::get_int(item.mDDisplayQty(), item.mDDisplayQtyNullValue()) == 283);
                 CHECK(item.securityID() == 397730);
                 CHECK(item.mDUpdateAction() == cme_mdp::MDUpdateAction::Value::Change);
                 CHECK(item.mDEntryType() == cme_mdp::MDEntryTypeBook::Value::Bid);
@@ -627,7 +625,7 @@ TEST_CASE("complex", "[incremental]") {
                 CHECK(item.aggressorSide() == cme_mdp::AggressorSide::Value::Sell);
                 CHECK(item.mDUpdateAction() == cme_mdp::MDUpdateAction::Value::New);
                 // CHECK(item.mDEntryType() == cme_mdp::MDEntryTypeBook::Value::Trade); // constant '2'
-                CHECK(sbe::get_int<uint32_t>(item.mDTradeEntryID(), item.mDTradeEntryIDNullValue()) == 782563);
+                CHECK(sbe::get_int(item.mDTradeEntryID(), item.mDTradeEntryIDNullValue()) == 782563);
                 break;
             }
           });
@@ -684,4 +682,131 @@ TEST_CASE("complex", "[incremental]") {
   CHECK(handler.count_46 == 3);
   CHECK(handler.count_47 == 1);
   CHECK(handler.count_48 == 1);
+}
+
+TEST_CASE("46_with_orders", "[incremental]") {
+  auto message =
+      "\x0f\x98\x06\x01"                  // sequence number
+      "\x37\x7b\x57\x32\x9a\x7f\x41\x17"  // sending time
+      "\x58\x00"                          // message size
+      "\x0b\x00"                          // block length
+      "\x2e\x00"                          // template id (46)
+      "\x01\x00"                          // schema id (1)
+      "\x09\x00"                          // version (9)
+      "\x89\xfb\x55\x32\x9a\x7f\x41\x17\x04\x00\x00\x20\x00\x01\xe0\x94\x4d\x78\x1a\x00\x00\x00\xca\x06\x00\x00\xa2\x11"
+      "\x06\x00\x65\xc8\x55\x00\x78\x00\x00\x00\x06\x01\x31\x00\x00\x00\x00\x00\x18\x00\x00\x00\x00\x00\x00\x01\x99\xc1"
+      "\xad\x80\xa6\x07\x00\x00\x0e\x5e\x2d\xc7\x04\x00\x00\x00\x19\x00\x00\x00\x01\x00\x00\x00"
+      "\x20\x00"  // message isze
+      "\x0b\x00"  // block length
+      "\x2e\x00"  // template id (46)
+      "\x01\x00"  // schema id (1)
+      "\x09\x00"  // version (9)
+      "\x89\xfb\x55\x32\x9a\x7f\x41\x17\x80\x00\x00\x20\x00\x00\x18\x00\x00\x00\x00\x00\x00\x00"sv;
+  REQUIRE(std::size(message) == 132);
+  struct MyHandler final : public sbe::Parser::Handler {
+    int counter = 0;
+    void operator()(sbe::Frame const &) override {}
+    void operator()(Trace<cme_mdp::ChannelReset4> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::AdminHeartbeat12> const &, sbe::Frame const &) override { FAIL(); }
+    // - security status
+    void operator()(Trace<cme_mdp::SecurityStatus30> const &, sbe::Frame const &) override { FAIL(); }
+    // - instrument definition
+    void operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDInstrumentDefinitionOption55> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDInstrumentDefinitionSpread56> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDInstrumentDefinitionFixedIncome57> const &, sbe::Frame const &) override {
+      FAIL();
+    }
+    void operator()(Trace<cme_mdp::MDInstrumentDefinitionRepo58> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDInstrumentDefinitionFX63> const &, sbe::Frame const &) override { FAIL(); }
+    // - SnapshotFullRefresh
+    void operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::SnapshotFullRefreshOrderBook53> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::SnapshotFullRefreshLongQty69> const &, sbe::Frame const &) override { FAIL(); }
+    // - MDIncrementalRefresh
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshVolume37> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &event, sbe::Frame const &) override {
+      using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+      auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
+      switch (++counter) {
+        case 1: {
+          CHECK(value.transactTime() == 1675760836604722057);
+          // XXX matchEventIndicator
+          value.sbeRewind();  // wtf!
+          auto no_md_entries_rows = 0;
+          value.noMDEntries().forEach([&no_md_entries_rows](auto &item) {
+            switch (++no_md_entries_rows) {
+              case 1:
+                CHECK(sbe::get_double(item.mDEntryPx()) == 113.6875_a);
+                CHECK(sbe::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 1738);
+                CHECK(item.securityID() == 397730);
+                CHECK(item.rptSeq() == 5621861);
+                CHECK(sbe::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 120);
+                CHECK(item.mDPriceLevel() == 6);
+                CHECK(item.mDUpdateAction() == cme_mdp::MDUpdateAction::Value::Change);
+                CHECK(item.mDEntryType() == cme_mdp::MDEntryTypeBook::Value::Offer);
+                CHECK(sbe::get_int(item.tradeableSize(), item.tradeableSizeNullValue()) == 0);
+                break;
+            }
+          });
+          CHECK(no_md_entries_rows == 1);
+          auto no_order_id_entries_rows = 0;
+          value.noOrderIDEntries().forEach([&no_order_id_entries_rows](auto &item) {
+            switch (++no_order_id_entries_rows) {
+              case 1:
+                CHECK(item.orderID() == 8411704836505);
+                CHECK(sbe::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue()) == 20521508366);
+                CHECK(sbe::get_int(item.mDDisplayQty(), item.mDDisplayQtyNullValue()) == 25);
+                CHECK(sbe::get_int(item.referenceID(), item.referenceIDNullValue()) == 1);
+                CHECK(item.orderUpdateAction() == cme_mdp::OrderUpdateAction::Value::New);
+                break;
+            }
+          });
+          CHECK(no_order_id_entries_rows == 1);
+          break;
+        }
+        case 2: {
+          CHECK(value.transactTime() == 1675760836604722057);
+          // XXX matchEventIndicator
+          value.sbeRewind();  // wtf!
+          auto no_md_entries_rows = 0;
+          value.noMDEntries().forEach([&no_md_entries_rows]([[maybe_unused]] auto &item) { ++no_md_entries_rows; });
+          CHECK(no_md_entries_rows == 0);
+          auto no_order_id_entries_rows = 0;
+          value.noOrderIDEntries().forEach(
+              [&no_order_id_entries_rows]([[maybe_unused]] auto &item) { ++no_order_id_entries_rows; });
+          CHECK(no_order_id_entries_rows == 0);
+          break;
+        }
+      }
+    }
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshOrderBook47> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshTradeSummary48> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshDailyStatistics49> const &, sbe::Frame const &) override {
+      FAIL();
+    }
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshLimitsBanding50> const &, sbe::Frame const &) override {
+      FAIL();
+    }
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshSessionStatistics51> const &, sbe::Frame const &) override {
+      FAIL();
+    }
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshBookLongQty64> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65> const &, sbe::Frame const &) override {
+      FAIL();
+    }
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshVolumeLongQty66> const &, sbe::Frame const &) override {
+      FAIL();
+    }
+    void operator()(
+        Trace<cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67> const &, sbe::Frame const &) override {
+      FAIL();
+    }
+    void operator()(Trace<cme_mdp::QuoteRequest39> const &, sbe::Frame const &) override { FAIL(); }
+  } handler;
+  std::span buffer{reinterpret_cast<std::byte const *>(std::data(message)), std::size(message)};
+  TraceInfo trace_info;
+  auto res = sbe::Parser::dispatch(handler, buffer, trace_info);
+  CHECK(res);
+  CHECK(handler.counter == 2);
 }

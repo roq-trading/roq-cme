@@ -128,20 +128,20 @@ TEST_CASE("simple", "[mbofd_recovery]") {
             switch (++no_md_entries_rows) {
               case 1:
                 CHECK(sbe::get_double(item.mDEntryPx()) == 102.3359375_a);
-                CHECK(sbe::get_int<int32_t>(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 1);
-                CHECK(sbe::get_int<int32_t>(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 1);
-                CHECK(sbe::get_int<int8_t>(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 1);
-                CHECK(sbe::get_int<uint16_t>(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
+                CHECK(sbe::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 1);
+                CHECK(sbe::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 1);
+                CHECK(sbe::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 1);
+                CHECK(sbe::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
                 CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
                 CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::Bid);
                 break;
               case 2:
                 CHECK(sbe::get_double(item.mDEntryPx()) == 104.03515625_a);
-                CHECK(sbe::get_int<int32_t>(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 1);
-                CHECK(sbe::get_int<int32_t>(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 1);
-                CHECK(sbe::get_int<int8_t>(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 1);
-                CHECK(sbe::get_int<uint16_t>(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
+                CHECK(sbe::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 1);
+                CHECK(sbe::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 1);
+                CHECK(sbe::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 1);
+                CHECK(sbe::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
                 CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
                 CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::Offer);
@@ -149,22 +149,20 @@ TEST_CASE("simple", "[mbofd_recovery]") {
               // ...
               case 6:
                 CHECK(std::isnan(sbe::get_double(item.mDEntryPx())));
-                CHECK(sbe::get_int<int32_t>(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 0);
-                CHECK(sbe::get_int<int32_t>(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
-                CHECK(sbe::get_int<int8_t>(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 0);
-                CHECK(
-                    sbe::get_int<uint16_t>(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 19391);
+                CHECK(sbe::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 0);
+                CHECK(sbe::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
+                CHECK(sbe::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 0);
+                CHECK(sbe::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 19391);
                 CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
                 CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::ClearedVolume);
                 break;
               case 7:
                 CHECK(std::isnan(sbe::get_double(item.mDEntryPx())));
-                CHECK(sbe::get_int<int32_t>(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 6);
-                CHECK(sbe::get_int<int32_t>(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
-                CHECK(sbe::get_int<int8_t>(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 0);
-                CHECK(
-                    sbe::get_int<uint16_t>(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 19391);
+                CHECK(sbe::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 6);
+                CHECK(sbe::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
+                CHECK(sbe::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 0);
+                CHECK(sbe::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 19391);
                 CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
                 CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::OpenInterest);
@@ -192,20 +190,20 @@ TEST_CASE("simple", "[mbofd_recovery]") {
             switch (++no_md_entries_rows) {
               case 1:
                 CHECK(sbe::get_double(item.mDEntryPx()) == 133.1875_a);
-                CHECK(sbe::get_int<int32_t>(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 15);
-                CHECK(sbe::get_int<int32_t>(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 1);
-                CHECK(sbe::get_int<int8_t>(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 1);
-                CHECK(sbe::get_int<uint16_t>(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
+                CHECK(sbe::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 15);
+                CHECK(sbe::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 1);
+                CHECK(sbe::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 1);
+                CHECK(sbe::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
                 CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
                 CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::Bid);
                 break;
               case 2:
                 CHECK(sbe::get_double(item.mDEntryPx()) == 133.34375_a);
-                CHECK(sbe::get_int<int32_t>(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 15);
-                CHECK(sbe::get_int<int32_t>(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 1);
-                CHECK(sbe::get_int<int8_t>(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 1);
-                CHECK(sbe::get_int<uint16_t>(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
+                CHECK(sbe::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 15);
+                CHECK(sbe::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 1);
+                CHECK(sbe::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 1);
+                CHECK(sbe::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
                 CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
                 CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::Offer);
@@ -213,22 +211,20 @@ TEST_CASE("simple", "[mbofd_recovery]") {
               // ...
               case 6:
                 CHECK(std::isnan(sbe::get_double(item.mDEntryPx())));
-                CHECK(sbe::get_int<int32_t>(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 27);
-                CHECK(sbe::get_int<int32_t>(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
-                CHECK(sbe::get_int<int8_t>(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 0);
-                CHECK(
-                    sbe::get_int<uint16_t>(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 19391);
+                CHECK(sbe::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 27);
+                CHECK(sbe::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
+                CHECK(sbe::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 0);
+                CHECK(sbe::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 19391);
                 CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
                 CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::ClearedVolume);
                 break;
               case 7:
                 CHECK(std::isnan(sbe::get_double(item.mDEntryPx())));
-                CHECK(sbe::get_int<int32_t>(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 338);
-                CHECK(sbe::get_int<int32_t>(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
-                CHECK(sbe::get_int<int8_t>(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 0);
-                CHECK(
-                    sbe::get_int<uint16_t>(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 19391);
+                CHECK(sbe::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 338);
+                CHECK(sbe::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
+                CHECK(sbe::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 0);
+                CHECK(sbe::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 19391);
                 CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
                 CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::OpenInterest);
@@ -257,14 +253,14 @@ TEST_CASE("simple", "[mbofd_recovery]") {
             switch (++no_md_entries_rows) {
               case 1:
                 CHECK(item.orderID() == 8411682716919);
-                CHECK(sbe::get_int<uint64_t>(item.mDOrderPriority(), item.mDOrderPriorityNullValue()) == 20485922177);
+                CHECK(sbe::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue()) == 20485922177);
                 CHECK(sbe::get_double(item.mDEntryPx()) == 123.84375_a);
                 CHECK(item.mDDisplayQty() == 20);
                 CHECK(item.mDEntryType() == cme_mdp::MDEntryTypeBook::Value::Offer);
                 break;
               case 2:
                 CHECK(item.orderID() == 8411691669301);
-                CHECK(sbe::get_int<uint64_t>(item.mDOrderPriority(), item.mDOrderPriorityNullValue()) == 20500262087);
+                CHECK(sbe::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue()) == 20500262087);
                 CHECK(sbe::get_double(item.mDEntryPx()) == 107.8125_a);
                 CHECK(item.mDDisplayQty() == 68);
                 CHECK(item.mDEntryType() == cme_mdp::MDEntryTypeBook::Value::Bid);
@@ -272,14 +268,14 @@ TEST_CASE("simple", "[mbofd_recovery]") {
               // ...
               case 23:
                 CHECK(item.orderID() == 8411697870442);
-                CHECK(sbe::get_int<uint64_t>(item.mDOrderPriority(), item.mDOrderPriorityNullValue()) == 20509772503);
+                CHECK(sbe::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue()) == 20509772503);
                 CHECK(sbe::get_double(item.mDEntryPx()) == 107.546875_a);
                 CHECK(item.mDDisplayQty() == 54);
                 CHECK(item.mDEntryType() == cme_mdp::MDEntryTypeBook::Value::Bid);
                 break;
               case 24:
                 CHECK(item.orderID() == 8411574718722);
-                CHECK(sbe::get_int<uint64_t>(item.mDOrderPriority(), item.mDOrderPriorityNullValue()) == 20318810934);
+                CHECK(sbe::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue()) == 20318810934);
                 CHECK(sbe::get_double(item.mDEntryPx()) == 107.0_a);
                 CHECK(item.mDDisplayQty() == 22);
                 CHECK(item.mDEntryType() == cme_mdp::MDEntryTypeBook::Value::Bid);
@@ -302,14 +298,14 @@ TEST_CASE("simple", "[mbofd_recovery]") {
             switch (++no_md_entries_rows) {
               case 1:
                 CHECK(item.orderID() == 8411697911984);
-                CHECK(sbe::get_int<uint64_t>(item.mDOrderPriority(), item.mDOrderPriorityNullValue()) == 20509844662);
+                CHECK(sbe::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue()) == 20509844662);
                 CHECK(sbe::get_double(item.mDEntryPx()) == 102.3359375_a);
                 CHECK(item.mDDisplayQty() == 1);
                 CHECK(item.mDEntryType() == cme_mdp::MDEntryTypeBook::Value::Bid);
                 break;
               case 2:
                 CHECK(item.orderID() == 8411697911987);
-                CHECK(sbe::get_int<uint64_t>(item.mDOrderPriority(), item.mDOrderPriorityNullValue()) == 20509844665);
+                CHECK(sbe::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue()) == 20509844665);
                 CHECK(sbe::get_double(item.mDEntryPx()) == 104.03515625_a);
                 CHECK(item.mDDisplayQty() == 1);
                 CHECK(item.mDEntryType() == cme_mdp::MDEntryTypeBook::Value::Offer);
