@@ -714,7 +714,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
     uint32_t exchange_sequence = frame.sequence_number;
     std::chrono::nanoseconds exchange_time_utc{value.transactTime()};
     entries_46_.clear();
-    {  // MBO
+    {  // MBP
       Layer layer = {};
       core::back_emplacer bids{shared_.bids}, asks{shared_.asks};
       auto dispatch = [&](auto security_id, auto &security, auto is_last) {
@@ -760,7 +760,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
       if (security)
         dispatch(security_id, *security, true);
     }
-    {  // MBP
+    {  // MBO
       int32_t security_id = {};
       Shared::Security *security = nullptr;
       auto &bids = shared_.mbo_bids;
@@ -783,7 +783,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
           log::info("DEBUG HERE index={}, len={}"sv, index, std::size(entries_46_));
           return;
         }
-        auto [current_security_id, side, price] = entries_46_[reference_id];
+        auto [current_security_id, side, price] = entries_46_[index];
         log::info("DEBUG security_id={}, side={}, price={}"sv, current_security_id, side, price);
         if (current_security_id != security_id) {
           if (security)
