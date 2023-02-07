@@ -282,11 +282,13 @@ void emplace_back(
 }
 
 void emplace_back(
-    cme_mdp::MDIncrementalRefreshBook46::NoOrderIDEntries const &item, auto &security, auto &bids, auto &asks) {
-  /*
-  using value_type = typename std::remove_cvref<decltype(item)>::type;
+    cme_mdp::MDIncrementalRefreshBook46::NoOrderIDEntries const &item,
+    auto &security,
+    auto side,
+    auto price,
+    auto &bids,
+    auto &asks) {
   auto create_update = [&]() {
-    auto price = sbe::get_double(const_cast<value_type &>(item).mDEntryPx());
     auto remaining_quantity = sbe::get_int(item.mDDisplayQty(), item.mDDisplayQtyNullValue());
     auto priority = sbe::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue());
     auto order_id = sbe::get_int(item.orderID(), item.orderIDNullValue());
@@ -302,33 +304,21 @@ void emplace_back(
     fmt::format_to(std::back_inserter(result.order_id), "{}"sv, order_id);
     return result;
   };
-  using value_type = typename std::remove_cvref<decltype(item)>::type;
-  switch (item.mDEntryType()) {
-    using enum cme_mdp::MDEntryTypeBook::Value;
-    case Bid: {
+  switch (side) {
+    using enum Side;
+    case UNDEFINED:
+      break;
+    case BUY: {
       auto update = create_update();
       bids.emplace_back(std::move(update));
       break;
     }
-    case Offer: {
+    case SELL: {
       auto update = create_update();
       asks.emplace_back(std::move(update));
       break;
     }
-    case ImpliedBid:
-      break;
-    case ImpliedOffer:
-      break;
-    case BookReset:  // XXX ????????????????????????
-      break;
-    case MarketBestOffer:
-      break;
-    case MarketBestBid:
-      break;
-    case NULL_VALUE:
-      break;
   }
-  */
 }
 
 void emplace_back(
@@ -723,29 +713,29 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
     value.sbeRewind();  // note!
     uint32_t exchange_sequence = frame.sequence_number;
     std::chrono::nanoseconds exchange_time_utc{value.transactTime()};
-    Layer layer = {};
-    core::back_emplacer bids{shared_.bids}, asks{shared_.asks};
-    auto dispatch = [&](auto security_id, auto &security, auto is_last) {
-      if (!(std::isnan(layer.bid_price) && std::isnan(layer.ask_price))) {
-        auto top_of_book = TopOfBook{
-            .stream_id = stream_id_,
-            .exchange = security.exchange,
-            .symbol = security.symbol,
-            .layer = layer,
-            .exchange_time_utc = exchange_time_utc,
-            .exchange_sequence = exchange_sequence,
-        };
-        create_trace_and_dispatch(handler_, trace_info, std::as_const(top_of_book), is_last);
-        layer = {};
-      }
-      if (!(std::empty(bids) && std::empty(asks))) {
-        dispatch_market_by_price(trace_info, security_id, security, exchange_sequence, exchange_time_utc, bids, asks);
-        bids.clear();
-        asks.clear();
-      }
-    };
     entries_46_.clear();
     {  // MBO
+      Layer layer = {};
+      core::back_emplacer bids{shared_.bids}, asks{shared_.asks};
+      auto dispatch = [&](auto security_id, auto &security, auto is_last) {
+        if (!(std::isnan(layer.bid_price) && std::isnan(layer.ask_price))) {
+          auto top_of_book = TopOfBook{
+              .stream_id = stream_id_,
+              .exchange = security.exchange,
+              .symbol = security.symbol,
+              .layer = layer,
+              .exchange_time_utc = exchange_time_utc,
+              .exchange_sequence = exchange_sequence,
+          };
+          create_trace_and_dispatch(handler_, trace_info, std::as_const(top_of_book), is_last);
+          layer = {};
+        }
+        if (!(std::empty(bids) && std::empty(asks))) {
+          dispatch_market_by_price(trace_info, security_id, security, exchange_sequence, exchange_time_utc, bids, asks);
+          bids.clear();
+          asks.clear();
+        }
+      };
       int32_t security_id = {};
       Shared::Security *security = nullptr;
       value.noMDEntries().forEach([&](auto const &item) {
@@ -771,22 +761,45 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
         dispatch(security_id, *security, true);
     }
     {  // MBP
+      int32_t security_id = {};
+      Shared::Security *security = nullptr;
       auto &bids = shared_.mbo_bids;
       auto &asks = shared_.mbo_asks;
       bids.clear();
       asks.clear();
+      auto dispatch = [&](auto security_id, auto &security) {
+        if (!(std::empty(bids) && std::empty(asks))) {
+          dispatch_market_by_order(trace_info, security_id, security, exchange_sequence, exchange_time_utc, bids, asks);
+          bids.clear();
+          asks.clear();
+        }
+      };
       value.noOrderIDEntries().forEach([&](auto const &item) {
-        auto reference_id = item.referenceID();
-        if (reference_id == item.referenceIDNullValue())
+        auto reference_id = sbe::get_int(item.referenceID(), item.referenceIDNullValue());
+        if (!reference_id)
           return;
-        log::info("DEBUG reference_id={}, len={}"sv, reference_id, std::size(entries_46_));
-        if (!(reference_id < std::size(entries_46_))) {
-          log::warn("DEBUG HERE"sv);
+        auto index = reference_id - 1;  // indexing is 1-based
+        if (!(index < std::size(entries_46_))) {
+          log::info("DEBUG HERE index={}, len={}"sv, index, std::size(entries_46_));
           return;
         }
-        auto [security_id, side, price] = entries_46_[reference_id];
-        log::info("DEBUG security_id={}, side={}, price={}"sv, security_id, side, price);
+        auto [current_security_id, side, price] = entries_46_[reference_id];
+        log::info("DEBUG security_id={}, side={}, price={}"sv, current_security_id, side, price);
+        if (current_security_id != security_id) {
+          if (security)
+            dispatch(security_id, *security);
+          security_id = current_security_id;
+          if (get_security(shared_, security_id, [&security](auto &security_2) { security = &security_2; })) {
+          } else {
+            security = nullptr;
+          }
+        }
+        if (security) {
+          emplace_back(item, *security, side, price, bids, asks);
+        }
       });
+      if (security)
+        dispatch(security_id, *security);
     }
   });
 }
