@@ -443,7 +443,7 @@ void drain(auto &receiver, auto &channel, auto parse, auto reset) {
           if (sbe::Frame::parse(message, [&](auto &frame) {
                 // check sequence number
                 sequence_number = frame.sequence_number;
-                log::info<5>("sequence_number={}"sv, sequence_number);
+                log::info<5>("sequence_number={} (last_sequence_number={})"sv, sequence_number, channel.last_sequence);
                 auto [ready, last_sequence_number] = channel.last_sequence;
                 if (ready) {
                   auto next_sequence_number = last_sequence_number + 1;
@@ -713,6 +713,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
     value.sbeRewind();  // note!
     uint32_t exchange_sequence = frame.sequence_number;
     std::chrono::nanoseconds exchange_time_utc{value.transactTime()};
+    // note! MBO will reference MBP
     entries_46_.clear();
     {  // MBP
       Layer layer = {};
