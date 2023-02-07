@@ -779,13 +779,12 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
         auto reference_id = sbe::get_int(item.referenceID(), item.referenceIDNullValue());
         if (!reference_id)
           return;
-        auto index = reference_id - 1;  // indexing is 1-based
+        auto index = static_cast<size_t>(reference_id) - 1;  // indexing is 1-based
         if (!(index < std::size(entries_46_))) {
-          log::info("DEBUG HERE index={}, len={}"sv, index, std::size(entries_46_));
+          log::warn("Unexpected: index={}, len={}"sv, index, std::size(entries_46_));
           return;
         }
         auto [current_security_id, side, price] = entries_46_[index];
-        log::info("DEBUG security_id={}, side={}, price={}"sv, current_security_id, side, price);
         if (current_security_id != security_id) {
           if (security)
             dispatch(security_id, *security);
