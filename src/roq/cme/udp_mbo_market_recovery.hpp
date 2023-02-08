@@ -99,7 +99,7 @@ struct UDPMBOMarketRecovery final : public io::net::udp::Receiver::Handler, publ
   struct {
     core::metrics::Profile parse,        //
         admin_heartbeat, channel_reset,  //
-        snapshot_full_refresh, snapshot_full_refresh_long_qty;
+        snapshot_full_refresh_order_book;
     ;
   } profile_;
   // cache
