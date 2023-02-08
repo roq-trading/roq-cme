@@ -27,6 +27,7 @@ struct UDPIncremental final : public io::net::udp::Receiver::Handler, public sbe
   struct Handler {
     virtual void operator()(Trace<StreamStatus> const &) = 0;
     virtual void operator()(Trace<ExternalLatency> const &) = 0;
+    virtual void operator()(Trace<ReferenceData> const &, bool is_last) = 0;
     virtual void operator()(Trace<MarketStatus> const &, bool is_last) = 0;
     virtual void operator()(Trace<TopOfBook> const &, bool is_last) = 0;
     virtual void operator()(Trace<MarketByPriceUpdate> const &, bool is_last) = 0;
@@ -126,16 +127,21 @@ struct UDPIncremental final : public io::net::udp::Receiver::Handler, public sbe
     core::metrics::Counter disconnect, sequence_reset;
   } counter_;
   struct {
-    core::metrics::Profile parse,                                             //
-        admin_heartbeat, channel_reset,                                       //
-        security_status,                                                      //
-        snapshot_full_refresh, snapshot_full_refresh_long_qty,                //
-        md_incremental_refresh_book, md_incremental_refresh_book_long_qty,    //
-        snapshot_full_refresh_order_book, md_incremental_refresh_order_book,  //
-        md_incremental_refresh_trade_summary,
-        md_incremental_refresh_trade_summary_long_qty,  //
-        md_incremental_refresh_daily_statistics,        //
-        md_incremental_refresh_session_statistics,
+    core::metrics::Profile parse, admin_heartbeat, channel_reset,               //
+        security_status,                                                        //
+        md_instrument_definition_future,                                        //
+        md_instrument_definition_option,                                        //
+        md_instrument_definition_spread,                                        //
+        md_instrument_definition_fixed_income,                                  //
+        md_instrument_definition_repo,                                          //
+        md_instrument_definition_fx,                                            //
+        snapshot_full_refresh, snapshot_full_refresh_long_qty,                  //
+        md_incremental_refresh_book, md_incremental_refresh_book_long_qty,      //
+        snapshot_full_refresh_order_book, md_incremental_refresh_order_book,    //
+        md_incremental_refresh_trade_summary,                                   //
+        md_incremental_refresh_trade_summary_long_qty,                          //
+        md_incremental_refresh_daily_statistics,                                //
+        md_incremental_refresh_session_statistics,                              //
         md_incremental_refresh_session_statistics_long_qty,                     //
         md_incremental_refresh_volume, md_incremental_refresh_volume_long_qty,  //
         quote_request;

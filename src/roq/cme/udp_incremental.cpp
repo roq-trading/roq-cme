@@ -63,6 +63,8 @@ struct create_metrics final : public core::metrics::Factory {
 
 auto get_supports() {
   auto result = Mask{
+      SupportType::REFERENCE_DATA,
+      SupportType::MARKET_STATUS,
       SupportType::TOP_OF_BOOK,
       SupportType::MARKET_BY_PRICE,
       SupportType::TRADE_SUMMARY,
@@ -371,6 +373,12 @@ UDPIncremental::UDPIncremental(
           .admin_heartbeat = create_metrics(name_, "admin_heartbeat"sv),
           .channel_reset = create_metrics(name_, "channel_reset"sv),
           .security_status = create_metrics(name_, "security_status"sv),
+          .md_instrument_definition_future = create_metrics(name_, "md_instrument_definition_future"sv),
+          .md_instrument_definition_option = create_metrics(name_, "md_instrument_definition_option"sv),
+          .md_instrument_definition_spread = create_metrics(name_, "md_instrument_definition_spread"sv),
+          .md_instrument_definition_fixed_income = create_metrics(name_, "md_instrument_definition_fixed_income"sv),
+          .md_instrument_definition_repo = create_metrics(name_, "md_instrument_definition_repo"sv),
+          .md_instrument_definition_fx = create_metrics(name_, "md_instrument_definition_fx"sv),
           .snapshot_full_refresh = create_metrics(name_, "snapshot_full_refresh"sv),
           .snapshot_full_refresh_long_qty = create_metrics(name_, "snapshot_full_refresh_long_qty"sv),
           .md_incremental_refresh_book = create_metrics(name_, "md_incremental_refresh_book"sv),
@@ -594,40 +602,332 @@ void UDPIncremental::operator()(Trace<cme_mdp::SecurityStatus30> const &event, s
 }
 
 void UDPIncremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &event, sbe::Frame const &frame) {
-  using value_type = std::remove_cvref<decltype(event)>::type::value_type;
-  auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
-  log::info<5>("md_instrument_definition_future_54={}, frame={}"sv, value, frame);
+  profile_.md_instrument_definition_future([&]() {
+    auto &trace_info = event.trace_info;
+    using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+    auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
+    log::info<5>("md_instrument_definition_future_54={}, frame={}"sv, value, frame);
+    value.sbeRewind();  // note!
+    auto security_id = value.securityID();
+    get_security(shared_, security_id, [&](auto &security) {
+      auto quote_currency = sbe::get_string_view(value.currency(), value.currencyLength());
+      auto min_price_increment = sbe::get_double(value.minPriceIncrement());
+      auto contract_multiplier = sbe::get_int(value.contractMultiplier(), value.contractMultiplierNullValue());
+      auto multiplier = contract_multiplier == 0 ? NaN : utils::safe_cast<double>(contract_multiplier);
+      auto min_trade_vol = utils::safe_cast(value.minTradeVol());
+      auto max_trade_vol = utils::safe_cast(value.maxTradeVol());
+      auto reference_data = ReferenceData{
+          .stream_id = stream_id_,
+          .exchange = security.exchange,
+          .symbol = security.symbol,
+          .description = {},
+          .security_type = SecurityType::FUTURES,
+          .base_currency = {},
+          .quote_currency = quote_currency,
+          .margin_currency = {},
+          .commission_currency = {},
+          .tick_size = min_price_increment * security.display_factor,
+          .multiplier = multiplier,
+          .min_trade_vol = min_trade_vol,
+          .max_trade_vol = max_trade_vol,
+          .trade_vol_step_size = NaN,
+          .option_type = {},
+          .strike_currency = {},
+          .strike_price = NaN,
+          .underlying = {},
+          .time_zone = {},
+          .issue_date = {},
+          .settlement_date = {},
+          .expiry_datetime = {},  // MaturityMonthYear ???
+          .expiry_datetime_utc = {},
+          .discard = security.discard,
+      };
+      create_trace_and_dispatch(handler_, trace_info, reference_data, true);
+      if (security.discard)
+        return;
+      auto trading_status = sbe::map_security_trading_status(value.mDSecurityTradingStatus());
+      auto market_status = MarketStatus{
+          .stream_id = stream_id_,
+          .exchange = security.exchange,
+          .symbol = security.symbol,
+          .trading_status = trading_status,
+      };
+      create_trace_and_dispatch(handler_, trace_info, market_status, true);
+    });
+  });
 }
 
 void UDPIncremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionOption55> const &event, sbe::Frame const &frame) {
-  using value_type = std::remove_cvref<decltype(event)>::type::value_type;
-  auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
-  log::info<5>("md_instrument_definition_option_55={}, frame={}"sv, value, frame);
+  profile_.md_instrument_definition_option([&]() {
+    auto &trace_info = event.trace_info;
+    using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+    auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
+    log::info<5>("md_instrument_definition_option_55={}, frame={}"sv, value, frame);
+    value.sbeRewind();  // note!
+    auto security_id = value.securityID();
+    get_security(shared_, security_id, [&](auto &security) {
+      auto quote_currency = sbe::get_string_view(value.currency(), value.currencyLength());
+      auto min_price_increment = sbe::get_double(value.minPriceIncrement());
+      auto min_trade_vol = utils::safe_cast(value.minTradeVol());
+      auto max_trade_vol = utils::safe_cast(value.maxTradeVol());
+      auto strike_currency = sbe::get_string_view(value.strikeCurrency(), value.strikeCurrencyLength());
+      auto reference_data = ReferenceData{
+          .stream_id = stream_id_,
+          .exchange = security.exchange,
+          .symbol = security.symbol,
+          .description = {},
+          .security_type = SecurityType::OPTION,
+          .base_currency = {},
+          .quote_currency = quote_currency,
+          .margin_currency = {},
+          .commission_currency = {},
+          .tick_size = min_price_increment * security.display_factor,
+          .multiplier = NaN,
+          .min_notional = NaN,
+          .min_trade_vol = min_trade_vol,
+          .max_trade_vol = max_trade_vol,
+          .trade_vol_step_size = NaN,
+          .option_type = {},
+          .strike_currency = strike_currency,
+          .strike_price = NaN,
+          .underlying = {},
+          .time_zone = {},
+          .issue_date = {},
+          .settlement_date = {},
+          .expiry_datetime = {},  // MaturityMonthYear ???
+          .expiry_datetime_utc = {},
+          .discard = security.discard,
+      };
+      create_trace_and_dispatch(handler_, trace_info, reference_data, true);
+      if (security.discard)
+        return;
+      auto trading_status = sbe::map_security_trading_status(value.mDSecurityTradingStatus());
+      auto market_status = MarketStatus{
+          .stream_id = stream_id_,
+          .exchange = security.exchange,
+          .symbol = security.symbol,
+          .trading_status = trading_status,
+      };
+      create_trace_and_dispatch(handler_, trace_info, market_status, true);
+    });
+  });
 }
 
 void UDPIncremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionSpread56> const &event, sbe::Frame const &frame) {
-  using value_type = std::remove_cvref<decltype(event)>::type::value_type;
-  auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
-  log::info<5>("md_instrument_definition_spread_56={}, frame={}"sv, value, frame);
+  profile_.md_instrument_definition_spread([&]() {
+    auto &trace_info = event.trace_info;
+    using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+    auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
+    log::info<5>("md_instrument_definition_spread_56={}, frame={}"sv, value, frame);
+    value.sbeRewind();  // note!
+    auto security_id = value.securityID();
+    get_security(shared_, security_id, [&](auto &security) {
+      auto quote_currency = sbe::get_string_view(value.currency(), value.currencyLength());
+      auto tick_size = sbe::get_double(value.minPriceIncrement());
+      auto min_trade_vol = utils::safe_cast(value.minTradeVol());
+      auto max_trade_vol = utils::safe_cast(value.maxTradeVol());
+      auto reference_data = ReferenceData{
+          .stream_id = stream_id_,
+          .exchange = security.exchange,
+          .symbol = security.symbol,
+          .description = {},
+          .security_type = SecurityType::FUTURES,
+          .base_currency = {},
+          .quote_currency = quote_currency,
+          .margin_currency = {},
+          .commission_currency = {},
+          .tick_size = tick_size,
+          .multiplier = NaN,
+          .min_trade_vol = min_trade_vol,
+          .max_trade_vol = max_trade_vol,
+          .trade_vol_step_size = NaN,
+          .option_type = {},
+          .strike_currency = {},
+          .strike_price = NaN,
+          .underlying = {},
+          .time_zone = {},
+          .issue_date = {},
+          .settlement_date = {},
+          .expiry_datetime = {},  // MaturityMonthYear ???
+          .expiry_datetime_utc = {},
+          .discard = security.discard,
+      };
+      create_trace_and_dispatch(handler_, trace_info, reference_data, true);
+      if (security.discard)
+        return;
+      auto trading_status = sbe::map_security_trading_status(value.mDSecurityTradingStatus());
+      auto market_status = MarketStatus{
+          .stream_id = stream_id_,
+          .exchange = security.exchange,
+          .symbol = security.symbol,
+          .trading_status = trading_status,
+      };
+      create_trace_and_dispatch(handler_, trace_info, market_status, true);
+    });
+  });
 }
 
 void UDPIncremental::operator()(
     Trace<cme_mdp::MDInstrumentDefinitionFixedIncome57> const &event, sbe::Frame const &frame) {
-  using value_type = std::remove_cvref<decltype(event)>::type::value_type;
-  auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
-  log::info<5>("md_instrument_definition_fixed_income_57={}, frame={}"sv, value, frame);
+  profile_.md_instrument_definition_fixed_income([&]() {
+    auto &trace_info = event.trace_info;
+    using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+    auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
+    log::info<5>("md_instrument_definition_fixed_income_57={}, frame={}"sv, value, frame);
+    value.sbeRewind();  // note!
+    auto security_id = value.securityID();
+    get_security(shared_, security_id, [&](auto &security) {
+      auto quote_currency = sbe::get_string_view(value.currency(), value.currencyLength());
+      auto tick_size = sbe::get_double(value.minPriceIncrement());
+      auto min_trade_vol = utils::safe_cast(value.minTradeVol());
+      auto max_trade_vol = utils::safe_cast(value.maxTradeVol());
+      auto reference_data = ReferenceData{
+          .stream_id = stream_id_,
+          .exchange = security.exchange,
+          .symbol = security.symbol,
+          .description = {},
+          .security_type = SecurityType::FUTURES,
+          .base_currency = {},
+          .quote_currency = quote_currency,
+          .margin_currency = {},
+          .commission_currency = {},
+          .tick_size = tick_size,
+          .multiplier = NaN,
+          .min_trade_vol = min_trade_vol,
+          .max_trade_vol = max_trade_vol,
+          .trade_vol_step_size = NaN,
+          .option_type = {},
+          .strike_currency = {},
+          .strike_price = NaN,
+          .underlying = {},
+          .time_zone = {},
+          .issue_date = {},
+          .settlement_date = {},
+          .expiry_datetime = {},  // MaturityMonthYear ???
+          .expiry_datetime_utc = {},
+          .discard = security.discard,
+      };
+      create_trace_and_dispatch(handler_, trace_info, reference_data, true);
+      if (security.discard)
+        return;
+      auto trading_status = sbe::map_security_trading_status(value.mDSecurityTradingStatus());
+      auto market_status = MarketStatus{
+          .stream_id = stream_id_,
+          .exchange = security.exchange,
+          .symbol = security.symbol,
+          .trading_status = trading_status,
+      };
+      create_trace_and_dispatch(handler_, trace_info, market_status, true);
+    });
+  });
 }
 
 void UDPIncremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionRepo58> const &event, sbe::Frame const &frame) {
-  using value_type = std::remove_cvref<decltype(event)>::type::value_type;
-  auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
-  log::info<5>("md_instrument_definition_repo_58={}, frame={}"sv, value, frame);
+  profile_.md_instrument_definition_repo([&]() {
+    auto &trace_info = event.trace_info;
+    using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+    auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
+    log::info<5>("md_instrument_definition_repo_58={}, frame={}"sv, value, frame);
+    value.sbeRewind();  // note!
+    auto security_id = value.securityID();
+    get_security(shared_, security_id, [&](auto &security) {
+      auto quote_currency = sbe::get_string_view(value.currency(), value.currencyLength());
+      auto tick_size = sbe::get_double(value.minPriceIncrement());
+      auto min_trade_vol = utils::safe_cast(value.minTradeVol());
+      auto max_trade_vol = utils::safe_cast(value.maxTradeVol());
+      auto reference_data = ReferenceData{
+          .stream_id = stream_id_,
+          .exchange = security.exchange,
+          .symbol = security.symbol,
+          .description = {},
+          .security_type = SecurityType::FUTURES,
+          .base_currency = {},
+          .quote_currency = quote_currency,
+          .margin_currency = {},
+          .commission_currency = {},
+          .tick_size = tick_size,
+          .multiplier = NaN,
+          .min_trade_vol = min_trade_vol,
+          .max_trade_vol = max_trade_vol,
+          .trade_vol_step_size = NaN,
+          .option_type = {},
+          .strike_currency = {},
+          .strike_price = NaN,
+          .underlying = {},
+          .time_zone = {},
+          .issue_date = {},
+          .settlement_date = {},
+          .expiry_datetime = {},  // MaturityMonthYear ???
+          .expiry_datetime_utc = {},
+          .discard = security.discard,
+      };
+      create_trace_and_dispatch(handler_, trace_info, reference_data, true);
+      if (security.discard)
+        return;
+      auto trading_status = sbe::map_security_trading_status(value.mDSecurityTradingStatus());
+      auto market_status = MarketStatus{
+          .stream_id = stream_id_,
+          .exchange = security.exchange,
+          .symbol = security.symbol,
+          .trading_status = trading_status,
+      };
+      create_trace_and_dispatch(handler_, trace_info, market_status, true);
+    });
+  });
 }
 
 void UDPIncremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionFX63> const &event, sbe::Frame const &frame) {
-  using value_type = std::remove_cvref<decltype(event)>::type::value_type;
-  auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
-  log::info<5>("md_instrument_definition_fx_63={}, frame={}"sv, value, frame);
+  profile_.md_instrument_definition_fx([&]() {
+    auto &trace_info = event.trace_info;
+    using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+    auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
+    log::info<5>("md_instrument_definition_fx_63={}, frame={}"sv, value, frame);
+    value.sbeRewind();  // note!
+    auto security_id = value.securityID();
+    get_security(shared_, security_id, [&](auto &security) {
+      auto quote_currency = sbe::get_string_view(value.currency(), value.currencyLength());
+      auto tick_size = sbe::get_double(value.minPriceIncrement());
+      auto min_trade_vol = utils::safe_cast(value.minTradeVol());
+      auto max_trade_vol = utils::safe_cast(value.maxTradeVol());
+      auto reference_data = ReferenceData{
+          .stream_id = stream_id_,
+          .exchange = security.exchange,
+          .symbol = security.symbol,
+          .description = {},
+          .security_type = SecurityType::FUTURES,
+          .base_currency = {},
+          .quote_currency = quote_currency,
+          .margin_currency = {},
+          .commission_currency = {},
+          .tick_size = tick_size,
+          .multiplier = NaN,
+          .min_trade_vol = min_trade_vol,
+          .max_trade_vol = max_trade_vol,
+          .trade_vol_step_size = NaN,
+          .option_type = {},
+          .strike_currency = {},
+          .strike_price = NaN,
+          .underlying = {},
+          .time_zone = {},
+          .issue_date = {},
+          .settlement_date = {},
+          .expiry_datetime = {},  // MaturityMonthYear ???
+          .expiry_datetime_utc = {},
+          .discard = security.discard,
+      };
+      create_trace_and_dispatch(handler_, trace_info, reference_data, true);
+      if (security.discard)
+        return;
+      auto trading_status = sbe::map_security_trading_status(value.mDSecurityTradingStatus());
+      auto market_status = MarketStatus{
+          .stream_id = stream_id_,
+          .exchange = security.exchange,
+          .symbol = security.symbol,
+          .trading_status = trading_status,
+      };
+      create_trace_and_dispatch(handler_, trace_info, market_status, true);
+    });
+  });
 }
 
 void UDPIncremental::operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &event, sbe::Frame const &frame) {
@@ -1151,6 +1451,12 @@ void UDPIncremental::operator()(metrics::Writer &writer) {
       .write(profile_.admin_heartbeat, metrics::PROFILE)
       .write(profile_.channel_reset, metrics::PROFILE)
       .write(profile_.security_status, metrics::PROFILE)
+      .write(profile_.md_instrument_definition_future, metrics::PROFILE)
+      .write(profile_.md_instrument_definition_option, metrics::PROFILE)
+      .write(profile_.md_instrument_definition_spread, metrics::PROFILE)
+      .write(profile_.md_instrument_definition_fixed_income, metrics::PROFILE)
+      .write(profile_.md_instrument_definition_repo, metrics::PROFILE)
+      .write(profile_.md_instrument_definition_fx, metrics::PROFILE)
       .write(profile_.snapshot_full_refresh, metrics::PROFILE)
       .write(profile_.snapshot_full_refresh_long_qty, metrics::PROFILE)
       .write(profile_.md_incremental_refresh_book, metrics::PROFILE)
