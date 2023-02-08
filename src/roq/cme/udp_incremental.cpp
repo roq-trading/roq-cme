@@ -641,7 +641,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &eve
     get_security(shared_, security_id, [&](auto &security) {
       auto exchange_time_utc = std::chrono::nanoseconds{value.transactTime()};
       auto exchange_sequence = value.lastMsgSeqNumProcessed();
-      auto layer = Layer{};
+      Layer layer;
       auto &bids = shared_.bids;
       auto &asks = shared_.asks;
       bids.clear();
@@ -707,7 +707,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
     // note! MBO contains indexed references to MBP entries
     md_entries_.clear();
     {  // MBP
-      auto layer = Layer{};
+      Layer layer;
       auto &bids = shared_.bids;
       auto &asks = shared_.asks;
       bids.clear();
