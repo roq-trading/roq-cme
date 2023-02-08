@@ -5,8 +5,6 @@
 #include "roq/utils/safe_cast.hpp"
 #include "roq/utils/update.hpp"
 
-#include "roq/core/back_emplacer.hpp"
-
 #include "roq/debug/hex/message.hpp"
 
 #include "roq/core/metrics/factory.hpp"
@@ -93,14 +91,14 @@ bool get_last_exchange_sequence(auto &channel, auto security_id, auto &value, Ca
   return false;
 }
 
-template <typename T, typename U, typename std::enable_if<std::is_same<T, MBPUpdate>::value, int>::type = 0>
-void emplace(T &result, U const &item, auto &security) {
-  auto price = sbe::get_double(const_cast<U &>(item).mDEntryPx());
+template <typename T>
+void mbp_emplace_back(auto &result, T const &item, auto &security) {
+  auto price = sbe::get_double(const_cast<T &>(item).mDEntryPx());
   auto quantity = sbe::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue());
   auto number_of_orders = sbe::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue());
   auto md_price_level = sbe::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue());
   uint32_t price_level = md_price_level > 0 ? (md_price_level - 1) : 0;
-  new (&result) T{
+  auto update = MBPUpdate{
       .price = price * security.display_factor,
       .quantity = utils::safe_cast(quantity),
       .implied_quantity = NaN,
@@ -108,68 +106,34 @@ void emplace(T &result, U const &item, auto &security) {
       .update_action = {},
       .price_level = price_level,
   };
-}
-
-template <typename T, typename U, typename std::enable_if<std::is_same<T, Statistics>::value, int>::type = 0>
-void emplace_price(T &result, auto type, U const &item, auto factor) {
-  auto value = sbe::get_double(const_cast<U &>(item).mDEntryPx());
-  new (&result) T{
-      .type = type,
-      .value = value * factor,
-      .begin_time_utc = {},
-      .end_time_utc = {},
-  };
-}
-
-template <typename T, typename std::enable_if<std::is_same<T, Statistics>::value, int>::type = 0>
-void emplace_size(T &result, auto type, auto const &item) {
-  auto value = sbe::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue());
-  new (&result) T{
-      .type = type,
-      .value = utils::safe_cast(value),
-      .begin_time_utc = {},
-      .end_time_utc = {},
-  };
+  result.emplace_back(std::move(update));
 }
 
 template <typename T>
-void emplace_back(T const &item, auto &security, auto &top_of_book, auto &bids, auto &asks, auto &statistics) {
+void emplace_back(T const &item, auto &security, auto &bids, auto &asks) {
   switch (item.mDEntryType()) {
     using enum cme_mdp::MDEntryType::Value;
     case Bid:
-      bids.emplace_back([&item, &security](auto &result) { emplace(result, item, security); });
+      mbp_emplace_back(bids, item, security);
       break;
     case Offer:
-      asks.emplace_back([&item, &security](auto &result) { emplace(result, item, security); });
+      mbp_emplace_back(asks, item, security);
       break;
     case Trade:
       break;
     case OpenPrice:
-      statistics.emplace_back([&item, &security](auto &result) {
-        emplace_price(result, StatisticsType::OPEN_PRICE, item, security.display_factor);
-      });
       break;
     case SettlementPrice:
-      statistics.emplace_back([&item, &security](auto &result) {
-        emplace_price(result, StatisticsType::SETTLEMENT_PRICE, item, security.display_factor);
-      });
       break;
     case TradingSessionHighPrice:
-      statistics.emplace_back([&item, &security](auto &result) {
-        emplace_price(result, StatisticsType::HIGHEST_TRADED_PRICE, item, security.display_factor);
-      });
       break;
     case TradingSessionLowPrice:
-      statistics.emplace_back([&item, &security](auto &result) {
-        emplace_price(result, StatisticsType::LOWEST_TRADED_PRICE, item, security.display_factor);
-      });
       break;
     case VWAP:
       break;
     case ClearedVolume:
       break;
     case OpenInterest:
-      statistics.emplace_back([&item](auto &result) { emplace_size(result, StatisticsType::OPEN_INTEREST, item); });
       break;
     case ImpliedBid:
       break;
@@ -182,25 +146,15 @@ void emplace_back(T const &item, auto &security, auto &top_of_book, auto &bids, 
     case SessionLowOffer:
       break;
     case FixingPrice:
-      // XXX need a new type?
-      statistics.emplace_back([&item, &security](auto &result) {
-        emplace_price(result, StatisticsType::CLOSE_PRICE, item, security.display_factor);
-      });
       break;
     case ElectronicVolume:
       break;
     case ThresholdLimitsandPriceBandVariation:
       break;
-    case MarketBestOffer: {
-      auto price = sbe::get_double(const_cast<T &>(item).mDEntryPx());
-      top_of_book.ask_price = price * security.display_factor;
+    case MarketBestOffer:
       break;
-    }
-    case MarketBestBid: {
-      auto price = sbe::get_double(const_cast<T &>(item).mDEntryPx());
-      top_of_book.bid_price = price * security.display_factor;
+    case MarketBestBid:
       break;
-    }
     case NULL_VALUE:
       break;
   }
@@ -363,38 +317,15 @@ void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::SnapshotFullRefresh52> cons
     auto security_id = value.securityID();
     get_security(shared_, security_id, [&](auto &security) {
       get_last_exchange_sequence(channel_, security_id, value, [&](auto exchange_sequence) {
-        std::chrono::nanoseconds exchange_time_utc{value.transactTime()};
-        Layer layer = {};
-        core::back_emplacer bids{shared_.bids}, asks{shared_.asks};
-        core::back_emplacer statistics{shared_.statistics};
+        auto exchange_time_utc = std::chrono::nanoseconds{value.transactTime()};
+        auto &bids = shared_.bids;
+        auto &asks = shared_.asks;
+        bids.clear();
+        asks.clear();
         value.sbeRewind();  // note!
-        value.noMDEntries().forEach(
-            [&](auto const &item) { emplace_back(item, security, layer, bids, asks, statistics); });
-        if (!(std::isnan(layer.bid_price) && std::isnan(layer.ask_price))) {
-          /* note! we don't publish
-          TopOfBook top_of_book{
-              .stream_id = stream_id_,
-              .exchange = security.exchange,
-              .symbol = security.symbol,
-              .layer = layer,
-              .exchange_time_utc = exchange_time_utc,
-              .exchange_sequence = exchange_sequence,
-          };
-          */
-        }
+        value.noMDEntries().forEach([&](auto const &item) { emplace_back(item, security, bids, asks); });
         if (!(std::empty(bids) && std::empty(asks))) {
           dispatch_market_by_price(trace_info, security_id, security, exchange_sequence, exchange_time_utc, bids, asks);
-        }
-        if (!std::empty(statistics)) {
-          auto statistics_update = StatisticsUpdate{
-              .stream_id = stream_id_,
-              .exchange = security.exchange,
-              .symbol = security.symbol,
-              .statistics = statistics,
-              .update_type = UpdateType::SNAPSHOT,
-              .exchange_time_utc = exchange_time_utc,
-          };
-          create_trace_and_dispatch(handler_, trace_info, statistics_update, true);
         }
       });
     });
@@ -411,38 +342,15 @@ void UDPMBPMarketRecovery::operator()(
     auto security_id = value.securityID();
     get_security(shared_, security_id, [&](auto &security) {
       get_last_exchange_sequence(channel_, security_id, value, [&](auto exchange_sequence) {
-        std::chrono::nanoseconds exchange_time_utc{value.transactTime()};
-        Layer layer = {};
-        core::back_emplacer bids{shared_.bids}, asks{shared_.asks};
-        core::back_emplacer statistics{shared_.statistics};
+        auto exchange_time_utc = std::chrono::nanoseconds{value.transactTime()};
+        auto &bids = shared_.bids;
+        auto &asks = shared_.asks;
+        bids.clear();
+        asks.clear();
         value.sbeRewind();  // note!
-        value.noMDEntries().forEach(
-            [&](auto const &item) { emplace_back(item, security, layer, bids, asks, statistics); });
-        if (!(std::isnan(layer.bid_price) && std::isnan(layer.ask_price))) {
-          /* note! we don't publish
-          TopOfBook top_of_book{
-              .stream_id = stream_id_,
-              .exchange = security.exchange,
-              .symbol = security.symbol,
-              .layer = layer,
-              .exchange_time_utc = exchange_time_utc,
-              .exchange_sequence = exchange_sequence,
-          };
-          */
-        }
+        value.noMDEntries().forEach([&](auto const &item) { emplace_back(item, security, bids, asks); });
         if (!(std::empty(bids) && std::empty(asks))) {
           dispatch_market_by_price(trace_info, security_id, security, exchange_sequence, exchange_time_utc, bids, asks);
-        }
-        if (!std::empty(statistics)) {
-          auto statistics_update = StatisticsUpdate{
-              .stream_id = stream_id_,
-              .exchange = security.exchange,
-              .symbol = security.symbol,
-              .statistics = statistics,
-              .update_type = UpdateType::SNAPSHOT,
-              .exchange_time_utc = exchange_time_utc,
-          };
-          create_trace_and_dispatch(handler_, trace_info, statistics_update, true);
         }
       });
     });

@@ -75,17 +75,17 @@ template <typename Callback>
 void create_security(auto &shared, auto &value, Callback callback) {
   auto security_id = value.securityID();
   auto iter = shared.securities.find(security_id);
-  if (iter == std::end(shared.securities)) {
-    auto symbol = sbe::get_string_view(value.symbol(), value.symbolLength());
-    Shared::Security security{
-        .exchange = sbe::get_string_view(value.securityExchange(), value.securityExchangeLength()),
-        .symbol = symbol,
-        .display_factor = sbe::get_double(value.displayFactor()),
-        .discard = shared.discard_symbol(symbol),
-    };
-    iter = shared.securities.try_emplace(security_id, std::move(security)).first;
-    callback((*iter).second);
-  }
+  if (iter != std::end(shared.securities))
+    return;
+  auto symbol = sbe::get_string_view(value.symbol(), value.symbolLength());
+  auto security = Shared::Security{
+      .exchange = sbe::get_string_view(value.securityExchange(), value.securityExchangeLength()),
+      .symbol = symbol,
+      .display_factor = sbe::get_double(value.displayFactor()),
+      .discard = shared.discard_symbol(symbol),
+  };
+  iter = shared.securities.try_emplace(security_id, std::move(security)).first;
+  callback((*iter).second);
 }
 }  // namespace
 
@@ -222,16 +222,16 @@ void UDPInstrumentDefinition::operator()(
           .discard = security.discard,
       };
       create_trace_and_dispatch(handler_, trace_info, reference_data, true);
-      if (!security.discard) {
-        auto trading_status = sbe::map_security_trading_status(value.mDSecurityTradingStatus());
-        auto market_status = MarketStatus{
-            .stream_id = stream_id_,
-            .exchange = security.exchange,
-            .symbol = security.symbol,
-            .trading_status = trading_status,
-        };
-        create_trace_and_dispatch(handler_, trace_info, market_status, true);
-      }
+      if (security.discard)
+        return;
+      auto trading_status = sbe::map_security_trading_status(value.mDSecurityTradingStatus());
+      auto market_status = MarketStatus{
+          .stream_id = stream_id_,
+          .exchange = security.exchange,
+          .symbol = security.symbol,
+          .trading_status = trading_status,
+      };
+      create_trace_and_dispatch(handler_, trace_info, market_status, true);
     });
   });
 }
@@ -277,16 +277,16 @@ void UDPInstrumentDefinition::operator()(
           .discard = security.discard,
       };
       create_trace_and_dispatch(handler_, trace_info, reference_data, true);
-      if (!security.discard) {
-        auto trading_status = sbe::map_security_trading_status(value.mDSecurityTradingStatus());
-        auto market_status = MarketStatus{
-            .stream_id = stream_id_,
-            .exchange = security.exchange,
-            .symbol = security.symbol,
-            .trading_status = trading_status,
-        };
-        create_trace_and_dispatch(handler_, trace_info, market_status, true);
-      }
+      if (security.discard)
+        return;
+      auto trading_status = sbe::map_security_trading_status(value.mDSecurityTradingStatus());
+      auto market_status = MarketStatus{
+          .stream_id = stream_id_,
+          .exchange = security.exchange,
+          .symbol = security.symbol,
+          .trading_status = trading_status,
+      };
+      create_trace_and_dispatch(handler_, trace_info, market_status, true);
     });
   });
 }
@@ -330,6 +330,16 @@ void UDPInstrumentDefinition::operator()(
           .discard = security.discard,
       };
       create_trace_and_dispatch(handler_, trace_info, reference_data, true);
+      if (security.discard)
+        return;
+      auto trading_status = sbe::map_security_trading_status(value.mDSecurityTradingStatus());
+      auto market_status = MarketStatus{
+          .stream_id = stream_id_,
+          .exchange = security.exchange,
+          .symbol = security.symbol,
+          .trading_status = trading_status,
+      };
+      create_trace_and_dispatch(handler_, trace_info, market_status, true);
     });
   });
 }
@@ -373,6 +383,16 @@ void UDPInstrumentDefinition::operator()(
           .discard = security.discard,
       };
       create_trace_and_dispatch(handler_, trace_info, reference_data, true);
+      if (security.discard)
+        return;
+      auto trading_status = sbe::map_security_trading_status(value.mDSecurityTradingStatus());
+      auto market_status = MarketStatus{
+          .stream_id = stream_id_,
+          .exchange = security.exchange,
+          .symbol = security.symbol,
+          .trading_status = trading_status,
+      };
+      create_trace_and_dispatch(handler_, trace_info, market_status, true);
     });
   });
 }
@@ -416,6 +436,16 @@ void UDPInstrumentDefinition::operator()(
           .discard = security.discard,
       };
       create_trace_and_dispatch(handler_, trace_info, reference_data, true);
+      if (security.discard)
+        return;
+      auto trading_status = sbe::map_security_trading_status(value.mDSecurityTradingStatus());
+      auto market_status = MarketStatus{
+          .stream_id = stream_id_,
+          .exchange = security.exchange,
+          .symbol = security.symbol,
+          .trading_status = trading_status,
+      };
+      create_trace_and_dispatch(handler_, trace_info, market_status, true);
     });
   });
 }
@@ -459,6 +489,16 @@ void UDPInstrumentDefinition::operator()(
           .discard = security.discard,
       };
       create_trace_and_dispatch(handler_, trace_info, reference_data, true);
+      if (security.discard)
+        return;
+      auto trading_status = sbe::map_security_trading_status(value.mDSecurityTradingStatus());
+      auto market_status = MarketStatus{
+          .stream_id = stream_id_,
+          .exchange = security.exchange,
+          .symbol = security.symbol,
+          .trading_status = trading_status,
+      };
+      create_trace_and_dispatch(handler_, trace_info, market_status, true);
     });
   });
 }

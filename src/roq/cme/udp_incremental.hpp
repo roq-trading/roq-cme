@@ -146,9 +146,9 @@ struct UDPIncremental final : public io::net::udp::Receiver::Handler, public sbe
   ConnectionStatus connection_status_ = {};
   // state
   std::chrono::nanoseconds last_update_time_ = {};
+  std::vector<std::tuple<int32_t, Side, double>> md_entries_;
   // DEBUG
   bool log_this_message_ = false;
-  std::vector<std::tuple<int32_t, Side, double>> entries_46_;
 };
 
 }  // namespace cme

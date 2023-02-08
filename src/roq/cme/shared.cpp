@@ -87,10 +87,7 @@ void read_secdef(T &securities, D &dispatcher) {
 // === IMPLEMENTATION ===
 
 Shared::Shared(server::Dispatcher &dispatcher)
-    : multicast_config_{flags::Multicast::multicast_config_file()}, fills(server::Flags::cache_fills_max_depth()),
-      bids(server::Flags::cache_mbp_max_depth()), asks(server::Flags::cache_mbp_max_depth()),
-      trades(server::Flags::cache_trades_max_depth()),
-      statistics(magic_enum::enum_count<StatisticsType>()), dispatcher_{dispatcher},
+    : multicast_config_{flags::Multicast::multicast_config_file()}, dispatcher_{dispatcher},
       rate_limiter{flags::Common::request_limit(), flags::Common::request_limit_interval()}, symbols{SLICE} {
   read_secdef(securities, dispatcher);
 }
