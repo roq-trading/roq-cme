@@ -18,15 +18,17 @@
 
 #include "roq/cme/udp_incremental.hpp"
 #include "roq/cme/udp_instrument_definition.hpp"
+#include "roq/cme/udp_mbo_market_recovery.hpp"
 #include "roq/cme/udp_mbp_market_recovery.hpp"
 
 namespace roq {
 namespace cme {
 
 struct Gateway final : public server::Handler,
+                       public UDPIncremental::Handler,
                        public UDPInstrumentDefinition::Handler,
                        public UDPMBPMarketRecovery::Handler,
-                       public UDPIncremental::Handler {
+                       public UDPMBOMarketRecovery::Handler {
   Gateway(server::Dispatcher &, Config const &, io::Context &);
 
   Gateway(Gateway &&) = delete;
@@ -80,9 +82,10 @@ struct Gateway final : public server::Handler,
   // seed
   uint16_t stream_id_ = {};
   // streams
+  std::vector<std::unique_ptr<UDPIncremental>> udp_incremental_;
   std::vector<std::unique_ptr<UDPInstrumentDefinition>> udp_instrument_definition_;
   std::vector<std::unique_ptr<UDPMBPMarketRecovery>> udp_mbp_market_recovery_;
-  std::vector<std::unique_ptr<UDPIncremental>> udp_incremental_;
+  std::vector<std::unique_ptr<UDPMBOMarketRecovery>> udp_mbo_market_recovery_;
   // cache
   std::vector<MBPUpdate> bids_, asks_;
   std::vector<MBOUpdate> mbo_bids_, mbo_asks_;

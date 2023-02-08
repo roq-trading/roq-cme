@@ -1056,4 +1056,3 @@ TEST_CASE("quote_request_39", "[sbe]") {
   CHECK(result == true);
   CHECK(handler.counter == 1);
 }
-

@@ -24,6 +24,16 @@ auto create_channels() {
   return result;
 }
 
+auto create_udp_incremental(auto &gateway, auto &context, auto &stream_id, auto &shared, auto &channels) {
+  std::vector<std::unique_ptr<UDPIncremental>> result;
+  for (auto &channel : channels) {
+    result.emplace_back(
+        std::make_unique<UDPIncremental>(gateway, context, ++stream_id, shared, channel, Priority::PRIMARY));
+    result.emplace_back(
+        std::make_unique<UDPIncremental>(gateway, context, ++stream_id, shared, channel, Priority::SECONDARY));
+  }
+  return result;
+}
 auto create_udp_instrument_definition(auto &gateway, auto &context, auto &stream_id, auto &shared, auto &channels) {
   std::vector<std::unique_ptr<UDPInstrumentDefinition>> result;
   if (std::empty(flags::Common::secdef_config_file())) {
@@ -42,13 +52,11 @@ auto create_udp_mbp_market_recovery(auto &gateway, auto &context, auto &stream_i
   return result;
 }
 
-auto create_udp_incremental(auto &gateway, auto &context, auto &stream_id, auto &shared, auto &channels) {
-  std::vector<std::unique_ptr<UDPIncremental>> result;
-  for (auto &channel : channels) {
-    result.emplace_back(
-        std::make_unique<UDPIncremental>(gateway, context, ++stream_id, shared, channel, Priority::PRIMARY));
-    result.emplace_back(
-        std::make_unique<UDPIncremental>(gateway, context, ++stream_id, shared, channel, Priority::SECONDARY));
+auto create_udp_mbo_market_recovery(auto &gateway, auto &context, auto &stream_id, auto &shared, auto &channels) {
+  std::vector<std::unique_ptr<UDPMBOMarketRecovery>> result;
+  if (flags::Common::test_mbo()) {
+    for (auto &channel : channels)
+      result.emplace_back(std::make_unique<UDPMBOMarketRecovery>(gateway, context, ++stream_id, shared, channel));
   }
   return result;
 }
@@ -58,37 +66,44 @@ auto create_udp_incremental(auto &gateway, auto &context, auto &stream_id, auto 
 
 Gateway::Gateway(server::Dispatcher &dispatcher, Config const &, io::Context &context)
     : dispatcher_{dispatcher}, context_{context}, shared_{dispatcher_}, channels_{create_channels()},
+      udp_incremental_{create_udp_incremental(*this, context_, stream_id_, shared_, channels_)},
       udp_instrument_definition_{create_udp_instrument_definition(*this, context_, stream_id_, shared_, channels_)},
       udp_mbp_market_recovery_{create_udp_mbp_market_recovery(*this, context_, stream_id_, shared_, channels_)},
-      udp_incremental_{create_udp_incremental(*this, context_, stream_id_, shared_, channels_)} {
+      udp_mbo_market_recovery_{create_udp_mbo_market_recovery(*this, context_, stream_id_, shared_, channels_)} {
 }
 
 void Gateway::operator()(Event<Start> const &event) {
   log::info("Starting..."sv);
+  for (auto &item : udp_incremental_)
+    (*item)(event);
   for (auto &item : udp_instrument_definition_)
     (*item)(event);
   for (auto &item : udp_mbp_market_recovery_)
     (*item)(event);
-  for (auto &item : udp_incremental_)
+  for (auto &item : udp_mbo_market_recovery_)
     (*item)(event);
 }
 
 void Gateway::operator()(Event<Stop> const &event) {
   log::info("Stopping..."sv);
-  for (auto &item : udp_incremental_)
+  for (auto &item : udp_mbo_market_recovery_)
     (*item)(event);
   for (auto &item : udp_mbp_market_recovery_)
     (*item)(event);
   for (auto &item : udp_instrument_definition_)
+    (*item)(event);
+  for (auto &item : udp_incremental_)
     (*item)(event);
 }
 
 void Gateway::operator()(Event<Timer> const &event) {
+  for (auto &item : udp_incremental_)
+    (*item)(event);
   for (auto &item : udp_instrument_definition_)
     (*item)(event);
   for (auto &item : udp_mbp_market_recovery_)
     (*item)(event);
-  for (auto &item : udp_incremental_)
+  for (auto &item : udp_mbo_market_recovery_)
     (*item)(event);
 }
 
@@ -135,11 +150,13 @@ uint16_t Gateway::operator()(Event<CancelAllOrders> const &event, [[maybe_unused
 }
 
 void Gateway::operator()(metrics::Writer &writer) {
+  for (auto &item : udp_incremental_)
+    (*item)(writer);
   for (auto &item : udp_instrument_definition_)
     (*item)(writer);
   for (auto &item : udp_mbp_market_recovery_)
     (*item)(writer);
-  for (auto &item : udp_incremental_)
+  for (auto &item : udp_mbo_market_recovery_)
     (*item)(writer);
 }
 

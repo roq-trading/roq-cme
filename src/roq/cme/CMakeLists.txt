@@ -14,6 +14,7 @@ set(SOURCES
     udp_incremental.cpp
     udp_instrument_definition.cpp
     udp_mbp_market_recovery.cpp
+    udp_mbo_market_recovery.cpp
     main.cpp)
 
 roq_gitignore(OUTPUT ".gitignore" SOURCES "${TARGET_NAME}")

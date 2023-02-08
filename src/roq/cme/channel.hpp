@@ -27,10 +27,13 @@ struct Channel final {
   // incremental
   std::pair<bool, uint32_t> last_sequence = {};
   absl::flat_hash_map<int32_t, uint32_t> mbp_last_sequence;
+  absl::flat_hash_map<int32_t, uint32_t> mbo_last_sequence;
 
-  // recovery
+  // MBP recovery
   absl::node_hash_map<int32_t, core::mbp::Sequencer> mbp_collector;
   absl::flat_hash_map<int32_t, uint32_t> mbp_resubscribe;
+
+  // MBO recovery
 };
 
 }  // namespace cme
