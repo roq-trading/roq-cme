@@ -586,18 +586,31 @@ void UDPIncremental::operator()(Trace<cme_mdp::SecurityStatus30> const &event, s
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("security_status_30={}, frame={}"sv, value, frame);
+    auto dispatch = [&](auto security_id) {
+      get_security(shared_, security_id, [&](auto &security) {
+        auto trading_status = sbe::map_security_trading_status(value.securityTradingStatus());
+        auto market_status = MarketStatus{
+            .stream_id = stream_id_,
+            .exchange = security.exchange,
+            .symbol = security.symbol,
+            .trading_status = trading_status,
+        };
+        create_trace_and_dispatch(handler_, trace_info, std::as_const(market_status), true);
+      });
+    };
     value.sbeRewind();  // note!
-    auto security_id = value.securityID();
-    get_security(shared_, security_id, [&](auto &security) {
-      auto trading_status = sbe::map_security_trading_status(value.securityTradingStatus());
-      auto market_status = MarketStatus{
-          .stream_id = stream_id_,
-          .exchange = security.exchange,
-          .symbol = security.symbol,
-          .trading_status = trading_status,
-      };
-      create_trace_and_dispatch(handler_, trace_info, std::as_const(market_status), true);
-    });
+    auto security_id = sbe::get_int(value.securityID(), value.securityIDNullValue());
+    if (security_id) {
+      dispatch(security_id);
+    } else {
+      auto security_group = sbe::get_string_view(value.securityGroup(), value.securityGroupLength());
+      auto iter = shared_.security_groups.find(security_group);
+      if (iter != std::end(shared_.security_groups)) {
+        auto &security_ids = (*iter).second;
+        for (auto security_id : security_ids)
+          dispatch(security_id);
+      }
+    }
   });
 }
 

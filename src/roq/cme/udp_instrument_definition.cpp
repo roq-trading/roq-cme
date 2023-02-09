@@ -77,14 +77,20 @@ void create_security(auto &shared, auto &value, Callback callback) {
   auto iter = shared.securities.find(security_id);
   if (iter != std::end(shared.securities))
     return;
+  auto security_exchange = sbe::get_string_view(value.securityExchange(), value.securityExchangeLength());
   auto symbol = sbe::get_string_view(value.symbol(), value.symbolLength());
+  auto display_factor = sbe::get_double(value.displayFactor());
+  auto security_group = sbe::get_string_view(value.securityGroup(), value.securityGroupLength());
+  auto discard = shared.discard_symbol(symbol);
   auto security = Shared::Security{
-      .exchange = sbe::get_string_view(value.securityExchange(), value.securityExchangeLength()),
+      .exchange = security_exchange,
       .symbol = symbol,
-      .display_factor = sbe::get_double(value.displayFactor()),
-      .discard = shared.discard_symbol(symbol),
+      .display_factor = display_factor,
+      .discard = discard,
   };
   iter = shared.securities.try_emplace(security_id, std::move(security)).first;
+  if (!discard)
+    shared.security_groups[security_group].insert(security_id);
   callback((*iter).second);
 }
 }  // namespace

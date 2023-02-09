@@ -78,6 +78,7 @@ struct Shared final {
     bool discard = {};
   };
   absl::node_hash_map<int32_t, Security> securities;
+  absl::flat_hash_map<std::string, absl::flat_hash_set<int32_t>> security_groups;
 };
 
 }  // namespace cme

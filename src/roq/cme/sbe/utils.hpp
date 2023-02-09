@@ -127,7 +127,7 @@ inline TradingStatus map_security_trading_status(cme_mdp::SecurityTradingStatus:
       return TradingStatus::HALT;
     case Close:
       return TradingStatus::CLOSE;
-    case NewPriceIndication:
+    case NewPriceIndication:  // ???
       break;
     case ReadyToTrade:
       return TradingStatus::OPEN;

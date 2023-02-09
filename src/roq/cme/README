@@ -6,3 +6,14 @@ missing:
 - number of orders (not cached)
 - implied bid/offer (not processed)
 - join/leave recovery channel based on subscriptions
+
+
+security_status_30={version=9, transact_time=1675893600000000000, security_group="ZN", asset="", security_id=2147483647, trade_date=19396, match_event_indicator=0, security_trading_status=Close, halt_reason=GroupSchedule, security_trading_event=NoEvent }, frame={sequence_number=46473423, sending_time=1675893600008543166ns}
+security_status_30={version=9, transact_time=1675893600000000000, security_group="ZN", asset="ZN", security_id=2147483647, trade_date=19396, match_event_indicator=0, security_trading_status=NoChange, halt_reason=GroupSchedule, security_trading_event=ImpliedMatchingOFF }, frame={sequence_number=46473501, sending_time=1675893600009677373ns}
+security_status_30={version=9, transact_time=1675896300000000000, security_group="ZN", asset="", security_id=2147483647, trade_date=19397, match_event_indicator=0, security_trading_status=PreOpen, halt_reason=GroupSchedule, security_trading_event=ResetStatistics }, frame={sequence_number=46475842, sending_time=1675896300111792453ns}
+security_status_30={version=9, transact_time=1675897170000000000, security_group="ZN", asset="", security_id=2147483647, trade_date=19397, match_event_indicator=0, security_trading_status=PreOpen, halt_reason=GroupSchedule, security_trading_event=NoCancel }, frame={sequence_number=46490557, sending_time=1675897170043371351ns}
+security_status_30={version=9, transact_time=1675897200000000000, security_group="ZN", asset="", security_id=2147483647, trade_date=19397, match_event_indicator=0, security_trading_status=NewPriceIndication, halt_reason=GroupSchedule, security_trading_event=NoEvent }, frame={sequence_number=46490701, sending_time=1675897200015237629ns}
+security_status_30={version=9, transact_time=1675897200000000000, security_group="ZN", asset="", security_id=2147483647, trade_date=19397, match_event_indicator=0, security_trading_status=ReadyToTrade, halt_reason=GroupSchedule, security_trading_event=NoEvent }, frame={sequence_number=46490736, sending_time=1675897200016065251ns}
+security_status_30={version=9, transact_time=1675897200000000000, security_group="ZN", asset="ZN", security_id=2147483647, trade_date=19397, match_event_indicator=0, security_trading_status=NoChange, halt_reason=GroupSchedule, security_trading_event=ImpliedMatchingON }, frame={sequence_number=46490837, sending_time=1675897200017245335ns}
+
+Close -> NoChange -> PreOpen -> PreOpen -> NewPriceIndication -> ReadyToTrade -> NoChange
