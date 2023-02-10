@@ -277,6 +277,7 @@ void UDPMBOMarketRecovery::operator()(
   profile_.snapshot_full_refresh_order_book([&]() {
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
+    /*
     log::info<3>(
         "DEBUG seqno={} reports={} secid={} chunks={} chunk={}"sv,
         value.lastMsgSeqNumProcessed(),
@@ -284,6 +285,7 @@ void UDPMBOMarketRecovery::operator()(
         value.securityID(),
         value.noChunks(),
         value.currentChunk());
+    */
     log::info<5>("snapshot_full_refresh_order_book_53={}, frame={}"sv, value, frame);
   });
 }
