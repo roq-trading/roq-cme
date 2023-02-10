@@ -280,7 +280,7 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshTradeSummary48::NoMDEntries> 
         R"(md_entry_px={}, )"
         R"(md_entry_size={}, )"
         R"(security_id={}, )"
-        R"(rpq_seq={}, )"
+        R"(rpt_seq={}, )"
         R"(number_of_orders={}, )"
         R"(aggressor_side={}, )"
         R"(md_update_action={}, )"

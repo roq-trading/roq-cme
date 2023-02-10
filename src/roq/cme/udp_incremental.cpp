@@ -418,13 +418,13 @@ void UDPIncremental::operator()(Event<Timer> const &event) {
 
 namespace {
 // this is general logic
-void drain(auto &receiver, auto &channel, auto parse, auto reset) {
+void drain(auto &receiver, auto &channel, auto stream_id, auto parse, auto reset) {
   using value_type = typename decltype(channel.buffer)::value_type;
   for (auto stop = false; !stop;) {
     if (channel.buffer.next([&](auto buffer) -> std::pair<size_t, value_type> {
           // read into buffer
           auto bytes = receiver.recv(buffer);
-          log::info<5>("Received {} byte(s)"sv, bytes);
+          log::info<5>("Received {} byte(s), stream_id={}"sv, bytes, stream_id);
           if (!bytes) {
             stop = true;
             return {};
@@ -547,7 +547,7 @@ void UDPIncremental::operator()(io::net::udp::Receiver::Read const &) {
       channel_.mbp_last_sequence.erase(security_id);
     }
   };
-  drain(*receiver_, channel_, parse, reset);
+  drain(*receiver_, channel_, stream_id_, parse, reset);
 }
 
 void UDPIncremental::operator()(io::net::udp::Receiver::Error const &error) {
@@ -1048,7 +1048,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
           bids.clear();
           asks.clear();
         }
-        log::info("DEBUG len(mbo_bids)={}, len(mbp_asks)={}"sv, std::size(mbo_bids), std::size(mbo_asks));
+        log::info("DEBUG len(mbo_bids)={}, len(mbo_asks)={}"sv, std::size(mbo_bids), std::size(mbo_asks));
         if (!(std::empty(mbo_bids) && std::empty(mbo_asks))) {
           dispatch_market_by_order(
               trace_info, security_id, security, exchange_sequence, exchange_time_utc, mbo_bids, mbo_asks);
@@ -1068,6 +1068,10 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
           } else {
             security = nullptr;
           }
+        }
+        if (security) {
+          auto rpt_seq = item.rptSeq();
+          (*security).update_rpt_seq(rpt_seq);
         }
         // ... need these for MBO referencing
         using value_type = typename std::remove_cvref<decltype(item)>::type;
@@ -1112,7 +1116,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
       bids.clear();
       asks.clear();
       auto dispatch = [&](auto security_id, auto &security) {
-        log::info("DEBUG len(mbo_bids)={}, len(mbp_asks)={}"sv, std::size(bids), std::size(asks));
+        log::info("DEBUG len(mbo_bids)={}, len(mbo_asks)={}"sv, std::size(bids), std::size(asks));
         if (!(std::empty(bids) && std::empty(asks))) {
           dispatch_market_by_order(trace_info, security_id, security, exchange_sequence, exchange_time_utc, bids, asks);
           bids.clear();
@@ -1155,7 +1159,22 @@ void UDPIncremental::operator()(
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("md_incremental_refresh_book_long_qty_64={}, frame={}"sv, value, frame);
-    // XXX ???
+    auto security_id = int32_t{};
+    Shared::Security *security = nullptr;
+    value.noMDEntries().forEach([&](auto const &item) {
+      auto current_security_id = item.securityID();
+      if (current_security_id != security_id) {
+        security_id = current_security_id;
+        if (get_security(shared_, security_id, [&security](auto &security_2) { security = &security_2; })) {
+        } else {
+          security = nullptr;
+        }
+      }
+      if (security) {
+        auto rpt_seq = item.rptSeq();
+        (*security).update_rpt_seq(rpt_seq);
+      }
+    });
   });
 }
 
@@ -1202,8 +1221,9 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshOrderBook47> 
           security = nullptr;
         }
       }
-      if (security)
+      if (security) {
         emplace_back(item, *security, bids, asks);
+      }
     });
     if (security)
       dispatch(security_id, *security);
@@ -1283,14 +1303,47 @@ void UDPIncremental::operator()(
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("md_incremental_refresh_volume_long_qty_66={}, frame={}"sv, value, frame);
+    auto security_id = int32_t{};
+    Shared::Security *security = nullptr;
+    value.noMDEntries().forEach([&](auto const &item) {
+      auto current_security_id = item.securityID();
+      if (current_security_id != security_id) {
+        security_id = current_security_id;
+        if (get_security(shared_, security_id, [&security](auto &security_2) { security = &security_2; })) {
+        } else {
+          security = nullptr;
+        }
+      }
+      if (security) {
+        auto rpt_seq = item.rptSeq();
+        (*security).update_rpt_seq(rpt_seq);
+      }
+    });
   });
 }
 
 void UDPIncremental::operator()(
     Trace<cme_mdp::MDIncrementalRefreshLimitsBanding50> const &event, sbe::Frame const &frame) {
+  // XXX need profile
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_incremental_refresh_limits_banding_50={}, frame={}"sv, value, frame);
+  auto security_id = int32_t{};
+  Shared::Security *security = nullptr;
+  value.noMDEntries().forEach([&](auto const &item) {
+    auto current_security_id = item.securityID();
+    if (current_security_id != security_id) {
+      security_id = current_security_id;
+      if (get_security(shared_, security_id, [&security](auto &security_2) { security = &security_2; })) {
+      } else {
+        security = nullptr;
+      }
+    }
+    if (security) {
+      auto rpt_seq = item.rptSeq();
+      (*security).update_rpt_seq(rpt_seq);
+    }
+  });
 }
 
 void UDPIncremental::dispatch_market_by_price(
@@ -1426,8 +1479,11 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event) {
         security = nullptr;
       }
     }
-    if (security)
+    if (security) {
+      auto rpt_seq = item.rptSeq();
+      (*security).update_rpt_seq(rpt_seq);
       trades_emplace_back(trades, item, *security);
+    }
   });
   if (security)
     dispatch(*security, true);
@@ -1470,8 +1526,11 @@ void UDPIncremental::dispatch_statistics(Trace<T> const &event, Callback callbac
         security = nullptr;
       }
     }
-    if (security)
+    if (security) {
+      auto rpt_seq = item.rptSeq();
+      (*security).update_rpt_seq(rpt_seq);
       callback(statistics, item, *security);
+    }
   });
   if (security)
     dispatch(*security, true);

@@ -115,5 +115,18 @@ std::string_view Shared::next_request_id() {
   return {std::data(stack_buffer_), std::size(stack_buffer_)};
 }
 
+// Security
+
+void Shared::Security::update_rpt_seq(uint32_t rpt_seq) {
+  if (rpt_seq == 0)  // conflated feed
+    return;
+  auto next = (*this).rpt_seq + 1;
+  if (rpt_seq != next) {
+    log::warn(R"(*** RESUBSCRIBE *** exchange="{}", sybmol="{}")"sv, exchange, symbol);
+    need_snapshot = true;
+  }
+  (*this).rpt_seq = rpt_seq;
+}
+
 }  // namespace cme
 }  // namespace roq

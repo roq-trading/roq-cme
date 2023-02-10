@@ -76,6 +76,10 @@ struct Shared final {
     Symbol symbol;
     double display_factor = NaN;
     bool discard = {};
+    uint32_t rpt_seq = {};  // conflated feed sends zero
+    bool need_snapshot = false;
+
+    void update_rpt_seq(uint32_t rpt_seq);
   };
   absl::node_hash_map<int32_t, Security> securities;
   absl::flat_hash_map<std::string, absl::flat_hash_set<int32_t>> security_groups;
