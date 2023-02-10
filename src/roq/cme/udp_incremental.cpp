@@ -274,22 +274,10 @@ void emplace_back(
     auto &security,
     auto side,
     auto price,
-    auto mbp_action,
     auto &bids,
     auto &asks) {
   auto create_update = [&]() {
     auto action = sbe::map(item.orderUpdateAction());
-    if (action == UpdateAction::DELETE && mbp_action == UpdateAction::DELETE) {
-      log::info("DEBUG *** REMOVE LEVEL *** price={}"sv, price);
-      return MBOUpdate{
-          .price = price * security.display_factor,
-          .remaining_quantity = {},
-          .priority = {},
-          .order_id = {},
-          .action = action,
-          .reason = {},
-      };
-    }
     auto remaining_quantity = sbe::get_int(item.mDDisplayQty(), item.mDDisplayQtyNullValue());
     auto priority = sbe::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue());
     auto order_id = sbe::get_int(item.orderID(), item.orderIDNullValue());
@@ -1031,12 +1019,17 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
     auto exchange_time_utc = std::chrono::nanoseconds{value.transactTime()};
     // note! MBO contains indexed references to MBP entries
     md_entries_.clear();
+    auto has_order_id_entries = value.noOrderIDEntries().count() > 0;
     {  // MBP
       Layer layer;
       auto &bids = shared_.bids;
       auto &asks = shared_.asks;
       bids.clear();
       asks.clear();
+      auto &mbo_bids = shared_.mbo_bids;
+      auto &mbo_asks = shared_.mbo_asks;
+      mbo_bids.clear();
+      mbo_asks.clear();
       auto dispatch = [&](auto security_id, auto &security, auto is_last) {
         if (!(std::isnan(layer.bid_price) && std::isnan(layer.ask_price))) {
           auto top_of_book = TopOfBook{
@@ -1055,6 +1048,12 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
           bids.clear();
           asks.clear();
         }
+        if (!(std::empty(mbo_bids) && std::empty(mbo_asks))) {
+          dispatch_market_by_order(
+              trace_info, security_id, security, exchange_sequence, exchange_time_utc, mbo_bids, mbo_asks);
+          mbo_bids.clear();
+          mbo_asks.clear();
+        }
       };
       auto security_id = int32_t{};
       Shared::Security *security = nullptr;
@@ -1069,20 +1068,42 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
             security = nullptr;
           }
         }
-        if (security)
+        if (security) {
           emplace_back(item, *security, layer, bids, asks);
-        // ... need this for MBO referencing
-        using value_type = typename std::remove_cvref<decltype(item)>::type;
-        auto &value = const_cast<value_type &>(item);  // note! not const-safe
-        auto price = sbe::get_double(value.mDEntryPx());
-        auto side = sbe::map(item.mDEntryType());
-        auto action = sbe::map(item.mDUpdateAction());
-        md_entries_.emplace_back(security_id, side, price, action);
+          // ... need these for MBO referencing
+          using value_type = typename std::remove_cvref<decltype(item)>::type;
+          auto &value = const_cast<value_type &>(item);  // note! not const-safe
+          auto price = sbe::get_double(value.mDEntryPx());
+          auto side = sbe::map(item.mDEntryType());
+          auto action = sbe::map(item.mDUpdateAction());
+          md_entries_.emplace_back(security_id, side, price, action);
+          if (action == UpdateAction::DELETE) {
+            auto update = MBOUpdate{
+                .price = price * (*security).display_factor,
+                .remaining_quantity = {},
+                .priority = {},
+                .order_id = {},
+                .action = action,
+                .reason = {},
+            };
+            switch (side) {
+              using enum Side;
+              case UNDEFINED:
+                break;
+              case BUY:
+                mbo_bids.emplace_back(std::move(update));
+                break;
+              case SELL:
+                mbo_asks.emplace_back(std::move(update));
+                break;
+            }
+          }
+        }
       });
       if (security)
         dispatch(security_id, *security, true);
     }
-    {  // MBO
+    if (has_order_id_entries) {  // MBO
       auto security_id = int32_t{};
       Shared::Security *security = nullptr;
       auto &bids = shared_.mbo_bids;
@@ -1106,7 +1127,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
             log::warn("Unexpected: index={}, len={}"sv, index, std::size(md_entries_));
             return;
           }
-          auto [current_security_id, side, price, mbp_action] = md_entries_[index];
+          auto [current_security_id, side, price, action] = md_entries_[index];
           if (current_security_id != security_id) {
             if (security)
               dispatch(security_id, *security);
@@ -1117,69 +1138,10 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
             }
           }
           if (security) {
-            emplace_back(item, *security, side, price, mbp_action, bids, asks);
+            if (action != UpdateAction::DELETE)
+              emplace_back(item, *security, side, price, bids, asks);
           }
         });
-        if (security)
-          dispatch(security_id, *security);
-      } else {
-        auto bid_delete_only = true;
-        auto ask_delete_only = true;
-        for (auto [current_security_id, side, price, mbp_action] : md_entries_) {
-          if (current_security_id != security_id) {
-            if (security) {
-              dispatch(security_id, *security);
-              bid_delete_only = ask_delete_only = true;
-            }
-            security_id = current_security_id;
-            if (get_security(shared_, security_id, [&security](auto &security_2) { security = &security_2; })) {
-            } else {
-              security = nullptr;
-            }
-          }
-          if (security) {
-            switch (side) {
-              using enum Side;
-              case UNDEFINED:
-                assert(false);
-                break;
-              case BUY:
-                if (bid_delete_only) {
-                  if (mbp_action == UpdateAction::DELETE) {
-                    auto update = MBOUpdate{
-                        .price = price * (*security).display_factor,
-                        .remaining_quantity = {},
-                        .priority = {},
-                        .order_id = {},
-                        .action = mbp_action,
-                        .reason = {},
-                    };
-                    bids.emplace_back(std::move(update));
-                  } else {
-                    bid_delete_only = false;
-                  }
-                }
-                break;
-              case SELL:
-                if (ask_delete_only) {
-                  if (mbp_action == UpdateAction::DELETE) {
-                    auto update = MBOUpdate{
-                        .price = price * (*security).display_factor,
-                        .remaining_quantity = {},
-                        .priority = {},
-                        .order_id = {},
-                        .action = mbp_action,
-                        .reason = {},
-                    };
-                    asks.emplace_back(std::move(update));
-                  } else {
-                    ask_delete_only = false;
-                  }
-                }
-                break;
-            }
-          }
-        }
         if (security)
           dispatch(security_id, *security);
       }
