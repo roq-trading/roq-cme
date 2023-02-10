@@ -274,13 +274,25 @@ void emplace_back(
     auto &security,
     auto side,
     auto price,
+    auto mbp_action,
     auto &bids,
     auto &asks) {
   auto create_update = [&]() {
+    auto action = sbe::map(item.orderUpdateAction());
+    if (action == UpdateAction::DELETE && mbp_action == UpdateAction::DELETE) {
+      log::info("DEBUG *** REMOVE LEVEL *** price={}"sv, price);
+      return MBOUpdate{
+          .price = price * security.display_factor,
+          .remaining_quantity = {},
+          .priority = {},
+          .order_id = {},
+          .action = action,
+          .reason = {},
+      };
+    }
     auto remaining_quantity = sbe::get_int(item.mDDisplayQty(), item.mDDisplayQtyNullValue());
     auto priority = sbe::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue());
     auto order_id = sbe::get_int(item.orderID(), item.orderIDNullValue());
-    auto action = sbe::map(item.orderUpdateAction());
     auto result = MBOUpdate{
         .price = price * security.display_factor,
         .remaining_quantity = static_cast<double>(remaining_quantity),
@@ -1064,7 +1076,8 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
         auto &value = const_cast<value_type &>(item);  // note! not const-safe
         auto price = sbe::get_double(value.mDEntryPx());
         auto side = sbe::map(item.mDEntryType());
-        md_entries_.emplace_back(security_id, side, price);
+        auto action = sbe::map(item.mDUpdateAction());
+        md_entries_.emplace_back(security_id, side, price, action);
       });
       if (security)
         dispatch(security_id, *security, true);
@@ -1092,7 +1105,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
           log::warn("Unexpected: index={}, len={}"sv, index, std::size(md_entries_));
           return;
         }
-        auto [current_security_id, side, price] = md_entries_[index];
+        auto [current_security_id, side, price, mbp_action] = md_entries_[index];
         if (current_security_id != security_id) {
           if (security)
             dispatch(security_id, *security);
@@ -1103,7 +1116,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
           }
         }
         if (security) {
-          emplace_back(item, *security, side, price, bids, asks);
+          emplace_back(item, *security, side, price, mbp_action, bids, asks);
         }
       });
       if (security)
@@ -1118,6 +1131,7 @@ void UDPIncremental::operator()(
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("md_incremental_refresh_book_long_qty_64={}, frame={}"sv, value, frame);
+    // XXX ???
   });
 }
 

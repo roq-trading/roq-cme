@@ -17,3 +17,12 @@ security_status_30={version=9, transact_time=1675897200000000000, security_group
 security_status_30={version=9, transact_time=1675897200000000000, security_group="ZN", asset="ZN", security_id=2147483647, trade_date=19397, match_event_indicator=0, security_trading_status=NoChange, halt_reason=GroupSchedule, security_trading_event=ImpliedMatchingON }, frame={sequence_number=46490837, sending_time=1675897200017245335ns}
 
 Close -> NoChange -> PreOpen -> PreOpen -> NewPriceIndication -> ReadyToTrade -> NoChange
+
+1675963007949188501ns market_status={stream_id=3, exchange="XCBT", symbol="ZNH3", trading_status=OPEN}
+1675966082725114772ns market_status={stream_id=1, exchange="XCBT", symbol="ZNH3", trading_status=OPEN}
+1675980000047755890ns market_status={stream_id=1, exchange="XCBT", symbol="ZNH3", trading_status=CLOSE}
+1675980000048825542ns market_status={stream_id=1, exchange="XCBT", symbol="ZNH3", trading_status=START_OF_DAY}
+1675982700155918559ns market_status={stream_id=1, exchange="XCBT", symbol="ZNH3", trading_status=PRE_OPEN}
+1675983600051982474ns market_status={stream_id=1, exchange="XCBT", symbol="ZNH3", trading_status=UNDEFINED}
+1675983600053139300ns market_status={stream_id=1, exchange="XCBT", symbol="ZNH3", trading_status=OPEN}
+1675983600054206605ns market_status={stream_id=1, exchange="XCBT", symbol="ZNH3", trading_status=START_OF_DAY}
