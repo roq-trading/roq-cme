@@ -1042,13 +1042,13 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
           create_trace_and_dispatch(handler_, trace_info, std::as_const(top_of_book), is_last);
           layer = {};
         }
-        log::info("DEBUG len(mbp_bids)={}, len(mbp_asks)={}"sv, std::size(bids), std::size(asks));
+        // log::info("DEBUG len(mbp_bids)={}, len(mbp_asks)={}"sv, std::size(bids), std::size(asks));
         if (!(std::empty(bids) && std::empty(asks))) {
           dispatch_market_by_price(trace_info, security_id, security, exchange_sequence, exchange_time_utc, bids, asks);
           bids.clear();
           asks.clear();
         }
-        log::info("DEBUG len(mbo_bids)={}, len(mbo_asks)={}"sv, std::size(mbo_bids), std::size(mbo_asks));
+        // log::info("DEBUG len(mbo_bids)={}, len(mbo_asks)={}"sv, std::size(mbo_bids), std::size(mbo_asks));
         if (!(std::empty(mbo_bids) && std::empty(mbo_asks))) {
           dispatch_market_by_order(
               trace_info, security_id, security, exchange_sequence, exchange_time_utc, mbo_bids, mbo_asks);
@@ -1116,7 +1116,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
       bids.clear();
       asks.clear();
       auto dispatch = [&](auto security_id, auto &security) {
-        log::info("DEBUG len(mbo_bids)={}, len(mbo_asks)={}"sv, std::size(bids), std::size(asks));
+        // log::info("DEBUG len(mbo_bids)={}, len(mbo_asks)={}"sv, std::size(bids), std::size(asks));
         if (!(std::empty(bids) && std::empty(asks))) {
           dispatch_market_by_order(trace_info, security_id, security, exchange_sequence, exchange_time_utc, bids, asks);
           bids.clear();

@@ -122,7 +122,12 @@ void Shared::Security::update_rpt_seq(uint32_t rpt_seq) {
     return;
   auto next = (*this).rpt_seq + 1;
   if (rpt_seq != next) {
-    log::warn(R"(*** RESUBSCRIBE *** exchange="{}", sybmol="{}")"sv, exchange, symbol);
+    log::warn(
+        R"(*** RESUBSCRIBE *** exchange="{}", sybmol="{}", rpt_seq={}, prev={})"sv,
+        exchange,
+        symbol,
+        rpt_seq,
+        (*this).rpt_seq);
     need_snapshot = true;
   }
   (*this).rpt_seq = rpt_seq;
