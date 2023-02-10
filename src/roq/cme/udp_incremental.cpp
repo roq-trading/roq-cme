@@ -424,7 +424,7 @@ void drain(auto &receiver, auto &channel, auto stream_id, auto parse, auto reset
     if (channel.buffer.next([&](auto buffer) -> std::pair<size_t, value_type> {
           // read into buffer
           auto bytes = receiver.recv(buffer);
-          log::info<5>("Received {} byte(s), stream_id={}"sv, bytes, stream_id);
+          log::info<5>("Received {} byte(s) (stream_id={})"sv, bytes, stream_id);
           if (!bytes) {
             stop = true;
             return {};
@@ -435,9 +435,9 @@ void drain(auto &receiver, auto &channel, auto stream_id, auto parse, auto reset
           bool hold = false, drop = false;
           value_type sequence_number = {};
           if (sbe::Frame::parse(message, [&](auto &frame) {
+                log::info<5>("frame={}, last_sequence_number={}"sv, frame, channel.last_sequence.second);
                 // check sequence number
                 sequence_number = frame.sequence_number;
-                log::info<5>("sequence_number={} (last_sequence_number={})"sv, sequence_number, channel.last_sequence);
                 auto [ready, last_sequence_number] = channel.last_sequence;
                 if (ready) {
                   auto next_sequence_number = last_sequence_number + 1;
@@ -460,6 +460,7 @@ void drain(auto &receiver, auto &channel, auto stream_id, auto parse, auto reset
                 }
                 // <<< TEST
               })) {
+            log::info<5>("hold={}, drop={}"sv, hold, drop);
             if (drop)
               return {};
             if (hold)

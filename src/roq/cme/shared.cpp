@@ -120,6 +120,7 @@ std::string_view Shared::next_request_id() {
 void Shared::Security::update_rpt_seq(uint32_t rpt_seq) {
   if (rpt_seq == 0)  // conflated feed
     return;
+  log::info<5>("rpt_seq={}, last_rpt_seq={}"sv, rpt_seq, (*this).rpt_seq);
   auto next = (*this).rpt_seq + 1;
   if (rpt_seq != next) {
     log::warn(
