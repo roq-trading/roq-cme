@@ -1019,7 +1019,6 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
     auto exchange_time_utc = std::chrono::nanoseconds{value.transactTime()};
     // note! MBO contains indexed references to MBP entries
     md_entries_.clear();
-    auto has_order_id_entries = value.noOrderIDEntries().count() > 0;
     {  // MBP
       Layer layer;
       auto &bids = shared_.bids;
@@ -1103,7 +1102,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
       if (security)
         dispatch(security_id, *security, true);
     }
-    if (has_order_id_entries) {  // MBO
+    {  // MBO
       auto security_id = int32_t{};
       Shared::Security *security = nullptr;
       auto &bids = shared_.mbo_bids;
