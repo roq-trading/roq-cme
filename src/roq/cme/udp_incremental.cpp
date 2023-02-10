@@ -1096,31 +1096,93 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
           asks.clear();
         }
       };
-      value.noOrderIDEntries().forEach([&](auto const &item) {
-        auto reference_id = sbe::get_int(item.referenceID(), item.referenceIDNullValue());
-        if (!reference_id)
-          return;
-        auto index = static_cast<size_t>(reference_id) - 1;  // indexing is 1-based
-        if (!(index < std::size(md_entries_))) [[unlikely]] {
-          log::warn("Unexpected: index={}, len={}"sv, index, std::size(md_entries_));
-          return;
-        }
-        auto [current_security_id, side, price, mbp_action] = md_entries_[index];
-        if (current_security_id != security_id) {
-          if (security)
-            dispatch(security_id, *security);
-          security_id = current_security_id;
-          if (get_security(shared_, security_id, [&security](auto &security_2) { security = &security_2; })) {
-          } else {
-            security = nullptr;
+      if (value.noOrderIDEntries().count()) {
+        value.noOrderIDEntries().forEach([&](auto const &item) {
+          auto reference_id = sbe::get_int(item.referenceID(), item.referenceIDNullValue());
+          if (!reference_id)
+            return;
+          auto index = static_cast<size_t>(reference_id) - 1;  // indexing is 1-based
+          if (!(index < std::size(md_entries_))) [[unlikely]] {
+            log::warn("Unexpected: index={}, len={}"sv, index, std::size(md_entries_));
+            return;
+          }
+          auto [current_security_id, side, price, mbp_action] = md_entries_[index];
+          if (current_security_id != security_id) {
+            if (security)
+              dispatch(security_id, *security);
+            security_id = current_security_id;
+            if (get_security(shared_, security_id, [&security](auto &security_2) { security = &security_2; })) {
+            } else {
+              security = nullptr;
+            }
+          }
+          if (security) {
+            emplace_back(item, *security, side, price, mbp_action, bids, asks);
+          }
+        });
+        if (security)
+          dispatch(security_id, *security);
+      } else {
+        auto bid_delete_only = true;
+        auto ask_delete_only = true;
+        for (auto [current_security_id, side, price, mbp_action] : md_entries_) {
+          if (current_security_id != security_id) {
+            if (security) {
+              dispatch(security_id, *security);
+              bid_delete_only = ask_delete_only = true;
+            }
+            security_id = current_security_id;
+            if (get_security(shared_, security_id, [&security](auto &security_2) { security = &security_2; })) {
+            } else {
+              security = nullptr;
+            }
+          }
+          if (security) {
+            switch (side) {
+              using enum Side;
+              case UNDEFINED:
+                assert(false);
+                break;
+              case BUY:
+                if (bid_delete_only) {
+                  if (mbp_action == UpdateAction::DELETE) {
+                    auto update = MBOUpdate{
+                        .price = price * (*security).display_factor,
+                        .remaining_quantity = {},
+                        .priority = {},
+                        .order_id = {},
+                        .action = mbp_action,
+                        .reason = {},
+                    };
+                    bids.emplace_back(std::move(update));
+                  } else {
+                    bid_delete_only = false;
+                  }
+                }
+                break;
+              case SELL:
+                if (ask_delete_only) {
+                  if (mbp_action == UpdateAction::DELETE) {
+                    auto update = MBOUpdate{
+                        .price = price * (*security).display_factor,
+                        .remaining_quantity = {},
+                        .priority = {},
+                        .order_id = {},
+                        .action = mbp_action,
+                        .reason = {},
+                    };
+                    asks.emplace_back(std::move(update));
+                  } else {
+                    ask_delete_only = false;
+                  }
+                }
+                break;
+            }
           }
         }
-        if (security) {
-          emplace_back(item, *security, side, price, mbp_action, bids, asks);
-        }
-      });
-      if (security)
-        dispatch(security_id, *security);
+        if (security)
+          dispatch(security_id, *security);
+      }
     }
   });
 }
