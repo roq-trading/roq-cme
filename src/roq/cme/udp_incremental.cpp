@@ -1042,11 +1042,13 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
           create_trace_and_dispatch(handler_, trace_info, std::as_const(top_of_book), is_last);
           layer = {};
         }
+        log::info("DEBUG len(mbp_bids)={}, len(mbp_asks)={}"sv, std::size(bids), std::size(asks));
         if (!(std::empty(bids) && std::empty(asks))) {
           dispatch_market_by_price(trace_info, security_id, security, exchange_sequence, exchange_time_utc, bids, asks);
           bids.clear();
           asks.clear();
         }
+        log::info("DEBUG len(mbo_bids)={}, len(mbp_asks)={}"sv, std::size(mbo_bids), std::size(mbo_asks));
         if (!(std::empty(mbo_bids) && std::empty(mbo_asks))) {
           dispatch_market_by_order(
               trace_info, security_id, security, exchange_sequence, exchange_time_utc, mbo_bids, mbo_asks);
@@ -1067,15 +1069,15 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
             security = nullptr;
           }
         }
+        // ... need these for MBO referencing
+        using value_type = typename std::remove_cvref<decltype(item)>::type;
+        auto &value = const_cast<value_type &>(item);  // note! not const-safe
+        auto price = sbe::get_double(value.mDEntryPx());
+        auto side = sbe::map(item.mDEntryType());
+        auto action = sbe::map(item.mDUpdateAction());
+        md_entries_.emplace_back(security_id, side, price, action);
         if (security) {
           emplace_back(item, *security, layer, bids, asks);
-          // ... need these for MBO referencing
-          using value_type = typename std::remove_cvref<decltype(item)>::type;
-          auto &value = const_cast<value_type &>(item);  // note! not const-safe
-          auto price = sbe::get_double(value.mDEntryPx());
-          auto side = sbe::map(item.mDEntryType());
-          auto action = sbe::map(item.mDUpdateAction());
-          md_entries_.emplace_back(security_id, side, price, action);
           if (action == UpdateAction::DELETE) {
             auto update = MBOUpdate{
                 .price = price * (*security).display_factor,
@@ -1110,40 +1112,39 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
       bids.clear();
       asks.clear();
       auto dispatch = [&](auto security_id, auto &security) {
+        log::info("DEBUG len(mbo_bids)={}, len(mbp_asks)={}"sv, std::size(bids), std::size(asks));
         if (!(std::empty(bids) && std::empty(asks))) {
           dispatch_market_by_order(trace_info, security_id, security, exchange_sequence, exchange_time_utc, bids, asks);
           bids.clear();
           asks.clear();
         }
       };
-      if (value.noOrderIDEntries().count()) {
-        value.noOrderIDEntries().forEach([&](auto const &item) {
-          auto reference_id = sbe::get_int(item.referenceID(), item.referenceIDNullValue());
-          if (!reference_id)
-            return;
-          auto index = static_cast<size_t>(reference_id) - 1;  // indexing is 1-based
-          if (!(index < std::size(md_entries_))) [[unlikely]] {
-            log::warn("Unexpected: index={}, len={}"sv, index, std::size(md_entries_));
-            return;
+      value.noOrderIDEntries().forEach([&](auto const &item) {
+        auto reference_id = sbe::get_int(item.referenceID(), item.referenceIDNullValue());
+        if (!reference_id)
+          return;
+        auto index = static_cast<size_t>(reference_id) - 1;  // indexing is 1-based
+        if (!(index < std::size(md_entries_))) [[unlikely]] {
+          log::warn("Unexpected: index={}, len={}"sv, index, std::size(md_entries_));
+          return;
+        }
+        auto [current_security_id, side, price, action] = md_entries_[index];
+        if (current_security_id != security_id) {
+          if (security)
+            dispatch(security_id, *security);
+          security_id = current_security_id;
+          if (get_security(shared_, security_id, [&security](auto &security_2) { security = &security_2; })) {
+          } else {
+            security = nullptr;
           }
-          auto [current_security_id, side, price, action] = md_entries_[index];
-          if (current_security_id != security_id) {
-            if (security)
-              dispatch(security_id, *security);
-            security_id = current_security_id;
-            if (get_security(shared_, security_id, [&security](auto &security_2) { security = &security_2; })) {
-            } else {
-              security = nullptr;
-            }
-          }
-          if (security) {
-            if (action != UpdateAction::DELETE)
-              emplace_back(item, *security, side, price, bids, asks);
-          }
-        });
-        if (security)
-          dispatch(security_id, *security);
-      }
+        }
+        if (security) {
+          if (action != UpdateAction::DELETE)
+            emplace_back(item, *security, side, price, bids, asks);
+        }
+      });
+      if (security)
+        dispatch(security_id, *security);
     }
   });
 }
