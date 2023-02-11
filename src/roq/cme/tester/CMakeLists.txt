@@ -9,7 +9,6 @@ add_executable("${TARGET_NAME}" ${SOURCES})
 target_link_libraries(
   "${TARGET_NAME}"
   PRIVATE "${PROJECT_NAME}-tester-flags"
-          roq-web::roq-web
           roq-io::roq-io
           roq-core::roq-core
           roq-logging::roq-logging

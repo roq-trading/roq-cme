@@ -6,45 +6,44 @@
 
 #include <string>
 
-#include "roq/core/flags/flags.hpp"
-
-using namespace std::literals;
-
-ABSL_FLAG(  //
-    roq::core::flags::Path,
-    auth_keys_file,
-    ""s,
-    "file containing user's public and private keys (path)"s);
+#include "roq/core/flags/non_empty.hpp"
+#include "roq/core/flags/non_zero.hpp"
 
 ABSL_FLAG(  //
-    std::vector<std::string>,
-    auth_license_manager_uri,
-    std::vector<std::string>({"https://auth-1.roq-trading.com"s, "https://auth-2.roq-trading.com"s}),
-    "license manager end-point(s) (comma-separated list)"s);
-
-ABSL_FLAG(  //
-    roq::core::flags::URI,
-    auth_proxy,
+    roq::core::flags::NonEmpty,
+    multicast_address,
     {},
-    "proxy end-point (URI)"s);
+    "multicast address");
+
+ABSL_FLAG(  //
+    roq::core::flags::NonZero<uint32_t>,
+    multicast_port,
+    {},
+    "multicast port");
+
+ABSL_FLAG(  //
+    roq::core::flags::NonEmpty,
+    local_interface,
+    {},
+    "local interface");
 
 namespace roq {
 namespace cme {
 namespace tester {
 namespace flags {
 
-std::string_view Flags::auth_keys_file() {
-  static const std::string result{absl::GetFlag(FLAGS_auth_keys_file)};
+std::string_view Flags::multicast_address() {
+  static const std::string result = absl::GetFlag(FLAGS_multicast_address);
   return result;
 }
 
-std::vector<std::string> const &Flags::auth_license_manager_uri() {
-  static const std::vector<std::string> result{absl::GetFlag(FLAGS_auth_license_manager_uri)};
+uint16_t Flags::multicast_port() {
+  static const uint16_t result = absl::GetFlag(FLAGS_multicast_port);
   return result;
 }
 
-roq::io::web::URI const &Flags::auth_proxy() {
-  static const roq::io::web::URI result{absl::GetFlag(FLAGS_auth_proxy)};
+std::string_view Flags::local_interface() {
+  static const std::string result = absl::GetFlag(FLAGS_local_interface);
   return result;
 }
 

@@ -2,21 +2,19 @@
 
 #pragma once
 
-#include <string>
 #include <vector>
 
+#include "roq/io/buffer.hpp"
 #include "roq/io/context.hpp"
-
-#include "roq/web/rest/client.hpp"
+#include "roq/io/net/udp/receiver.hpp"
+#include "roq/io/sys/signal.hpp"
 
 namespace roq {
 namespace cme {
 namespace tester {
 
-struct Controller final : public io::sys::Signal::Handler,
-                          public io::sys::Timer::Handler,
-                          public web::rest::Client::Handler {
-  explicit Controller(std::vector<std::string> const &arguments);
+struct Controller final : public io::sys::Signal::Handler, public io::net::udp::Receiver::Handler {
+  Controller();
 
   Controller(Controller const &) = delete;
   Controller(Controller &&) = delete;
@@ -24,24 +22,18 @@ struct Controller final : public io::sys::Signal::Handler,
   void dispatch();
 
  protected:
-  void shutdown();
-
   void operator()(io::sys::Signal::Event const &) override;
-  void operator()(io::sys::Timer::Event const &) override;
 
-  void operator()(Trace<web::rest::Client::Connected> const &) override;
-  void operator()(Trace<web::rest::Client::Disconnected> const &) override;
-  void operator()(Trace<web::rest::Client::Latency> const &) override;
-  void operator()(Trace<web::rest::Response> const &, uint64_t request_id, uint64_t opaque) override;
+  void operator()(io::net::udp::Receiver::Read const &) override;
+  void operator()(io::net::udp::Receiver::Error const &) override;
 
  private:
-  const std::vector<std::string> arguments_;
-  std::unique_ptr<io::Context> context_;
-  std::unique_ptr<io::sys::Signal> terminate_;
-  std::unique_ptr<io::sys::Signal> interrupt_;
-  std::unique_ptr<io::sys::Signal> bus_error_;
-  std::unique_ptr<io::sys::Timer> timer_;
-  std::unique_ptr<web::rest::Client> client_;
+  std::unique_ptr<io::Context> const context_;
+  std::unique_ptr<io::sys::Signal> const terminate_;
+  std::unique_ptr<io::sys::Signal> const interrupt_;
+  std::unique_ptr<io::sys::Signal> const bus_error_;
+  std::unique_ptr<io::net::udp::Receiver> const receiver_;
+  std::vector<std::byte> buffer_;
 };
 
 }  // namespace tester

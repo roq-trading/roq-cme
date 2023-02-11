@@ -18,8 +18,7 @@ namespace tester {
 // === IMPLEMENTATION ===
 
 int Application::main([[maybe_unused]] int argc, [[maybe_unused]] char **argv) {
-  std::vector<std::string> arguments(argv + 1, argv + argc);
-  Controller{arguments}.dispatch();
+  Controller{}.dispatch();
   return EXIT_SUCCESS;
 }
 
