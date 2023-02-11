@@ -144,6 +144,7 @@ struct UDPIncremental final : public io::net::udp::Receiver::Handler, public sbe
         md_incremental_refresh_session_statistics,                              //
         md_incremental_refresh_session_statistics_long_qty,                     //
         md_incremental_refresh_volume, md_incremental_refresh_volume_long_qty,  //
+        md_incremental_refresh_limits_banding,                                  //
         quote_request;
   } profile_;
   // cache

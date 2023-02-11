@@ -283,7 +283,7 @@ void emplace_back(
     auto order_id = sbe::get_int(item.orderID(), item.orderIDNullValue());
     auto result = MBOUpdate{
         .price = price * security.display_factor,
-        .remaining_quantity = static_cast<double>(remaining_quantity),
+        .quantity = static_cast<double>(remaining_quantity),
         .priority = priority,
         .order_id = {},
         .action = action,
@@ -320,7 +320,7 @@ void emplace_back(
     auto action = sbe::map(item.mDUpdateAction());
     auto result = MBOUpdate{
         .price = price * security.display_factor,
-        .remaining_quantity = static_cast<double>(remaining_quantity),
+        .quantity = static_cast<double>(remaining_quantity),
         .priority = priority,
         .order_id = {},
         .action = action,
@@ -395,6 +395,7 @@ UDPIncremental::UDPIncremental(
               create_metrics(name_, "md_incremental_refresh_session_statistics_long_qty"sv),
           .md_incremental_refresh_volume = create_metrics(name_, "md_incremental_refresh_volume"sv),
           .md_incremental_refresh_volume_long_qty = create_metrics(name_, "md_incremental_refresh_volume_long_qty"sv),
+          .md_incremental_refresh_limits_banding = create_metrics(name_, "md_incremental_refresh_limits_banding"sv),
           .quote_request = create_metrics(name_, "quote_request"sv),
       },
       shared_{shared}, channel_{channel} {
@@ -1086,7 +1087,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
           if (action == UpdateAction::DELETE) {
             auto update = MBOUpdate{
                 .price = price * (*security).display_factor,
-                .remaining_quantity = {},
+                .quantity = {},
                 .priority = {},
                 .order_id = {},
                 .action = action,
@@ -1325,25 +1326,26 @@ void UDPIncremental::operator()(
 
 void UDPIncremental::operator()(
     Trace<cme_mdp::MDIncrementalRefreshLimitsBanding50> const &event, sbe::Frame const &frame) {
-  // XXX need profile
-  using value_type = std::remove_cvref<decltype(event)>::type::value_type;
-  auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
-  log::info<5>("md_incremental_refresh_limits_banding_50={}, frame={}"sv, value, frame);
-  auto security_id = int32_t{};
-  Shared::Security *security = nullptr;
-  value.noMDEntries().forEach([&](auto const &item) {
-    auto current_security_id = item.securityID();
-    if (current_security_id != security_id) {
-      security_id = current_security_id;
-      if (get_security(shared_, security_id, [&security](auto &security_2) { security = &security_2; })) {
-      } else {
-        security = nullptr;
+  profile_.md_incremental_refresh_limits_banding([&]() {
+    using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+    auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
+    log::info<5>("md_incremental_refresh_limits_banding_50={}, frame={}"sv, value, frame);
+    auto security_id = int32_t{};
+    Shared::Security *security = nullptr;
+    value.noMDEntries().forEach([&](auto const &item) {
+      auto current_security_id = item.securityID();
+      if (current_security_id != security_id) {
+        security_id = current_security_id;
+        if (get_security(shared_, security_id, [&security](auto &security_2) { security = &security_2; })) {
+        } else {
+          security = nullptr;
+        }
       }
-    }
-    if (security) {
-      auto rpt_seq = item.rptSeq();
-      (*security).update_rpt_seq(rpt_seq);
-    }
+      if (security) {
+        auto rpt_seq = item.rptSeq();
+        (*security).update_rpt_seq(rpt_seq);
+      }
+    });
   });
 }
 
@@ -1581,6 +1583,7 @@ void UDPIncremental::operator()(metrics::Writer &writer) {
       .write(profile_.md_incremental_refresh_session_statistics_long_qty, metrics::PROFILE)
       .write(profile_.md_incremental_refresh_volume, metrics::PROFILE)
       .write(profile_.md_incremental_refresh_volume_long_qty, metrics::PROFILE)
+      .write(profile_.md_incremental_refresh_limits_banding, metrics::PROFILE)
       .write(profile_.quote_request, metrics::PROFILE);
 }
 
