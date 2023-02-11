@@ -4,6 +4,7 @@ add_subdirectory("flags")
 add_subdirectory("sbe")
 add_subdirectory("multicast")
 add_subdirectory("secdef")
+add_subdirectory("tester")
 
 set(SOURCES
     application.cpp
