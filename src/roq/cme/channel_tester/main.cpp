@@ -1,6 +1,6 @@
 /* Copyright (c) 2017-2023, Hans Erik Thrane */
 
-#include "roq/cme/tester/application.hpp"
+#include "roq/cme/channel_tester/application.hpp"
 
 using namespace std::literals;
 
@@ -8,7 +8,7 @@ using namespace std::literals;
 
 namespace {
 roq::Tool::Info const INFO{
-    .description = "Roq CME Tester"sv,
+    .description = "Roq CME Channel Tester"sv,
     .package_name = ROQ_PACKAGE_NAME,
     .host = ROQ_HOST,
     .build_version = ROQ_BUILD_VERSION,
@@ -21,5 +21,5 @@ roq::Tool::Info const INFO{
 // === IMPLEMENTATION ===
 
 int main(int argc, char **argv) {
-  return roq::cme::tester::Application{argc, argv, INFO}.run();
+  return roq::cme::channel_tester::Application{argc, argv, INFO}.run();
 }

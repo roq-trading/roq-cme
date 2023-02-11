@@ -1,19 +1,19 @@
 /* Copyright (c) 2017-2023, Hans Erik Thrane */
 
-#include "roq/cme/tester/application.hpp"
+#include "roq/cme/channel_tester/application.hpp"
 
 #include <string>
 #include <vector>
 
 #include "roq/logging.hpp"
 
-#include "roq/cme/tester/controller.hpp"
+#include "roq/cme/channel_tester/controller.hpp"
 
 using namespace std::literals;
 
 namespace roq {
 namespace cme {
-namespace tester {
+namespace channel_tester {
 
 // === IMPLEMENTATION ===
 
@@ -22,6 +22,6 @@ int Application::main([[maybe_unused]] int argc, [[maybe_unused]] char **argv) {
   return EXIT_SUCCESS;
 }
 
-}  // namespace tester
+}  // namespace channel_tester
 }  // namespace cme
 }  // namespace roq

@@ -1,6 +1,6 @@
 /* Copyright (c) 2017-2023, Hans Erik Thrane */
 
-#include "roq/cme/tester/flags/flags.hpp"
+#include "roq/cme/channel_tester/flags/flags.hpp"
 
 #include <absl/flags/flag.h>
 
@@ -29,7 +29,7 @@ ABSL_FLAG(  //
 
 namespace roq {
 namespace cme {
-namespace tester {
+namespace channel_tester {
 namespace flags {
 
 std::string_view Flags::multicast_address() {
@@ -48,6 +48,6 @@ std::string_view Flags::local_interface() {
 }
 
 }  // namespace flags
-}  // namespace tester
+}  // namespace channel_tester
 }  // namespace cme
 }  // namespace roq

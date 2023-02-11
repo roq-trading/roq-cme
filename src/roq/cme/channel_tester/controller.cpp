@@ -1,6 +1,6 @@
 /* Copyright (c) 2017-2023, Hans Erik Thrane */
 
-#include "roq/cme/tester/controller.hpp"
+#include "roq/cme/channel_tester/controller.hpp"
 
 #include <magic_enum.hpp>
 
@@ -10,13 +10,15 @@
 
 #include "roq/io/engine/context_factory.hpp"
 
-#include "roq/cme/tester/flags/flags.hpp"
+#include "roq/cme/sbe/parser.hpp"
+
+#include "roq/cme/channel_tester/flags/flags.hpp"
 
 using namespace std::literals;
 
 namespace roq {
 namespace cme {
-namespace tester {
+namespace channel_tester {
 
 // === HELPERS ===
 
@@ -63,6 +65,23 @@ void Controller::operator()(io::net::udp::Receiver::Read const &read) {
     auto message = std::span{std::data(buffer_), bytes};
     log::info<5>("received {} byte(s)"sv, std::size(message));
     log::print("{}\n"sv, debug::hex::Message{message});
+    if (sbe::Frame::parse(message, [&](auto &frame) {
+          auto sequence_number = frame.sequence_number;
+          if (last_sequence_number_) {
+            auto delta = static_cast<int64_t>(sequence_number) - static_cast<int64_t>(last_sequence_number_);
+            if (delta != 1) {
+              log::print(
+                  "sequence_number={}, last_sequence_number={}, delta={}\n"sv,
+                  sequence_number,
+                  last_sequence_number_,
+                  delta);
+            }
+          }
+          last_sequence_number_ = sequence_number;
+        })) {
+    } else {
+      log::warn("Unexpected"sv);
+    }
   }
 }
 
@@ -70,6 +89,6 @@ void Controller::operator()(io::net::udp::Receiver::Error const &error) {
   log::warn("Error: what={}"sv, error.what);
 }
 
-}  // namespace tester
+}  // namespace channel_tester
 }  // namespace cme
 }  // namespace roq

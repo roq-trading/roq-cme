@@ -1,4 +1,4 @@
-set(TARGET_NAME "${PROJECT_NAME}-tester-flags")
+set(TARGET_NAME "${PROJECT_NAME}-channel-tester-flags")
 
 set(SOURCES flags.cpp)
 

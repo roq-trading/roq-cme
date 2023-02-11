@@ -1,4 +1,4 @@
-set(TARGET_NAME "${PROJECT_NAME}-tester")
+set(TARGET_NAME "${PROJECT_NAME}-channel-tester")
 
 add_subdirectory(flags)
 
@@ -8,7 +8,8 @@ add_executable("${TARGET_NAME}" ${SOURCES})
 
 target_link_libraries(
   "${TARGET_NAME}"
-  PRIVATE "${PROJECT_NAME}-tester-flags"
+  PRIVATE "${PROJECT_NAME}-channel-tester-flags"
+          "${PROJECT_NAME}-sbe"
           roq-io::roq-io
           roq-core::roq-core
           roq-logging::roq-logging

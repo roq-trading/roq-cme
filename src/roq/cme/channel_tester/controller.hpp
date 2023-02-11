@@ -11,7 +11,7 @@
 
 namespace roq {
 namespace cme {
-namespace tester {
+namespace channel_tester {
 
 struct Controller final : public io::sys::Signal::Handler, public io::net::udp::Receiver::Handler {
   Controller();
@@ -34,8 +34,9 @@ struct Controller final : public io::sys::Signal::Handler, public io::net::udp::
   std::unique_ptr<io::sys::Signal> const bus_error_;
   std::unique_ptr<io::net::udp::Receiver> const receiver_;
   std::vector<std::byte> buffer_;
+  uint32_t last_sequence_number_ = {};
 };
 
-}  // namespace tester
+}  // namespace channel_tester
 }  // namespace cme
 }  // namespace roq

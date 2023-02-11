@@ -6,7 +6,7 @@
 
 namespace roq {
 namespace cme {
-namespace tester {
+namespace channel_tester {
 
 struct Application final : public roq::Tool {
   using roq::Tool::Tool;
@@ -15,6 +15,6 @@ struct Application final : public roq::Tool {
   int main(int argc, char **argv) override;
 };
 
-}  // namespace tester
+}  // namespace channel_tester
 }  // namespace cme
 }  // namespace roq

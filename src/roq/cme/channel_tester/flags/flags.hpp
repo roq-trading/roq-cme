@@ -7,7 +7,7 @@
 
 namespace roq {
 namespace cme {
-namespace tester {
+namespace channel_tester {
 namespace flags {
 
 struct Flags final {
@@ -17,6 +17,6 @@ struct Flags final {
 };
 
 }  // namespace flags
-}  // namespace tester
+}  // namespace channel_tester
 }  // namespace cme
 }  // namespace roq
