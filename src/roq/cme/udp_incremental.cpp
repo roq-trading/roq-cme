@@ -1311,21 +1311,6 @@ void UDPIncremental::dispatch_market_by_price(
   try {
     auto last_exchange_sequence = collector.last_sequence();  // note! the protocol doesn't tell us
     auto create_update = [&](auto &bids, auto &asks, auto update_type) -> MarketByPriceUpdate {
-      if (flags::Common::test_inversion()) [[unlikely]] {  // DEBUG
-        if (!std::empty(bids) && !std::empty(asks)) {
-          auto &bid = bids[0];
-          auto &ask = asks[0];
-          if (bid.update_action != UpdateAction::DELETE && ask.update_action != UpdateAction::DELETE &&
-              utils::compare(ask.price, bid.price) <= 0) {
-            log::info("*** INVERSION *** {} {}"sv, bid.price, ask.price);
-            log_this_message_ = true;  // DEBUG
-          }
-        }
-        if (!std::empty(asks) && utils::compare(asks[0].price, 100.0) < 0) {
-          log::info("*** INVERSION ***  {}"sv, asks[0].price);
-          log_this_message_ = true;  // DEBUG
-        }
-      }
       return {
           .stream_id = stream_id_,
           .exchange = security.exchange,
