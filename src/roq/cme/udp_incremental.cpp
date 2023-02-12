@@ -75,19 +75,36 @@ auto get_supports() {
   return result;
 }
 
-// following are used from several places
+struct SecurityIterator final {
+  SecurityIterator(Shared &shared) : shared_(shared) {}
 
-template <typename Callback>
-bool get_security(auto &shared, auto security_id, Callback callback) {
-  auto iter = shared.securities.find(security_id);
-  if (iter == std::end(shared.securities))
-    return false;
-  auto &security = (*iter).second;
-  if (security.discard)
-    return false;
-  callback(security);
-  return true;
-}
+  template <typename T, typename Dispatch, typename Callback>
+  void operator()(T &value, Dispatch dispatch, Callback callback) {
+    value.forEach([&](auto &item) {
+      auto security_id = item.securityID();
+      if (security_id != security_id_) {
+        if (security_)
+          dispatch(security_id, *security_);
+        security_id_ = security_id;
+        if (shared_.get_security(security_id, [&](auto &security) { security_ = &security; })) {
+        } else {
+          security_ = nullptr;
+        }
+      }
+      if (security_)
+        callback(*security_, item);
+    });
+    if (security_)
+      dispatch(security_id_, *security_);
+  }
+
+ private:
+  Shared &shared_;
+  int32_t security_id_ = {};
+  Security *security_ = nullptr;
+};
+
+// following are used from several places
 
 template <typename T>
 void mbp_emplace_back(auto &result, T const &item, auto &security) {
@@ -523,33 +540,34 @@ void UDPIncremental::operator()(io::net::udp::Receiver::Read const &) {
       log::info("{}"sv, debug::hex::Message{message});
     }
   };
-  auto reset = [&]() {
-    ++counter_.sequence_reset;
-    log::warn<1>("*** RESUBSCRIBE ALL SYMBOLS ***"sv);
-    for (auto &[security_id, collector] : channel_.mbp_collector) {
-      if (collector.ready()) {
-        get_security(shared_, security_id, [&](auto &security) {
-          auto market_by_price_update = MarketByPriceUpdate{
-              .stream_id = stream_id_,
-              .exchange = security.exchange,
-              .symbol = security.symbol,
-              .bids = {},
-              .asks = {},
-              .update_type = UpdateType::STALE,
-              .exchange_time_utc = {},
-              .exchange_sequence = {},
-              .price_decimals = {},
-              .quantity_decimals = {},
-              .checksum = {},
-          };
-          create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true);
-        });
-      }
-      collector.clear();
-      channel_.mbp_last_sequence.erase(security_id);
+  drain(*receiver_, channel_, stream_id_, parse, [&]() { on_sequence_reset(trace_info); });
+}
+
+void UDPIncremental::on_sequence_reset(TraceInfo const &trace_info) {
+  ++counter_.sequence_reset;
+  log::warn<1>("*** RESUBSCRIBE ALL SYMBOLS ***"sv);
+  for (auto &[security_id, collector] : channel_.mbp_collector) {
+    if (collector.ready()) {
+      shared_.get_security(security_id, [&](auto &security) {
+        auto market_by_price_update = MarketByPriceUpdate{
+            .stream_id = stream_id_,
+            .exchange = security.exchange,
+            .symbol = security.symbol,
+            .bids = {},
+            .asks = {},
+            .update_type = UpdateType::STALE,
+            .exchange_time_utc = {},
+            .exchange_sequence = {},
+            .price_decimals = {},
+            .quantity_decimals = {},
+            .checksum = {},
+        };
+        create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true);
+      });
     }
-  };
-  drain(*receiver_, channel_, stream_id_, parse, reset);
+    collector.clear();
+    channel_.mbp_last_sequence.erase(security_id);
+  }
 }
 
 void UDPIncremental::operator()(io::net::udp::Receiver::Error const &error) {
@@ -588,30 +606,25 @@ void UDPIncremental::operator()(Trace<cme_mdp::SecurityStatus30> const &event, s
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("security_status_30={}, frame={}"sv, value, frame);
+    value.sbeRewind();  // note!
+    auto security_id = sbe::get_int(value.securityID(), value.securityIDNullValue());
+    auto trading_status = sbe::map_security_trading_status(value.securityTradingStatus());
     auto dispatch = [&](auto security_id) {
-      get_security(shared_, security_id, [&](auto &security) {
-        auto trading_status = sbe::map_security_trading_status(value.securityTradingStatus());
+      shared_.get_security(security_id, [&](auto &security) {
         auto market_status = MarketStatus{
             .stream_id = stream_id_,
             .exchange = security.exchange,
             .symbol = security.symbol,
             .trading_status = trading_status,
         };
-        create_trace_and_dispatch(handler_, trace_info, std::as_const(market_status), true);
+        create_trace_and_dispatch(handler_, trace_info, market_status, true);
       });
     };
-    value.sbeRewind();  // note!
-    auto security_id = sbe::get_int(value.securityID(), value.securityIDNullValue());
     if (security_id) {
       dispatch(security_id);
     } else {
       auto security_group = sbe::get_string_view(value.securityGroup(), value.securityGroupLength());
-      auto iter = shared_.security_groups.find(security_group);
-      if (iter != std::end(shared_.security_groups)) {
-        auto &security_ids = (*iter).second;
-        for (auto security_id : security_ids)
-          dispatch(security_id);
-      }
+      shared_.get_security_group(security_group, [&](auto security_id) { dispatch(security_id); });
     }
   });
 }
@@ -624,7 +637,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> c
     log::info<5>("md_instrument_definition_future_54={}, frame={}"sv, value, frame);
     value.sbeRewind();  // note!
     auto security_id = value.securityID();
-    get_security(shared_, security_id, [&](auto &security) {
+    shared_.get_security_incl_discard(security_id, [&](auto &security) {
       auto quote_currency = sbe::get_string_view(value.currency(), value.currencyLength());
       auto min_price_increment = sbe::get_double(value.minPriceIncrement());
       auto contract_multiplier = sbe::get_int(value.contractMultiplier(), value.contractMultiplierNullValue());
@@ -680,7 +693,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionOption55> c
     log::info<5>("md_instrument_definition_option_55={}, frame={}"sv, value, frame);
     value.sbeRewind();  // note!
     auto security_id = value.securityID();
-    get_security(shared_, security_id, [&](auto &security) {
+    shared_.get_security_incl_discard(security_id, [&](auto &security) {
       auto quote_currency = sbe::get_string_view(value.currency(), value.currencyLength());
       auto min_price_increment = sbe::get_double(value.minPriceIncrement());
       auto min_trade_vol = utils::safe_cast(value.minTradeVol());
@@ -736,7 +749,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionSpread56> c
     log::info<5>("md_instrument_definition_spread_56={}, frame={}"sv, value, frame);
     value.sbeRewind();  // note!
     auto security_id = value.securityID();
-    get_security(shared_, security_id, [&](auto &security) {
+    shared_.get_security_incl_discard(security_id, [&](auto &security) {
       auto quote_currency = sbe::get_string_view(value.currency(), value.currencyLength());
       auto tick_size = sbe::get_double(value.minPriceIncrement());
       auto min_trade_vol = utils::safe_cast(value.minTradeVol());
@@ -791,7 +804,7 @@ void UDPIncremental::operator()(
     log::info<5>("md_instrument_definition_fixed_income_57={}, frame={}"sv, value, frame);
     value.sbeRewind();  // note!
     auto security_id = value.securityID();
-    get_security(shared_, security_id, [&](auto &security) {
+    shared_.get_security_incl_discard(security_id, [&](auto &security) {
       auto quote_currency = sbe::get_string_view(value.currency(), value.currencyLength());
       auto tick_size = sbe::get_double(value.minPriceIncrement());
       auto min_trade_vol = utils::safe_cast(value.minTradeVol());
@@ -845,7 +858,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionRepo58> con
     log::info<5>("md_instrument_definition_repo_58={}, frame={}"sv, value, frame);
     value.sbeRewind();  // note!
     auto security_id = value.securityID();
-    get_security(shared_, security_id, [&](auto &security) {
+    shared_.get_security_incl_discard(security_id, [&](auto &security) {
       auto quote_currency = sbe::get_string_view(value.currency(), value.currencyLength());
       auto tick_size = sbe::get_double(value.minPriceIncrement());
       auto min_trade_vol = utils::safe_cast(value.minTradeVol());
@@ -899,7 +912,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionFX63> const
     log::info<5>("md_instrument_definition_fx_63={}, frame={}"sv, value, frame);
     value.sbeRewind();  // note!
     auto security_id = value.securityID();
-    get_security(shared_, security_id, [&](auto &security) {
+    shared_.get_security_incl_discard(security_id, [&](auto &security) {
       auto quote_currency = sbe::get_string_view(value.currency(), value.currencyLength());
       auto tick_size = sbe::get_double(value.minPriceIncrement());
       auto min_trade_vol = utils::safe_cast(value.minTradeVol());
@@ -945,6 +958,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionFX63> const
   });
 }
 
+// XXX HANS why are we processing this here ???
 void UDPIncremental::operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &event, sbe::Frame const &frame) {
   profile_.snapshot_full_refresh([&]() {
     auto &trace_info = event.trace_info;
@@ -953,18 +967,14 @@ void UDPIncremental::operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &eve
     log::info<5>("snapshot_full_refresh_52={}, frame={}"sv, value, frame);
     value.sbeRewind();  // note!
     auto security_id = value.securityID();
-    get_security(shared_, security_id, [&](auto &security) {
+    shared_.get_security(security_id, [&](auto &security) {
       auto exchange_time_utc = std::chrono::nanoseconds{value.transactTime()};
       auto exchange_sequence = value.lastMsgSeqNumProcessed();
       Layer layer;
-      auto &bids = shared_.bids;
-      auto &asks = shared_.asks;
-      bids.clear();
-      asks.clear();
-      auto &statistics = shared_.statistics;
-      statistics.clear();
+      auto &mbp = shared_.get_mbp();
+      auto &statistics = shared_.get_statistics();
       value.noMDEntries().forEach(
-          [&](auto const &item) { emplace_back(item, security, layer, bids, asks, statistics); });
+          [&](auto const &item) { emplace_back(item, security, layer, mbp.bids, mbp.asks, statistics); });
       if (!(std::isnan(layer.bid_price) && std::isnan(layer.ask_price))) {
         auto top_of_book = TopOfBook{
             .stream_id = stream_id_,
@@ -976,8 +986,9 @@ void UDPIncremental::operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &eve
         };
         create_trace_and_dispatch(handler_, trace_info, std::as_const(top_of_book), true);
       }
-      if (!(std::empty(bids) && std::empty(asks))) {
-        dispatch_market_by_price(trace_info, security_id, security, exchange_sequence, exchange_time_utc, bids, asks);
+      if (!std::empty(mbp)) {
+        dispatch_market_by_price(
+            trace_info, security_id, security, exchange_sequence, exchange_time_utc, mbp.bids, mbp.asks);
       }
       if (!std::empty(statistics)) {
         auto statistics_update = StatisticsUpdate{
@@ -1023,14 +1034,8 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
     md_entries_.clear();
     {  // MBP
       Layer layer;
-      auto &bids = shared_.bids;
-      auto &asks = shared_.asks;
-      bids.clear();
-      asks.clear();
-      auto &mbo_bids = shared_.mbo_bids;
-      auto &mbo_asks = shared_.mbo_asks;
-      mbo_bids.clear();
-      mbo_asks.clear();
+      auto &mbp = shared_.get_mbp();
+      auto &mbo = shared_.get_mbo();
       auto dispatch = [&](auto security_id, auto &security, auto is_last) {
         if (!(std::isnan(layer.bid_price) && std::isnan(layer.ask_price))) {
           auto top_of_book = TopOfBook{
@@ -1044,29 +1049,27 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
           create_trace_and_dispatch(handler_, trace_info, std::as_const(top_of_book), is_last);
           layer = {};
         }
-        // log::info("DEBUG len(mbp_bids)={}, len(mbp_asks)={}"sv, std::size(bids), std::size(asks));
-        if (!(std::empty(bids) && std::empty(asks))) {
-          dispatch_market_by_price(trace_info, security_id, security, exchange_sequence, exchange_time_utc, bids, asks);
-          bids.clear();
-          asks.clear();
+        if (!std::empty(mbp)) {
+          dispatch_market_by_price(
+              trace_info, security_id, security, exchange_sequence, exchange_time_utc, mbp.bids, mbp.asks);
+          mbp.clear();
         }
-        // log::info("DEBUG len(mbo_bids)={}, len(mbo_asks)={}"sv, std::size(mbo_bids), std::size(mbo_asks));
-        if (!(std::empty(mbo_bids) && std::empty(mbo_asks))) {
+        if (!std::empty(mbo)) {
           dispatch_market_by_order(
-              trace_info, security_id, security, exchange_sequence, exchange_time_utc, mbo_bids, mbo_asks);
-          mbo_bids.clear();
-          mbo_asks.clear();
+              trace_info, security_id, security, exchange_sequence, exchange_time_utc, mbo.bids, mbo.asks);
+          mbo.clear();
         }
       };
+      // HANS here we need to append every item regardless of security ==> can't use SecurityIterator
       auto security_id = int32_t{};
-      Shared::Security *security = nullptr;
+      Security *security = nullptr;
       value.noMDEntries().forEach([&](auto const &item) {
         auto current_security_id = item.securityID();
         if (current_security_id != security_id) {
           if (security)
             dispatch(security_id, *security, true);
           security_id = current_security_id;
-          if (get_security(shared_, security_id, [&security](auto &security_2) { security = &security_2; })) {
+          if (shared_.get_security(security_id, [&security](auto &security_2) { security = &security_2; })) {
           } else {
             security = nullptr;
           }
@@ -1083,7 +1086,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
         auto action = sbe::map(item.mDUpdateAction());
         md_entries_.emplace_back(security_id, side, price, action);
         if (security) {
-          emplace_back(item, *security, layer, bids, asks);
+          emplace_back(item, *security, layer, mbp.bids, mbp.asks);
           if (action == UpdateAction::DELETE) {
             auto update = MBOUpdate{
                 .price = price * (*security).display_factor,
@@ -1098,10 +1101,10 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
               case UNDEFINED:
                 break;
               case BUY:
-                mbo_bids.emplace_back(std::move(update));
+                mbo.bids.emplace_back(std::move(update));
                 break;
               case SELL:
-                mbo_asks.emplace_back(std::move(update));
+                mbo.asks.emplace_back(std::move(update));
                 break;
             }
           }
@@ -1112,17 +1115,13 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
     }
     {  // MBO
       auto security_id = int32_t{};
-      Shared::Security *security = nullptr;
-      auto &bids = shared_.mbo_bids;
-      auto &asks = shared_.mbo_asks;
-      bids.clear();
-      asks.clear();
+      Security *security = nullptr;
+      auto &mbo = shared_.get_mbo();
       auto dispatch = [&](auto security_id, auto &security) {
-        // log::info("DEBUG len(mbo_bids)={}, len(mbo_asks)={}"sv, std::size(bids), std::size(asks));
-        if (!(std::empty(bids) && std::empty(asks))) {
-          dispatch_market_by_order(trace_info, security_id, security, exchange_sequence, exchange_time_utc, bids, asks);
-          bids.clear();
-          asks.clear();
+        if (!std::empty(mbo)) {
+          dispatch_market_by_order(
+              trace_info, security_id, security, exchange_sequence, exchange_time_utc, mbo.bids, mbo.asks);
+          mbo.clear();
         }
       };
       value.noOrderIDEntries().forEach([&](auto const &item) {
@@ -1139,14 +1138,14 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
           if (security)
             dispatch(security_id, *security);
           security_id = current_security_id;
-          if (get_security(shared_, security_id, [&security](auto &security_2) { security = &security_2; })) {
+          if (shared_.get_security(security_id, [&security](auto &security_2) { security = &security_2; })) {
           } else {
             security = nullptr;
           }
         }
         if (security) {
           if (action != UpdateAction::DELETE)
-            emplace_back(item, *security, side, price, bids, asks);
+            emplace_back(item, *security, side, price, mbo.bids, mbo.asks);
         }
       });
       if (security)
@@ -1161,22 +1160,12 @@ void UDPIncremental::operator()(
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("md_incremental_refresh_book_long_qty_64={}, frame={}"sv, value, frame);
-    auto security_id = int32_t{};
-    Shared::Security *security = nullptr;
-    value.noMDEntries().forEach([&](auto const &item) {
-      auto current_security_id = item.securityID();
-      if (current_security_id != security_id) {
-        security_id = current_security_id;
-        if (get_security(shared_, security_id, [&security](auto &security_2) { security = &security_2; })) {
-        } else {
-          security = nullptr;
-        }
-      }
-      if (security) {
-        auto rpt_seq = item.rptSeq();
-        (*security).update_rpt_seq(rpt_seq);
-      }
-    });
+    auto dispatch = []([[maybe_unused]] auto security_id, [[maybe_unused]] auto &security) {};
+    auto update = [&](auto &security, auto &item) {
+      auto rpt_seq = item.rptSeq();
+      security.update_rpt_seq(rpt_seq);
+    };
+    SecurityIterator{shared_}(value.noMDEntries(), dispatch, update);
   });
 }
 
@@ -1199,36 +1188,16 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshOrderBook47> 
     value.sbeRewind();  // note!
     auto exchange_sequence = frame.sequence_number;
     auto exchange_time_utc = std::chrono::nanoseconds{value.transactTime()};
-    auto &bids = shared_.mbo_bids;
-    auto &asks = shared_.mbo_asks;
-    bids.clear();
-    asks.clear();
+    auto &mbo = shared_.get_mbo();
     auto dispatch = [&](auto security_id, auto &security) {
-      if (!(std::empty(bids) && std::empty(asks))) {
-        dispatch_market_by_order(trace_info, security_id, security, exchange_sequence, exchange_time_utc, bids, asks);
-        bids.clear();
-        asks.clear();
-      }
+      if (std::empty(mbo))
+        return;
+      dispatch_market_by_order(
+          trace_info, security_id, security, exchange_sequence, exchange_time_utc, mbo.bids, mbo.asks);
+      mbo.clear();
     };
-    auto security_id = int32_t{};
-    Shared::Security *security = nullptr;
-    value.noMDEntries().forEach([&](auto const &item) {
-      auto current_security_id = item.securityID();
-      if (current_security_id != security_id) {
-        if (security)
-          dispatch(security_id, *security);
-        security_id = current_security_id;
-        if (get_security(shared_, security_id, [&security](auto &security_2) { security = &security_2; })) {
-        } else {
-          security = nullptr;
-        }
-      }
-      if (security) {
-        emplace_back(item, *security, bids, asks);
-      }
-    });
-    if (security)
-      dispatch(security_id, *security);
+    auto update = [&](auto &security, auto &item) { emplace_back(item, security, mbo.bids, mbo.asks); };
+    SecurityIterator{shared_}(value.noMDEntries(), dispatch, update);
   });
 }
 
@@ -1305,22 +1274,12 @@ void UDPIncremental::operator()(
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("md_incremental_refresh_volume_long_qty_66={}, frame={}"sv, value, frame);
-    auto security_id = int32_t{};
-    Shared::Security *security = nullptr;
-    value.noMDEntries().forEach([&](auto const &item) {
-      auto current_security_id = item.securityID();
-      if (current_security_id != security_id) {
-        security_id = current_security_id;
-        if (get_security(shared_, security_id, [&security](auto &security_2) { security = &security_2; })) {
-        } else {
-          security = nullptr;
-        }
-      }
-      if (security) {
-        auto rpt_seq = item.rptSeq();
-        (*security).update_rpt_seq(rpt_seq);
-      }
-    });
+    auto dispatch = []([[maybe_unused]] auto security_id, [[maybe_unused]] auto &security) {};
+    auto update = [&](auto &security, auto &item) {
+      auto rpt_seq = item.rptSeq();
+      security.update_rpt_seq(rpt_seq);
+    };
+    SecurityIterator{shared_}(value.noMDEntries(), dispatch, update);
   });
 }
 
@@ -1330,22 +1289,12 @@ void UDPIncremental::operator()(
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("md_incremental_refresh_limits_banding_50={}, frame={}"sv, value, frame);
-    auto security_id = int32_t{};
-    Shared::Security *security = nullptr;
-    value.noMDEntries().forEach([&](auto const &item) {
-      auto current_security_id = item.securityID();
-      if (current_security_id != security_id) {
-        security_id = current_security_id;
-        if (get_security(shared_, security_id, [&security](auto &security_2) { security = &security_2; })) {
-        } else {
-          security = nullptr;
-        }
-      }
-      if (security) {
-        auto rpt_seq = item.rptSeq();
-        (*security).update_rpt_seq(rpt_seq);
-      }
-    });
+    auto dispatch = []([[maybe_unused]] auto security_id, [[maybe_unused]] auto &security) {};
+    auto update = [&](auto &security, auto &item) {
+      auto rpt_seq = item.rptSeq();
+      security.update_rpt_seq(rpt_seq);
+    };
+    SecurityIterator{shared_}(value.noMDEntries(), dispatch, update);
   });
 }
 
@@ -1453,9 +1402,8 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event) {
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   value.sbeRewind();                                    // note!
   auto exchange_time_utc = std::chrono::nanoseconds{value.transactTime()};
-  auto &trades = shared_.trades;
-  trades.clear();
-  auto dispatch = [&](auto &security, auto is_last) {
+  auto &trades = shared_.get_trades();
+  auto dispatch = [&]([[maybe_unused]] auto security_id, auto &security) {
     if (std::empty(trades))
       return;
     auto trade_summary = TradeSummary{
@@ -1466,30 +1414,15 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event) {
         .exchange_time_utc = exchange_time_utc,
         .exchange_sequence = {},  // note! NoMDEntries.RptSeq is the MD seqno
     };
-    create_trace_and_dispatch(handler_, trace_info, trade_summary, is_last);
+    create_trace_and_dispatch(handler_, trace_info, trade_summary, true);
     trades.clear();
   };
-  auto security_id = int32_t{};
-  Shared::Security *security = nullptr;
-  value.noMDEntries().forEach([&](auto const &item) {
-    auto current_security_id = item.securityID();
-    if (current_security_id != security_id) {
-      if (security)
-        dispatch(*security, true);
-      security_id = current_security_id;
-      if (get_security(shared_, security_id, [&security](auto &security_2) { security = &security_2; })) {
-      } else {
-        security = nullptr;
-      }
-    }
-    if (security) {
-      auto rpt_seq = item.rptSeq();
-      (*security).update_rpt_seq(rpt_seq);
-      trades_emplace_back(trades, item, *security);
-    }
-  });
-  if (security)
-    dispatch(*security, true);
+  auto update = [&](auto &security, auto &item) {
+    auto rpt_seq = item.rptSeq();
+    security.update_rpt_seq(rpt_seq);
+    trades_emplace_back(trades, item, security);
+  };
+  SecurityIterator{shared_}(value.noMDEntries(), dispatch, update);
 }
 
 template <typename T, typename Callback>
@@ -1499,9 +1432,8 @@ void UDPIncremental::dispatch_statistics(Trace<T> const &event, Callback callbac
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   value.sbeRewind();                                    // note!
   auto exchange_time_utc = std::chrono::nanoseconds{value.transactTime()};
-  auto &statistics = shared_.statistics;
-  statistics.clear();
-  auto dispatch = [&](auto &security, auto is_last) {
+  auto &statistics = shared_.get_statistics();
+  auto dispatch = [&]([[maybe_unused]] auto security_id, auto &security) {
     if (std::empty(statistics))
       return;
     auto statistics_update = StatisticsUpdate{
@@ -1513,30 +1445,15 @@ void UDPIncremental::dispatch_statistics(Trace<T> const &event, Callback callbac
         .exchange_time_utc = exchange_time_utc,
     };
     log::info<3>("statistics_update={}"sv, statistics_update);
-    create_trace_and_dispatch(handler_, trace_info, statistics_update, is_last);
+    create_trace_and_dispatch(handler_, trace_info, statistics_update, true);
     statistics.clear();
   };
-  auto security_id = int32_t{};
-  Shared::Security *security = nullptr;
-  value.noMDEntries().forEach([&](auto const &item) {
-    auto current_security_id = item.securityID();
-    if (current_security_id != security_id) {
-      if (security)
-        dispatch(*security, true);
-      security_id = current_security_id;
-      if (get_security(shared_, security_id, [&security](auto &security_2) { security = &security_2; })) {
-      } else {
-        security = nullptr;
-      }
-    }
-    if (security) {
-      auto rpt_seq = item.rptSeq();
-      (*security).update_rpt_seq(rpt_seq);
-      callback(statistics, item, *security);
-    }
-  });
-  if (security)
-    dispatch(*security, true);
+  auto update = [&](auto &security, auto &item) {
+    auto rpt_seq = item.rptSeq();
+    security.update_rpt_seq(rpt_seq);
+    callback(statistics, item, security);
+  };
+  SecurityIterator{shared_}(value.noMDEntries(), dispatch, update);
 }
 
 void UDPIncremental::publish_stream_status(TraceInfo const &trace_info, ConnectionStatus connection_status) {

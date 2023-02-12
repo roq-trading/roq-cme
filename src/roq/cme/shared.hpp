@@ -13,11 +13,7 @@
 #include "roq/api.hpp"
 #include "roq/server.hpp"
 
-#include "roq/core/symbols.hpp"
-
-#include "roq/core/limit/rate_limiter.hpp"
-
-#include "roq/core/stack/buffer.hpp"
+#include "roq/cme/security.hpp"
 
 #include "roq/cme/multicast/config.hpp"
 
@@ -25,6 +21,34 @@ namespace roq {
 namespace cme {
 
 struct Shared final {
+  server::Dispatcher &dispatcher_;
+  multicast::Config multicast_config_;
+
+  absl::node_hash_map<int32_t, Security> securities;
+  absl::flat_hash_map<std::string, absl::flat_hash_set<int32_t>> security_groups;
+
+  struct {
+    std::vector<MBPUpdate> bids, asks;
+    auto &clear() {
+      bids.clear();
+      asks.clear();
+      return *this;
+    }
+    bool empty() const { return std::empty(bids) && std::empty(asks); }
+  } mbp;
+  struct {
+    std::vector<MBOUpdate> bids, asks;
+    auto &clear() {
+      bids.clear();
+      asks.clear();
+      return *this;
+    }
+    bool empty() const { return std::empty(bids) && std::empty(asks); }
+  } mbo;
+  std::vector<Trade> trades;
+  std::vector<Statistics> statistics;
+
+ public:
   explicit Shared(server::Dispatcher &);
 
   Shared(Shared &&) = default;
@@ -33,56 +57,76 @@ struct Shared final {
   std::pair<std::string, uint16_t> get_multicast_config(
       std::string_view const &channel_id, multicast::Type, Priority) const;
 
-  std::string_view next_request_id();
-
   auto discard_symbol(std::string_view const &name) const { return dispatcher_.discard_symbol(name); }
-
-  template <typename... Args>
-  auto update_order(Args &&...args) {
-    return dispatcher_.update_order(std::forward<Args>(args)...);
-  }
 
   template <typename... Args>
   auto operator()(Args &&...args) {
     return dispatcher_(std::forward<Args>(args)...);
   }
 
- private:
-  multicast::Config multicast_config_;
+  // security
 
- public:
-  std::vector<Fill> fills;
-  std::vector<MBPUpdate> bids, asks;
-  std::vector<MBOUpdate> mbo_bids, mbo_asks;
-  std::vector<Trade> trades;
-  std::vector<Statistics> statistics;
+  bool has_security(int32_t security_id) { return securities.find(security_id) != std::end(securities); }
 
-  absl::flat_hash_map<Symbol, double> multiplier;
+  template <typename Callback>
+  void create_security(
+      std::string_view const &security_group, int32_t security_id, Security &&security, Callback callback) {
+    if (!security.discard)
+      security_groups[security_group].insert(security_id);
+    auto iter = securities.try_emplace(security_id, std::move(security)).first;
+    callback((*iter).second);
+  }
 
- private:
-  server::Dispatcher &dispatcher_;
-  uint32_t request_id_ = 0;
-  core::stack::Buffer<char, 32> stack_buffer_;
+  template <typename Callback>
+  bool get_security(int32_t security_id, Callback callback) {
+    auto iter = securities.find(security_id);
+    if (iter == std::end(securities))
+      return false;
+    auto &security = (*iter).second;
+    if (security.discard)
+      return false;
+    callback(security);
+    return true;
+  }
 
- public:
-  core::limit::RateLimiter rate_limiter;
-  absl::flat_hash_set<std::string> all_currencies;
-  absl::flat_hash_set<Symbol> all_symbols;
-  core::Symbols symbols;
+  template <typename Callback>
+  bool get_security_incl_discard(int32_t security_id, Callback callback) {
+    auto iter = securities.find(security_id);
+    if (iter == std::end(securities))
+      return false;
+    auto &security = (*iter).second;
+    callback(security);
+    return true;
+  }
 
-  // EXPERIMENTAL
-  struct Security final {
-    Exchange exchange;
-    Symbol symbol;
-    double display_factor = NaN;
-    bool discard = {};
-    uint32_t rpt_seq = {};  // conflated feed sends zero
-    bool need_snapshot = false;
+  // security group
 
-    void update_rpt_seq(uint32_t rpt_seq);
-  };
-  absl::node_hash_map<int32_t, Security> securities;
-  absl::flat_hash_map<std::string, absl::flat_hash_set<int32_t>> security_groups;
+  template <typename Callback>
+  bool get_security_group(std::string_view const &security_group, Callback callback) {
+    auto iter = security_groups.find(security_group);
+    if (iter == std::end(security_groups))
+      return false;
+    auto &security_ids = (*iter).second;
+    for (auto &security_id : security_ids)
+      callback(security_id);
+    return true;
+  }
+
+  // cache
+
+  auto &get_mbp() { return mbp.clear(); }
+
+  auto &get_mbo() { return mbo.clear(); }
+
+  auto &get_trades() {
+    trades.clear();
+    return trades;
+  }
+
+  auto &get_statistics() {
+    statistics.clear();
+    return statistics;
+  }
 };
 
 }  // namespace cme

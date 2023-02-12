@@ -74,24 +74,20 @@ struct create_metrics final : public core::metrics::Factory {
 template <typename Callback>
 void create_security(auto &shared, auto &value, Callback callback) {
   auto security_id = value.securityID();
-  auto iter = shared.securities.find(security_id);
-  if (iter != std::end(shared.securities))
+  if (shared.has_security(security_id))
     return;
   auto security_exchange = sbe::get_string_view(value.securityExchange(), value.securityExchangeLength());
   auto symbol = sbe::get_string_view(value.symbol(), value.symbolLength());
   auto display_factor = sbe::get_double(value.displayFactor());
   auto security_group = sbe::get_string_view(value.securityGroup(), value.securityGroupLength());
   auto discard = shared.discard_symbol(symbol);
-  auto security = Shared::Security{
+  auto security = Security{
       .exchange = security_exchange,
       .symbol = symbol,
       .display_factor = display_factor,
       .discard = discard,
   };
-  iter = shared.securities.try_emplace(security_id, std::move(security)).first;
-  if (!discard)
-    shared.security_groups[security_group].insert(security_id);
-  callback((*iter).second);
+  shared.create_security(security_group, security_id, std::move(security), [&](auto &security) { callback(security); });
 }
 }  // namespace
 

@@ -20,7 +20,7 @@ struct Channel final {
   Channel(Channel &&) = default;
   Channel(Channel const &) = delete;
 
-  const std::string channel_id;
+  std::string const channel_id;
 
   core::udp::Buffer<uint32_t> buffer;
 

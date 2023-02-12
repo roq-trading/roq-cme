@@ -51,6 +51,8 @@ struct UDPIncremental final : public io::net::udp::Receiver::Handler, public sbe
   void operator()(io::net::udp::Receiver::Read const &) override;
   void operator()(io::net::udp::Receiver::Error const &) override;
 
+  void on_sequence_reset(TraceInfo const &);
+
  protected:
   // sbe::Parser::Handler
   void operator()(sbe::Frame const &) override;

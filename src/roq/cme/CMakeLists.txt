@@ -11,6 +11,7 @@ set(SOURCES
     channel.cpp
     config.cpp
     gateway.cpp
+    security.cpp
     shared.cpp
     udp_incremental.cpp
     udp_instrument_definition.cpp

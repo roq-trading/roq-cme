@@ -16,12 +16,6 @@ using namespace std::literals;
 namespace roq {
 namespace cme {
 
-// === CONSTANTS ===
-
-namespace {
-auto const SLICE = size_t{65536};
-}
-
 // === HELPERS ===
 
 namespace {
@@ -38,7 +32,7 @@ void read_secdef(T &securities, D &dispatcher) {
       // note! it's too much -- always discard
       if (discard)
         return;
-      Shared::Security security{
+      auto security = Security{
           .exchange = item.exchange,
           .symbol = item.symbol,
           .display_factor = item.display_factor,
@@ -46,7 +40,7 @@ void read_secdef(T &securities, D &dispatcher) {
       };
       securities_.try_emplace(item.security_id, std::move(security));
       double multiplier = item.multiplier == 0 ? NaN : utils::safe_cast<double>(item.multiplier);
-      ReferenceData reference_data{
+      auto reference_data = ReferenceData{
           .stream_id = {},
           .exchange = item.exchange,
           .symbol = item.symbol,
@@ -87,8 +81,7 @@ void read_secdef(T &securities, D &dispatcher) {
 // === IMPLEMENTATION ===
 
 Shared::Shared(server::Dispatcher &dispatcher)
-    : multicast_config_{flags::Multicast::multicast_config_file()}, dispatcher_{dispatcher},
-      rate_limiter{flags::Common::request_limit(), flags::Common::request_limit_interval()}, symbols{SLICE} {
+    : dispatcher_{dispatcher}, multicast_config_{flags::Multicast::multicast_config_file()} {
   read_secdef(securities, dispatcher);
 }
 
@@ -106,32 +99,6 @@ std::pair<std::string, uint16_t> Shared::get_multicast_config(
         priority};
   }
   return result;
-}
-
-std::string_view Shared::next_request_id() {
-  auto request_id = ++request_id_;
-  stack_buffer_.clear();
-  fmt::format_to(std::back_inserter(stack_buffer_), "roq-{}"sv, request_id);
-  return {std::data(stack_buffer_), std::size(stack_buffer_)};
-}
-
-// Security
-
-void Shared::Security::update_rpt_seq(uint32_t rpt_seq) {
-  if (rpt_seq == 0)  // conflated feed
-    return;
-  log::info<5>("rpt_seq={}, last_rpt_seq={}"sv, rpt_seq, (*this).rpt_seq);
-  auto next = (*this).rpt_seq + 1;
-  if (rpt_seq != next) {
-    log::warn(
-        R"(*** RESUBSCRIBE *** exchange="{}", sybmol="{}", rpt_seq={}, prev={})"sv,
-        exchange,
-        symbol,
-        rpt_seq,
-        (*this).rpt_seq);
-    need_snapshot = true;
-  }
-  (*this).rpt_seq = rpt_seq;
 }
 
 }  // namespace cme
