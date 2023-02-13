@@ -22,10 +22,17 @@ struct Channel final {
 
   std::string const channel_id;
 
-  core::udp::Buffer<uint32_t> buffer;
+  struct ReorderBuffer final {
+    std::pair<bool, uint32_t> last_sequence = {};
+    core::udp::Buffer<uint32_t> buffer;
+  };
+
+  ReorderBuffer instrument_definition;
+  ReorderBuffer incremental;
+  ReorderBuffer mbp_market_recovery;
+  ReorderBuffer mbo_market_recovery;
 
   // incremental
-  std::pair<bool, uint32_t> last_sequence = {};
   absl::flat_hash_map<int32_t, uint32_t> mbp_last_sequence;
   absl::flat_hash_map<int32_t, uint32_t> mbo_last_sequence;
 

@@ -52,6 +52,12 @@
       "type": "bool",
       "default": false,
       "description": "test"
+    },
+    {
+      "name": "filter_snapshot_from_incremental",
+      "type": "uint32_t",
+      "default": 1024,
+      "description": "test"
     }
   ]
 }

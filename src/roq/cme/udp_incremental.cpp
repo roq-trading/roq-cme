@@ -456,6 +456,10 @@ void drain(auto &receiver, auto &channel, auto stream_id, auto parse, auto reset
                 log::info<5>("frame={}, last_sequence_number={}"sv, frame, channel.last_sequence.second);
                 // check sequence number
                 sequence_number = frame.sequence_number;
+                if (sequence_number < flags::Common::filter_snapshot_from_incremental()) {
+                  drop = true;
+                  return;
+                }
                 auto [ready, last_sequence_number] = channel.last_sequence;
                 if (ready) {
                   auto next_sequence_number = last_sequence_number + 1;
@@ -540,7 +544,7 @@ void UDPIncremental::operator()(io::net::udp::Receiver::Read const &) {
       log::info("{}"sv, debug::hex::Message{message});
     }
   };
-  drain(*receiver_, channel_, stream_id_, parse, [&]() { on_sequence_reset(trace_info); });
+  drain(*receiver_, channel_.incremental, stream_id_, parse, [&]() { on_sequence_reset(trace_info); });
 }
 
 void UDPIncremental::on_sequence_reset(TraceInfo const &trace_info) {
@@ -577,7 +581,7 @@ void UDPIncremental::operator()(io::net::udp::Receiver::Error const &error) {
 // sbe::Parser::Handler
 
 void UDPIncremental::operator()(sbe::Frame const &frame) {
-  channel_.last_sequence = {true, frame.sequence_number};
+  channel_.incremental.last_sequence = {true, frame.sequence_number};
 }
 
 void UDPIncremental::operator()(Trace<cme_mdp::AdminHeartbeat12> const &event, sbe::Frame const &frame) {

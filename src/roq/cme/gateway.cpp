@@ -17,10 +17,11 @@ namespace cme {
 namespace {
 auto create_channels() {
   std::vector<Channel> result;
+  auto buffer_size = flags::Multicast::multicast_buffer_size();
+  auto buffer_depth = flags::Multicast::multicast_buffer_depth();
   auto &channel_ids = flags::Multicast::multicast_channel_ids();
   for (auto &channel_id : channel_ids)
-    result.emplace_back(
-        channel_id, flags::Multicast::multicast_buffer_size(), flags::Multicast::multicast_buffer_depth());
+    result.emplace_back(channel_id, buffer_size, buffer_depth);
   return result;
 }
 
