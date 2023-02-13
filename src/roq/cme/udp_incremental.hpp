@@ -109,7 +109,7 @@ struct UDPIncremental final : public io::net::udp::Receiver::Handler, public sbe
       auto &asks);
 
   template <typename T>
-  void dispatch_trade_summary(Trace<T> const &);
+  void dispatch_trade_summary(Trace<T> const &, sbe::Frame const &);
 
   template <typename T, typename Callback>
   void dispatch_statistics(Trace<T> const &, Callback);

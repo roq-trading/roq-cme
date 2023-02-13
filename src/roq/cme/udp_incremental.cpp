@@ -568,6 +568,20 @@ void UDPIncremental::on_sequence_reset(TraceInfo const &trace_info) {
             .checksum = {},
         };
         create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true);
+        auto market_by_order_update = MarketByOrderUpdate{
+            .stream_id = stream_id_,
+            .exchange = security.exchange,
+            .symbol = security.symbol,
+            .bids = {},
+            .asks = {},
+            .update_type = UpdateType::STALE,
+            .exchange_time_utc = {},
+            .exchange_sequence = {},
+            .price_decimals = {},
+            .quantity_decimals = {},
+            .checksum = {},
+        };
+        create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true);
       });
     }
     collector.clear();
@@ -1216,7 +1230,7 @@ void UDPIncremental::operator()(
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("md_incremental_refresh_trade_summary_48={}, frame={}"sv, value, frame);
-    dispatch_trade_summary(event);
+    dispatch_trade_summary(event, frame);
   });
 }
 
@@ -1226,7 +1240,7 @@ void UDPIncremental::operator()(
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("md_incremental_refresh_trade_summary_long_qty_65={}, frame={}"sv, value, frame);
-    dispatch_trade_summary(event);
+    dispatch_trade_summary(event, frame);
   });
 }
 
@@ -1392,7 +1406,7 @@ void UDPIncremental::dispatch_market_by_order(
 }
 
 template <typename T>
-void UDPIncremental::dispatch_trade_summary(Trace<T> const &event) {
+void UDPIncremental::dispatch_trade_summary(Trace<T> const &event, sbe::Frame const &frame) {
   auto &trace_info = event.trace_info;
   using value_type = typename std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -1408,7 +1422,7 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event) {
         .symbol = security.symbol,
         .trades = trades,
         .exchange_time_utc = exchange_time_utc,
-        .exchange_sequence = {},  // note! NoMDEntries.RptSeq is the MD seqno
+        .exchange_sequence = frame.sequence_number,
     };
     create_trace_and_dispatch(handler_, trace_info, trade_summary, true);
     trades.clear();
