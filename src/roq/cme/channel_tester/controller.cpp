@@ -64,18 +64,20 @@ void Controller::operator()(io::net::udp::Receiver::Read const &read) {
       return;
     auto message = std::span{std::data(buffer_), bytes};
     log::info<5>("received {} byte(s)"sv, std::size(message));
-    log::print("{}\n"sv, debug::hex::Message{message});
+    // log::print("{}\n"sv, debug::hex::Message{message});
     if (sbe::Frame::parse(message, [&](auto &frame) {
           auto sequence_number = frame.sequence_number;
           if (last_sequence_number_) {
             auto delta = static_cast<int64_t>(sequence_number) - static_cast<int64_t>(last_sequence_number_);
             if (delta != 1) {
-              log::print(
-                  "sequence_number={}, last_sequence_number={}, delta={}\n"sv,
+              log::info(
+                  "sequence_number={}, last_sequence_number={}, delta={}"sv,
                   sequence_number,
                   last_sequence_number_,
                   delta);
             }
+          } else {
+            log::info("seqnece_number={} (INITIALIZE)"sv, sequence_number);
           }
           last_sequence_number_ = sequence_number;
         })) {
