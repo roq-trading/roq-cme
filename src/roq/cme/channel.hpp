@@ -9,6 +9,8 @@
 
 #include "roq/core/mbp/sequencer.hpp"
 
+#include "roq/core/mbo/sequencer.hpp"
+
 #include "roq/core/udp/buffer.hpp"
 
 namespace roq {
@@ -41,6 +43,8 @@ struct Channel final {
   absl::flat_hash_map<int32_t, uint32_t> mbp_resubscribe;
 
   // MBO recovery
+  absl::node_hash_map<int32_t, core::mbo::Sequencer> mbo_collector;
+  absl::flat_hash_map<int32_t, uint32_t> mbo_resubscribe;
 };
 
 }  // namespace cme

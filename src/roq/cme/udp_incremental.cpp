@@ -466,6 +466,12 @@ void drain(auto &receiver, auto &channel, auto stream_id, auto parse, auto reset
                   hold = sequence_number > next_sequence_number;
                   drop = sequence_number < next_sequence_number;
                 }
+                if (hold) {
+                  log::warn(
+                      "DEBUG HOLD sequence_number={}, last_sequence_number={}"sv,
+                      sequence_number,
+                      last_sequence_number);
+                }
                 // TEST >>>
                 if (flags::Common::test_drop() && !hold && !drop) {
                   if ((sequence_number % flags::Common::test_drop()) == 0) {
@@ -581,7 +587,7 @@ void UDPIncremental::on_sequence_reset(TraceInfo const &trace_info) {
             .quantity_decimals = {},
             .checksum = {},
         };
-        create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true);
+        create_trace_and_dispatch(handler_, trace_info, market_by_order_update, true);
       });
     }
     collector.clear();
