@@ -27,9 +27,9 @@ struct Channel final {
     core::udp::Buffer<uint32_t> buffer;
   };
 
-  ReorderBuffer instrument_definition;
+  // ReorderBuffer instrument_definition;
   ReorderBuffer incremental;
-  ReorderBuffer mbp_market_recovery;
+  // ReorderBuffer mbp_market_recovery;
   ReorderBuffer mbo_market_recovery;
 
   // incremental

@@ -69,7 +69,7 @@ struct create_metrics final : public core::metrics::Factory {
 template <typename Callback>
 bool get_last_exchange_sequence(auto &channel, auto security_id, auto &value, Callback callback) {
   auto last_processed = value.lastMsgSeqNumProcessed();
-  if (last_processed <= channel.mbp_market_recovery.last_sequence.second) {
+  if (last_processed <= channel.incremental.last_sequence.second) {
     auto iter = channel.mbp_last_sequence.find(security_id);
     if (iter != std::end(channel.mbp_last_sequence)) {
       callback((*iter).second);
