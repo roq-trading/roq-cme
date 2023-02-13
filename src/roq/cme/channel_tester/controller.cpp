@@ -73,7 +73,7 @@ void Controller::operator()(io::net::udp::Receiver::Read const &read) {
           if (last_sequence_number_) {
             auto delta = static_cast<int64_t>(sequence_number) - static_cast<int64_t>(last_sequence_number_);
             if (delta != 1) {
-              auto now = clock::get_realtime();
+              auto now = clock::get_realtime<std::chrono::seconds>();
               log::info(
                   "sequence_number={}, last_sequence_number={}, delta={}, timestamp={}"sv,
                   sequence_number,
