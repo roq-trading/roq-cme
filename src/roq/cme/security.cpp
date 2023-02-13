@@ -26,5 +26,9 @@ void Security::update_rpt_seq(uint32_t rpt_seq) {
   (*this).rpt_seq = rpt_seq;
 }
 
+void Security::reset_rpt_seq() {
+  rpt_seq = {};
+}
+
 }  // namespace cme
 }  // namespace roq

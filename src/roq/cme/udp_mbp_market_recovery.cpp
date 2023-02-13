@@ -487,6 +487,7 @@ void UDPMBPMarketRecovery::dispatch_market_by_price(
   auto &collector = channel_.mbp_collector[security_id];
   try {
     auto publish_snapshot = [&](auto &bids, auto &asks, auto exchange_sequence) {
+      log::info(R"(PUBLISH SNAPSHOT symbol="{}")"sv, security.symbol);
       auto market_by_price_update = MarketByPriceUpdate{
           .stream_id = stream_id_,
           .exchange = security.exchange,
@@ -505,6 +506,7 @@ void UDPMBPMarketRecovery::dispatch_market_by_price(
       channel_.mbp_resubscribe.erase(security_id);  // remove
     };
     auto request_snapshot = [&]([[maybe_unused]] auto retries) {
+      log::info(R"(REQUEST SNAPSHOT symbol="{}")"sv, security.symbol);
       // note! wait for next snapshot
       channel_.mbp_resubscribe.emplace(security_id, exchange_sequence);
     };

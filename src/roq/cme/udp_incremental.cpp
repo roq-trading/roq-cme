@@ -520,7 +520,7 @@ void drain(auto &receiver, auto &channel, auto stream_id, auto parse, auto reset
       }
     } else {
       // full: no available buffer
-      log::warn<1>("*** RESET (BUFFER FULL) ***"sv);
+      log::warn<0>("*** RESET (BUFFER FULL) ***"sv);
       channel.buffer.clear();
       channel.last_sequence = {};
       reset();
@@ -549,10 +549,11 @@ void UDPIncremental::operator()(io::net::udp::Receiver::Read const &) {
 
 void UDPIncremental::on_sequence_reset(TraceInfo const &trace_info) {
   ++counter_.sequence_reset;
-  log::warn<1>("*** RESUBSCRIBE ALL SYMBOLS ***"sv);
+  log::warn<0>("*** RESUBSCRIBE ALL SYMBOLS ***"sv);
   for (auto &[security_id, collector] : channel_.mbp_collector) {
     if (collector.ready()) {
       shared_.get_security(security_id, [&](auto &security) {
+        security.reset_rpt_seq();
         auto market_by_price_update = MarketByPriceUpdate{
             .stream_id = stream_id_,
             .exchange = security.exchange,
@@ -1084,6 +1085,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
         if (security) {
           auto rpt_seq = item.rptSeq();
           (*security).update_rpt_seq(rpt_seq);
+          // HANS here we should resubscribe
         }
         // ... need these for MBO referencing
         using value_type = typename std::remove_cvref<decltype(item)>::type;
@@ -1337,10 +1339,12 @@ void UDPIncremental::dispatch_market_by_price(
       create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true);
     };
     auto publish_snapshot = [&](auto &bids, auto &asks, [[maybe_unused]] auto exchange_sequence) {
+      log::info(R"(PUBLISH SNAPSHOT symbol="{}")"sv, security.symbol);
       auto market_by_price_update = create_update(bids, asks, UpdateType::SNAPSHOT);
       create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true);
     };
     auto request_snapshot = [&]([[maybe_unused]] auto retries) {
+      log::info(R"(REQUEST SNAPSHOT symbol="{}")"sv, security.symbol);
       channel_.mbp_resubscribe.emplace(security_id, exchange_sequence);
       channel_.mbp_last_sequence.erase(security_id);
     };

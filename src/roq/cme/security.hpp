@@ -19,6 +19,7 @@ struct Security final {
   // void operator=(Security const &) = delete;
 
   void update_rpt_seq(uint32_t rpt_seq);
+  void reset_rpt_seq();
 };
 
 }  // namespace cme
