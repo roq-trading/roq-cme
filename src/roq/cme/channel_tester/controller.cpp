@@ -20,6 +20,12 @@ namespace roq {
 namespace cme {
 namespace channel_tester {
 
+// === CONSTANTS ===
+
+namespace {
+auto const BUFFER_SIZE = size_t{4096};
+}
+
 // === HELPERS ===
 
 namespace {
@@ -44,7 +50,7 @@ Controller::Controller()
       interrupt_{(*context_).create_signal(*this, io::sys::Signal::Type::INTERRUPT)},
       bus_error_{(*context_).create_signal(*this, io::sys::Signal::Type::BUS_ERROR)}, receiver_{create_receiver(
                                                                                           *this, *context_)},
-      buffer_(4096) {
+      buffer_(BUFFER_SIZE) {
 }
 
 void Controller::dispatch() {
@@ -75,11 +81,11 @@ void Controller::operator()(io::net::udp::Receiver::Read const &read) {
             if (delta != 1) {
               auto now = clock::get_realtime<std::chrono::seconds>();
               log::info(
-                  "sequence_number={}, last_sequence_number={}, delta={}, timestamp={}"sv,
+                  "timestamp={}, sequence_number={}, last_sequence_number={}, delta={}"sv,
+                  now,
                   sequence_number,
                   last_sequence_number_,
-                  delta,
-                  now);
+                  delta);
             }
           } else {
             log::info("sequence_number={} (INITIALIZE)"sv, sequence_number);

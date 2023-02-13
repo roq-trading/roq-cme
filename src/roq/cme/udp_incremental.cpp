@@ -183,7 +183,7 @@ void statistics_emplace_back(auto &result, T const &item, auto &security) {
     statistics_emplace_back_price(result, statistics_type, item, security.display_factor);
   }
 }
-
+/*
 void emplace_back(
     cme_mdp::SnapshotFullRefresh52::NoMDEntries const &item,
     auto &security,
@@ -253,7 +253,7 @@ void emplace_back(
       break;
   }
 }
-
+*/
 void emplace_back(
     cme_mdp::MDIncrementalRefreshBook46::NoMDEntries const &item, auto &security, auto &layer, auto &bids, auto &asks) {
   using value_type = typename std::remove_cvref<decltype(item)>::type;
@@ -962,8 +962,8 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionFX63> const
   });
 }
 
-// XXX HANS why are we processing this here ???
-void UDPIncremental::operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &event, sbe::Frame const &frame) {
+void UDPIncremental::operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &, sbe::Frame const &) {
+  /*
   profile_.snapshot_full_refresh([&]() {
     auto &trace_info = event.trace_info;
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
@@ -1007,14 +1007,17 @@ void UDPIncremental::operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &eve
       }
     });
   });
+  */
 }
 
-void UDPIncremental::operator()(Trace<cme_mdp::SnapshotFullRefreshLongQty69> const &event, sbe::Frame const &frame) {
+void UDPIncremental::operator()(Trace<cme_mdp::SnapshotFullRefreshLongQty69> const &, sbe::Frame const &) {
+  /*
   profile_.snapshot_full_refresh_long_qty([&]() {
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("snapshot_full_refresh_long_qty_69={}, frame={}"sv, value, frame);
   });
+  */
 }
 
 void UDPIncremental::operator()(Trace<cme_mdp::QuoteRequest39> const &event, sbe::Frame const &frame) {
