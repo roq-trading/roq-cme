@@ -147,6 +147,27 @@ void emplace_back(T const &item, auto &security, auto &bids, auto &asks) {
       break;
   }
 }
+
+// note! don't care about re-ordering or dropped messages
+void drain(auto &receiver, auto &buffer, auto stream_id, auto parse) {
+  while (true) {
+    // read into buffer
+    auto bytes = receiver.recv(buffer);
+    log::info<5>("Received {} byte(s) (stream_id={})"sv, bytes, stream_id);
+    if (!bytes)
+      return;
+    // parse message
+    std::span message{std::data(buffer), bytes};
+    log::info<5>("{}"sv, debug::hex::Message{message});
+    if (sbe::Frame::parse(message, [&](auto &frame) { log::info<5>("frame={}"sv, frame); })) {
+    } else {
+      // failed to parse frame
+      log::warn("Unexpected"sv);
+      continue;
+    }
+    parse(message);
+  }
+}
 }  // namespace
 
 // === IMPLEMENTATION ===
@@ -188,18 +209,13 @@ void UDPMBPMarketRecovery::operator()(io::net::udp::Receiver::Read const &) {
   TraceInfo trace_info;
   last_update_time_ = trace_info.source_receive_time;
   publish_stream_status(trace_info, ConnectionStatus::READY);  // first message will publish
-  while (receive_buffer_.append(*receiver_)) {
-    profile_.parse([&]() {
-      auto message = receive_buffer_.data();
-      log::info<5>("received {} byte(s)"sv, std::size(message));
-      log::info<5>("{}"sv, debug::hex::Message{message});
-      if (!sbe::Parser::dispatch(*this, message, trace_info)) {
-        log::warn("{}"sv, debug::hex::Message{message});
-        log::fatal("Failed to parse message"sv);
-      }
-      receive_buffer_.clear();
-    });
-  }
+  auto parse = [&](auto &message) {
+    if (!sbe::Parser::dispatch(*this, message, trace_info)) {
+      log::warn("{}"sv, debug::hex::Message{message});
+      log::fatal("Failed to parse message"sv);
+    }
+  };
+  drain(*receiver_, shared_.buffer, stream_id_, parse);
 }
 
 void UDPMBPMarketRecovery::operator()(io::net::udp::Receiver::Error const &error) {

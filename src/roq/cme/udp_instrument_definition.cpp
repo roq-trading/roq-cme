@@ -90,7 +90,7 @@ void create_security(auto &shared, auto &value, Callback callback) {
   shared.create_security(security_group, security_id, std::move(security), [&](auto &security) { callback(security); });
 }
 
-// note! don't use a re-order buffer
+// note! don't care about re-ordering or dropped messages
 void drain(auto &receiver, auto &buffer, auto stream_id, auto parse) {
   while (true) {
     // read into buffer
@@ -101,6 +101,12 @@ void drain(auto &receiver, auto &buffer, auto stream_id, auto parse) {
     // parse message
     std::span message{std::data(buffer), bytes};
     log::info<5>("{}"sv, debug::hex::Message{message});
+    if (sbe::Frame::parse(message, [&](auto &frame) { log::info<5>("frame={}"sv, frame); })) {
+    } else {
+      // failed to parse frame
+      log::warn("Unexpected"sv);
+      continue;
+    }
     parse(message);
   }
 }
