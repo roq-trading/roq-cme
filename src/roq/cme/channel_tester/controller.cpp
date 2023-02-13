@@ -66,6 +66,7 @@ void Controller::operator()(io::net::udp::Receiver::Read const &read) {
     log::info<5>("received {} byte(s)"sv, std::size(message));
     // log::print("{}\n"sv, debug::hex::Message{message});
     if (sbe::Frame::parse(message, [&](auto &frame) {
+          log::info<1>("frame={}"sv, frame);
           auto sequence_number = frame.sequence_number;
           if (last_sequence_number_) {
             auto delta = static_cast<int64_t>(sequence_number) - static_cast<int64_t>(last_sequence_number_);
@@ -77,9 +78,11 @@ void Controller::operator()(io::net::udp::Receiver::Read const &read) {
                   delta);
             }
           } else {
-            log::info("seqnece_number={} (INITIALIZE)"sv, sequence_number);
+            log::info("sequence_number={} (INITIALIZE)"sv, sequence_number);
           }
           last_sequence_number_ = sequence_number;
+          if (flags::Flags::test_low_sequence_numbers() && sequence_number < 256)
+            log::print("{}\n"sv, debug::hex::Message{message});
         })) {
     } else {
       log::warn("Unexpected"sv);

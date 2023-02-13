@@ -27,6 +27,12 @@ ABSL_FLAG(  //
     {},
     "local interface");
 
+ABSL_FLAG(  //
+    bool,
+    test_low_sequence_numbers,
+    false,
+    "test");
+
 namespace roq {
 namespace cme {
 namespace channel_tester {
@@ -44,6 +50,11 @@ uint16_t Flags::multicast_port() {
 
 std::string_view Flags::local_interface() {
   static const std::string result = absl::GetFlag(FLAGS_local_interface);
+  return result;
+}
+
+bool Flags::test_low_sequence_numbers() {
+  static bool const result = absl::GetFlag(FLAGS_test_low_sequence_numbers);
   return result;
 }
 
