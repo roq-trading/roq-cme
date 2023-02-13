@@ -295,12 +295,12 @@ void emplace_back(
     auto &asks) {
   auto create_update = [&]() {
     auto action = sbe::map(item.orderUpdateAction());
-    auto remaining_quantity = sbe::get_int(item.mDDisplayQty(), item.mDDisplayQtyNullValue());
+    auto quantity = sbe::get_int(item.mDDisplayQty(), item.mDDisplayQtyNullValue());
     auto priority = sbe::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue());
     auto order_id = sbe::get_int(item.orderID(), item.orderIDNullValue());
     auto result = MBOUpdate{
         .price = price * security.display_factor,
-        .quantity = static_cast<double>(remaining_quantity),
+        .quantity = static_cast<double>(quantity),
         .priority = priority,
         .order_id = {},
         .action = action,
@@ -331,13 +331,13 @@ void emplace_back(
   using value_type = typename std::remove_cvref<decltype(item)>::type;
   auto create_update = [&]() {
     auto price = sbe::get_double(const_cast<value_type &>(item).mDEntryPx());
-    auto remaining_quantity = sbe::get_int(item.mDDisplayQty(), item.mDDisplayQtyNullValue());
+    auto quantity = sbe::get_int(item.mDDisplayQty(), item.mDDisplayQtyNullValue());
     auto priority = sbe::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue());
     auto order_id = sbe::get_int(item.orderID(), item.orderIDNullValue());
     auto action = sbe::map(item.mDUpdateAction());
     auto result = MBOUpdate{
         .price = price * security.display_factor,
-        .quantity = static_cast<double>(remaining_quantity),
+        .quantity = static_cast<double>(quantity),
         .priority = priority,
         .order_id = {},
         .action = action,

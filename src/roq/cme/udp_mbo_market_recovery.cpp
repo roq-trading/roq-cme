@@ -63,31 +63,40 @@ struct create_metrics final : public core::metrics::Factory {
       : core::metrics::Factory(server::Flags::name(), group, function) {}
 };
 
-// following are used from several places
-
-template <typename Callback>
-bool get_security(auto &shared, auto security_id, Callback callback) {
-  auto iter = shared.securities.find(security_id);
-  if (iter == std::end(shared.securities))
-    return false;
-  auto &security = (*iter).second;
-  if (security.discard)
-    return false;
-  callback(security);
-  return true;
-}
-
-template <typename Callback>
-bool get_last_exchange_sequence(auto &channel, auto security_id, auto &value, Callback callback) {
-  auto last_processed = value.lastMsgSeqNumProcessed();
-  if (last_processed <= channel.last_sequence.second) {
-    auto iter = channel.mbo_last_sequence.find(security_id);
-    if (iter != std::end(channel.mbo_last_sequence)) {
-      callback((*iter).second);
-      return true;
+void emplace_back(
+    cme_mdp::SnapshotFullRefreshOrderBook53::NoMDEntries const &item, auto &security, auto &bids, auto &asks) {
+  auto create_update = [&]() {
+    auto price = sbe::get_double(const_cast<cme_mdp::SnapshotFullRefreshOrderBook53::NoMDEntries &>(item).mDEntryPx());
+    auto quantity = item.mDDisplayQty();
+    auto priority = sbe::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue());
+    auto order_id = sbe::get_int(item.orderID(), item.orderIDNullValue());
+    auto result = MBOUpdate{
+        .price = price * security.display_factor,
+        .quantity = static_cast<double>(quantity),
+        .priority = priority,
+        .order_id = {},
+        .action = UpdateAction::NEW,
+        .reason = {},
+    };
+    fmt::format_to(std::back_inserter(result.order_id), "{}"sv, order_id);
+    return result;
+  };
+  auto side = sbe::map(item.mDEntryType());
+  switch (side) {
+    using enum Side;
+    case UNDEFINED:
+      break;
+    case BUY: {
+      auto update = create_update();
+      bids.emplace_back(std::move(update));
+      break;
+    }
+    case SELL: {
+      auto update = create_update();
+      asks.emplace_back(std::move(update));
+      break;
     }
   }
-  return false;
 }
 
 // note! don't care about re-ordering or dropped messages (*** maybe we should ??? ***)
@@ -293,43 +302,46 @@ void UDPMBOMarketRecovery::operator()(
   profile_.snapshot_full_refresh_order_book([&]() {
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
-    auto security_id = value.securityID();
-    auto iter = channel_.mbo_resubscribe.find(security_id);
-    if (iter == std::end(channel_.mbo_resubscribe))
-      return;
-    auto no_chunks = value.noChunks();
-    auto current_chunk = value.currentChunk();
-    auto iter_2 = collector_.find(security_id);
-    if (iter_2 == std::end(collector_)) {
-      if (current_chunk != uint32_t{1})
-        return;
-      iter_2 = collector_.try_emplace(security_id, current_chunk, no_chunks).first;
-      log::info("DEBUG MBO START"sv);
-    } else {
-      auto last_chunk = (*iter_2).second.first;
-      if (current_chunk == (last_chunk + uint32_t{1})) {
-        if (current_chunk == no_chunks) {
-          log::info("DEBUG MBO READY"sv);
-          collector_.erase(iter_2);
-          channel_.mbo_resubscribe.erase(security_id);
-        } else {
-          (*iter_2).second.first = current_chunk;
-        }
-      } else {
-        log::info("DEBUG MBO RESET (current_chunk={}, last_chunk={})"sv, current_chunk, last_chunk);
-        collector_.erase(iter_2);
-      }
-    }
-    /*
-    log::info<3>(
-        "DEBUG seqno={} reports={} secid={} chunks={} chunk={}"sv,
-        value.lastMsgSeqNumProcessed(),
-        value.totNumReports(),
-        value.securityID(),
-        value.noChunks(),
-        value.currentChunk());
-    */
     log::info<5>("snapshot_full_refresh_order_book_53={}, frame={}"sv, value, frame);
+    auto security_id = value.securityID();
+    shared_.get_security(security_id, [&](auto &security) {
+      auto iter = channel_.mbo_resubscribe.find(security_id);
+      if (iter == std::end(channel_.mbo_resubscribe))
+        return;
+      auto process = false;
+      auto no_chunks = value.noChunks();
+      auto current_chunk = value.currentChunk();
+      auto iter_2 = collector_.find(security_id);
+      if (iter_2 == std::end(collector_)) {
+        if (current_chunk != uint32_t{1})
+          return;
+        iter_2 = collector_.try_emplace(security_id, current_chunk, no_chunks).first;
+        process = true;
+        log::info("DEBUG MBO START"sv);
+      } else {
+        process = true;
+        auto last_chunk = (*iter_2).second.first;
+        if (current_chunk == (last_chunk + uint32_t{1})) {
+          if (current_chunk == no_chunks) {
+            log::info("DEBUG MBO READY"sv);
+            collector_.erase(iter_2);
+            channel_.mbo_resubscribe.erase(security_id);
+          } else {
+            (*iter_2).second.first = current_chunk;
+          }
+        } else {
+          log::info("DEBUG MBO RESET (current_chunk={}, last_chunk={})"sv, current_chunk, last_chunk);
+          collector_.erase(iter_2);
+        }
+      }
+      if (!process)
+        return;
+      auto &mbo = shared_.get_mbo();
+      value.sbeRewind();  // note!
+      value.noMDEntries().forEach([&](auto const &item) { emplace_back(item, security, mbo.bids, mbo.asks); });
+      log::info<5>("DEBUG MBO bids=[{}]"sv, fmt::join(mbo.bids, ","sv));
+      log::info<5>("DEBUG MBO asks=[{}]"sv, fmt::join(mbo.asks, ","sv));
+    });
   });
 }
 
