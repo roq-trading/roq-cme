@@ -306,7 +306,7 @@ void UDPMBOMarketRecovery::operator()(
       iter_2 = collector_.try_emplace(security_id, current_chunk, no_chunks).first;
       log::info("DEBUG MBO START"sv);
     } else {
-      auto last_chunk = (*iter_2).first;
+      auto last_chunk = (*iter_2).second.first;
       if (current_chunk == (last_chunk + uint32_t{1})) {
         if (current_chunk == no_chunks) {
           log::info("DEBUG MBO READY"sv);
@@ -316,7 +316,7 @@ void UDPMBOMarketRecovery::operator()(
           (*iter_2).second.first = current_chunk;
         }
       } else {
-        log::info("DEBUG MBO RESET (current_chunk={}, last_chunk={})"sv, current_chunk, (*iter_2).second.first);
+        log::info("DEBUG MBO RESET (current_chunk={}, last_chunk={})"sv, current_chunk, last_chunk);
         collector_.erase(iter_2);
       }
     }
