@@ -74,15 +74,18 @@ void Controller::operator()(io::net::udp::Receiver::Read const &read) {
     if (sbe::Frame::parse(message, [&](auto &frame) {
           log::info<1>("frame={}"sv, frame);
           auto sequence_number = frame.sequence_number;
-          if (flags::Flags::test_low_sequence_numbers() && sequence_number < 1024)
+          if (sequence_number < flags::Flags::filter_snapshot_from_incremental())
             return;
+          auto now = clock::get_realtime();
           if (last_sequence_number_) {
             auto delta = static_cast<int64_t>(sequence_number) - static_cast<int64_t>(last_sequence_number_);
             if (delta != 1) {
-              auto now = clock::get_realtime<std::chrono::seconds>();
+              auto gap = now - last_update_;
               log::info(
-                  "timestamp={}, sequence_number={}, last_sequence_number={}, delta={}"sv,
+                  "timestamp={}, last_timestamp={}, gap={}, sequence_number={}, last_sequence_number={}, delta={}"sv,
                   now,
+                  last_update_,
+                  gap,
                   sequence_number,
                   last_sequence_number_,
                   delta);
@@ -91,6 +94,7 @@ void Controller::operator()(io::net::udp::Receiver::Read const &read) {
             log::info("sequence_number={} (INITIALIZE)"sv, sequence_number);
           }
           last_sequence_number_ = sequence_number;
+          last_update_ = now;
         })) {
     } else {
       log::warn("Unexpected"sv);

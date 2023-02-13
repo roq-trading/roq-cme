@@ -35,6 +35,7 @@ struct Controller final : public io::sys::Signal::Handler, public io::net::udp::
   std::unique_ptr<io::net::udp::Receiver> const receiver_;
   std::vector<std::byte> buffer_;
   uint32_t last_sequence_number_ = {};
+  std::chrono::nanoseconds last_update_ = {};
 };
 
 }  // namespace channel_tester

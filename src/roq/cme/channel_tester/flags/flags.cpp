@@ -28,9 +28,9 @@ ABSL_FLAG(  //
     "local interface");
 
 ABSL_FLAG(  //
-    bool,
-    test_low_sequence_numbers,
-    false,
+    uint32_t,
+    filter_snapshot_from_incremental,
+    1024,
     "test");
 
 namespace roq {
@@ -53,8 +53,8 @@ std::string_view Flags::local_interface() {
   return result;
 }
 
-bool Flags::test_low_sequence_numbers() {
-  static bool const result = absl::GetFlag(FLAGS_test_low_sequence_numbers);
+uint32_t Flags::filter_snapshot_from_incremental() {
+  static uint32_t const result = absl::GetFlag(FLAGS_filter_snapshot_from_incremental);
   return result;
 }
 
