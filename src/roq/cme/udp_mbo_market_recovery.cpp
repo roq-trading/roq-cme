@@ -293,6 +293,33 @@ void UDPMBOMarketRecovery::operator()(
   profile_.snapshot_full_refresh_order_book([&]() {
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
+    auto security_id = value.securityID();
+    auto iter = channel_.mbo_resubscribe.find(security_id);
+    if (iter == std::end(channel_.mbo_resubscribe))
+      return;
+    auto no_chunks = value.noChunks();
+    auto current_chunk = value.currentChunk();
+    auto iter_2 = collector_.find(security_id);
+    if (iter_2 == std::end(collector_)) {
+      if (current_chunk != uint32_t{1})
+        return;
+      iter_2 = collector_.try_emplace(security_id, current_chunk, no_chunks).first;
+      log::info("DEBUG MBO START"sv);
+    } else {
+      auto last_chunk = (*iter_2).first;
+      if (current_chunk == (last_chunk + uint32_t{1})) {
+        if (current_chunk == no_chunks) {
+          log::info("DEBUG MBO READY"sv);
+          collector_.erase(iter_2);
+          channel_.mbo_resubscribe.erase(security_id);
+        } else {
+          (*iter_2).second.first = current_chunk;
+        }
+      } else {
+        log::info("DEBUG MBO RESET (current_chunk={}, last_chunk={})"sv, current_chunk, (*iter_2).second.first);
+        collector_.erase(iter_2);
+      }
+    }
     /*
     log::info<3>(
         "DEBUG seqno={} reports={} secid={} chunks={} chunk={}"sv,

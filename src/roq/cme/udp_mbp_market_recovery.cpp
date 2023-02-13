@@ -487,7 +487,7 @@ void UDPMBPMarketRecovery::dispatch_market_by_price(
   auto &collector = channel_.mbp_collector[security_id];
   try {
     auto publish_snapshot = [&](auto &bids, auto &asks, auto exchange_sequence) {
-      log::info(R"(PUBLISH SNAPSHOT symbol="{}")"sv, security.symbol);
+      log::info(R"(PUBLISH MBP SNAPSHOT symbol="{}")"sv, security.symbol);
       auto market_by_price_update = MarketByPriceUpdate{
           .stream_id = stream_id_,
           .exchange = security.exchange,
@@ -506,14 +506,17 @@ void UDPMBPMarketRecovery::dispatch_market_by_price(
       channel_.mbp_resubscribe.erase(security_id);  // remove
     };
     auto request_snapshot = [&]([[maybe_unused]] auto retries) {
-      log::info(R"(REQUEST SNAPSHOT symbol="{}")"sv, security.symbol);
+      log::info(R"(REQUEST MBP SNAPSHOT symbol="{}")"sv, security.symbol);
       // note! wait for next snapshot
       channel_.mbp_resubscribe.emplace(security_id, exchange_sequence);
     };
     collector(bids, asks, exchange_sequence, publish_snapshot, request_snapshot);
   } catch (BadState &) {
     log::warn(
-        R"(RESUBSCRIBE exchange="{}", symbol="{}", security_id={})"sv, security.exchange, security.symbol, security_id);
+        R"(RESUBSCRIBE MBP exchange="{}", symbol="{}", security_id={})"sv,
+        security.exchange,
+        security.symbol,
+        security_id);
     // XXX HANS publish stale
     collector.clear();  // note! wait for next incremental
   }

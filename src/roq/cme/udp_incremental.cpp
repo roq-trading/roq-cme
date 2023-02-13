@@ -467,10 +467,12 @@ void drain(auto &receiver, auto &channel, auto stream_id, auto parse, auto reset
                   drop = sequence_number < next_sequence_number;
                 }
                 if (hold) {
+                  auto delta = static_cast<int64_t>(sequence_number) - static_cast<int64_t>(last_sequence_number);
                   log::warn(
-                      "DEBUG HOLD sequence_number={}, last_sequence_number={}"sv,
+                      "DEBUG HOLD sequence_number={}, last_sequence_number={}, delta={}"sv,
                       sequence_number,
-                      last_sequence_number);
+                      last_sequence_number,
+                      delta);
                 }
                 // TEST >>>
                 if (flags::Common::test_drop() && !hold && !drop) {
@@ -588,6 +590,7 @@ void UDPIncremental::on_sequence_reset(TraceInfo const &trace_info) {
             .checksum = {},
         };
         create_trace_and_dispatch(handler_, trace_info, market_by_order_update, true);
+        channel_.mbo_resubscribe.emplace(security_id, 0);  // XXX HANS HACK should be done by collector
       });
     }
     collector.clear();
@@ -1359,12 +1362,12 @@ void UDPIncremental::dispatch_market_by_price(
       create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true);
     };
     auto publish_snapshot = [&](auto &bids, auto &asks, [[maybe_unused]] auto exchange_sequence) {
-      log::info(R"(PUBLISH SNAPSHOT symbol="{}")"sv, security.symbol);
+      log::info(R"(PUBLISH MBP SNAPSHOT symbol="{}")"sv, security.symbol);
       auto market_by_price_update = create_update(bids, asks, UpdateType::SNAPSHOT);
       create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true);
     };
     auto request_snapshot = [&]([[maybe_unused]] auto retries) {
-      log::info(R"(REQUEST SNAPSHOT symbol="{}")"sv, security.symbol);
+      log::info(R"(REQUEST MBP SNAPSHOT symbol="{}")"sv, security.symbol);
       channel_.mbp_resubscribe.emplace(security_id, exchange_sequence);
       channel_.mbp_last_sequence.erase(security_id);
     };
@@ -1379,7 +1382,10 @@ void UDPIncremental::dispatch_market_by_price(
         request_snapshot);
   } catch (BadState &) {
     log::warn(
-        R"(RESUBSCRIBE exchange="{}", symbol="{}", security_id={})"sv, security.exchange, security.symbol, security_id);
+        R"(RESUBSCRIBE MBP exchange="{}", symbol="{}", security_id={})"sv,
+        security.exchange,
+        security.symbol,
+        security_id);
     // XXX HANS publish stale
     collector.clear();
     channel_.mbp_resubscribe.emplace(security_id, exchange_sequence);
