@@ -127,6 +127,9 @@ struct Shared final {
     statistics.clear();
     return statistics;
   }
+
+  // buffer
+  std::vector<std::byte> buffer;
 };
 
 }  // namespace cme

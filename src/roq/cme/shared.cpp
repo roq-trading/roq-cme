@@ -16,6 +16,12 @@ using namespace std::literals;
 namespace roq {
 namespace cme {
 
+// === CONSTANTS ===
+
+namespace {
+auto const BUFFER_SIZE = size_t{4096};
+}
+
 // === HELPERS ===
 
 namespace {
@@ -81,7 +87,7 @@ void read_secdef(T &securities, D &dispatcher) {
 // === IMPLEMENTATION ===
 
 Shared::Shared(server::Dispatcher &dispatcher)
-    : dispatcher_{dispatcher}, multicast_config_{flags::Multicast::multicast_config_file()} {
+    : dispatcher_{dispatcher}, multicast_config_{flags::Multicast::multicast_config_file()}, buffer(BUFFER_SIZE) {
   read_secdef(securities, dispatcher);
 }
 

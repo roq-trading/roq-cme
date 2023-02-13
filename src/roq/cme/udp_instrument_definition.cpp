@@ -90,78 +90,18 @@ void create_security(auto &shared, auto &value, Callback callback) {
   shared.create_security(security_group, security_id, std::move(security), [&](auto &security) { callback(security); });
 }
 
-// this is general logic
-void drain(auto &receiver, auto &channel, auto stream_id, auto parse, auto reset) {
-  using value_type = typename decltype(channel.buffer)::value_type;
-  for (auto stop = false; !stop;) {
-    if (channel.buffer.next([&](auto buffer) -> std::pair<size_t, value_type> {
-          // read into buffer
-          auto bytes = receiver.recv(buffer);
-          log::info<5>("Received {} byte(s) (stream_id={})"sv, bytes, stream_id);
-          if (!bytes) {
-            stop = true;
-            return {};
-          }
-          // parse message
-          std::span message{std::data(buffer), bytes};
-          log::info<5>("{}"sv, debug::hex::Message{message});
-          bool hold = false, drop = false;
-          value_type sequence_number = {};
-          if (sbe::Frame::parse(message, [&](auto &frame) {
-                log::info<5>("frame={}, last_sequence_number={}"sv, frame, channel.last_sequence.second);
-                // check sequence number
-                sequence_number = frame.sequence_number;
-                auto [ready, last_sequence_number] = channel.last_sequence;
-                if (ready) {
-                  auto next_sequence_number = last_sequence_number + 1;
-                  hold = sequence_number > next_sequence_number;
-                  drop = sequence_number < next_sequence_number;
-                }
-              })) {
-            log::info<5>("hold={}, drop={}"sv, hold, drop);
-            if (drop)
-              return {};
-            if (hold)
-              return {bytes, sequence_number};
-            // parse this message
-            parse(message);
-            channel.last_sequence = {true, sequence_number};
-            return {};
-          } else {
-            // failed to parse frame
-            log::warn("Unexpected"sv);
-            return {};  // XXX not sure what to do here
-          }
-        })) {
-      // successfully parsed a message
-      // now process any withheld messages
-      while (!stop) {
-        auto [ready, last_sequence_number] = channel.last_sequence;
-        if (ready) {
-          // check next sequence number
-          auto sequence_number = last_sequence_number + 1;
-          if (channel.buffer.get(sequence_number, [&](auto &message) {
-                // parse this message
-                parse(message);
-                channel.last_sequence = {true, sequence_number};
-              })) {
-          } else {
-            // does not exist
-            stop = true;
-          }
-        } else {
-          // not ready
-          stop = true;
-        }
-      }
-    } else {
-      // full: no available buffer
-      log::warn<1>("*** RESET (BUFFER FULL) ***"sv);
-      channel.buffer.clear();
-      channel.last_sequence = {};
-      reset();
-      // XXX resubscribe
-    }
+// note! don't use a re-order buffer
+void drain(auto &receiver, auto &buffer, auto stream_id, auto parse) {
+  while (true) {
+    // read into buffer
+    auto bytes = receiver.recv(buffer);
+    log::info<5>("Received {} byte(s) (stream_id={})"sv, bytes, stream_id);
+    if (!bytes)
+      return;
+    // parse message
+    std::span message{std::data(buffer), bytes};
+    log::info<5>("{}"sv, debug::hex::Message{message});
+    parse(message);
   }
 }
 }  // namespace
@@ -209,28 +149,13 @@ void UDPInstrumentDefinition::operator()(io::net::udp::Receiver::Read const &) {
   TraceInfo trace_info;
   last_update_time_ = trace_info.source_receive_time;
   publish_stream_status(trace_info, ConnectionStatus::READY);  // first message will publish
-  /*
-  while (receive_buffer_.append(*receiver_)) {
-    profile_.parse([&]() {
-      auto message = receive_buffer_.data();
-      log::info<5>("received {} byte(s)"sv, std::size(message));
-      log::info<5>("{}"sv, debug::hex::Message{message});
-      if (!sbe::Parser::dispatch(*this, message, trace_info)) {
-        log::warn("{}"sv, debug::hex::Message{message});
-        log::fatal("Failed to parse message"sv);
-      }
-      receive_buffer_.clear();
-    });
-  }
-  */
   auto parse = [&](auto &message) {
     if (!sbe::Parser::dispatch(*this, message, trace_info)) {
       log::warn("{}"sv, debug::hex::Message{message});
       log::fatal("Failed to parse message"sv);
     }
   };
-  drain(
-      *receiver_, channel_.instrument_definition, stream_id_, parse, [&]() { log::warn("*** SEQUENCE RESET ***"sv); });
+  drain(*receiver_, shared_.buffer, stream_id_, parse);
 }
 
 void UDPInstrumentDefinition::operator()(io::net::udp::Receiver::Error const &error) {
