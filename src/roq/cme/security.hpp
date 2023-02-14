@@ -4,6 +4,8 @@
 
 #include "roq/api.hpp"
 
+#include "roq/core/mbo/sequencer.hpp"
+
 namespace roq {
 namespace cme {
 
@@ -25,6 +27,7 @@ struct Security final {
     uint32_t no_chunks = {};
     uint32_t last_chunk = {};
     std::vector<MBOUpdate> bids, asks;
+    core::mbo::Sequencer sequencer;
   } mbo = {};
 
   template <typename Callback>

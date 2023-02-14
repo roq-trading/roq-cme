@@ -1404,6 +1404,7 @@ void UDPIncremental::dispatch_market_by_order(
     auto exchange_time_utc,
     auto &bids,
     auto &asks) {
+  /*
   auto market_by_order_update = MarketByOrderUpdate{
       .stream_id = stream_id_,
       .exchange = security.exchange,
@@ -1418,6 +1419,61 @@ void UDPIncremental::dispatch_market_by_order(
       .checksum = {},
   };
   create_trace_and_dispatch(handler_, trace_info, market_by_order_update, true);
+  */
+  channel_.mbo_last_sequence[security_id] = exchange_sequence;
+  auto &collector = security.mbo.sequencer;
+  try {
+    auto last_exchange_sequence = collector.last_sequence();  // note! the protocol doesn't tell us
+    auto create_update = [&](auto &bids, auto &asks, auto update_type) -> MarketByOrderUpdate {
+      return {
+          .stream_id = stream_id_,
+          .exchange = security.exchange,
+          .symbol = security.symbol,
+          .bids = bids,
+          .asks = asks,
+          .update_type = update_type,
+          .exchange_time_utc = exchange_time_utc,
+          .exchange_sequence = exchange_sequence,
+          .price_decimals = {},
+          .quantity_decimals = {},
+          .max_depth = {},
+          .checksum = {},
+      };
+    };
+    auto publish_update = [&](auto &bids, auto &asks) {
+      auto market_by_order_update = create_update(bids, asks, UpdateType::INCREMENTAL);
+      create_trace_and_dispatch(handler_, trace_info, market_by_order_update, true);
+    };
+    auto publish_snapshot = [&](auto &bids, auto &asks, [[maybe_unused]] auto exchange_sequence) {
+      log::info(R"(PUBLISH MBO SNAPSHOT symbol="{}")"sv, security.symbol);
+      auto market_by_order_update = create_update(bids, asks, UpdateType::SNAPSHOT);
+      create_trace_and_dispatch(handler_, trace_info, market_by_order_update, true);
+    };
+    auto request_snapshot = [&]([[maybe_unused]] auto retries) {
+      log::info(R"(REQUEST MBO SNAPSHOT symbol="{}")"sv, security.symbol);
+      channel_.mbo_resubscribe.emplace(security_id, exchange_sequence);
+      channel_.mbo_last_sequence.erase(security_id);
+    };
+    collector(
+        bids,
+        asks,
+        exchange_sequence,
+        exchange_sequence,
+        last_exchange_sequence,
+        publish_update,
+        publish_snapshot,
+        request_snapshot);
+  } catch (BadState &) {
+    log::warn(
+        R"(RESUBSCRIBE MBO exchange="{}", symbol="{}", security_id={})"sv,
+        security.exchange,
+        security.symbol,
+        security_id);
+    // XXX HANS publish stale
+    collector.clear();
+    channel_.mbo_resubscribe.emplace(security_id, exchange_sequence);
+    channel_.mbo_last_sequence.erase(security_id);
+  }
 }
 
 template <typename T>

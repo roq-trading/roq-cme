@@ -324,25 +324,49 @@ void UDPMBOMarketRecovery::operator()(
                 std::size(bids),
                 std::size(asks));
             if (last) {
-              auto market_by_order_update = MarketByOrderUpdate{
-                  .stream_id = stream_id_,
-                  .exchange = security.exchange,
-                  .symbol = security.symbol,
-                  .bids = bids,
-                  .asks = asks,
-                  .update_type = UpdateType::SNAPSHOT,
-                  .exchange_time_utc = {},
-                  .exchange_sequence = last_msg_seq_num_processed,
-                  .price_decimals = {},
-                  .quantity_decimals = {},
-                  .checksum = {},
-              };
-              create_trace_and_dispatch(handler_, trace_info, market_by_order_update, true);
-              log::info("DEBUG MBO READY"sv);
+              auto &collector = security.mbo.sequencer;
+              try {
+                auto publish_snapshot = [&](auto &bids, auto &asks, auto exchange_sequence) {
+                  log::info(R"(PUBLISH MBO SNAPSHOT symbol="{}")"sv, security.symbol);
+                  auto market_by_order_update = MarketByOrderUpdate{
+                      .stream_id = stream_id_,
+                      .exchange = security.exchange,
+                      .symbol = security.symbol,
+                      .bids = bids,
+                      .asks = asks,
+                      .update_type = UpdateType::SNAPSHOT,
+                      .exchange_time_utc = {},
+                      .exchange_sequence = collector.last_sequence(),
+                      .price_decimals = {},
+                      .quantity_decimals = {},
+                      .checksum = {},
+                  };
+                  create_trace_and_dispatch(handler_, trace_info, market_by_order_update, true);
+                  Trace event(trace_info, market_by_order_update);
+                  shared_(event, true, [&](auto &market_by_order) {
+                    collector.apply(market_by_order, last_msg_seq_num_processed, false);
+                  });
+                  channel_.mbo_resubscribe.erase(security_id);  // remove
+                };
+                auto request_snapshot = [&]([[maybe_unused]] auto retries) {
+                  log::info(R"(REQUEST MBO SNAPSHOT symbol="{}")"sv, security.symbol);
+                  // note! wait for next snapshot
+                  channel_.mbo_resubscribe.emplace(security_id, last_msg_seq_num_processed);
+                };
+                collector(bids, asks, last_msg_seq_num_processed, publish_snapshot, request_snapshot);
+              } catch (BadState &) {
+                log::warn(
+                    R"(RESUBSCRIBE MBO exchange="{}", symbol="{}", security_id={})"sv,
+                    security.exchange,
+                    security.symbol,
+                    security_id);
+                // XXX HANS publish stale
+                collector.clear();  // note! wait for next incremental
+              }
             }
           })) {
         log::info("DEBUG MBO DONE"sv);
-        channel_.mbo_resubscribe.erase(iter);
+        // channel_.mbo_resubscribe.erase(iter);
       }
     });
   });
