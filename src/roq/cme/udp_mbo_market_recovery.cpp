@@ -300,6 +300,7 @@ void UDPMBOMarketRecovery::operator()(
 void UDPMBOMarketRecovery::operator()(
     Trace<cme_mdp::SnapshotFullRefreshOrderBook53> const &event, sbe::Frame const &frame) {
   profile_.snapshot_full_refresh_order_book([&]() {
+    auto &trace_info = event.trace_info;
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("snapshot_full_refresh_order_book_53={}, frame={}"sv, value, frame);
@@ -311,8 +312,7 @@ void UDPMBOMarketRecovery::operator()(
       auto last_msg_seq_num_processed = value.lastMsgSeqNumProcessed();
       auto no_chunks = value.noChunks();
       auto current_chunk = value.currentChunk();
-
-      if (security.update_mbo_snapshot(current_chunk, no_chunks, [&](auto &bids, auto &asks, bool ready) {
+      if (security.update_mbo_snapshot(current_chunk, no_chunks, [&](auto &bids, auto &asks, bool last) {
             value.sbeRewind();  // note!
             value.noMDEntries().forEach([&](auto const &item) { emplace_back(item, security, bids, asks); });
             log::info<5>("DEBUG MBO bids=[{}]"sv, fmt::join(bids, ","sv));
@@ -323,64 +323,27 @@ void UDPMBOMarketRecovery::operator()(
                 no_chunks,
                 std::size(bids),
                 std::size(asks));
-            if (ready)
+            if (last) {
+              auto market_by_order_update = MarketByOrderUpdate{
+                  .stream_id = stream_id_,
+                  .exchange = security.exchange,
+                  .symbol = security.symbol,
+                  .bids = bids,
+                  .asks = asks,
+                  .update_type = UpdateType::SNAPSHOT,
+                  .exchange_time_utc = {},
+                  .exchange_sequence = last_msg_seq_num_processed,
+                  .price_decimals = {},
+                  .quantity_decimals = {},
+                  .checksum = {},
+              };
+              create_trace_and_dispatch(handler_, trace_info, market_by_order_update, true);
               log::info("DEBUG MBO READY"sv);
+            }
           })) {
         log::info("DEBUG MBO DONE"sv);
         channel_.mbo_resubscribe.erase(iter);
       }
-      /*
-      auto &mbo = security.mbo;
-      auto iter = channel_.mbo_resubscribe.find(security_id);
-      if (iter == std::end(channel_.mbo_resubscribe))
-        return;
-      auto process = false, ready = false;
-      if (!mbo.no_chunks) {
-        if (current_chunk != uint32_t{1})
-          return;
-        mbo.no_chunks = no_chunks;
-        mbo.last_chunk = current_chunk;
-        process = true;
-        log::info("DEBUG MBO START {}"sv, mbo.no_chunks);
-      } else {
-        if (current_chunk == (mbo.last_chunk + uint32_t{1})) {
-          process = true;
-          if (current_chunk == no_chunks) {
-            log::info("DEBUG MBO READY"sv);
-            mbo.no_chunks = {};
-            mbo.last_chunk = {};
-            channel_.mbo_resubscribe.erase(security_id);
-            ready = true;
-          } else {
-            mbo.last_chunk = current_chunk;
-          }
-        } else {
-          log::info("DEBUG MBO RESET (current_chunk={}, last_chunk={})"sv, current_chunk, mbo.last_chunk);
-          mbo.no_chunks = {};
-          mbo.last_chunk = {};
-          mbo.bids.clear();
-          mbo.asks.clear();
-        }
-      }
-      if (!process)
-        return;
-      value.sbeRewind();  // note!
-      value.noMDEntries().forEach([&](auto const &item) { emplace_back(item, security, mbo.bids, mbo.asks); });
-      log::info<5>("DEBUG MBO bids=[{}]"sv, fmt::join(mbo.bids, ","sv));
-      log::info<5>("DEBUG MBO asks=[{}]"sv, fmt::join(mbo.asks, ","sv));
-      log::info(
-          "DEBUG MBO COLLECT {} / {}, len(bids)={}, len(asks)={}"sv,
-          mbo.last_chunk,
-          mbo.no_chunks,
-          std::size(mbo.bids),
-          std::size(mbo.asks));
-      if (ready)
-        log::info("DEBUG MBO DISPATCH"sv);
-      mbo.no_chunks = {};
-      mbo.last_chunk = {};
-      mbo.bids.clear();
-      mbo.asks.clear();
-      */
     });
   });
 }
