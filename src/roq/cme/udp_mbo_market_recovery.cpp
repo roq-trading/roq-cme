@@ -304,14 +304,37 @@ void UDPMBOMarketRecovery::operator()(
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("snapshot_full_refresh_order_book_53={}, frame={}"sv, value, frame);
     auto security_id = value.securityID();
+    auto iter = channel_.mbo_resubscribe.find(security_id);
+    if (iter == std::end(channel_.mbo_resubscribe))
+      return;
     shared_.get_security(security_id, [&](auto &security) {
+      auto last_msg_seq_num_processed = value.lastMsgSeqNumProcessed();
+      auto no_chunks = value.noChunks();
+      auto current_chunk = value.currentChunk();
+
+      if (security.update_mbo_snapshot(current_chunk, no_chunks, [&](auto &bids, auto &asks, bool ready) {
+            value.sbeRewind();  // note!
+            value.noMDEntries().forEach([&](auto const &item) { emplace_back(item, security, bids, asks); });
+            log::info<5>("DEBUG MBO bids=[{}]"sv, fmt::join(bids, ","sv));
+            log::info<5>("DEBUG MBO asks=[{}]"sv, fmt::join(asks, ","sv));
+            log::info(
+                "DEBUG MBO COLLECT {} / {}, len(bids)={}, len(asks)={}"sv,
+                current_chunk,
+                no_chunks,
+                std::size(bids),
+                std::size(asks));
+            if (ready)
+              log::info("DEBUG MBO READY"sv);
+          })) {
+        log::info("DEBUG MBO DONE"sv);
+        channel_.mbo_resubscribe.erase(iter);
+      }
+      /*
       auto &mbo = security.mbo;
       auto iter = channel_.mbo_resubscribe.find(security_id);
       if (iter == std::end(channel_.mbo_resubscribe))
         return;
       auto process = false, ready = false;
-      auto no_chunks = value.noChunks();
-      auto current_chunk = value.currentChunk();
       if (!mbo.no_chunks) {
         if (current_chunk != uint32_t{1})
           return;
@@ -353,6 +376,11 @@ void UDPMBOMarketRecovery::operator()(
           std::size(mbo.asks));
       if (ready)
         log::info("DEBUG MBO DISPATCH"sv);
+      mbo.no_chunks = {};
+      mbo.last_chunk = {};
+      mbo.bids.clear();
+      mbo.asks.clear();
+      */
     });
   });
 }
