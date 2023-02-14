@@ -558,7 +558,9 @@ void UDPIncremental::operator()(io::net::udp::Receiver::Read const &) {
 void UDPIncremental::on_sequence_reset(TraceInfo const &trace_info) {
   ++counter_.sequence_reset;
   log::warn<0>("*** RESUBSCRIBE ALL SYMBOLS ***"sv);
-  for (auto &[security_id, collector] : channel_.mbp_collector) {
+  for (auto &item : channel_.mbp_collector) {
+    auto security_id = item.first;
+    auto &collector = item.second;
     if (collector.ready()) {
       shared_.get_security(security_id, [&](auto &security) {
         security.reset_rpt_seq();
