@@ -309,6 +309,7 @@ void UDPMBOMarketRecovery::operator()(
     if (iter == std::end(channel_.mbo_resubscribe))
       return;
     shared_.get_security(security_id, [&](auto &security) {
+      log::info("DEBUG SNAPSHOT {}"sv, security.mbo.sequencer.ready());
       auto last_msg_seq_num_processed = value.lastMsgSeqNumProcessed();
       auto no_chunks = value.noChunks();
       auto current_chunk = value.currentChunk();
@@ -349,11 +350,13 @@ void UDPMBOMarketRecovery::operator()(
                   shared_(event, true, [&](auto &market_by_order) {
                     collector.apply(market_by_order, last_msg_seq_num_processed, false);
                   });
+                  log::info("DEBUG MBO RESUBSCRIBE REMOVE"sv);
                   channel_.mbo_resubscribe.erase(security_id);  // remove
                 };
                 auto request_snapshot = [&]([[maybe_unused]] auto retries) {
                   log::info(R"(REQUEST MBO SNAPSHOT symbol="{}", retries={})"sv, security.symbol, retries);
                   // note! wait for next snapshot
+                  log::info("DEBUG MBO RESUBSCRIBE INSERT"sv);
                   channel_.mbo_resubscribe.emplace(security_id, last_msg_seq_num_processed);
                 };
                 log::info("DEBUG MBO {} {}"sv, last_msg_seq_num_processed, collector.ready());

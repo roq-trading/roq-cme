@@ -1436,6 +1436,7 @@ void UDPIncremental::dispatch_market_by_order(
     };
     auto request_snapshot = [&]([[maybe_unused]] auto retries) {
       log::info(R"(REQUEST MBO SNAPSHOT symbol="{}")"sv, security.symbol);
+      log::info("DEBUG MBO RESUBSCRIBE INSERT"sv);
       channel_.mbo_resubscribe.emplace(security_id, exchange_sequence);
       channel_.mbo_last_sequence.erase(security_id);
     };
@@ -1456,6 +1457,7 @@ void UDPIncremental::dispatch_market_by_order(
         security_id);
     // XXX HANS publish stale
     collector.clear();
+    log::info("DEBUG MBO RESUBSCRIBE INSERT"sv);
     channel_.mbo_resubscribe.emplace(security_id, exchange_sequence);
     channel_.mbo_last_sequence.erase(security_id);
   }
