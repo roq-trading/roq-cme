@@ -592,8 +592,9 @@ void UDPIncremental::on_sequence_reset(TraceInfo const &trace_info) {
             .checksum = {},
         };
         create_trace_and_dispatch(handler_, trace_info, market_by_order_update, true);
-        log::info("DEBUG MBO RESUBSCRIBE {}"sv, security_id);
-        channel_.mbo_resubscribe.emplace(security_id, 0);  // XXX HANS HACK should be done by collector
+        //
+        security.mbo.sequencer.clear();
+        channel_.mbo_last_sequence.erase(security_id);
       });
     }
     collector.clear();
