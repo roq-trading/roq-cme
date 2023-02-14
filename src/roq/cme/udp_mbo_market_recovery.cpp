@@ -319,6 +319,7 @@ void UDPMBOMarketRecovery::operator()(
             value.noMDEntries().forEach([&](auto const &item) { emplace_back(item, security, bids, asks); });
             log::info<5>("DEBUG MBO bids=[{}]"sv, fmt::join(bids, ","sv));
             log::info<5>("DEBUG MBO asks=[{}]"sv, fmt::join(asks, ","sv));
+            /*
             log::info(
                 "DEBUG MBO COLLECT {} / {}, len(bids)={}, len(asks)={}, last={}"sv,
                 current_chunk,
@@ -326,6 +327,7 @@ void UDPMBOMarketRecovery::operator()(
                 std::size(bids),
                 std::size(asks),
                 last);
+            */
             if (last) {
               auto &collector = security.mbo.sequencer;
               try {
