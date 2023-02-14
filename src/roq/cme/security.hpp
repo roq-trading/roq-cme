@@ -54,6 +54,7 @@ struct Security final {
     } else if (current_chunk == uint32_t{1}) {
       mbo.no_chunks = no_chunks;
       mbo.last_chunk = current_chunk;
+      callback(mbo.bids, mbo.asks, false);
     }
     return false;
   }

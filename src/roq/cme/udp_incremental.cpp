@@ -1404,22 +1404,6 @@ void UDPIncremental::dispatch_market_by_order(
     auto exchange_time_utc,
     auto &bids,
     auto &asks) {
-  /*
-  auto market_by_order_update = MarketByOrderUpdate{
-      .stream_id = stream_id_,
-      .exchange = security.exchange,
-      .symbol = security.symbol,
-      .bids = bids,
-      .asks = asks,
-      .update_type = UpdateType::INCREMENTAL,
-      .exchange_time_utc = exchange_time_utc,
-      .exchange_sequence = exchange_sequence,
-      .price_decimals = {},
-      .quantity_decimals = {},
-      .checksum = {},
-  };
-  create_trace_and_dispatch(handler_, trace_info, market_by_order_update, true);
-  */
   channel_.mbo_last_sequence[security_id] = exchange_sequence;
   auto &collector = security.mbo.sequencer;
   try {
