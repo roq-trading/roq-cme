@@ -309,10 +309,11 @@ void UDPMBOMarketRecovery::operator()(
     if (iter == std::end(channel_.mbo_resubscribe))
       return;
     shared_.get_security(security_id, [&](auto &security) {
-      log::info("DEBUG SNAPSHOT {}"sv, security.mbo.sequencer.ready());
       auto last_msg_seq_num_processed = value.lastMsgSeqNumProcessed();
       auto no_chunks = value.noChunks();
       auto current_chunk = value.currentChunk();
+      if (current_chunk == no_chunks)
+        log::info("DEBUG SNAPSHOT {}"sv, security.mbo.sequencer.ready());
       if (security.update_mbo_snapshot(current_chunk, no_chunks, [&](auto &bids, auto &asks, bool last) {
             value.sbeRewind();  // note!
             value.noMDEntries().forEach([&](auto const &item) { emplace_back(item, security, bids, asks); });
