@@ -317,6 +317,7 @@ void UDPMBOMarketRecovery::operator()(
             value.noMDEntries().forEach([&](auto const &item) { emplace_back(item, security, bids, asks); });
             log::info<5>("DEBUG MBO bids=[{}]"sv, fmt::join(bids, ","sv));
             log::info<5>("DEBUG MBO asks=[{}]"sv, fmt::join(asks, ","sv));
+            /*
             log::info(
                 "DEBUG MBO COLLECT {} / {}, len(bids)={}, len(asks)={}, last={}"sv,
                 current_chunk,
@@ -324,6 +325,7 @@ void UDPMBOMarketRecovery::operator()(
                 std::size(bids),
                 std::size(asks),
                 last);
+            */
             if (last) {
               auto &collector = security.mbo.sequencer;
               try {
@@ -350,7 +352,7 @@ void UDPMBOMarketRecovery::operator()(
                   channel_.mbo_resubscribe.erase(security_id);  // remove
                 };
                 auto request_snapshot = [&]([[maybe_unused]] auto retries) {
-                  log::info(R"(REQUEST MBO SNAPSHOT symbol="{}")"sv, security.symbol);
+                  log::info(R"(REQUEST MBO SNAPSHOT symbol="{}", retries={})"sv, security.symbol, retries);
                   // note! wait for next snapshot
                   channel_.mbo_resubscribe.emplace(security_id, last_msg_seq_num_processed);
                 };
