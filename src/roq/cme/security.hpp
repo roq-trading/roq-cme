@@ -20,6 +20,12 @@ struct Security final {
 
   void update_rpt_seq(uint32_t rpt_seq);
   void reset_rpt_seq();
+
+  struct {
+    uint32_t no_chunks = {};
+    uint32_t last_chunk = {};
+    std::vector<MBOUpdate> bids, asks;
+  } mbo = {};
 };
 
 }  // namespace cme

@@ -305,42 +305,54 @@ void UDPMBOMarketRecovery::operator()(
     log::info<5>("snapshot_full_refresh_order_book_53={}, frame={}"sv, value, frame);
     auto security_id = value.securityID();
     shared_.get_security(security_id, [&](auto &security) {
+      auto &mbo = security.mbo;
       auto iter = channel_.mbo_resubscribe.find(security_id);
       if (iter == std::end(channel_.mbo_resubscribe))
         return;
-      auto process = false;
+      auto process = false, ready = false;
       auto no_chunks = value.noChunks();
       auto current_chunk = value.currentChunk();
-      auto iter_2 = collector_.find(security_id);
-      if (iter_2 == std::end(collector_)) {
+      if (!mbo.no_chunks) {
         if (current_chunk != uint32_t{1})
           return;
-        iter_2 = collector_.try_emplace(security_id, current_chunk, no_chunks).first;
+        mbo.no_chunks = no_chunks;
+        mbo.last_chunk = current_chunk;
         process = true;
-        log::info("DEBUG MBO START"sv);
+        log::info("DEBUG MBO START {}"sv, mbo.no_chunks);
       } else {
-        process = true;
-        auto last_chunk = (*iter_2).second.first;
-        if (current_chunk == (last_chunk + uint32_t{1})) {
+        if (current_chunk == (mbo.last_chunk + uint32_t{1})) {
+          process = true;
           if (current_chunk == no_chunks) {
             log::info("DEBUG MBO READY"sv);
-            collector_.erase(iter_2);
+            mbo.no_chunks = {};
+            mbo.last_chunk = {};
             channel_.mbo_resubscribe.erase(security_id);
+            ready = true;
           } else {
-            (*iter_2).second.first = current_chunk;
+            mbo.last_chunk = current_chunk;
           }
         } else {
-          log::info("DEBUG MBO RESET (current_chunk={}, last_chunk={})"sv, current_chunk, last_chunk);
-          collector_.erase(iter_2);
+          log::info("DEBUG MBO RESET (current_chunk={}, last_chunk={})"sv, current_chunk, mbo.last_chunk);
+          mbo.no_chunks = {};
+          mbo.last_chunk = {};
+          mbo.bids.clear();
+          mbo.asks.clear();
         }
       }
       if (!process)
         return;
-      auto &mbo = shared_.get_mbo();
       value.sbeRewind();  // note!
       value.noMDEntries().forEach([&](auto const &item) { emplace_back(item, security, mbo.bids, mbo.asks); });
       log::info<5>("DEBUG MBO bids=[{}]"sv, fmt::join(mbo.bids, ","sv));
       log::info<5>("DEBUG MBO asks=[{}]"sv, fmt::join(mbo.asks, ","sv));
+      log::info(
+          "DEBUG MBO COLLECT {} / {}, len(bids)={}, len(asks)={}"sv,
+          mbo.last_chunk,
+          mbo.no_chunks,
+          std::size(mbo.bids),
+          std::size(mbo.asks));
+      if (ready)
+        log::info("DEBUG MBO DISPATCH"sv);
     });
   });
 }

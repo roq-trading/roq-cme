@@ -108,8 +108,6 @@ struct UDPMBOMarketRecovery final : public io::net::udp::Receiver::Handler, publ
   ConnectionStatus connection_status_ = {};
   // state
   std::chrono::nanoseconds last_update_time_ = {};
-  // EXPERIMENTAL
-  absl::flat_hash_map<int32_t, std::pair<uint32_t, uint32_t>> collector_;
 };
 
 }  // namespace cme
