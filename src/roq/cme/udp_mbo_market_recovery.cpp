@@ -313,7 +313,10 @@ void UDPMBOMarketRecovery::operator()(
       auto no_chunks = value.noChunks();
       auto current_chunk = value.currentChunk();
       if (current_chunk == no_chunks)
-        log::info("DEBUG SNAPSHOT {}"sv, security.mbo.sequencer.ready());
+        log::info(
+            "DEBUG SNAPSHOT ready={}, last_msg_seq_num_processed={}"sv,
+            security.mbo.sequencer.ready(),
+            last_msg_seq_num_processed);
       if (security.update_mbo_snapshot(current_chunk, no_chunks, [&](auto &bids, auto &asks, bool last) {
             value.sbeRewind();  // note!
             value.noMDEntries().forEach([&](auto const &item) { emplace_back(item, security, bids, asks); });
