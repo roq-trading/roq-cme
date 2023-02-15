@@ -4,6 +4,8 @@
 
 #include "roq/api.hpp"
 
+#include "roq/core/mbp/sequencer.hpp"
+
 #include "roq/core/mbo/sequencer.hpp"
 
 namespace roq {
@@ -17,11 +19,12 @@ struct Security final {
   uint32_t rpt_seq = {};  // conflated feed sends zero
   bool need_snapshot = false;
 
-  // Security(Security const &) = delete;
-  // void operator=(Security const &) = delete;
-
   void update_rpt_seq(uint32_t rpt_seq);
   void reset_rpt_seq();
+
+  struct {
+    core::mbp::Sequencer sequencer;
+  } mbp = {};
 
   struct {
     uint32_t no_chunks = {};

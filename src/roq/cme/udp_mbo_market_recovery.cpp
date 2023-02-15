@@ -332,7 +332,7 @@ void UDPMBOMarketRecovery::operator()(
                 last);
             */
             if (last) {
-              auto &collector = security.mbo.sequencer;
+              auto &sequencer = security.mbo.sequencer;
               try {
                 auto publish_snapshot = [&](auto &bids, auto &asks, [[maybe_unused]] auto exchange_sequence) {
                   log::info(R"(PUBLISH MBO SNAPSHOT symbol="{}")"sv, security.symbol);
@@ -344,7 +344,7 @@ void UDPMBOMarketRecovery::operator()(
                       .asks = asks,
                       .update_type = UpdateType::SNAPSHOT,
                       .exchange_time_utc = {},
-                      .exchange_sequence = collector.last_sequence(),
+                      .exchange_sequence = sequencer.last_sequence(),
                       .price_decimals = {},
                       .quantity_decimals = {},
                       .checksum = {},
@@ -352,7 +352,7 @@ void UDPMBOMarketRecovery::operator()(
                   create_trace_and_dispatch(handler_, trace_info, market_by_order_update, true);
                   Trace event(trace_info, market_by_order_update);
                   shared_(event, true, [&](auto &market_by_order) {
-                    collector.apply(market_by_order, last_msg_seq_num_processed, false);
+                    sequencer.apply(market_by_order, last_msg_seq_num_processed, false);
                   });
                   log::info("DEBUG MBO RESUBSCRIBE REMOVE"sv);
                   channel_.mbo_resubscribe.erase(security_id);  // remove
@@ -363,9 +363,9 @@ void UDPMBOMarketRecovery::operator()(
                   log::info("DEBUG MBO RESUBSCRIBE INSERT"sv);
                   channel_.mbo_resubscribe.emplace(security_id, last_msg_seq_num_processed);
                 };
-                log::info("DEBUG MBO BEFORE {} {}"sv, last_msg_seq_num_processed, collector.ready());
-                collector(bids, asks, last_msg_seq_num_processed, publish_snapshot, request_snapshot);
-                log::info("DEBUG MBO AFTER {} {}"sv, last_msg_seq_num_processed, collector.ready());
+                log::info("DEBUG MBO BEFORE {} {}"sv, last_msg_seq_num_processed, sequencer.ready());
+                sequencer(bids, asks, last_msg_seq_num_processed, publish_snapshot, request_snapshot);
+                log::info("DEBUG MBO AFTER {} {}"sv, last_msg_seq_num_processed, sequencer.ready());
               } catch (BadState &) {
                 log::warn(
                     R"(RESUBSCRIBE MBO exchange="{}", symbol="{}", security_id={})"sv,
@@ -373,7 +373,7 @@ void UDPMBOMarketRecovery::operator()(
                     security.symbol,
                     security_id);
                 // XXX HANS publish stale
-                collector.clear();  // note! wait for next incremental
+                sequencer.clear();  // note! wait for next incremental
               }
             }
           })) {

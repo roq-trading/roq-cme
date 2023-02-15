@@ -484,7 +484,7 @@ void UDPMBPMarketRecovery::dispatch_market_by_price(
   auto iter = channel_.mbp_resubscribe.find(security_id);
   if (iter == std::end(channel_.mbp_resubscribe))
     return;
-  auto &collector = channel_.mbp_collector[security_id];
+  auto &sequencer = security.mbp.sequencer;
   try {
     auto publish_snapshot = [&](auto &bids, auto &asks, auto exchange_sequence) {
       log::info(R"(PUBLISH MBP SNAPSHOT symbol="{}")"sv, security.symbol);
@@ -496,13 +496,13 @@ void UDPMBPMarketRecovery::dispatch_market_by_price(
           .asks = asks,
           .update_type = UpdateType::SNAPSHOT,
           .exchange_time_utc = exchange_time_utc,
-          .exchange_sequence = collector.last_sequence(),
+          .exchange_sequence = sequencer.last_sequence(),
           .price_decimals = {},
           .quantity_decimals = {},
           .checksum = {},
       };
       Trace event(trace_info, market_by_price_update);
-      shared_(event, true, [&](auto &market_by_price) { collector.apply(market_by_price, exchange_sequence, false); });
+      shared_(event, true, [&](auto &market_by_price) { sequencer.apply(market_by_price, exchange_sequence, false); });
       channel_.mbp_resubscribe.erase(security_id);  // remove
     };
     auto request_snapshot = [&]([[maybe_unused]] auto retries) {
@@ -510,7 +510,7 @@ void UDPMBPMarketRecovery::dispatch_market_by_price(
       // note! wait for next snapshot
       channel_.mbp_resubscribe.emplace(security_id, exchange_sequence);
     };
-    collector(bids, asks, exchange_sequence, publish_snapshot, request_snapshot);
+    sequencer(bids, asks, exchange_sequence, publish_snapshot, request_snapshot);
   } catch (BadState &) {
     log::warn(
         R"(RESUBSCRIBE MBP exchange="{}", symbol="{}", security_id={})"sv,
@@ -518,7 +518,7 @@ void UDPMBPMarketRecovery::dispatch_market_by_price(
         security.symbol,
         security_id);
     // XXX HANS publish stale
-    collector.clear();  // note! wait for next incremental
+    sequencer.clear();  // note! wait for next incremental
   }
 }
 

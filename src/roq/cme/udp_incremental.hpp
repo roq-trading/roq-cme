@@ -137,7 +137,6 @@ struct UDPIncremental final : public io::net::udp::Receiver::Handler, public sbe
         md_instrument_definition_fixed_income,                                  //
         md_instrument_definition_repo,                                          //
         md_instrument_definition_fx,                                            //
-        snapshot_full_refresh, snapshot_full_refresh_long_qty,                  //
         md_incremental_refresh_book, md_incremental_refresh_book_long_qty,      //
         snapshot_full_refresh_order_book, md_incremental_refresh_order_book,    //
         md_incremental_refresh_trade_summary,                                   //
@@ -146,8 +145,7 @@ struct UDPIncremental final : public io::net::udp::Receiver::Handler, public sbe
         md_incremental_refresh_session_statistics,                              //
         md_incremental_refresh_session_statistics_long_qty,                     //
         md_incremental_refresh_volume, md_incremental_refresh_volume_long_qty,  //
-        md_incremental_refresh_limits_banding,                                  //
-        quote_request;
+        md_incremental_refresh_limits_banding;
   } profile_;
   // cache
   Shared &shared_;
