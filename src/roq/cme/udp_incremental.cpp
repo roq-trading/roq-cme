@@ -1294,12 +1294,12 @@ void UDPIncremental::dispatch_market_by_price(
       create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true);
     };
     auto publish_snapshot = [&](auto &bids, auto &asks, [[maybe_unused]] auto exchange_sequence) {
-      log::info(R"(PUBLISH MBP SNAPSHOT symbol="{}")"sv, security.symbol);
+      log::info(R"(PUBLISH MBP SNAPSHOT exchange="{}", symbol="{}")"sv, security.exchange, security.symbol);
       auto market_by_price_update = create_update(bids, asks, UpdateType::SNAPSHOT);
       create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true);
     };
     auto request_snapshot = [&]([[maybe_unused]] auto retries) {
-      log::info(R"(REQUEST MBP SNAPSHOT symbol="{}")"sv, security.symbol);
+      log::info(R"(REQUEST MBP SNAPSHOT exchange="{}", symbol="{}")"sv, security.exchange, security.symbol);
       security.mbp.resubscribe = exchange_sequence;
     };
     sequencer(
