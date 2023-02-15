@@ -398,7 +398,6 @@ UDPIncremental::UDPIncremental(
           .md_instrument_definition_fx = create_metrics(name_, "md_instrument_definition_fx"sv),
           .md_incremental_refresh_book = create_metrics(name_, "md_incremental_refresh_book"sv),
           .md_incremental_refresh_book_long_qty = create_metrics(name_, "md_incremental_refresh_book_long_qty"sv),
-          .snapshot_full_refresh_order_book = create_metrics(name_, "snapshot_full_refresh_order_book"sv),
           .md_incremental_refresh_order_book = create_metrics(name_, "md_incremental_refresh_order_book"sv),
           .md_incremental_refresh_trade_summary = create_metrics(name_, "md_incremental_refresh_trade_summary"sv),
           .md_incremental_refresh_trade_summary_long_qty =
@@ -1140,12 +1139,7 @@ void UDPIncremental::operator()(
   });
 }
 
-void UDPIncremental::operator()(Trace<cme_mdp::SnapshotFullRefreshOrderBook53> const &event, sbe::Frame const &frame) {
-  profile_.snapshot_full_refresh_order_book([&]() {
-    using value_type = std::remove_cvref<decltype(event)>::type::value_type;
-    auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
-    log::info<5>("snapshot_full_refresh_order_book_53={}, frame={}"sv, value, frame);
-  });
+void UDPIncremental::operator()(Trace<cme_mdp::SnapshotFullRefreshOrderBook53> const &, sbe::Frame const &) {
 }
 
 void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshOrderBook47> const &event, sbe::Frame const &frame) {
@@ -1486,7 +1480,6 @@ void UDPIncremental::operator()(metrics::Writer &writer) {
       .write(profile_.md_instrument_definition_fx, metrics::PROFILE)
       .write(profile_.md_incremental_refresh_book, metrics::PROFILE)
       .write(profile_.md_incremental_refresh_book_long_qty, metrics::PROFILE)
-      .write(profile_.snapshot_full_refresh_order_book, metrics::PROFILE)
       .write(profile_.md_incremental_refresh_order_book, metrics::PROFILE)
       .write(profile_.md_incremental_refresh_trade_summary, metrics::PROFILE)
       .write(profile_.md_incremental_refresh_trade_summary_long_qty, metrics::PROFILE)

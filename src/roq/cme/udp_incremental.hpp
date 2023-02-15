@@ -138,7 +138,7 @@ struct UDPIncremental final : public io::net::udp::Receiver::Handler, public sbe
         md_instrument_definition_repo,                                          //
         md_instrument_definition_fx,                                            //
         md_incremental_refresh_book, md_incremental_refresh_book_long_qty,      //
-        snapshot_full_refresh_order_book, md_incremental_refresh_order_book,    //
+        md_incremental_refresh_order_book,                                      //
         md_incremental_refresh_trade_summary,                                   //
         md_incremental_refresh_trade_summary_long_qty,                          //
         md_incremental_refresh_daily_statistics,                                //

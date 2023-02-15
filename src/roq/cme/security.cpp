@@ -21,7 +21,6 @@ void Security::update_rpt_seq(uint32_t rpt_seq) {
         symbol,
         rpt_seq,
         (*this).rpt_seq);
-    need_snapshot = true;
   }
   (*this).rpt_seq = rpt_seq;
 }

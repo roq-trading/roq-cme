@@ -14,10 +14,11 @@ namespace cme {
 struct Security final {
   Exchange exchange;
   Symbol symbol;
+
   double display_factor = NaN;
   bool discard = {};
+
   uint32_t rpt_seq = {};  // conflated feed sends zero
-  bool need_snapshot = false;
 
   void update_rpt_seq(uint32_t rpt_seq);
   void reset_rpt_seq();
