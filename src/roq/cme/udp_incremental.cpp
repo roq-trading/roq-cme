@@ -558,7 +558,6 @@ void UDPIncremental::on_sequence_reset(TraceInfo const &trace_info) {
   shared_.get_securities([&](auto security_id, auto &security) {
     security.reset_rpt_seq();
     if (security.mbp.sequencer.ready()) {
-      security.mbp.sequencer.clear();
       auto market_by_price_update = MarketByPriceUpdate{
           .stream_id = stream_id_,
           .exchange = security.exchange,
@@ -574,6 +573,7 @@ void UDPIncremental::on_sequence_reset(TraceInfo const &trace_info) {
       };
       create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true);
     }
+    security.mbp.sequencer.clear();
     if (security.mbo.sequencer.ready()) {
       security.mbo.sequencer.clear();
       auto market_by_order_update = MarketByOrderUpdate{
@@ -591,6 +591,8 @@ void UDPIncremental::on_sequence_reset(TraceInfo const &trace_info) {
       };
       create_trace_and_dispatch(handler_, trace_info, market_by_order_update, true);
     }
+    security.mbo.sequencer.clear();
+    // XXX ???
     channel_.mbo_last_sequence.erase(security_id);
     channel_.mbp_last_sequence.erase(security_id);
   });
