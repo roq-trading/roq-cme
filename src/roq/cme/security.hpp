@@ -22,8 +22,11 @@ struct Security final {
   void update_rpt_seq(uint32_t rpt_seq);
   void reset_rpt_seq();
 
+  // sequencing
+
   struct {
     core::mbp::Sequencer sequencer;
+    uint32_t resubscribe = {};  // XXX move to sequencer
   } mbp = {};
 
   struct {
@@ -31,6 +34,7 @@ struct Security final {
     uint32_t last_chunk = {};
     std::vector<MBOUpdate> bids, asks;
     core::mbo::Sequencer sequencer;
+    uint32_t resubscribe = {};  // XXX move to sequencer
   } mbo = {};
 
   template <typename Callback>

@@ -66,19 +66,6 @@ struct create_metrics final : public core::metrics::Factory {
 
 // following are used from several places
 
-template <typename Callback>
-bool get_last_exchange_sequence(auto &channel, auto security_id, auto &value, Callback callback) {
-  auto last_processed = value.lastMsgSeqNumProcessed();
-  if (last_processed <= channel.incremental.last_sequence.second) {
-    auto iter = channel.mbp_last_sequence.find(security_id);
-    if (iter != std::end(channel.mbp_last_sequence)) {
-      callback((*iter).second);
-      return true;
-    }
-  }
-  return false;
-}
-
 template <typename T>
 void mbp_emplace_back(auto &result, T const &item, auto &security) {
   auto price = sbe::get_double(const_cast<T &>(item).mDEntryPx());
@@ -318,18 +305,22 @@ void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::SnapshotFullRefresh52> cons
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("snapshot_full_refresh_52={}, frame={}"sv, value, frame);
+    auto last_msg_seq_num_processed = value.lastMsgSeqNumProcessed();
+    if (!channel_.sequence.first_sequence_number ||
+        last_msg_seq_num_processed < channel_.sequence.first_sequence_number)
+      return;
     auto security_id = value.securityID();
     shared_.get_security(security_id, [&](auto &security) {
-      get_last_exchange_sequence(channel_, security_id, value, [&](auto exchange_sequence) {
-        auto exchange_time_utc = std::chrono::nanoseconds{value.transactTime()};
-        auto &mbp = shared_.get_mbp();
-        value.sbeRewind();  // note!
-        value.noMDEntries().forEach([&](auto const &item) { emplace_back(item, security, mbp.bids, mbp.asks); });
-        if (!std::empty(mbp)) {
-          dispatch_market_by_price(
-              trace_info, security_id, security, exchange_sequence, exchange_time_utc, mbp.bids, mbp.asks);
-        }
-      });
+      if (channel_.sequence.last_sequence_number < last_msg_seq_num_processed)  // XXX should ask sequencer
+        return;
+      auto transact_time = std::chrono::nanoseconds{value.transactTime()};
+      auto &mbp = shared_.get_mbp();
+      value.sbeRewind();  // note!
+      value.noMDEntries().forEach([&](auto const &item) { emplace_back(item, security, mbp.bids, mbp.asks); });
+      if (!std::empty(mbp)) {
+        dispatch_market_by_price(
+            trace_info, security_id, security, last_msg_seq_num_processed, transact_time, mbp.bids, mbp.asks);
+      }
     });
   });
 }
@@ -341,18 +332,22 @@ void UDPMBPMarketRecovery::operator()(
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("snapshot_full_refresh_long_qty_69={}, frame={}"sv, value, frame);
+    auto last_msg_seq_num_processed = value.lastMsgSeqNumProcessed();
+    if (!channel_.sequence.first_sequence_number ||
+        last_msg_seq_num_processed < channel_.sequence.first_sequence_number)
+      return;
     auto security_id = value.securityID();
     shared_.get_security(security_id, [&](auto &security) {
-      get_last_exchange_sequence(channel_, security_id, value, [&](auto exchange_sequence) {
-        auto exchange_time_utc = std::chrono::nanoseconds{value.transactTime()};
-        auto &mbp = shared_.get_mbp();
-        value.sbeRewind();  // note!
-        value.noMDEntries().forEach([&](auto const &item) { emplace_back(item, security, mbp.bids, mbp.asks); });
-        if (!std::empty(mbp)) {
-          dispatch_market_by_price(
-              trace_info, security_id, security, exchange_sequence, exchange_time_utc, mbp.bids, mbp.asks);
-        }
-      });
+      if (channel_.sequence.last_sequence_number < last_msg_seq_num_processed)  // XXX should ask sequencer
+        return;
+      auto transact_time = std::chrono::nanoseconds{value.transactTime()};
+      auto &mbp = shared_.get_mbp();
+      value.sbeRewind();  // note!
+      value.noMDEntries().forEach([&](auto const &item) { emplace_back(item, security, mbp.bids, mbp.asks); });
+      if (!std::empty(mbp)) {
+        dispatch_market_by_price(
+            trace_info, security_id, security, last_msg_seq_num_processed, transact_time, mbp.bids, mbp.asks);
+      }
     });
   });
 }
@@ -481,8 +476,7 @@ void UDPMBPMarketRecovery::dispatch_market_by_price(
     auto exchange_time_utc,
     auto &bids,
     auto &asks) {
-  auto iter = channel_.mbp_resubscribe.find(security_id);
-  if (iter == std::end(channel_.mbp_resubscribe))
+  if (!security.mbp.resubscribe)
     return;
   auto &sequencer = security.mbp.sequencer;
   try {
@@ -503,12 +497,11 @@ void UDPMBPMarketRecovery::dispatch_market_by_price(
       };
       Trace event(trace_info, market_by_price_update);
       shared_(event, true, [&](auto &market_by_price) { sequencer.apply(market_by_price, exchange_sequence, false); });
-      channel_.mbp_resubscribe.erase(security_id);  // remove
+      security.mbp.resubscribe = {};
     };
     auto request_snapshot = [&]([[maybe_unused]] auto retries) {
       log::info(R"(REQUEST MBP SNAPSHOT symbol="{}")"sv, security.symbol);
-      // note! wait for next snapshot
-      channel_.mbp_resubscribe.emplace(security_id, exchange_sequence);
+      security.mbp.resubscribe = exchange_sequence;
     };
     sequencer(bids, asks, exchange_sequence, publish_snapshot, request_snapshot);
   } catch (BadState &) {

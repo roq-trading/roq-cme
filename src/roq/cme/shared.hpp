@@ -103,7 +103,7 @@ struct Shared final {
   void get_securities(Callback callback) {
     for (auto &[security_id, security] : securities)
       if (!security.discard)
-        callback(security_id, security);
+        callback(security);
   }
 
   // security group

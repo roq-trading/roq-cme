@@ -434,9 +434,9 @@ void UDPIncremental::operator()(Event<Timer> const &event) {
 namespace {
 // this is general logic
 void drain(auto &receiver, auto &channel, auto stream_id, auto parse, auto reset) {
-  using value_type = typename decltype(channel.buffer)::value_type;
+  using value_type = typename decltype(channel.incremental.buffer)::value_type;
   for (auto stop = false; !stop;) {
-    if (channel.buffer.next([&](auto buffer) -> std::pair<size_t, value_type> {
+    if (channel.incremental.buffer.next([&](auto buffer) -> std::pair<size_t, value_type> {
           // read into buffer
           auto bytes = receiver.recv(buffer);
           log::info<5>("Received {} byte(s) (stream_id={})"sv, bytes, stream_id);
@@ -450,25 +450,25 @@ void drain(auto &receiver, auto &channel, auto stream_id, auto parse, auto reset
           bool hold = false, drop = false;
           value_type sequence_number = {};
           if (sbe::Frame::parse(message, [&](auto &frame) {
-                log::info<5>("frame={}, last_sequence_number={}"sv, frame, channel.last_sequence.second);
+                log::info<5>("frame={}, last_sequence_number={}"sv, frame, channel.sequence.last_sequence_number);
                 // check sequence number
                 sequence_number = frame.sequence_number;
                 if (sequence_number < flags::Common::filter_snapshot_from_incremental()) {
                   drop = true;
                   return;
                 }
-                auto [ready, last_sequence_number] = channel.last_sequence;
-                if (ready) {
-                  auto next_sequence_number = last_sequence_number + 1;
+                if (channel.sequence.first_sequence_number) {
+                  auto next_sequence_number = channel.sequence.last_sequence_number + 1;
                   hold = sequence_number > next_sequence_number;
                   drop = sequence_number < next_sequence_number;
                 }
                 if (hold) {
-                  auto delta = static_cast<int64_t>(sequence_number) - static_cast<int64_t>(last_sequence_number);
+                  auto delta = static_cast<int64_t>(sequence_number) -
+                               static_cast<int64_t>(channel.sequence.last_sequence_number);
                   log::warn(
                       "DEBUG HOLD sequence_number={}, last_sequence_number={}, delta={}"sv,
                       sequence_number,
-                      last_sequence_number,
+                      channel.sequence.last_sequence_number,
                       delta);
                 }
                 // TEST >>>
@@ -493,8 +493,8 @@ void drain(auto &receiver, auto &channel, auto stream_id, auto parse, auto reset
             if (hold)
               return {bytes, sequence_number};
             // parse this message
+            channel.update_sequence_number(sequence_number);
             parse(message);
-            channel.last_sequence = {true, sequence_number};
             return {};
           } else {
             // failed to parse frame
@@ -505,14 +505,13 @@ void drain(auto &receiver, auto &channel, auto stream_id, auto parse, auto reset
       // successfully parsed a message
       // now process any withheld messages
       while (!stop) {
-        auto [ready, last_sequence_number] = channel.last_sequence;
-        if (ready) {
+        if (channel.sequence.first_sequence_number) {
           // check next sequence number
-          auto sequence_number = last_sequence_number + 1;
-          if (channel.buffer.get(sequence_number, [&](auto &message) {
+          auto sequence_number = channel.sequence.last_sequence_number + 1;
+          if (channel.incremental.buffer.get(sequence_number, [&](auto &message) {
                 // parse this message
+                channel.update_sequence_number(sequence_number);
                 parse(message);
-                channel.last_sequence = {true, sequence_number};
               })) {
           } else {
             // does not exist
@@ -526,8 +525,7 @@ void drain(auto &receiver, auto &channel, auto stream_id, auto parse, auto reset
     } else {
       // full: no available buffer
       log::warn<0>("*** BUFFER FULL ***"sv);  // XXX should be log level 1
-      channel.buffer.clear();
-      channel.last_sequence = {};
+      channel.incremental.buffer.clear();
       reset();
       // XXX resubscribe
     }
@@ -549,13 +547,14 @@ void UDPIncremental::operator()(io::net::udp::Receiver::Read const &) {
       log::info("{}"sv, debug::hex::Message{message});
     }
   };
-  drain(*receiver_, channel_.incremental, stream_id_, parse, [&]() { on_sequence_reset(trace_info); });
+  drain(*receiver_, channel_, stream_id_, parse, [&]() { on_sequence_reset(trace_info); });
 }
 
 void UDPIncremental::on_sequence_reset(TraceInfo const &trace_info) {
   log::warn<0>("*** SEQUENCE RESET ***"sv);  // XXX should be log level 1
   ++counter_.sequence_reset;
-  shared_.get_securities([&](auto security_id, auto &security) {
+  channel_.sequence = {};
+  shared_.get_securities([&](auto &security) {
     security.reset_rpt_seq();
     if (security.mbp.sequencer.ready()) {
       auto market_by_price_update = MarketByPriceUpdate{
@@ -592,9 +591,6 @@ void UDPIncremental::on_sequence_reset(TraceInfo const &trace_info) {
       create_trace_and_dispatch(handler_, trace_info, market_by_order_update, true);
     }
     security.mbo.sequencer.clear();
-    // XXX ???
-    channel_.mbo_last_sequence.erase(security_id);
-    channel_.mbp_last_sequence.erase(security_id);
   });
 }
 
@@ -1281,7 +1277,6 @@ void UDPIncremental::dispatch_market_by_price(
     auto exchange_time_utc,
     auto &bids,
     auto &asks) {
-  channel_.mbp_last_sequence[security_id] = exchange_sequence;
   auto &sequencer = security.mbp.sequencer;
   try {
     auto last_exchange_sequence = sequencer.last_sequence();  // note! the protocol doesn't tell us
@@ -1311,8 +1306,7 @@ void UDPIncremental::dispatch_market_by_price(
     };
     auto request_snapshot = [&]([[maybe_unused]] auto retries) {
       log::info(R"(REQUEST MBP SNAPSHOT symbol="{}")"sv, security.symbol);
-      channel_.mbp_resubscribe.emplace(security_id, exchange_sequence);
-      channel_.mbp_last_sequence.erase(security_id);
+      security.mbp.resubscribe = exchange_sequence;
     };
     sequencer(
         bids,
@@ -1331,8 +1325,7 @@ void UDPIncremental::dispatch_market_by_price(
         security_id);
     // XXX HANS publish stale
     sequencer.clear();
-    channel_.mbp_resubscribe.emplace(security_id, exchange_sequence);
-    channel_.mbp_last_sequence.erase(security_id);
+    security.mbp.resubscribe = exchange_sequence;
   }
 }
 
@@ -1344,7 +1337,6 @@ void UDPIncremental::dispatch_market_by_order(
     auto exchange_time_utc,
     auto &bids,
     auto &asks) {
-  channel_.mbo_last_sequence[security_id] = exchange_sequence;
   auto &sequencer = security.mbo.sequencer;
   try {
     auto last_exchange_sequence = sequencer.last_sequence();  // note! the protocol doesn't tell us
@@ -1376,8 +1368,7 @@ void UDPIncremental::dispatch_market_by_order(
     auto request_snapshot = [&]([[maybe_unused]] auto retries) {
       log::info(R"(REQUEST MBO SNAPSHOT symbol="{}")"sv, security.symbol);
       log::info("DEBUG MBO RESUBSCRIBE INSERT"sv);
-      channel_.mbo_resubscribe.emplace(security_id, exchange_sequence);
-      channel_.mbo_last_sequence.erase(security_id);
+      security.mbo.resubscribe = exchange_sequence;
     };
     sequencer(
         bids,
@@ -1397,8 +1388,7 @@ void UDPIncremental::dispatch_market_by_order(
     // XXX HANS publish stale
     sequencer.clear();
     log::info("DEBUG MBO RESUBSCRIBE INSERT"sv);
-    channel_.mbo_resubscribe.emplace(security_id, exchange_sequence);
-    channel_.mbo_last_sequence.erase(security_id);
+    security.mbo.resubscribe = exchange_sequence;
   }
 }
 

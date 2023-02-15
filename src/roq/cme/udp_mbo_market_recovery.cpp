@@ -304,12 +304,16 @@ void UDPMBOMarketRecovery::operator()(
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("snapshot_full_refresh_order_book_53={}, frame={}"sv, value, frame);
-    auto security_id = value.securityID();
-    auto iter = channel_.mbo_resubscribe.find(security_id);
-    if (iter == std::end(channel_.mbo_resubscribe))
+    auto last_msg_seq_num_processed = value.lastMsgSeqNumProcessed();
+    if (!channel_.sequence.first_sequence_number ||
+        last_msg_seq_num_processed < channel_.sequence.first_sequence_number)
       return;
+    auto security_id = value.securityID();
     shared_.get_security(security_id, [&](auto &security) {
-      auto last_msg_seq_num_processed = value.lastMsgSeqNumProcessed();
+      if (!security.mbo.resubscribe)
+        return;
+      if (channel_.sequence.last_sequence_number < last_msg_seq_num_processed)  // XXX should ask sequencer
+        return;
       auto no_chunks = value.noChunks();
       auto current_chunk = value.currentChunk();
       if (current_chunk == no_chunks)
@@ -355,13 +359,13 @@ void UDPMBOMarketRecovery::operator()(
                     sequencer.apply(market_by_order, last_msg_seq_num_processed, false);
                   });
                   log::info("DEBUG MBO RESUBSCRIBE REMOVE"sv);
-                  channel_.mbo_resubscribe.erase(security_id);  // remove
+                  security.mbo.resubscribe = {};
                 };
                 auto request_snapshot = [&]([[maybe_unused]] auto retries) {
                   log::info(R"(REQUEST MBO SNAPSHOT symbol="{}", retries={})"sv, security.symbol, retries);
                   // note! wait for next snapshot
                   log::info("DEBUG MBO RESUBSCRIBE INSERT"sv);
-                  channel_.mbo_resubscribe.emplace(security_id, last_msg_seq_num_processed);
+                  security.mbo.resubscribe = last_msg_seq_num_processed;
                 };
                 log::info("DEBUG MBO BEFORE {} {}"sv, last_msg_seq_num_processed, sequencer.ready());
                 sequencer(bids, asks, last_msg_seq_num_processed, publish_snapshot, request_snapshot);

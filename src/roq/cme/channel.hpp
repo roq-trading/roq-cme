@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include <absl/container/flat_hash_map.h>
-
 #include <string>
 
 #include "roq/core/udp/buffer.hpp"
@@ -25,13 +23,18 @@ struct Channel final {
   };
   ReorderBuffer incremental;
 
-  // MBP
-  absl::flat_hash_map<int32_t, uint32_t> mbp_last_sequence;
-  absl::flat_hash_map<int32_t, uint32_t> mbp_resubscribe;
+  // sequencing
 
-  // MBO
-  absl::flat_hash_map<int32_t, uint32_t> mbo_last_sequence;
-  absl::flat_hash_map<int32_t, uint32_t> mbo_resubscribe;
+  struct {
+    uint32_t first_sequence_number = {};
+    uint32_t last_sequence_number = {};
+  } sequence = {};
+
+  void update_sequence_number(uint32_t sequence_number) {
+    if (!sequence.first_sequence_number)
+      sequence.first_sequence_number = sequence_number;
+    sequence.last_sequence_number = sequence_number;
+  }
 };
 
 }  // namespace cme
