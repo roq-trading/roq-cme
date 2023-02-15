@@ -314,32 +314,24 @@ void UDPMBOMarketRecovery::operator()(
         return;
       if (channel_.sequence.last_sequence_number < last_msg_seq_num_processed)  // XXX should ask sequencer
         return;
-      auto no_chunks = value.noChunks();
       auto current_chunk = value.currentChunk();
+      auto no_chunks = value.noChunks();
       if (current_chunk == no_chunks)
         log::info(
-            "DEBUG SNAPSHOT ready={}, last_msg_seq_num_processed={}"sv,
-            security.mbo.sequencer.ready(),
+            R"(DEBUG SNAPSHOT exchange="{}", symbol="{}", last_msg_seq_num_processed={})"sv,
+            security.exchange,
+            security.symbol,
             last_msg_seq_num_processed);
       if (security.update_mbo_snapshot(current_chunk, no_chunks, [&](auto &bids, auto &asks, bool last) {
             value.sbeRewind();  // note!
             value.noMDEntries().forEach([&](auto const &item) { emplace_back(item, security, bids, asks); });
             log::info<5>("DEBUG MBO bids=[{}]"sv, fmt::join(bids, ","sv));
             log::info<5>("DEBUG MBO asks=[{}]"sv, fmt::join(asks, ","sv));
-            /*
-            log::info(
-                "DEBUG MBO COLLECT {} / {}, len(bids)={}, len(asks)={}, last={}"sv,
-                current_chunk,
-                no_chunks,
-                std::size(bids),
-                std::size(asks),
-                last);
-            */
             if (last) {
               auto &sequencer = security.mbo.sequencer;
               try {
                 auto publish_snapshot = [&](auto &bids, auto &asks, [[maybe_unused]] auto exchange_sequence) {
-                  log::info(R"(PUBLISH MBO SNAPSHOT symbol="{}")"sv, security.symbol);
+                  log::info(R"(PUBLISH SNAPSHOT exchange="{}", symbol="{}")"sv, security.exchange, security.symbol);
                   auto market_by_order_update = MarketByOrderUpdate{
                       .stream_id = stream_id_,
                       .exchange = security.exchange,
@@ -358,18 +350,17 @@ void UDPMBOMarketRecovery::operator()(
                   shared_(event, true, [&](auto &market_by_order) {
                     sequencer.apply(market_by_order, last_msg_seq_num_processed, false);
                   });
-                  log::info("DEBUG MBO RESUBSCRIBE REMOVE"sv);
                   security.mbo.resubscribe = {};
                 };
                 auto request_snapshot = [&]([[maybe_unused]] auto retries) {
-                  log::info(R"(REQUEST MBO SNAPSHOT symbol="{}", retries={})"sv, security.symbol, retries);
-                  // note! wait for next snapshot
-                  log::info("DEBUG MBO RESUBSCRIBE INSERT"sv);
+                  log::info(
+                      R"(REQUEST SNAPSHOT exchange="{}", symbol="{}", retries={})"sv,
+                      security.exchange,
+                      security.symbol,
+                      retries);
                   security.mbo.resubscribe = last_msg_seq_num_processed;
                 };
-                log::info("DEBUG MBO BEFORE {} {}"sv, last_msg_seq_num_processed, sequencer.ready());
                 sequencer(bids, asks, last_msg_seq_num_processed, publish_snapshot, request_snapshot);
-                log::info("DEBUG MBO AFTER {} {}"sv, last_msg_seq_num_processed, sequencer.ready());
               } catch (BadState &) {
                 log::warn(
                     R"(RESUBSCRIBE MBO exchange="{}", symbol="{}", security_id={})"sv,
@@ -381,8 +372,7 @@ void UDPMBOMarketRecovery::operator()(
               }
             }
           })) {
-        log::info("DEBUG MBO DONE"sv);
-        // channel_.mbo_resubscribe.erase(iter);
+        log::info("DONE"sv);
       }
     });
   });
