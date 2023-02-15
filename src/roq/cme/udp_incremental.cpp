@@ -1360,8 +1360,7 @@ void UDPIncremental::dispatch_market_by_order(
       create_trace_and_dispatch(handler_, trace_info, market_by_order_update, true);
     };
     auto request_snapshot = [&]([[maybe_unused]] auto retries) {
-      log::info(R"(REQUEST MBO SNAPSHOT symbol="{}")"sv, security.symbol);
-      log::info("DEBUG MBO RESUBSCRIBE INSERT"sv);
+      log::info(R"(REQUEST MBO SNAPSHOT exchange="{}", symbol="{}")"sv, security.exchange, security.symbol);
       security.mbo.resubscribe = exchange_sequence;
     };
     sequencer(
@@ -1381,7 +1380,6 @@ void UDPIncremental::dispatch_market_by_order(
         security_id);
     // XXX HANS publish stale
     sequencer.clear();
-    log::info("DEBUG MBO RESUBSCRIBE INSERT"sv);
     security.mbo.resubscribe = exchange_sequence;
   }
 }
