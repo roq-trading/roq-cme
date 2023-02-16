@@ -331,7 +331,6 @@ void UDPMBPMarketRecovery::operator()(
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("snapshot_full_refresh_long_qty_69={}, frame={}"sv, value, frame);
-    auto last_msg_seq_num_processed = value.lastMsgSeqNumProcessed();
     auto security_id = value.securityID();
     shared_.get_security(security_id, [&](auto &security) {
       if (!security.mbp.resubscribe)
@@ -480,7 +479,11 @@ void UDPMBPMarketRecovery::dispatch_market_by_price(
   auto &sequencer = security.mbp.sequencer;
   try {
     auto publish_snapshot = [&](auto &bids, auto &asks, auto exchange_sequence) {
-      log::info(R"(PUBLISH MBP SNAPSHOT symbol="{}")"sv, security.symbol);
+      log::info(
+          R"(PUBLISH MBP SNAPSHOT exchange="{}", symbol="{}", exchange_sequence={})"sv,
+          security.exchange,
+          security.symbol,
+          exchange_sequence);
       auto exchange_sequence_2 = std::max(exchange_sequence, sequencer.last_sequence());
       auto market_by_price_update = MarketByPriceUpdate{
           .stream_id = stream_id_,
@@ -500,15 +503,26 @@ void UDPMBPMarketRecovery::dispatch_market_by_price(
       security.mbp.resubscribe = {};
     };
     auto request_snapshot = [&]([[maybe_unused]] auto retries) {
-      log::info(R"(REQUEST MBP SNAPSHOT symbol="{}")"sv, security.symbol);
+      log::info(
+          R"(REQUEST MBP SNAPSHOT exchange="{}", symbol="{}", exchange_sequence={}, retries={})"sv,
+          security.exchange,
+          security.symbol,
+          exchange_sequence,
+          retries);
       security.mbp.resubscribe = exchange_sequence;
     };
+    log::info(
+        R"(DEBUG UPDATE MBP SNAPSHOT exchange="{}", symbol="{}", exchange_sequence={})"sv,
+        security.exchange,
+        security.symbol,
+        exchange_sequence);
     sequencer(bids, asks, exchange_sequence, publish_snapshot, request_snapshot);
   } catch (BadState &) {
     log::warn(
-        R"(RESUBSCRIBE MBP exchange="{}", symbol="{}", security_id={})"sv,
+        R"(RESUBSCRIBE MBP exchange="{}", symbol="{}", exchange_sequence={}, security_id={})"sv,
         security.exchange,
         security.symbol,
+        exchange_sequence,
         security_id);
     // XXX HANS publish stale
     sequencer.clear();  // note! wait for next incremental

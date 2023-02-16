@@ -329,7 +329,11 @@ void UDPMBOMarketRecovery::operator()(
               try {
                 // HANS fix exchange_sequence
                 auto publish_snapshot = [&](auto &bids, auto &asks, auto exchange_sequence) {
-                  log::info(R"(PUBLISH SNAPSHOT exchange="{}", symbol="{}")"sv, security.exchange, security.symbol);
+                  log::info(
+                      R"(PUBLISH SNAPSHOT exchange="{}", symbol="{}", exchange_sequence={})"sv,
+                      security.exchange,
+                      security.symbol,
+                      last_msg_seq_num_processed);
                   auto exchange_sequence_2 = std::max(exchange_sequence, sequencer.last_sequence());
                   auto market_by_order_update = MarketByOrderUpdate{
                       .stream_id = stream_id_,
@@ -353,18 +357,25 @@ void UDPMBOMarketRecovery::operator()(
                 };
                 auto request_snapshot = [&]([[maybe_unused]] auto retries) {
                   log::info(
-                      R"(REQUEST SNAPSHOT exchange="{}", symbol="{}", retries={})"sv,
+                      R"(REQUEST SNAPSHOT exchange="{}", symbol="{}", exchange_sequence={}, retries={})"sv,
                       security.exchange,
                       security.symbol,
+                      last_msg_seq_num_processed,
                       retries);
                   security.mbo.resubscribe = last_msg_seq_num_processed;
                 };
+                log::info(
+                    R"(DEBUG UPDATE MBO SNAPSHOT exchange="{}", symbol="{}", exchange_sequence={})"sv,
+                    security.exchange,
+                    security.symbol,
+                    last_msg_seq_num_processed);
                 sequencer(bids, asks, last_msg_seq_num_processed, publish_snapshot, request_snapshot);
               } catch (BadState &) {
                 log::warn(
-                    R"(RESUBSCRIBE MBO exchange="{}", symbol="{}", security_id={})"sv,
+                    R"(RESUBSCRIBE MBO exchange="{}", symbol="{}", exchange_sequence={}, security_id={})"sv,
                     security.exchange,
                     security.symbol,
+                    last_msg_seq_num_processed,
                     security_id);
                 // XXX HANS publish stale
                 sequencer.clear();  // note! wait for next incremental

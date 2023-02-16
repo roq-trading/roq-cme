@@ -183,77 +183,7 @@ void statistics_emplace_back(auto &result, T const &item, auto &security) {
     statistics_emplace_back_price(result, statistics_type, item, security.display_factor);
   }
 }
-/*
-void emplace_back(
-    cme_mdp::SnapshotFullRefresh52::NoMDEntries const &item,
-    auto &security,
-    auto &layer,
-    auto &bids,
-    auto &asks,
-    auto &statistics) {
-  using value_type = typename std::remove_cvref<decltype(item)>::type;
-  switch (item.mDEntryType()) {
-    using enum cme_mdp::MDEntryType::Value;
-    case Bid:
-      mbp_emplace_back(bids, item, security);
-      break;
-    case Offer:
-      mbp_emplace_back(asks, item, security);
-      break;
-    case Trade:
-      break;
-    case OpenPrice:
-      statistics_emplace_back_price(statistics, StatisticsType::OPEN_PRICE, item, security.display_factor);
-      break;
-    case SettlementPrice:
-      statistics_emplace_back_price(statistics, StatisticsType::SETTLEMENT_PRICE, item, security.display_factor);
-      break;
-    case TradingSessionHighPrice:
-      statistics_emplace_back_price(statistics, StatisticsType::HIGHEST_TRADED_PRICE, item, security.display_factor);
-      break;
-    case TradingSessionLowPrice:
-      statistics_emplace_back_price(statistics, StatisticsType::LOWEST_TRADED_PRICE, item, security.display_factor);
-      break;
-    case VWAP:
-      break;
-    case ClearedVolume:
-      break;
-    case OpenInterest:
-      statistics_emplace_back_size(statistics, StatisticsType::OPEN_INTEREST, item);
-      break;
-    case ImpliedBid:
-      break;
-    case ImpliedOffer:
-      break;
-    case BookReset:  // XXX ????????????????????????
-      break;
-    case SessionHighBid:
-      break;
-    case SessionLowOffer:
-      break;
-    case FixingPrice:
-      // XXX need a new type?
-      statistics_emplace_back_price(statistics, StatisticsType::CLOSE_PRICE, item, security.display_factor);
-      break;
-    case ElectronicVolume:
-      break;
-    case ThresholdLimitsandPriceBandVariation:
-      break;
-    case MarketBestOffer: {
-      auto price = sbe::get_double(const_cast<value_type &>(item).mDEntryPx());
-      layer.ask_price = price * security.display_factor;
-      break;
-    }
-    case MarketBestBid: {
-      auto price = sbe::get_double(const_cast<value_type &>(item).mDEntryPx());
-      layer.bid_price = price * security.display_factor;
-      break;
-    }
-    case NULL_VALUE:
-      break;
-  }
-}
-*/
+
 void emplace_back(
     cme_mdp::MDIncrementalRefreshBook46::NoMDEntries const &item, auto &security, auto &layer, auto &bids, auto &asks) {
   using value_type = typename std::remove_cvref<decltype(item)>::type;
@@ -553,46 +483,6 @@ void UDPIncremental::on_sequence_reset(TraceInfo const &trace_info) {
   log::warn<0>("*** SEQUENCE RESET ***"sv);  // XXX should be log level 1
   ++counter_.sequence_reset;
   channel_.sequence = {};
-  /*
-  shared_.get_securities([&](auto &security) {
-    security.reset_rpt_seq();
-    if (security.mbp.sequencer.ready()) {
-      auto market_by_price_update = MarketByPriceUpdate{
-          .stream_id = stream_id_,
-          .exchange = security.exchange,
-          .symbol = security.symbol,
-          .bids = {},
-          .asks = {},
-          .update_type = UpdateType::STALE,
-          .exchange_time_utc = {},
-          .exchange_sequence = {},
-          .price_decimals = {},
-          .quantity_decimals = {},
-          .checksum = {},
-      };
-      create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true);
-    }
-    security.mbp.sequencer.clear();
-    if (security.mbo.sequencer.ready()) {
-      security.mbo.sequencer.clear();
-      auto market_by_order_update = MarketByOrderUpdate{
-          .stream_id = stream_id_,
-          .exchange = security.exchange,
-          .symbol = security.symbol,
-          .bids = {},
-          .asks = {},
-          .update_type = UpdateType::STALE,
-          .exchange_time_utc = {},
-          .exchange_sequence = {},
-          .price_decimals = {},
-          .quantity_decimals = {},
-          .checksum = {},
-      };
-      create_trace_and_dispatch(handler_, trace_info, market_by_order_update, true);
-    }
-    security.mbo.sequencer.clear();
-  });
-  */
 }
 
 void UDPIncremental::operator()(io::net::udp::Receiver::Error const &error) {
@@ -1284,12 +1174,20 @@ void UDPIncremental::dispatch_market_by_price(
       create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true);
     };
     auto publish_snapshot = [&](auto &bids, auto &asks, [[maybe_unused]] auto exchange_sequence) {
-      log::info(R"(PUBLISH MBP SNAPSHOT exchange="{}", symbol="{}")"sv, security.exchange, security.symbol);
+      log::info(
+          R"(PUBLISH MBP SNAPSHOT exchange="{}", symbol="{}", exchange_sequence={})"sv,
+          security.exchange,
+          security.symbol,
+          exchange_sequence);
       auto market_by_price_update = create_update(bids, asks, UpdateType::SNAPSHOT);
       create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true);
     };
     auto request_snapshot = [&]([[maybe_unused]] auto retries) {
-      log::info(R"(REQUEST MBP SNAPSHOT exchange="{}", symbol="{}")"sv, security.exchange, security.symbol);
+      log::info(
+          R"(REQUEST MBP SNAPSHOT exchange="{}", symbol="{}", exchange_sequence={})"sv,
+          security.exchange,
+          security.symbol,
+          exchange_sequence);
       security.mbp.resubscribe = exchange_sequence;
     };
     sequencer(
@@ -1303,10 +1201,11 @@ void UDPIncremental::dispatch_market_by_price(
         request_snapshot);
   } catch (BadState &) {
     log::warn(
-        R"(RESUBSCRIBE MBP exchange="{}", symbol="{}", security_id={})"sv,
+        R"(RESUBSCRIBE MBP exchange="{}", symbol="{}", security_id={}, exchange_sequene={})"sv,
         security.exchange,
         security.symbol,
-        security_id);
+        security_id,
+        exchange_sequence);
     // XXX HANS publish stale
     sequencer.clear();
     security.mbp.resubscribe = exchange_sequence;
@@ -1345,12 +1244,21 @@ void UDPIncremental::dispatch_market_by_order(
       create_trace_and_dispatch(handler_, trace_info, market_by_order_update, true);
     };
     auto publish_snapshot = [&](auto &bids, auto &asks, [[maybe_unused]] auto exchange_sequence) {
-      log::info(R"(PUBLISH MBO SNAPSHOT symbol="{}")"sv, security.symbol);
+      log::info(
+          R"(PUBLISH MBO SNAPSHOT exchange={}, symbol="{}", exchange_sequence={})"sv,
+          security.exchange,
+          security.symbol,
+          exchange_sequence);
       auto market_by_order_update = create_update(bids, asks, UpdateType::SNAPSHOT);
       create_trace_and_dispatch(handler_, trace_info, market_by_order_update, true);
     };
     auto request_snapshot = [&]([[maybe_unused]] auto retries) {
-      log::info(R"(REQUEST MBO SNAPSHOT exchange="{}", symbol="{}")"sv, security.exchange, security.symbol);
+      log::info(
+          R"(REQUEST MBO SNAPSHOT exchange="{}", symbol="{}", exchange_sequence={}, retries={})"sv,
+          security.exchange,
+          security.symbol,
+          exchange_sequence,
+          retries);
       security.mbo.resubscribe = exchange_sequence;
     };
     sequencer(
@@ -1364,9 +1272,10 @@ void UDPIncremental::dispatch_market_by_order(
         request_snapshot);
   } catch (BadState &) {
     log::warn(
-        R"(RESUBSCRIBE MBO exchange="{}", symbol="{}", security_id={})"sv,
+        R"(RESUBSCRIBE MBO exchange="{}", symbol="{}",  exchange_sequence={}, security_id={})"sv,
         security.exchange,
         security.symbol,
+        exchange_sequence,
         security_id);
     // XXX HANS publish stale
     sequencer.clear();
