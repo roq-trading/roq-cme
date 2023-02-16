@@ -1263,6 +1263,14 @@ void UDPIncremental::dispatch_market_by_order(
           retries);
       security.mbo.resubscribe = exchange_sequence;
     };
+    log::info<5>(
+        R"(DEBUG UPDATE exchange="{}", symbol="{}", len(bids)={}, len(asks)={}, exchange_sequence={}, last_exchange_sequence={})"sv,
+        security.exchange,
+        security.symbol,
+        std::size(bids),
+        std::size(asks),
+        exchange_sequence,
+        last_exchange_sequence);
     sequencer(
         bids,
         asks,
