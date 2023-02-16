@@ -481,6 +481,7 @@ void UDPMBPMarketRecovery::dispatch_market_by_price(
   try {
     auto publish_snapshot = [&](auto &bids, auto &asks, auto exchange_sequence) {
       log::info(R"(PUBLISH MBP SNAPSHOT symbol="{}")"sv, security.symbol);
+      auto exchange_sequence_2 = std::max(exchange_sequence, sequencer.last_sequence());
       auto market_by_price_update = MarketByPriceUpdate{
           .stream_id = stream_id_,
           .exchange = security.exchange,
@@ -489,7 +490,7 @@ void UDPMBPMarketRecovery::dispatch_market_by_price(
           .asks = asks,
           .update_type = UpdateType::SNAPSHOT,
           .exchange_time_utc = exchange_time_utc,
-          .exchange_sequence = sequencer.last_sequence(),
+          .exchange_sequence = exchange_sequence_2,
           .price_decimals = {},
           .quantity_decimals = {},
           .checksum = {},
