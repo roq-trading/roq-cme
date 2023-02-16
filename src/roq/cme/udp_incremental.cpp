@@ -1181,6 +1181,7 @@ void UDPIncremental::dispatch_market_by_price(
           exchange_sequence);
       auto market_by_price_update = create_update(bids, asks, UpdateType::SNAPSHOT);
       create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true);
+      security.mbp.resubscribe = {};
     };
     auto request_snapshot = [&]([[maybe_unused]] auto retries) {
       log::info(
@@ -1251,6 +1252,7 @@ void UDPIncremental::dispatch_market_by_order(
           exchange_sequence);
       auto market_by_order_update = create_update(bids, asks, UpdateType::SNAPSHOT);
       create_trace_and_dispatch(handler_, trace_info, market_by_order_update, true);
+      security.mbo.resubscribe = {};
     };
     auto request_snapshot = [&]([[maybe_unused]] auto retries) {
       log::info(
