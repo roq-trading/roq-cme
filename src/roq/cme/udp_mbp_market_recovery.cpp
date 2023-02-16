@@ -516,7 +516,10 @@ void UDPMBPMarketRecovery::dispatch_market_by_price(
         security.exchange,
         security.symbol,
         exchange_sequence);
-    sequencer(bids, asks, exchange_sequence, publish_snapshot, request_snapshot);
+    // note! last_msg_seq_num_processed sometimes point to a completely unrelated security
+    auto force = channel_.sequence.first_sequence_number <= security.mbo.resubscribe &&
+                 exchange_sequence <= channel_.sequence.last_sequence_number;
+    sequencer(bids, asks, exchange_sequence, force, publish_snapshot, request_snapshot);
   } catch (BadState &) {
     log::warn(
         R"(RESUBSCRIBE MBP exchange="{}", symbol="{}", exchange_sequence={}, security_id={})"sv,

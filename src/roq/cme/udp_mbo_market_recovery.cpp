@@ -371,6 +371,7 @@ void UDPMBOMarketRecovery::operator()(
                     security.exchange,
                     security.symbol,
                     last_msg_seq_num_processed);
+                // note! last_msg_seq_num_processed sometimes point to a completely unrelated security
                 auto force = channel_.sequence.first_sequence_number <= security.mbo.resubscribe &&
                              last_msg_seq_num_processed <= channel_.sequence.last_sequence_number;
                 log::warn(

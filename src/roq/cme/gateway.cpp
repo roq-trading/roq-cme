@@ -55,7 +55,7 @@ auto create_udp_mbp_market_recovery(auto &gateway, auto &context, auto &stream_i
 
 auto create_udp_mbo_market_recovery(auto &gateway, auto &context, auto &stream_id, auto &shared, auto &channels) {
   std::vector<std::unique_ptr<UDPMBOMarketRecovery>> result;
-  if (flags::Common::test_mbo()) {
+  if (flags::Common::enable_market_by_order()) {
     for (auto &channel : channels)
       result.emplace_back(std::make_unique<UDPMBOMarketRecovery>(gateway, context, ++stream_id, shared, channel));
   }

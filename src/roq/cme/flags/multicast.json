@@ -19,13 +19,6 @@
       "description": "Multicast local interface"
     },
     {
-      "name": "multicast_timeout",
-      "type": "std::chrono::nanoseconds",
-      "validator": "roq::core::flags::TimePeriod",
-      "default": "90s",
-      "description": "Timeout when waiting for snapshot"
-    },
-    {
       "name": "multicast_buffer_size",
       "type": "uint32_t",
       "default": "2048",
@@ -36,6 +29,13 @@
       "type": "uint32_t",
       "default": "8",
       "description": "Multicast buffer depth (used for re-ordering)"
+    },
+    {
+      "name": "multicast_timeout",
+      "type": "std::chrono::nanoseconds",
+      "validator": "roq::core::flags::TimePeriod",
+      "default": "90s",
+      "description": "Timeout when waiting for snapshot"
     }
   ]
 }

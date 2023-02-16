@@ -3,31 +3,16 @@
   "type": "flags",
   "values": [
     {
-      "name": "request_limit",
-      "type": "uint32_t",
-      "default": "20",
-      "description": "request limit per interval"
+      "name": "enable_market_by_order",
+      "type": "bool",
+      "default": false,
+      "description": "enable market by order updates?"
     },
     {
-      "name": "request_limit_interval",
-      "type": "std::chrono::nanoseconds",
-      "validator": "roq::core::flags::TimePeriod",
-      "default": "1s",
-      "description": "request limit monitor interval"
-    },
-    {
-      "name": "encode_buffer_size",
+      "name": "filter_snapshot_from_incremental",
       "type": "uint32_t",
-      "validator": "roq::core::flags::NonZero<uint32_t>",
-      "default": 1048576,
-      "description": "encode buffer size"
-    },
-    {
-      "name": "decode_buffer_size",
-      "type": "uint32_t",
-      "validator": "roq::core::flags::NonZero<uint32_t>",
-      "default": 10485760,
-      "description": "decode buffer size"
+      "default": 1024,
+      "description": "used to remove low sequence number messages, e.g. snapshots"
     },
     {
       "name": "secdef_config_file",
@@ -45,18 +30,6 @@
       "name": "test_drop",
       "type": "uint32_t",
       "default": 0,
-      "description": "test"
-    },
-    {
-      "name": "test_mbo",
-      "type": "bool",
-      "default": false,
-      "description": "test"
-    },
-    {
-      "name": "filter_snapshot_from_incremental",
-      "type": "uint32_t",
-      "default": 1024,
       "description": "test"
     }
   ]

@@ -12,7 +12,7 @@
     {
       "name": "mbp_allow_price_inversion",
       "type": "bool",
-      "default": true,
+      "default": false,
       "description": "allow price inversion?"
     }
   ]

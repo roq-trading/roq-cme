@@ -51,7 +51,7 @@ struct UDPIncremental final : public io::net::udp::Receiver::Handler, public sbe
   void operator()(io::net::udp::Receiver::Read const &) override;
   void operator()(io::net::udp::Receiver::Error const &) override;
 
-  void on_sequence_reset(TraceInfo const &);
+  void on_sequence_reset();
 
  protected:
   // sbe::Parser::Handler
@@ -124,6 +124,7 @@ struct UDPIncremental final : public io::net::udp::Receiver::Handler, public sbe
   // config
   uint16_t const stream_id_;
   std::string const name_;
+  bool const market_by_order_;
   // receiver
   std::unique_ptr<io::net::udp::Receiver> receiver_;
   // metrics

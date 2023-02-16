@@ -70,7 +70,7 @@ auto get_supports() {
       SupportType::TRADE_SUMMARY,
       SupportType::STATISTICS,
   };
-  if (flags::Common::test_mbo())
+  if (flags::Common::enable_market_by_order())
     result |= SupportType::MARKET_BY_ORDER;
   return result;
 }
@@ -310,6 +310,7 @@ void emplace_back(
 UDPIncremental::UDPIncremental(
     Handler &handler, io::Context &context, uint16_t stream_id, Shared &shared, Channel &channel, Priority priority)
     : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_, channel.channel_id)},
+      market_by_order_{flags::Common::enable_market_by_order()},
       receiver_{create_receiver(*this, context, shared, channel.channel_id, priority)},
       counter_{
           .disconnect = create_metrics(name_, "disconnect"sv),
@@ -476,10 +477,10 @@ void UDPIncremental::operator()(io::net::udp::Receiver::Read const &) {
       log::info("{}"sv, debug::hex::Message{message});
     }
   };
-  drain(*receiver_, channel_, stream_id_, parse, [&]() { on_sequence_reset(trace_info); });
+  drain(*receiver_, channel_, stream_id_, parse, [&]() { on_sequence_reset(); });
 }
 
-void UDPIncremental::on_sequence_reset(TraceInfo const &trace_info) {
+void UDPIncremental::on_sequence_reset() {
   log::warn<0>("*** SEQUENCE RESET ***"sv);  // XXX should be log level 1
   ++counter_.sequence_reset;
   channel_.sequence = {};
@@ -938,33 +939,35 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
         if (security)
           check_report_sequence(*security, item, frame);
         // ... need these for MBO referencing
-        using value_type = typename std::remove_cvref<decltype(item)>::type;
-        auto &value = const_cast<value_type &>(item);  // note! not const-safe
-        auto price = sbe::get_double(value.mDEntryPx());
-        auto side = sbe::map(item.mDEntryType());
-        auto action = sbe::map(item.mDUpdateAction());
-        md_entries_.emplace_back(security_id, side, price, action);
-        if (security) {
-          emplace_back(item, *security, layer, mbp.bids, mbp.asks);
-          if (action == UpdateAction::DELETE) {
-            auto update = MBOUpdate{
-                .price = price * (*security).display_factor,
-                .quantity = {},
-                .priority = {},
-                .order_id = {},
-                .action = action,
-                .reason = {},
-            };
-            switch (side) {
-              using enum Side;
-              case UNDEFINED:
-                break;
-              case BUY:
-                mbo.bids.emplace_back(std::move(update));
-                break;
-              case SELL:
-                mbo.asks.emplace_back(std::move(update));
-                break;
+        if (market_by_order_) {
+          using value_type = typename std::remove_cvref<decltype(item)>::type;
+          auto &value = const_cast<value_type &>(item);  // note! not const-safe
+          auto price = sbe::get_double(value.mDEntryPx());
+          auto side = sbe::map(item.mDEntryType());
+          auto action = sbe::map(item.mDUpdateAction());
+          md_entries_.emplace_back(security_id, side, price, action);
+          if (security) {
+            emplace_back(item, *security, layer, mbp.bids, mbp.asks);
+            if (action == UpdateAction::DELETE) {
+              auto update = MBOUpdate{
+                  .price = price * (*security).display_factor,
+                  .quantity = {},
+                  .priority = {},
+                  .order_id = {},
+                  .action = action,
+                  .reason = {},
+              };
+              switch (side) {
+                using enum Side;
+                case UNDEFINED:
+                  break;
+                case BUY:
+                  mbo.bids.emplace_back(std::move(update));
+                  break;
+                case SELL:
+                  mbo.asks.emplace_back(std::move(update));
+                  break;
+              }
             }
           }
         }
@@ -972,7 +975,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
       if (security)
         dispatch(security_id, *security, true);
     }
-    {  // MBO
+    if (market_by_order_) {
       auto security_id = int32_t{};
       Security *security = nullptr;
       auto &mbo = shared_.get_mbo();
@@ -1034,7 +1037,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshOrderBook47> 
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("md_incremental_refresh_order_book_47={}, frame={}"sv, value, frame);
-    if (!flags::Common::test_mbo())
+    if (!market_by_order_)
       return;
     value.sbeRewind();  // note!
     auto exchange_sequence = frame.sequence_number;
