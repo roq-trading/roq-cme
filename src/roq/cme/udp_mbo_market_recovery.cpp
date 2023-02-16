@@ -371,7 +371,10 @@ void UDPMBOMarketRecovery::operator()(
                     security.exchange,
                     security.symbol,
                     last_msg_seq_num_processed);
-                sequencer(bids, asks, last_msg_seq_num_processed, publish_snapshot, request_snapshot);
+
+                auto force = channel_.sequence.first_sequence_number <= security.mbo.resubscribe &&
+                             last_msg_seq_num_processed <= channel_.sequence.last_sequence_number;
+                sequencer(bids, asks, last_msg_seq_num_processed, force, publish_snapshot, request_snapshot);
               } catch (BadState &) {
                 log::warn(
                     R"(RESUBSCRIBE MBO exchange="{}", symbol="{}", exchange_sequence={}, security_id={})"sv,
