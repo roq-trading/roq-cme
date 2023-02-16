@@ -310,7 +310,7 @@ void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::SnapshotFullRefresh52> cons
       if (!security.mbp.resubscribe)
         return;
       auto last_msg_seq_num_processed = value.lastMsgSeqNumProcessed();
-      if (last_msg_seq_num_processed < security.mbo.resubscribe)
+      if (last_msg_seq_num_processed < security.mbp.resubscribe)
         return;
       auto transact_time = std::chrono::nanoseconds{value.transactTime()};
       auto &mbp = shared_.get_mbp();
@@ -336,7 +336,7 @@ void UDPMBPMarketRecovery::operator()(
       if (!security.mbp.resubscribe)
         return;
       auto last_msg_seq_num_processed = value.lastMsgSeqNumProcessed();
-      if (last_msg_seq_num_processed < security.mbo.resubscribe)
+      if (last_msg_seq_num_processed < security.mbp.resubscribe)
         return;
       auto transact_time = std::chrono::nanoseconds{value.transactTime()};
       auto &mbp = shared_.get_mbp();
