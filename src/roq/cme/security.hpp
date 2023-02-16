@@ -20,8 +20,7 @@ struct Security final {
 
   uint32_t rpt_seq = {};  // conflated feed sends zero
 
-  void update_rpt_seq(uint32_t rpt_seq);
-  void reset_rpt_seq();
+  bool update_rpt_seq(uint32_t rpt_seq);
 
   // sequencing
 

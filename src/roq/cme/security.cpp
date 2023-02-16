@@ -9,12 +9,13 @@ using namespace std::literals;
 namespace roq {
 namespace cme {
 
-void Security::update_rpt_seq(uint32_t rpt_seq) {
+bool Security::update_rpt_seq(uint32_t rpt_seq) {
   if (rpt_seq == 0)  // conflated feed
-    return;
+    return false;
   log::info<5>("rpt_seq={}, last_rpt_seq={}"sv, rpt_seq, (*this).rpt_seq);
   auto next = (*this).rpt_seq + 1;
-  if (rpt_seq != next) {
+  auto result = rpt_seq != next;
+  if (result) {
     log::warn(
         R"(*** RESUBSCRIBE *** exchange="{}", sybmol="{}", rpt_seq={}, prev={})"sv,
         exchange,
@@ -23,10 +24,7 @@ void Security::update_rpt_seq(uint32_t rpt_seq) {
         (*this).rpt_seq);
   }
   (*this).rpt_seq = rpt_seq;
-}
-
-void Security::reset_rpt_seq() {
-  rpt_seq = {};
+  return result;
 }
 
 }  // namespace cme

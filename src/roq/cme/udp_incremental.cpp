@@ -553,6 +553,7 @@ void UDPIncremental::on_sequence_reset(TraceInfo const &trace_info) {
   log::warn<0>("*** SEQUENCE RESET ***"sv);  // XXX should be log level 1
   ++counter_.sequence_reset;
   channel_.sequence = {};
+  /*
   shared_.get_securities([&](auto &security) {
     security.reset_rpt_seq();
     if (security.mbp.sequencer.ready()) {
@@ -591,6 +592,7 @@ void UDPIncremental::on_sequence_reset(TraceInfo const &trace_info) {
     }
     security.mbo.sequencer.clear();
   });
+  */
 }
 
 void UDPIncremental::operator()(io::net::udp::Receiver::Error const &error) {
@@ -1043,11 +1045,8 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
             security = nullptr;
           }
         }
-        if (security) {
-          auto rpt_seq = item.rptSeq();
-          (*security).update_rpt_seq(rpt_seq);
-          // HANS here we should resubscribe
-        }
+        if (security)
+          check_report_sequence(*security, item, frame);
         // ... need these for MBO referencing
         using value_type = typename std::remove_cvref<decltype(item)>::type;
         auto &value = const_cast<value_type &>(item);  // note! not const-safe
@@ -1131,10 +1130,7 @@ void UDPIncremental::operator()(
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("md_incremental_refresh_book_long_qty_64={}, frame={}"sv, value, frame);
     auto dispatch = []([[maybe_unused]] auto security_id, [[maybe_unused]] auto &security) {};
-    auto update = [&](auto &security, auto &item) {
-      auto rpt_seq = item.rptSeq();
-      security.update_rpt_seq(rpt_seq);
-    };
+    auto update = [&](auto &security, auto &item) { check_report_sequence(security, item, frame); };
     SecurityIterator{shared_}(value.noMDEntries(), dispatch, update);
   });
 }
@@ -1192,7 +1188,7 @@ void UDPIncremental::operator()(
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("md_incremental_refresh_daily_statistics_49={}, frame={}"sv, value, frame);
-    dispatch_statistics(event, [](auto &statistics, auto &item, auto &security) {
+    dispatch_statistics(event, frame, [](auto &statistics, auto &item, auto &security) {
       statistics_emplace_back(statistics, item, security);
     });
   });
@@ -1204,7 +1200,7 @@ void UDPIncremental::operator()(
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("md_incremental_refresh_session_statistics_51={}, frame={}"sv, value, frame);
-    dispatch_statistics(event, [](auto &statistics, auto &item, auto &security) {
+    dispatch_statistics(event, frame, [](auto &statistics, auto &item, auto &security) {
       statistics_emplace_back(statistics, item, security);
     });
   });
@@ -1216,7 +1212,7 @@ void UDPIncremental::operator()(
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("md_incremental_refresh_session_statistics_long_qty_67={}, frame={}"sv, value, frame);
-    dispatch_statistics(event, [](auto &statistics, auto &item, auto &security) {
+    dispatch_statistics(event, frame, [](auto &statistics, auto &item, auto &security) {
       statistics_emplace_back(statistics, item, security);
     });
   });
@@ -1227,7 +1223,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshVolume37> con
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("md_incremental_refresh_volume_37={}, frame={}"sv, value, frame);
-    dispatch_statistics(event, [](auto &statistics, auto &item, [[maybe_unused]] auto &security) {
+    dispatch_statistics(event, frame, [](auto &statistics, auto &item, [[maybe_unused]] auto &security) {
       statistics_emplace_back_size(statistics, StatisticsType::TRADE_VOLUME, item);
     });
   });
@@ -1240,10 +1236,7 @@ void UDPIncremental::operator()(
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("md_incremental_refresh_volume_long_qty_66={}, frame={}"sv, value, frame);
     auto dispatch = []([[maybe_unused]] auto security_id, [[maybe_unused]] auto &security) {};
-    auto update = [&](auto &security, auto &item) {
-      auto rpt_seq = item.rptSeq();
-      security.update_rpt_seq(rpt_seq);
-    };
+    auto update = [&](auto &security, auto &item) { check_report_sequence(security, item, frame); };
     SecurityIterator{shared_}(value.noMDEntries(), dispatch, update);
   });
 }
@@ -1255,10 +1248,7 @@ void UDPIncremental::operator()(
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("md_incremental_refresh_limits_banding_50={}, frame={}"sv, value, frame);
     auto dispatch = []([[maybe_unused]] auto security_id, [[maybe_unused]] auto &security) {};
-    auto update = [&](auto &security, auto &item) {
-      auto rpt_seq = item.rptSeq();
-      security.update_rpt_seq(rpt_seq);
-    };
+    auto update = [&](auto &security, auto &item) { check_report_sequence(security, item, frame); };
     SecurityIterator{shared_}(value.noMDEntries(), dispatch, update);
   });
 }
@@ -1407,15 +1397,14 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event, sbe::Frame co
     trades.clear();
   };
   auto update = [&](auto &security, auto &item) {
-    auto rpt_seq = item.rptSeq();
-    security.update_rpt_seq(rpt_seq);
+    check_report_sequence(security, item, frame);
     trades_emplace_back(trades, item, security);
   };
   SecurityIterator{shared_}(value.noMDEntries(), dispatch, update);
 }
 
 template <typename T, typename Callback>
-void UDPIncremental::dispatch_statistics(Trace<T> const &event, Callback callback) {
+void UDPIncremental::dispatch_statistics(Trace<T> const &event, sbe::Frame const &frame, Callback callback) {
   auto &trace_info = event.trace_info;
   using value_type = typename std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -1438,11 +1427,21 @@ void UDPIncremental::dispatch_statistics(Trace<T> const &event, Callback callbac
     statistics.clear();
   };
   auto update = [&](auto &security, auto &item) {
-    auto rpt_seq = item.rptSeq();
-    security.update_rpt_seq(rpt_seq);
+    check_report_sequence(security, item, frame);
     callback(statistics, item, security);
   };
   SecurityIterator{shared_}(value.noMDEntries(), dispatch, update);
+}
+
+void UDPIncremental::check_report_sequence(Security &security, auto const &value, sbe::Frame const &frame) {
+  auto rpt_seq = value.rptSeq();
+  if (!security.update_rpt_seq(rpt_seq))
+    return;
+  log::warn(R"(RESUBSCRIBE exchange="{}", sybmol="{}", rpt_seq={})"sv, security.exchange, security.symbol, rpt_seq);
+  security.mbp.sequencer.clear();
+  security.mbp.resubscribe = frame.sequence_number;
+  security.mbo.sequencer.clear();
+  security.mbo.resubscribe = frame.sequence_number;
 }
 
 void UDPIncremental::publish_stream_status(TraceInfo const &trace_info, ConnectionStatus connection_status) {

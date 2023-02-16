@@ -305,13 +305,12 @@ void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::SnapshotFullRefresh52> cons
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("snapshot_full_refresh_52={}, frame={}"sv, value, frame);
-    auto last_msg_seq_num_processed = value.lastMsgSeqNumProcessed();
-    if (!channel_.sequence.first_sequence_number ||
-        last_msg_seq_num_processed < channel_.sequence.first_sequence_number)
-      return;
     auto security_id = value.securityID();
     shared_.get_security(security_id, [&](auto &security) {
-      if (channel_.sequence.last_sequence_number < last_msg_seq_num_processed)  // XXX should ask sequencer
+      if (!security.mbp.resubscribe)
+        return;
+      auto last_msg_seq_num_processed = value.lastMsgSeqNumProcessed();
+      if (last_msg_seq_num_processed < security.mbo.resubscribe)
         return;
       auto transact_time = std::chrono::nanoseconds{value.transactTime()};
       auto &mbp = shared_.get_mbp();
@@ -333,12 +332,12 @@ void UDPMBPMarketRecovery::operator()(
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("snapshot_full_refresh_long_qty_69={}, frame={}"sv, value, frame);
     auto last_msg_seq_num_processed = value.lastMsgSeqNumProcessed();
-    if (!channel_.sequence.first_sequence_number ||
-        last_msg_seq_num_processed < channel_.sequence.first_sequence_number)
-      return;
     auto security_id = value.securityID();
     shared_.get_security(security_id, [&](auto &security) {
-      if (channel_.sequence.last_sequence_number < last_msg_seq_num_processed)  // XXX should ask sequencer
+      if (!security.mbp.resubscribe)
+        return;
+      auto last_msg_seq_num_processed = value.lastMsgSeqNumProcessed();
+      if (last_msg_seq_num_processed < security.mbo.resubscribe)
         return;
       auto transact_time = std::chrono::nanoseconds{value.transactTime()};
       auto &mbp = shared_.get_mbp();
