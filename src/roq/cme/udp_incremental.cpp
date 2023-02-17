@@ -938,16 +938,17 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
         }
         if (security)
           check_report_sequence(*security, item, frame);
+        using value_type = typename std::remove_cvref<decltype(item)>::type;
+        auto &value = const_cast<value_type &>(item);  // note! not const-safe
+        auto price = sbe::get_double(value.mDEntryPx());
+        auto side = sbe::map(item.mDEntryType());
+        auto action = sbe::map(item.mDUpdateAction());
         // ... need these for MBO referencing
-        if (market_by_order_) {
-          using value_type = typename std::remove_cvref<decltype(item)>::type;
-          auto &value = const_cast<value_type &>(item);  // note! not const-safe
-          auto price = sbe::get_double(value.mDEntryPx());
-          auto side = sbe::map(item.mDEntryType());
-          auto action = sbe::map(item.mDUpdateAction());
+        if (market_by_order_)
           md_entries_.emplace_back(security_id, side, price, action);
-          if (security) {
-            emplace_back(item, *security, layer, mbp.bids, mbp.asks);
+        if (security) {
+          emplace_back(item, *security, layer, mbp.bids, mbp.asks);
+          if (market_by_order_) {
             if (action == UpdateAction::DELETE) {
               auto update = MBOUpdate{
                   .price = price * (*security).display_factor,
