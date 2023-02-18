@@ -24,8 +24,8 @@ requirements:
     - pkg-config
   host:
     - expat
-    - roq-cme-ilink
-    - roq-cme-mdp
+    - roq-cme-ilink-2
+    - roq-cme-mdp-3
     - roq-core
     - abseil-cpp
     - roq-oss-base64
