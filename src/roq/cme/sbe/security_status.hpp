@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include <cme_mdp/SecurityStatus30.h>
+#include <cme_mdp3/SecurityStatus30.h>
 
 #include "roq/cme/sbe/utils.hpp"
 
@@ -17,8 +17,8 @@ namespace sbe {}  // namespace sbe
 // SecurityStatus30
 
 template <>
-struct fmt::formatter<cme_mdp::SecurityStatus30> {
-  using value_type = cme_mdp::SecurityStatus30;
+struct fmt::formatter<cme_mdp3::SecurityStatus30> {
+  using value_type = cme_mdp3::SecurityStatus30;
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);

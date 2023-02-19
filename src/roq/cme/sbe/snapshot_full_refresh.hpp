@@ -2,11 +2,11 @@
 
 #pragma once
 
-#include <cme_mdp/SnapshotFullRefresh52.h>
-#include <cme_mdp/SnapshotFullRefreshLongQty69.h>
-#include <cme_mdp/SnapshotFullRefreshOrderBook53.h>
-#include <cme_mdp/SnapshotFullRefreshTCP61.h>
-#include <cme_mdp/SnapshotFullRefreshTCPLongQty68.h>
+#include <cme_mdp3/SnapshotFullRefresh52.h>
+#include <cme_mdp3/SnapshotFullRefreshLongQty69.h>
+#include <cme_mdp3/SnapshotFullRefreshOrderBook53.h>
+#include <cme_mdp3/SnapshotFullRefreshTCP61.h>
+#include <cme_mdp3/SnapshotFullRefreshTCPLongQty68.h>
 
 #include "roq/core/sbe/iterator.hpp"
 
@@ -17,7 +17,7 @@ namespace cme {
 namespace sbe {
 
 template <>
-inline size_t compute_length(cme_mdp::SnapshotFullRefresh52 &value) {
+inline size_t compute_length(cme_mdp3::SnapshotFullRefresh52 &value) {
   // NoMDEntries
   auto no_md_entries_length = value.noMDEntries().count();
   value.noMDEntries().forEach([](auto &e) { e.skip(); });
@@ -25,7 +25,7 @@ inline size_t compute_length(cme_mdp::SnapshotFullRefresh52 &value) {
 }
 
 template <>
-inline size_t compute_length(cme_mdp::SnapshotFullRefreshOrderBook53 &value) {
+inline size_t compute_length(cme_mdp3::SnapshotFullRefreshOrderBook53 &value) {
   // NoMDEntries
   auto no_md_entries_length = value.noMDEntries().count();
   value.noMDEntries().forEach([](auto &e) { e.skip(); });
@@ -39,8 +39,8 @@ inline size_t compute_length(cme_mdp::SnapshotFullRefreshOrderBook53 &value) {
 // SnapshotFullRefresh52
 
 template <>
-struct fmt::formatter<cme_mdp::SnapshotFullRefresh52::NoMDEntries> {
-  using value_type = cme_mdp::SnapshotFullRefresh52::NoMDEntries;
+struct fmt::formatter<cme_mdp3::SnapshotFullRefresh52::NoMDEntries> {
+  using value_type = cme_mdp3::SnapshotFullRefresh52::NoMDEntries;
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);
@@ -72,8 +72,8 @@ struct fmt::formatter<cme_mdp::SnapshotFullRefresh52::NoMDEntries> {
 };
 
 template <>
-struct fmt::formatter<cme_mdp::SnapshotFullRefresh52> {
-  using value_type = cme_mdp::SnapshotFullRefresh52;
+struct fmt::formatter<cme_mdp3::SnapshotFullRefresh52> {
+  using value_type = cme_mdp3::SnapshotFullRefresh52;
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);
@@ -118,8 +118,8 @@ struct fmt::formatter<cme_mdp::SnapshotFullRefresh52> {
 // SnapshotFullRefreshOrderBook53
 
 template <>
-struct fmt::formatter<cme_mdp::SnapshotFullRefreshOrderBook53::NoMDEntries> {
-  using value_type = cme_mdp::SnapshotFullRefreshOrderBook53::NoMDEntries;
+struct fmt::formatter<cme_mdp3::SnapshotFullRefreshOrderBook53::NoMDEntries> {
+  using value_type = cme_mdp3::SnapshotFullRefreshOrderBook53::NoMDEntries;
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);
@@ -145,8 +145,8 @@ struct fmt::formatter<cme_mdp::SnapshotFullRefreshOrderBook53::NoMDEntries> {
 };
 
 template <>
-struct fmt::formatter<cme_mdp::SnapshotFullRefreshOrderBook53> {
-  using value_type = cme_mdp::SnapshotFullRefreshOrderBook53;
+struct fmt::formatter<cme_mdp3::SnapshotFullRefreshOrderBook53> {
+  using value_type = cme_mdp3::SnapshotFullRefreshOrderBook53;
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);
@@ -181,8 +181,8 @@ struct fmt::formatter<cme_mdp::SnapshotFullRefreshOrderBook53> {
 // SnapshotFullRefreshLongQty69
 
 template <>
-struct fmt::formatter<cme_mdp::SnapshotFullRefreshLongQty69::NoMDEntries> {
-  using value_type = cme_mdp::SnapshotFullRefreshLongQty69::NoMDEntries;
+struct fmt::formatter<cme_mdp3::SnapshotFullRefreshLongQty69::NoMDEntries> {
+  using value_type = cme_mdp3::SnapshotFullRefreshLongQty69::NoMDEntries;
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);
@@ -210,8 +210,8 @@ struct fmt::formatter<cme_mdp::SnapshotFullRefreshLongQty69::NoMDEntries> {
 };
 
 template <>
-struct fmt::formatter<cme_mdp::SnapshotFullRefreshLongQty69> {
-  using value_type = cme_mdp::SnapshotFullRefreshLongQty69;
+struct fmt::formatter<cme_mdp3::SnapshotFullRefreshLongQty69> {
+  using value_type = cme_mdp3::SnapshotFullRefreshLongQty69;
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);

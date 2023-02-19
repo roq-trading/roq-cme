@@ -185,10 +185,10 @@ void statistics_emplace_back(auto &result, T const &item, auto &security) {
 }
 
 void emplace_back(
-    cme_mdp::MDIncrementalRefreshBook46::NoMDEntries const &item, auto &security, auto &layer, auto &bids, auto &asks) {
+    cme_mdp3::MDIncrementalRefreshBook46::NoMDEntries const &item, auto &security, auto &layer, auto &bids, auto &asks) {
   using value_type = typename std::remove_cvref<decltype(item)>::type;
   switch (item.mDEntryType()) {
-    using enum cme_mdp::MDEntryTypeBook::Value;
+    using enum cme_mdp3::MDEntryTypeBook::Value;
     case Bid:
       mbp_emplace_back(bids, item, security);
       break;
@@ -217,7 +217,7 @@ void emplace_back(
 }
 
 void emplace_back(
-    cme_mdp::MDIncrementalRefreshBook46::NoOrderIDEntries const &item,
+    cme_mdp3::MDIncrementalRefreshBook46::NoOrderIDEntries const &item,
     auto &security,
     auto side,
     auto price,
@@ -257,7 +257,7 @@ void emplace_back(
 }
 
 void emplace_back(
-    cme_mdp::MDIncrementalRefreshOrderBook47::NoMDEntries const &item, auto &security, auto &bids, auto &asks) {
+    cme_mdp3::MDIncrementalRefreshOrderBook47::NoMDEntries const &item, auto &security, auto &bids, auto &asks) {
   using value_type = typename std::remove_cvref<decltype(item)>::type;
   auto create_update = [&]() {
     auto price = sbe::get_double(const_cast<value_type &>(item).mDEntryPx());
@@ -278,7 +278,7 @@ void emplace_back(
   };
   using value_type = typename std::remove_cvref<decltype(item)>::type;
   switch (item.mDEntryType()) {
-    using enum cme_mdp::MDEntryTypeBook::Value;
+    using enum cme_mdp3::MDEntryTypeBook::Value;
     case Bid: {
       auto update = create_update();
       bids.emplace_back(std::move(update));
@@ -496,7 +496,7 @@ void UDPIncremental::operator()(sbe::Frame const &frame) {
   channel_.incremental.last_sequence = {true, frame.sequence_number};
 }
 
-void UDPIncremental::operator()(Trace<cme_mdp::AdminHeartbeat12> const &event, sbe::Frame const &frame) {
+void UDPIncremental::operator()(Trace<cme_mdp3::AdminHeartbeat12> const &event, sbe::Frame const &frame) {
   profile_.admin_heartbeat([&]() {
     auto &[trace_info, value] = event;
     log::info<5>("admin_heartbeat_12={}, frame={}"sv, value, frame);
@@ -509,14 +509,14 @@ void UDPIncremental::operator()(Trace<cme_mdp::AdminHeartbeat12> const &event, s
   });
 }
 
-void UDPIncremental::operator()(Trace<cme_mdp::ChannelReset4> const &event, sbe::Frame const &frame) {
+void UDPIncremental::operator()(Trace<cme_mdp3::ChannelReset4> const &event, sbe::Frame const &frame) {
   profile_.channel_reset([&]() {
     auto &[trace_info, value] = event;
     log::info<5>("channel_reset_4={}, frame={}"sv, value, frame);
   });
 }
 
-void UDPIncremental::operator()(Trace<cme_mdp::SecurityStatus30> const &event, sbe::Frame const &frame) {
+void UDPIncremental::operator()(Trace<cme_mdp3::SecurityStatus30> const &event, sbe::Frame const &frame) {
   profile_.security_status([&]() {
     auto &trace_info = event.trace_info;
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
@@ -545,7 +545,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::SecurityStatus30> const &event, s
   });
 }
 
-void UDPIncremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &event, sbe::Frame const &frame) {
+void UDPIncremental::operator()(Trace<cme_mdp3::MDInstrumentDefinitionFuture54> const &event, sbe::Frame const &frame) {
   profile_.md_instrument_definition_future([&]() {
     auto &trace_info = event.trace_info;
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
@@ -601,7 +601,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> c
   });
 }
 
-void UDPIncremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionOption55> const &event, sbe::Frame const &frame) {
+void UDPIncremental::operator()(Trace<cme_mdp3::MDInstrumentDefinitionOption55> const &event, sbe::Frame const &frame) {
   profile_.md_instrument_definition_option([&]() {
     auto &trace_info = event.trace_info;
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
@@ -657,7 +657,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionOption55> c
   });
 }
 
-void UDPIncremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionSpread56> const &event, sbe::Frame const &frame) {
+void UDPIncremental::operator()(Trace<cme_mdp3::MDInstrumentDefinitionSpread56> const &event, sbe::Frame const &frame) {
   profile_.md_instrument_definition_spread([&]() {
     auto &trace_info = event.trace_info;
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
@@ -712,7 +712,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionSpread56> c
 }
 
 void UDPIncremental::operator()(
-    Trace<cme_mdp::MDInstrumentDefinitionFixedIncome57> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDInstrumentDefinitionFixedIncome57> const &event, sbe::Frame const &frame) {
   profile_.md_instrument_definition_fixed_income([&]() {
     auto &trace_info = event.trace_info;
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
@@ -766,7 +766,7 @@ void UDPIncremental::operator()(
   });
 }
 
-void UDPIncremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionRepo58> const &event, sbe::Frame const &frame) {
+void UDPIncremental::operator()(Trace<cme_mdp3::MDInstrumentDefinitionRepo58> const &event, sbe::Frame const &frame) {
   profile_.md_instrument_definition_repo([&]() {
     auto &trace_info = event.trace_info;
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
@@ -820,7 +820,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionRepo58> con
   });
 }
 
-void UDPIncremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionFX63> const &event, sbe::Frame const &frame) {
+void UDPIncremental::operator()(Trace<cme_mdp3::MDInstrumentDefinitionFX63> const &event, sbe::Frame const &frame) {
   profile_.md_instrument_definition_fx([&]() {
     auto &trace_info = event.trace_info;
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
@@ -874,16 +874,16 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionFX63> const
   });
 }
 
-void UDPIncremental::operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &, sbe::Frame const &) {
+void UDPIncremental::operator()(Trace<cme_mdp3::SnapshotFullRefresh52> const &, sbe::Frame const &) {
 }
 
-void UDPIncremental::operator()(Trace<cme_mdp::SnapshotFullRefreshLongQty69> const &, sbe::Frame const &) {
+void UDPIncremental::operator()(Trace<cme_mdp3::SnapshotFullRefreshLongQty69> const &, sbe::Frame const &) {
 }
 
-void UDPIncremental::operator()(Trace<cme_mdp::QuoteRequest39> const &, sbe::Frame const &) {
+void UDPIncremental::operator()(Trace<cme_mdp3::QuoteRequest39> const &, sbe::Frame const &) {
 }
 
-void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &event, sbe::Frame const &frame) {
+void UDPIncremental::operator()(Trace<cme_mdp3::MDIncrementalRefreshBook46> const &event, sbe::Frame const &frame) {
   profile_.md_incremental_refresh_book([&]() {
     auto &trace_info = event.trace_info;
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
@@ -1018,7 +1018,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
 }
 
 void UDPIncremental::operator()(
-    Trace<cme_mdp::MDIncrementalRefreshBookLongQty64> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDIncrementalRefreshBookLongQty64> const &event, sbe::Frame const &frame) {
   profile_.md_incremental_refresh_book_long_qty([&]() {
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -1029,10 +1029,10 @@ void UDPIncremental::operator()(
   });
 }
 
-void UDPIncremental::operator()(Trace<cme_mdp::SnapshotFullRefreshOrderBook53> const &, sbe::Frame const &) {
+void UDPIncremental::operator()(Trace<cme_mdp3::SnapshotFullRefreshOrderBook53> const &, sbe::Frame const &) {
 }
 
-void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshOrderBook47> const &event, sbe::Frame const &frame) {
+void UDPIncremental::operator()(Trace<cme_mdp3::MDIncrementalRefreshOrderBook47> const &event, sbe::Frame const &frame) {
   profile_.md_incremental_refresh_order_book([&]() {
     auto &trace_info = event.trace_info;
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
@@ -1057,7 +1057,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshOrderBook47> 
 }
 
 void UDPIncremental::operator()(
-    Trace<cme_mdp::MDIncrementalRefreshTradeSummary48> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDIncrementalRefreshTradeSummary48> const &event, sbe::Frame const &frame) {
   profile_.md_incremental_refresh_trade_summary([&]() {
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -1067,7 +1067,7 @@ void UDPIncremental::operator()(
 }
 
 void UDPIncremental::operator()(
-    Trace<cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDIncrementalRefreshTradeSummaryLongQty65> const &event, sbe::Frame const &frame) {
   profile_.md_incremental_refresh_trade_summary_long_qty([&]() {
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -1077,7 +1077,7 @@ void UDPIncremental::operator()(
 }
 
 void UDPIncremental::operator()(
-    Trace<cme_mdp::MDIncrementalRefreshDailyStatistics49> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDIncrementalRefreshDailyStatistics49> const &event, sbe::Frame const &frame) {
   profile_.md_incremental_refresh_daily_statistics([&]() {
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -1089,7 +1089,7 @@ void UDPIncremental::operator()(
 }
 
 void UDPIncremental::operator()(
-    Trace<cme_mdp::MDIncrementalRefreshSessionStatistics51> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDIncrementalRefreshSessionStatistics51> const &event, sbe::Frame const &frame) {
   profile_.md_incremental_refresh_session_statistics([&]() {
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -1101,7 +1101,7 @@ void UDPIncremental::operator()(
 }
 
 void UDPIncremental::operator()(
-    Trace<cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDIncrementalRefreshSessionStatisticsLongQty67> const &event, sbe::Frame const &frame) {
   profile_.md_incremental_refresh_session_statistics_long_qty([&]() {
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -1112,7 +1112,7 @@ void UDPIncremental::operator()(
   });
 }
 
-void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshVolume37> const &event, sbe::Frame const &frame) {
+void UDPIncremental::operator()(Trace<cme_mdp3::MDIncrementalRefreshVolume37> const &event, sbe::Frame const &frame) {
   profile_.md_incremental_refresh_volume([&]() {
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -1124,7 +1124,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshVolume37> con
 }
 
 void UDPIncremental::operator()(
-    Trace<cme_mdp::MDIncrementalRefreshVolumeLongQty66> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDIncrementalRefreshVolumeLongQty66> const &event, sbe::Frame const &frame) {
   profile_.md_incremental_refresh_volume_long_qty([&]() {
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -1136,7 +1136,7 @@ void UDPIncremental::operator()(
 }
 
 void UDPIncremental::operator()(
-    Trace<cme_mdp::MDIncrementalRefreshLimitsBanding50> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDIncrementalRefreshLimitsBanding50> const &event, sbe::Frame const &frame) {
   profile_.md_incremental_refresh_limits_banding([&]() {
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
