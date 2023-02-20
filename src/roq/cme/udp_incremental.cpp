@@ -185,7 +185,11 @@ void statistics_emplace_back(auto &result, T const &item, auto &security) {
 }
 
 void emplace_back(
-    cme_mdp3::MDIncrementalRefreshBook46::NoMDEntries const &item, auto &security, auto &layer, auto &bids, auto &asks) {
+    cme_mdp3::MDIncrementalRefreshBook46::NoMDEntries const &item,
+    auto &security,
+    auto &layer,
+    auto &bids,
+    auto &asks) {
   using value_type = typename std::remove_cvref<decltype(item)>::type;
   switch (item.mDEntryType()) {
     using enum cme_mdp3::MDEntryTypeBook::Value;
@@ -1032,7 +1036,8 @@ void UDPIncremental::operator()(
 void UDPIncremental::operator()(Trace<cme_mdp3::SnapshotFullRefreshOrderBook53> const &, sbe::Frame const &) {
 }
 
-void UDPIncremental::operator()(Trace<cme_mdp3::MDIncrementalRefreshOrderBook47> const &event, sbe::Frame const &frame) {
+void UDPIncremental::operator()(
+    Trace<cme_mdp3::MDIncrementalRefreshOrderBook47> const &event, sbe::Frame const &frame) {
   profile_.md_incremental_refresh_order_book([&]() {
     auto &trace_info = event.trace_info;
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;

@@ -322,7 +322,9 @@ TEST_CASE("simple", "[mbofd_recovery]") {
     void operator()(Trace<cme_mdp3::MDIncrementalRefreshVolume37> const &, sbe::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp3::MDIncrementalRefreshBook46> const &, sbe::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp3::MDIncrementalRefreshOrderBook47> const &, sbe::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshTradeSummary48> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshTradeSummary48> const &, sbe::Frame const &) override {
+      FAIL();
+    }
     void operator()(Trace<cme_mdp3::MDIncrementalRefreshDailyStatistics49> const &, sbe::Frame const &) override {
       FAIL();
     }

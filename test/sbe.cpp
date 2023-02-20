@@ -141,7 +141,9 @@ TEST_CASE("md_incremental_refresh_book_46_test_1", "[sbe]") {
       }
     }
     void operator()(Trace<cme_mdp3::MDIncrementalRefreshOrderBook47> const &, sbe::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshTradeSummary48> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshTradeSummary48> const &, sbe::Frame const &) override {
+      FAIL();
+    }
     void operator()(Trace<cme_mdp3::MDIncrementalRefreshDailyStatistics49> const &, sbe::Frame const &) override {
       FAIL();
     }
@@ -302,7 +304,9 @@ TEST_CASE("md_incremental_refresh_book_46_test_2", "[sbe]") {
     void operator()(Trace<cme_mdp3::MDIncrementalRefreshVolume37> const &, sbe::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp3::MDIncrementalRefreshBook46> const &, sbe::Frame const &) override { ++counter; }
     void operator()(Trace<cme_mdp3::MDIncrementalRefreshOrderBook47> const &, sbe::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshTradeSummary48> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshTradeSummary48> const &, sbe::Frame const &) override {
+      FAIL();
+    }
     void operator()(Trace<cme_mdp3::MDIncrementalRefreshDailyStatistics49> const &, sbe::Frame const &) override {
       FAIL();
     }
@@ -470,7 +474,9 @@ TEST_CASE("md_instrument_definition_future_54", "[sbe]") {
     void operator()(Trace<cme_mdp3::MDIncrementalRefreshVolume37> const &, sbe::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp3::MDIncrementalRefreshBook46> const &, sbe::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp3::MDIncrementalRefreshOrderBook47> const &, sbe::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshTradeSummary48> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshTradeSummary48> const &, sbe::Frame const &) override {
+      FAIL();
+    }
     void operator()(Trace<cme_mdp3::MDIncrementalRefreshDailyStatistics49> const &, sbe::Frame const &) override {
       FAIL();
     }
@@ -578,7 +584,9 @@ TEST_CASE("md_instrument_definition_spread_56", "[sbe]") {
     void operator()(Trace<cme_mdp3::MDIncrementalRefreshVolume37> const &, sbe::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp3::MDIncrementalRefreshBook46> const &, sbe::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp3::MDIncrementalRefreshOrderBook47> const &, sbe::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshTradeSummary48> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshTradeSummary48> const &, sbe::Frame const &) override {
+      FAIL();
+    }
     void operator()(Trace<cme_mdp3::MDIncrementalRefreshDailyStatistics49> const &, sbe::Frame const &) override {
       FAIL();
     }
@@ -680,7 +688,9 @@ TEST_CASE("md_md_incremental_refresh_book_46_test_1", "[sbe]") {
       fmt::print("{}\n"sv, value);
     }
     void operator()(Trace<cme_mdp3::MDIncrementalRefreshOrderBook47> const &, sbe::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshTradeSummary48> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshTradeSummary48> const &, sbe::Frame const &) override {
+      FAIL();
+    }
     void operator()(Trace<cme_mdp3::MDIncrementalRefreshDailyStatistics49> const &, sbe::Frame const &) override {
       FAIL();
     }
@@ -769,7 +779,9 @@ TEST_CASE("md_md_incremental_refresh_book_46_test_2", "[sbe]") {
       auto tmp = fmt::format("{}"sv, const_cast<cme_mdp3::MDIncrementalRefreshBook46 &>(value));
     }
     void operator()(Trace<cme_mdp3::MDIncrementalRefreshOrderBook47> const &, sbe::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshTradeSummary48> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshTradeSummary48> const &, sbe::Frame const &) override {
+      FAIL();
+    }
     void operator()(Trace<cme_mdp3::MDIncrementalRefreshDailyStatistics49> const &, sbe::Frame const &) override {
       FAIL();
     }
@@ -837,7 +849,9 @@ TEST_CASE("admin_heartbeat_12", "[sbe]") {
     void operator()(Trace<cme_mdp3::MDIncrementalRefreshVolume37> const &, sbe::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp3::MDIncrementalRefreshBook46> const &, sbe::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp3::MDIncrementalRefreshOrderBook47> const &, sbe::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshTradeSummary48> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshTradeSummary48> const &, sbe::Frame const &) override {
+      FAIL();
+    }
     void operator()(Trace<cme_mdp3::MDIncrementalRefreshDailyStatistics49> const &, sbe::Frame const &) override {
       FAIL();
     }
@@ -963,7 +977,9 @@ TEST_CASE("snapshot_full_refresh_52", "[sbe]") {
     void operator()(Trace<cme_mdp3::MDIncrementalRefreshVolume37> const &, sbe::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp3::MDIncrementalRefreshBook46> const &, sbe::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp3::MDIncrementalRefreshOrderBook47> const &, sbe::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshTradeSummary48> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshTradeSummary48> const &, sbe::Frame const &) override {
+      FAIL();
+    }
     void operator()(Trace<cme_mdp3::MDIncrementalRefreshDailyStatistics49> const &, sbe::Frame const &) override {
       FAIL();
     }
@@ -1021,7 +1037,9 @@ TEST_CASE("quote_request_39", "[sbe]") {
     void operator()(Trace<cme_mdp3::MDIncrementalRefreshVolume37> const &, sbe::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp3::MDIncrementalRefreshBook46> const &, sbe::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp3::MDIncrementalRefreshOrderBook47> const &, sbe::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshTradeSummary48> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshTradeSummary48> const &, sbe::Frame const &) override {
+      FAIL();
+    }
     void operator()(Trace<cme_mdp3::MDIncrementalRefreshDailyStatistics49> const &, sbe::Frame const &) override {
       FAIL();
     }

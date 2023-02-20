@@ -219,7 +219,9 @@ TEST_CASE("batched", "[incremental]") {
     void operator()(Trace<cme_mdp3::MDIncrementalRefreshVolume37> const &, sbe::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp3::MDIncrementalRefreshBook46> const &, sbe::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp3::MDIncrementalRefreshOrderBook47> const &, sbe::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshTradeSummary48> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshTradeSummary48> const &, sbe::Frame const &) override {
+      FAIL();
+    }
     void operator()(Trace<cme_mdp3::MDIncrementalRefreshDailyStatistics49> const &, sbe::Frame const &) override {
       FAIL();
     }
@@ -781,7 +783,9 @@ TEST_CASE("46_with_orders", "[incremental]") {
       }
     }
     void operator()(Trace<cme_mdp3::MDIncrementalRefreshOrderBook47> const &, sbe::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshTradeSummary48> const &, sbe::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshTradeSummary48> const &, sbe::Frame const &) override {
+      FAIL();
+    }
     void operator()(Trace<cme_mdp3::MDIncrementalRefreshDailyStatistics49> const &, sbe::Frame const &) override {
       FAIL();
     }
