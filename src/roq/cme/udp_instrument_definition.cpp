@@ -21,7 +21,7 @@
 #include "roq/cme/flags/config.hpp"
 #include "roq/cme/flags/multicast.hpp"
 
-#include "roq/cme/sbe/utils.hpp"
+#include "roq/cme/mdp3/utils.hpp"
 
 using namespace std::literals;
 
@@ -76,10 +76,10 @@ void create_security(auto &shared, auto &value, Callback callback) {
   auto security_id = value.securityID();
   if (shared.has_security(security_id))
     return;
-  auto security_exchange = sbe::get_string_view(value.securityExchange(), value.securityExchangeLength());
-  auto symbol = sbe::get_string_view(value.symbol(), value.symbolLength());
-  auto display_factor = sbe::get_double(value.displayFactor());
-  auto security_group = sbe::get_string_view(value.securityGroup(), value.securityGroupLength());
+  auto security_exchange = mdp3::get_string_view(value.securityExchange(), value.securityExchangeLength());
+  auto symbol = mdp3::get_string_view(value.symbol(), value.symbolLength());
+  auto display_factor = mdp3::get_double(value.displayFactor());
+  auto security_group = mdp3::get_string_view(value.securityGroup(), value.securityGroupLength());
   auto discard = shared.discard_symbol(symbol);
   auto security = Security{
       .exchange = security_exchange,
@@ -101,7 +101,7 @@ void drain(auto &receiver, auto &buffer, auto stream_id, auto parse) {
     // parse message
     std::span message{std::data(buffer), bytes};
     log::info<5>("{}"sv, debug::hex::Message{message});
-    if (sbe::Frame::parse(message, [&](auto &frame) { log::info<5>("frame={}"sv, frame); })) {
+    if (mdp3::Frame::parse(message, [&](auto &frame) { log::info<5>("frame={}"sv, frame); })) {
     } else {
       // failed to parse frame
       log::warn("Unexpected"sv);
@@ -156,7 +156,7 @@ void UDPInstrumentDefinition::operator()(io::net::udp::Receiver::Read const &) {
   last_update_time_ = trace_info.source_receive_time;
   publish_stream_status(trace_info, ConnectionStatus::READY);  // first message will publish
   auto parse = [&](auto &message) {
-    if (!sbe::Parser::dispatch(*this, message, trace_info)) {
+    if (!mdp3::Parser::dispatch(*this, message, trace_info)) {
       log::warn("{}"sv, debug::hex::Message{message});
       log::fatal("Failed to parse message"sv);
     }
@@ -168,12 +168,12 @@ void UDPInstrumentDefinition::operator()(io::net::udp::Receiver::Error const &er
   log::fatal("Error: what={}"sv, error.what);
 }
 
-// sbe::Parser::Handler
+// mdp3::Parser::Handler
 
-void UDPInstrumentDefinition::operator()(sbe::Frame const &) {
+void UDPInstrumentDefinition::operator()(mdp3::Frame const &) {
 }
 
-void UDPInstrumentDefinition::operator()(Trace<cme_mdp3::AdminHeartbeat12> const &event, sbe::Frame const &frame) {
+void UDPInstrumentDefinition::operator()(Trace<cme_mdp3::AdminHeartbeat12> const &event, mdp3::Frame const &frame) {
   profile_.admin_heartbeat([&]() {
     auto &[trace_info, value] = event;
     log::info<5>("admin_heartbeat_12={}, frame={}"sv, value, frame);
@@ -186,14 +186,14 @@ void UDPInstrumentDefinition::operator()(Trace<cme_mdp3::AdminHeartbeat12> const
   });
 }
 
-void UDPInstrumentDefinition::operator()(Trace<cme_mdp3::ChannelReset4> const &event, sbe::Frame const &frame) {
+void UDPInstrumentDefinition::operator()(Trace<cme_mdp3::ChannelReset4> const &event, mdp3::Frame const &frame) {
   profile_.channel_reset([&]() {
     auto &[trace_info, value] = event;
     log::info<5>("channel_reset_4={}, frame={}"sv, value, frame);
   });
 }
 
-void UDPInstrumentDefinition::operator()(Trace<cme_mdp3::SecurityStatus30> const &event, sbe::Frame const &frame) {
+void UDPInstrumentDefinition::operator()(Trace<cme_mdp3::SecurityStatus30> const &event, mdp3::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -202,16 +202,16 @@ void UDPInstrumentDefinition::operator()(Trace<cme_mdp3::SecurityStatus30> const
 }
 
 void UDPInstrumentDefinition::operator()(
-    Trace<cme_mdp3::MDInstrumentDefinitionFuture54> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDInstrumentDefinitionFuture54> const &event, mdp3::Frame const &frame) {
   profile_.md_instrument_definition_future([&]() {
     auto &trace_info = event.trace_info;
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("md_instrument_definition_future_54={}, frame={}"sv, value, frame);
     create_security(shared_, value, [&](auto &security) {
-      auto quote_currency = sbe::get_string_view(value.currency(), value.currencyLength());
-      auto min_price_increment = sbe::get_double(value.minPriceIncrement());
-      auto contract_multiplier = sbe::get_int(value.contractMultiplier(), value.contractMultiplierNullValue());
+      auto quote_currency = mdp3::get_string_view(value.currency(), value.currencyLength());
+      auto min_price_increment = mdp3::get_double(value.minPriceIncrement());
+      auto contract_multiplier = mdp3::get_int(value.contractMultiplier(), value.contractMultiplierNullValue());
       auto multiplier = contract_multiplier == 0 ? NaN : utils::safe_cast<double>(contract_multiplier);
       auto min_trade_vol = utils::safe_cast(value.minTradeVol());
       auto max_trade_vol = utils::safe_cast(value.maxTradeVol());
@@ -244,7 +244,7 @@ void UDPInstrumentDefinition::operator()(
       create_trace_and_dispatch(handler_, trace_info, reference_data, true);
       if (security.discard)
         return;
-      auto trading_status = sbe::map_security_trading_status(value.mDSecurityTradingStatus());
+      auto trading_status = mdp3::map_security_trading_status(value.mDSecurityTradingStatus());
       auto market_status = MarketStatus{
           .stream_id = stream_id_,
           .exchange = security.exchange,
@@ -257,18 +257,18 @@ void UDPInstrumentDefinition::operator()(
 }
 
 void UDPInstrumentDefinition::operator()(
-    Trace<cme_mdp3::MDInstrumentDefinitionOption55> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDInstrumentDefinitionOption55> const &event, mdp3::Frame const &frame) {
   profile_.md_instrument_definition_option([&]() {
     auto &trace_info = event.trace_info;
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("md_instrument_definition_option_55={}, frame={}"sv, value, frame);
     create_security(shared_, value, [&](auto &security) {
-      auto quote_currency = sbe::get_string_view(value.currency(), value.currencyLength());
-      auto min_price_increment = sbe::get_double(value.minPriceIncrement());
+      auto quote_currency = mdp3::get_string_view(value.currency(), value.currencyLength());
+      auto min_price_increment = mdp3::get_double(value.minPriceIncrement());
       auto min_trade_vol = utils::safe_cast(value.minTradeVol());
       auto max_trade_vol = utils::safe_cast(value.maxTradeVol());
-      auto strike_currency = sbe::get_string_view(value.strikeCurrency(), value.strikeCurrencyLength());
+      auto strike_currency = mdp3::get_string_view(value.strikeCurrency(), value.strikeCurrencyLength());
       auto reference_data = ReferenceData{
           .stream_id = stream_id_,
           .exchange = security.exchange,
@@ -299,7 +299,7 @@ void UDPInstrumentDefinition::operator()(
       create_trace_and_dispatch(handler_, trace_info, reference_data, true);
       if (security.discard)
         return;
-      auto trading_status = sbe::map_security_trading_status(value.mDSecurityTradingStatus());
+      auto trading_status = mdp3::map_security_trading_status(value.mDSecurityTradingStatus());
       auto market_status = MarketStatus{
           .stream_id = stream_id_,
           .exchange = security.exchange,
@@ -312,15 +312,15 @@ void UDPInstrumentDefinition::operator()(
 }
 
 void UDPInstrumentDefinition::operator()(
-    Trace<cme_mdp3::MDInstrumentDefinitionSpread56> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDInstrumentDefinitionSpread56> const &event, mdp3::Frame const &frame) {
   profile_.md_instrument_definition_spread([&]() {
     auto &trace_info = event.trace_info;
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("md_instrument_definition_spread_56={}, frame={}"sv, value, frame);
     create_security(shared_, value, [&](auto &security) {
-      auto quote_currency = sbe::get_string_view(value.currency(), value.currencyLength());
-      auto tick_size = sbe::get_double(value.minPriceIncrement());
+      auto quote_currency = mdp3::get_string_view(value.currency(), value.currencyLength());
+      auto tick_size = mdp3::get_double(value.minPriceIncrement());
       auto min_trade_vol = utils::safe_cast(value.minTradeVol());
       auto max_trade_vol = utils::safe_cast(value.maxTradeVol());
       auto reference_data = ReferenceData{
@@ -352,7 +352,7 @@ void UDPInstrumentDefinition::operator()(
       create_trace_and_dispatch(handler_, trace_info, reference_data, true);
       if (security.discard)
         return;
-      auto trading_status = sbe::map_security_trading_status(value.mDSecurityTradingStatus());
+      auto trading_status = mdp3::map_security_trading_status(value.mDSecurityTradingStatus());
       auto market_status = MarketStatus{
           .stream_id = stream_id_,
           .exchange = security.exchange,
@@ -365,15 +365,15 @@ void UDPInstrumentDefinition::operator()(
 }
 
 void UDPInstrumentDefinition::operator()(
-    Trace<cme_mdp3::MDInstrumentDefinitionFixedIncome57> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDInstrumentDefinitionFixedIncome57> const &event, mdp3::Frame const &frame) {
   profile_.md_instrument_definition_fixed_income([&]() {
     auto &trace_info = event.trace_info;
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("md_instrument_definition_fixed_income_57={}, frame={}"sv, value, frame);
     create_security(shared_, value, [&](auto &security) {
-      auto quote_currency = sbe::get_string_view(value.currency(), value.currencyLength());
-      auto tick_size = sbe::get_double(value.minPriceIncrement());
+      auto quote_currency = mdp3::get_string_view(value.currency(), value.currencyLength());
+      auto tick_size = mdp3::get_double(value.minPriceIncrement());
       auto min_trade_vol = utils::safe_cast(value.minTradeVol());
       auto max_trade_vol = utils::safe_cast(value.maxTradeVol());
       auto reference_data = ReferenceData{
@@ -405,7 +405,7 @@ void UDPInstrumentDefinition::operator()(
       create_trace_and_dispatch(handler_, trace_info, reference_data, true);
       if (security.discard)
         return;
-      auto trading_status = sbe::map_security_trading_status(value.mDSecurityTradingStatus());
+      auto trading_status = mdp3::map_security_trading_status(value.mDSecurityTradingStatus());
       auto market_status = MarketStatus{
           .stream_id = stream_id_,
           .exchange = security.exchange,
@@ -418,15 +418,15 @@ void UDPInstrumentDefinition::operator()(
 }
 
 void UDPInstrumentDefinition::operator()(
-    Trace<cme_mdp3::MDInstrumentDefinitionRepo58> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDInstrumentDefinitionRepo58> const &event, mdp3::Frame const &frame) {
   profile_.md_instrument_definition_repo([&]() {
     auto &trace_info = event.trace_info;
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("md_instrument_definition_repo_58={}, frame={}"sv, value, frame);
     create_security(shared_, value, [&](auto &security) {
-      auto quote_currency = sbe::get_string_view(value.currency(), value.currencyLength());
-      auto tick_size = sbe::get_double(value.minPriceIncrement());
+      auto quote_currency = mdp3::get_string_view(value.currency(), value.currencyLength());
+      auto tick_size = mdp3::get_double(value.minPriceIncrement());
       auto min_trade_vol = utils::safe_cast(value.minTradeVol());
       auto max_trade_vol = utils::safe_cast(value.maxTradeVol());
       auto reference_data = ReferenceData{
@@ -458,7 +458,7 @@ void UDPInstrumentDefinition::operator()(
       create_trace_and_dispatch(handler_, trace_info, reference_data, true);
       if (security.discard)
         return;
-      auto trading_status = sbe::map_security_trading_status(value.mDSecurityTradingStatus());
+      auto trading_status = mdp3::map_security_trading_status(value.mDSecurityTradingStatus());
       auto market_status = MarketStatus{
           .stream_id = stream_id_,
           .exchange = security.exchange,
@@ -471,15 +471,15 @@ void UDPInstrumentDefinition::operator()(
 }
 
 void UDPInstrumentDefinition::operator()(
-    Trace<cme_mdp3::MDInstrumentDefinitionFX63> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDInstrumentDefinitionFX63> const &event, mdp3::Frame const &frame) {
   profile_.md_instrument_definition_fx([&]() {
     auto &trace_info = event.trace_info;
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("md_instrument_definition_fx_63={}, frame={}"sv, value, frame);
     create_security(shared_, value, [&](auto &security) {
-      auto quote_currency = sbe::get_string_view(value.currency(), value.currencyLength());
-      auto tick_size = sbe::get_double(value.minPriceIncrement());
+      auto quote_currency = mdp3::get_string_view(value.currency(), value.currencyLength());
+      auto tick_size = mdp3::get_double(value.minPriceIncrement());
       auto min_trade_vol = utils::safe_cast(value.minTradeVol());
       auto max_trade_vol = utils::safe_cast(value.maxTradeVol());
       auto reference_data = ReferenceData{
@@ -511,7 +511,7 @@ void UDPInstrumentDefinition::operator()(
       create_trace_and_dispatch(handler_, trace_info, reference_data, true);
       if (security.discard)
         return;
-      auto trading_status = sbe::map_security_trading_status(value.mDSecurityTradingStatus());
+      auto trading_status = mdp3::map_security_trading_status(value.mDSecurityTradingStatus());
       auto market_status = MarketStatus{
           .stream_id = stream_id_,
           .exchange = security.exchange,
@@ -523,7 +523,8 @@ void UDPInstrumentDefinition::operator()(
   });
 }
 
-void UDPInstrumentDefinition::operator()(Trace<cme_mdp3::SnapshotFullRefresh52> const &event, sbe::Frame const &frame) {
+void UDPInstrumentDefinition::operator()(
+    Trace<cme_mdp3::SnapshotFullRefresh52> const &event, mdp3::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -532,7 +533,7 @@ void UDPInstrumentDefinition::operator()(Trace<cme_mdp3::SnapshotFullRefresh52> 
 }
 
 void UDPInstrumentDefinition::operator()(
-    Trace<cme_mdp3::SnapshotFullRefreshLongQty69> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::SnapshotFullRefreshLongQty69> const &event, mdp3::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -541,7 +542,7 @@ void UDPInstrumentDefinition::operator()(
 }
 
 void UDPInstrumentDefinition::operator()(
-    Trace<cme_mdp3::MDIncrementalRefreshBook46> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDIncrementalRefreshBook46> const &event, mdp3::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -550,7 +551,7 @@ void UDPInstrumentDefinition::operator()(
 }
 
 void UDPInstrumentDefinition::operator()(
-    Trace<cme_mdp3::MDIncrementalRefreshBookLongQty64> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDIncrementalRefreshBookLongQty64> const &event, mdp3::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -559,7 +560,7 @@ void UDPInstrumentDefinition::operator()(
 }
 
 void UDPInstrumentDefinition::operator()(
-    Trace<cme_mdp3::SnapshotFullRefreshOrderBook53> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::SnapshotFullRefreshOrderBook53> const &event, mdp3::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -568,7 +569,7 @@ void UDPInstrumentDefinition::operator()(
 }
 
 void UDPInstrumentDefinition::operator()(
-    Trace<cme_mdp3::MDIncrementalRefreshOrderBook47> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDIncrementalRefreshOrderBook47> const &event, mdp3::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -577,7 +578,7 @@ void UDPInstrumentDefinition::operator()(
 }
 
 void UDPInstrumentDefinition::operator()(
-    Trace<cme_mdp3::MDIncrementalRefreshTradeSummary48> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDIncrementalRefreshTradeSummary48> const &event, mdp3::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -586,7 +587,7 @@ void UDPInstrumentDefinition::operator()(
 }
 
 void UDPInstrumentDefinition::operator()(
-    Trace<cme_mdp3::MDIncrementalRefreshTradeSummaryLongQty65> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDIncrementalRefreshTradeSummaryLongQty65> const &event, mdp3::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -595,7 +596,7 @@ void UDPInstrumentDefinition::operator()(
 }
 
 void UDPInstrumentDefinition::operator()(
-    Trace<cme_mdp3::MDIncrementalRefreshDailyStatistics49> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDIncrementalRefreshDailyStatistics49> const &event, mdp3::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -604,7 +605,7 @@ void UDPInstrumentDefinition::operator()(
 }
 
 void UDPInstrumentDefinition::operator()(
-    Trace<cme_mdp3::MDIncrementalRefreshSessionStatistics51> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDIncrementalRefreshSessionStatistics51> const &event, mdp3::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -613,7 +614,7 @@ void UDPInstrumentDefinition::operator()(
 }
 
 void UDPInstrumentDefinition::operator()(
-    Trace<cme_mdp3::MDIncrementalRefreshSessionStatisticsLongQty67> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDIncrementalRefreshSessionStatisticsLongQty67> const &event, mdp3::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -622,7 +623,7 @@ void UDPInstrumentDefinition::operator()(
 }
 
 void UDPInstrumentDefinition::operator()(
-    Trace<cme_mdp3::MDIncrementalRefreshVolume37> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDIncrementalRefreshVolume37> const &event, mdp3::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -631,7 +632,7 @@ void UDPInstrumentDefinition::operator()(
 }
 
 void UDPInstrumentDefinition::operator()(
-    Trace<cme_mdp3::MDIncrementalRefreshVolumeLongQty66> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDIncrementalRefreshVolumeLongQty66> const &event, mdp3::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -640,7 +641,7 @@ void UDPInstrumentDefinition::operator()(
 }
 
 void UDPInstrumentDefinition::operator()(
-    Trace<cme_mdp3::MDIncrementalRefreshLimitsBanding50> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDIncrementalRefreshLimitsBanding50> const &event, mdp3::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -648,7 +649,7 @@ void UDPInstrumentDefinition::operator()(
 #endif
 }
 
-void UDPInstrumentDefinition::operator()(Trace<cme_mdp3::QuoteRequest39> const &event, sbe::Frame const &frame) {
+void UDPInstrumentDefinition::operator()(Trace<cme_mdp3::QuoteRequest39> const &event, mdp3::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe

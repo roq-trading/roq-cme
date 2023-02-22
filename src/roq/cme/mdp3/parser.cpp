@@ -1,6 +1,6 @@
 /* Copyright (c) 2017-2023, Hans Erik Thrane */
 
-#include "roq/cme/sbe/parser.hpp"
+#include "roq/cme/mdp3/parser.hpp"
 
 #include <cme_mdp3/AdminLogout16.h>
 #include <cme_mdp3/CollateralMarketValue62.h>
@@ -16,8 +16,8 @@
 
 #include "roq/core/byte_order.hpp"
 
-#include "roq/cme/sbe/frame.hpp"
-#include "roq/cme/sbe/utils.hpp"
+#include "roq/cme/mdp3/frame.hpp"
+#include "roq/cme/mdp3/utils.hpp"
 
 #include <iostream>
 
@@ -25,7 +25,7 @@ using namespace std::literals;
 
 namespace roq {
 namespace cme {
-namespace sbe {
+namespace mdp3 {
 
 namespace {
 struct MessageSize final {
@@ -223,6 +223,6 @@ bool Parser::dispatch(Handler &handler, std::span<std::byte const> const &buffer
   return result;
 }
 
-}  // namespace sbe
+}  // namespace mdp3
 }  // namespace cme
 }  // namespace roq

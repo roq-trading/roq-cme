@@ -17,7 +17,7 @@
 #include "roq/cme/flags/config.hpp"
 #include "roq/cme/flags/multicast.hpp"
 
-#include "roq/cme/sbe/utils.hpp"
+#include "roq/cme/mdp3/utils.hpp"
 
 using namespace std::literals;
 
@@ -66,10 +66,11 @@ struct create_metrics final : public core::metrics::Factory {
 void emplace_back(
     cme_mdp3::SnapshotFullRefreshOrderBook53::NoMDEntries const &item, auto &security, auto &bids, auto &asks) {
   auto create_update = [&]() {
-    auto price = sbe::get_double(const_cast<cme_mdp3::SnapshotFullRefreshOrderBook53::NoMDEntries &>(item).mDEntryPx());
+    auto price =
+        mdp3::get_double(const_cast<cme_mdp3::SnapshotFullRefreshOrderBook53::NoMDEntries &>(item).mDEntryPx());
     auto quantity = item.mDDisplayQty();
-    auto priority = sbe::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue());
-    auto order_id = sbe::get_int(item.orderID(), item.orderIDNullValue());
+    auto priority = mdp3::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue());
+    auto order_id = mdp3::get_int(item.orderID(), item.orderIDNullValue());
     auto result = MBOUpdate{
         .price = price * security.display_factor,
         .quantity = static_cast<double>(quantity),
@@ -81,7 +82,7 @@ void emplace_back(
     fmt::format_to(std::back_inserter(result.order_id), "{}"sv, order_id);
     return result;
   };
-  auto side = sbe::map(item.mDEntryType());
+  auto side = mdp3::map(item.mDEntryType());
   switch (side) {
     using enum Side;
     case UNDEFINED:
@@ -110,7 +111,7 @@ void drain(auto &receiver, auto &buffer, auto stream_id, auto parse) {
     // parse message
     std::span message{std::data(buffer), bytes};
     log::info<5>("{}"sv, debug::hex::Message{message});
-    if (sbe::Frame::parse(message, [&](auto &frame) { log::info<5>("frame={}"sv, frame); })) {
+    if (mdp3::Frame::parse(message, [&](auto &frame) { log::info<5>("frame={}"sv, frame); })) {
     } else {
       // failed to parse frame
       log::warn("Unexpected"sv);
@@ -160,7 +161,7 @@ void UDPMBOMarketRecovery::operator()(io::net::udp::Receiver::Read const &) {
   last_update_time_ = trace_info.source_receive_time;
   publish_stream_status(trace_info, ConnectionStatus::READY);  // first message will publish
   auto parse = [&](auto &message) {
-    if (!sbe::Parser::dispatch(*this, message, trace_info)) {
+    if (!mdp3::Parser::dispatch(*this, message, trace_info)) {
       log::warn("{}"sv, debug::hex::Message{message});
       log::fatal("Failed to parse message"sv);
     }
@@ -172,12 +173,12 @@ void UDPMBOMarketRecovery::operator()(io::net::udp::Receiver::Error const &error
   log::fatal("Error: what={}"sv, error.what);
 }
 
-// sbe::Parser::Handler
+// mdp3::Parser::Handler
 
-void UDPMBOMarketRecovery::operator()(sbe::Frame const &) {
+void UDPMBOMarketRecovery::operator()(mdp3::Frame const &) {
 }
 
-void UDPMBOMarketRecovery::operator()(Trace<cme_mdp3::AdminHeartbeat12> const &event, sbe::Frame const &frame) {
+void UDPMBOMarketRecovery::operator()(Trace<cme_mdp3::AdminHeartbeat12> const &event, mdp3::Frame const &frame) {
   profile_.admin_heartbeat([&]() {
     auto &trace_info = event.trace_info;
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
@@ -192,7 +193,7 @@ void UDPMBOMarketRecovery::operator()(Trace<cme_mdp3::AdminHeartbeat12> const &e
   });
 }
 
-void UDPMBOMarketRecovery::operator()(Trace<cme_mdp3::ChannelReset4> const &event, sbe::Frame const &frame) {
+void UDPMBOMarketRecovery::operator()(Trace<cme_mdp3::ChannelReset4> const &event, mdp3::Frame const &frame) {
   profile_.channel_reset([&]() {
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -200,7 +201,7 @@ void UDPMBOMarketRecovery::operator()(Trace<cme_mdp3::ChannelReset4> const &even
   });
 }
 
-void UDPMBOMarketRecovery::operator()(Trace<cme_mdp3::SecurityStatus30> const &event, sbe::Frame const &frame) {
+void UDPMBOMarketRecovery::operator()(Trace<cme_mdp3::SecurityStatus30> const &event, mdp3::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -209,7 +210,7 @@ void UDPMBOMarketRecovery::operator()(Trace<cme_mdp3::SecurityStatus30> const &e
 }
 
 void UDPMBOMarketRecovery::operator()(
-    Trace<cme_mdp3::MDInstrumentDefinitionFuture54> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDInstrumentDefinitionFuture54> const &event, mdp3::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -218,7 +219,7 @@ void UDPMBOMarketRecovery::operator()(
 }
 
 void UDPMBOMarketRecovery::operator()(
-    Trace<cme_mdp3::MDInstrumentDefinitionOption55> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDInstrumentDefinitionOption55> const &event, mdp3::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -227,7 +228,7 @@ void UDPMBOMarketRecovery::operator()(
 }
 
 void UDPMBOMarketRecovery::operator()(
-    Trace<cme_mdp3::MDInstrumentDefinitionSpread56> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDInstrumentDefinitionSpread56> const &event, mdp3::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -236,7 +237,7 @@ void UDPMBOMarketRecovery::operator()(
 }
 
 void UDPMBOMarketRecovery::operator()(
-    Trace<cme_mdp3::MDInstrumentDefinitionFixedIncome57> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDInstrumentDefinitionFixedIncome57> const &event, mdp3::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -245,7 +246,7 @@ void UDPMBOMarketRecovery::operator()(
 }
 
 void UDPMBOMarketRecovery::operator()(
-    Trace<cme_mdp3::MDInstrumentDefinitionRepo58> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDInstrumentDefinitionRepo58> const &event, mdp3::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -254,7 +255,7 @@ void UDPMBOMarketRecovery::operator()(
 }
 
 void UDPMBOMarketRecovery::operator()(
-    Trace<cme_mdp3::MDInstrumentDefinitionFX63> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDInstrumentDefinitionFX63> const &event, mdp3::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -262,7 +263,7 @@ void UDPMBOMarketRecovery::operator()(
 #endif
 }
 
-void UDPMBOMarketRecovery::operator()(Trace<cme_mdp3::SnapshotFullRefresh52> const &event, sbe::Frame const &frame) {
+void UDPMBOMarketRecovery::operator()(Trace<cme_mdp3::SnapshotFullRefresh52> const &event, mdp3::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -271,7 +272,7 @@ void UDPMBOMarketRecovery::operator()(Trace<cme_mdp3::SnapshotFullRefresh52> con
 }
 
 void UDPMBOMarketRecovery::operator()(
-    Trace<cme_mdp3::SnapshotFullRefreshLongQty69> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::SnapshotFullRefreshLongQty69> const &event, mdp3::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -280,7 +281,7 @@ void UDPMBOMarketRecovery::operator()(
 }
 
 void UDPMBOMarketRecovery::operator()(
-    Trace<cme_mdp3::MDIncrementalRefreshBook46> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDIncrementalRefreshBook46> const &event, mdp3::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -289,7 +290,7 @@ void UDPMBOMarketRecovery::operator()(
 }
 
 void UDPMBOMarketRecovery::operator()(
-    Trace<cme_mdp3::MDIncrementalRefreshBookLongQty64> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDIncrementalRefreshBookLongQty64> const &event, mdp3::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -298,7 +299,7 @@ void UDPMBOMarketRecovery::operator()(
 }
 
 void UDPMBOMarketRecovery::operator()(
-    Trace<cme_mdp3::SnapshotFullRefreshOrderBook53> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::SnapshotFullRefreshOrderBook53> const &event, mdp3::Frame const &frame) {
   profile_.snapshot_full_refresh_order_book([&]() {
     auto &trace_info = event.trace_info;
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
@@ -401,7 +402,7 @@ void UDPMBOMarketRecovery::operator()(
 }
 
 void UDPMBOMarketRecovery::operator()(
-    Trace<cme_mdp3::MDIncrementalRefreshOrderBook47> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDIncrementalRefreshOrderBook47> const &event, mdp3::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -410,7 +411,7 @@ void UDPMBOMarketRecovery::operator()(
 }
 
 void UDPMBOMarketRecovery::operator()(
-    Trace<cme_mdp3::MDIncrementalRefreshTradeSummary48> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDIncrementalRefreshTradeSummary48> const &event, mdp3::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -419,7 +420,7 @@ void UDPMBOMarketRecovery::operator()(
 }
 
 void UDPMBOMarketRecovery::operator()(
-    Trace<cme_mdp3::MDIncrementalRefreshTradeSummaryLongQty65> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDIncrementalRefreshTradeSummaryLongQty65> const &event, mdp3::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -428,7 +429,7 @@ void UDPMBOMarketRecovery::operator()(
 }
 
 void UDPMBOMarketRecovery::operator()(
-    Trace<cme_mdp3::MDIncrementalRefreshDailyStatistics49> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDIncrementalRefreshDailyStatistics49> const &event, mdp3::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -437,7 +438,7 @@ void UDPMBOMarketRecovery::operator()(
 }
 
 void UDPMBOMarketRecovery::operator()(
-    Trace<cme_mdp3::MDIncrementalRefreshSessionStatistics51> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDIncrementalRefreshSessionStatistics51> const &event, mdp3::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -446,7 +447,7 @@ void UDPMBOMarketRecovery::operator()(
 }
 
 void UDPMBOMarketRecovery::operator()(
-    Trace<cme_mdp3::MDIncrementalRefreshSessionStatisticsLongQty67> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDIncrementalRefreshSessionStatisticsLongQty67> const &event, mdp3::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -455,7 +456,7 @@ void UDPMBOMarketRecovery::operator()(
 }
 
 void UDPMBOMarketRecovery::operator()(
-    Trace<cme_mdp3::MDIncrementalRefreshVolume37> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDIncrementalRefreshVolume37> const &event, mdp3::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -464,7 +465,7 @@ void UDPMBOMarketRecovery::operator()(
 }
 
 void UDPMBOMarketRecovery::operator()(
-    Trace<cme_mdp3::MDIncrementalRefreshVolumeLongQty66> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDIncrementalRefreshVolumeLongQty66> const &event, mdp3::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -473,7 +474,7 @@ void UDPMBOMarketRecovery::operator()(
 }
 
 void UDPMBOMarketRecovery::operator()(
-    Trace<cme_mdp3::MDIncrementalRefreshLimitsBanding50> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDIncrementalRefreshLimitsBanding50> const &event, mdp3::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -481,7 +482,7 @@ void UDPMBOMarketRecovery::operator()(
 #endif
 }
 
-void UDPMBOMarketRecovery::operator()(Trace<cme_mdp3::QuoteRequest39> const &event, sbe::Frame const &frame) {
+void UDPMBOMarketRecovery::operator()(Trace<cme_mdp3::QuoteRequest39> const &event, mdp3::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe

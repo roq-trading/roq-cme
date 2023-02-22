@@ -21,7 +21,7 @@
 
 namespace roq {
 namespace cme {
-namespace sbe {
+namespace mdp3 {
 
 inline Side map(cme_mdp3::MDEntryTypeBook::Value value) {
   switch (value) {
@@ -278,7 +278,7 @@ struct Group final {
  private:
   T &value_;
 };
-}  // namespace sbe
+}  // namespace mdp3
 }  // namespace cme
 }  // namespace roq
 
@@ -320,7 +320,7 @@ struct fmt::formatter<cme_mdp3::Decimal9> {
   template <typename Context>
   auto format(value_type const &value, Context &context) const {
     using namespace std::literals;
-    return fmt::format_to(context.out(), R"({})"sv, roq::cme::sbe::get_double(value));
+    return fmt::format_to(context.out(), R"({})"sv, roq::cme::mdp3::get_double(value));
   }
 };
 
@@ -334,7 +334,7 @@ struct fmt::formatter<cme_mdp3::Decimal9NULL> {
   template <typename Context>
   auto format(value_type const &value, Context &context) const {
     using namespace std::literals;
-    return fmt::format_to(context.out(), R"({})"sv, roq::cme::sbe::get_double(value));
+    return fmt::format_to(context.out(), R"({})"sv, roq::cme::mdp3::get_double(value));
   }
 };
 
@@ -348,7 +348,7 @@ struct fmt::formatter<cme_mdp3::DecimalQty> {
   template <typename Context>
   auto format(value_type const &value, Context &context) const {
     using namespace std::literals;
-    return fmt::format_to(context.out(), R"({})"sv, roq::cme::sbe::get_double(value));
+    return fmt::format_to(context.out(), R"({})"sv, roq::cme::mdp3::get_double(value));
   }
 };
 
@@ -362,7 +362,7 @@ struct fmt::formatter<cme_mdp3::PRICE9> {
   template <typename Context>
   auto format(value_type const &value, Context &context) const {
     using namespace std::literals;
-    return fmt::format_to(context.out(), R"({})"sv, roq::cme::sbe::get_double(value));
+    return fmt::format_to(context.out(), R"({})"sv, roq::cme::mdp3::get_double(value));
   }
 };
 
@@ -376,7 +376,7 @@ struct fmt::formatter<cme_mdp3::PRICENULL9> {
   template <typename Context>
   auto format(value_type const &value, Context &context) const {
     using namespace std::literals;
-    return fmt::format_to(context.out(), R"({})"sv, roq::cme::sbe::get_double(value));
+    return fmt::format_to(context.out(), R"({})"sv, roq::cme::mdp3::get_double(value));
   }
 };
 
@@ -764,8 +764,8 @@ struct fmt::formatter<cme_mdp3::MaturityMonthYear> {
 // group
 
 template <typename T>
-struct fmt::formatter<roq::cme::sbe::Group<T>> {
-  using value_type = roq::cme::sbe::Group<T>;
+struct fmt::formatter<roq::cme::mdp3::Group<T>> {
+  using value_type = roq::cme::mdp3::Group<T>;
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);

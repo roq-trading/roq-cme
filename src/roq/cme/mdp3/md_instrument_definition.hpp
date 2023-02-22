@@ -11,7 +11,7 @@
 
 #include "roq/core/sbe/iterator.hpp"
 
-#include "roq/cme/sbe/utils.hpp"
+#include "roq/cme/mdp3/utils.hpp"
 
 /*
  * MDInstrumentDefinitionFuture54
@@ -20,7 +20,7 @@
 
 namespace roq {
 namespace cme {
-namespace sbe {
+namespace mdp3 {
 
 template <>
 inline size_t compute_length(cme_mdp3::MDInstrumentDefinitionFuture54 &value) {
@@ -168,7 +168,7 @@ inline size_t compute_length(cme_mdp3::MDInstrumentDefinitionFX63 &value) {
       no_trading_sessions_length);
 }
 
-}  // namespace sbe
+}  // namespace mdp3
 }  // namespace cme
 }  // namespace roq
 
@@ -288,7 +288,7 @@ struct fmt::formatter<cme_mdp3::MDInstrumentDefinitionFuture54> {
   template <typename Context>
   auto format(value_type &value, Context &context) const {
     using namespace std::literals;
-    using namespace roq::cme::sbe;
+    using namespace roq::cme::mdp3;
     value.sbeRewind();  // note!
     return fmt::format_to(
         context.out(),
@@ -403,7 +403,7 @@ struct fmt::formatter<cme_mdp3::MDInstrumentDefinitionOption55> {
   template <typename Context>
   auto format(value_type &value, Context &context) const {
     using namespace std::literals;
-    using namespace roq::cme::sbe;
+    using namespace roq::cme::mdp3;
     value.sbeRewind();  // note!
     return fmt::format_to(
         context.out(),
@@ -514,7 +514,7 @@ struct fmt::formatter<cme_mdp3::MDInstrumentDefinitionSpread56> {
   template <typename Context>
   auto format(value_type &value, Context &context) const {
     using namespace std::literals;
-    using namespace roq::cme::sbe;
+    using namespace roq::cme::mdp3;
     value.sbeRewind();  // note!
     return fmt::format_to(
         context.out(),
@@ -625,7 +625,7 @@ struct fmt::formatter<cme_mdp3::MDInstrumentDefinitionFixedIncome57> {
   template <typename Context>
   auto format(value_type &value, Context &context) const {
     using namespace std::literals;
-    using namespace roq::cme::sbe;
+    using namespace roq::cme::mdp3;
     value.sbeRewind();  // note!
     return fmt::format_to(
         context.out(),
@@ -754,7 +754,7 @@ struct fmt::formatter<cme_mdp3::MDInstrumentDefinitionRepo58> {
   template <typename Context>
   auto format(value_type &value, Context &context) const {
     using namespace std::literals;
-    using namespace roq::cme::sbe;
+    using namespace roq::cme::mdp3;
     value.sbeRewind();  // note!
     return fmt::format_to(
         context.out(),
@@ -865,7 +865,7 @@ struct fmt::formatter<cme_mdp3::MDInstrumentDefinitionFX63> {
   template <typename Context>
   auto format(value_type &value, Context &context) const {
     using namespace std::literals;
-    using namespace roq::cme::sbe;
+    using namespace roq::cme::mdp3;
     value.sbeRewind();  // note!
     return fmt::format_to(
         context.out(),

@@ -16,11 +16,11 @@
 
 #include "roq/core/sbe/iterator.hpp"
 
-#include "roq/cme/sbe/utils.hpp"
+#include "roq/cme/mdp3/utils.hpp"
 
 namespace roq {
 namespace cme {
-namespace sbe {
+namespace mdp3 {
 
 /*
 virtual void operator()(Trace<cme_mdp3::MDIncrementalRefreshVolume37> const &, Frame const &) = 0;
@@ -49,7 +49,7 @@ MDIncrementalRefreshTradeSummaryLongQty65
 MDIncrementalRefreshVolumeLongQty66
 MDIncrementalRefreshSessionStatisticsLongQty67
 */
-}  // namespace sbe
+}  // namespace mdp3
 }  // namespace cme
 }  // namespace roq
 
@@ -104,7 +104,7 @@ struct fmt::formatter<cme_mdp3::MDIncrementalRefreshVolume37> {
         value.actingVersion(),
         value.transactTime(),
         value.matchEventIndicator(),
-        roq::cme::sbe::Group{value.noMDEntries()});
+        roq::cme::mdp3::Group{value.noMDEntries()});
   }
 };
 
@@ -134,14 +134,14 @@ struct fmt::formatter<cme_mdp3::MDIncrementalRefreshBook46::NoMDEntries> {
         R"(tradeable_size={})"
         R"(}})"sv,
         const_cast<value_type &>(value).mDEntryPx(),
-        roq::cme::sbe::get_int(value.mDEntrySize(), value.mDEntrySizeNullValue()),
+        roq::cme::mdp3::get_int(value.mDEntrySize(), value.mDEntrySizeNullValue()),
         value.securityID(),
         value.rptSeq(),
-        roq::cme::sbe::get_int(value.numberOfOrders(), value.numberOfOrdersNullValue()),
+        roq::cme::mdp3::get_int(value.numberOfOrders(), value.numberOfOrdersNullValue()),
         value.mDPriceLevel(),
         value.mDUpdateAction(),
         value.mDEntryType(),
-        roq::cme::sbe::get_int(value.tradeableSize(), value.tradeableSizeNullValue()));
+        roq::cme::mdp3::get_int(value.tradeableSize(), value.tradeableSizeNullValue()));
   }
 };
 
@@ -165,9 +165,9 @@ struct fmt::formatter<cme_mdp3::MDIncrementalRefreshBook46::NoOrderIDEntries> {
         R"(order_update_action={})"
         R"(}})"sv,
         value.orderID(),
-        roq::cme::sbe::get_int(value.mDOrderPriority(), value.mDOrderPriorityNullValue()),
-        roq::cme::sbe::get_int(value.mDDisplayQty(), value.mDDisplayQtyNullValue()),
-        roq::cme::sbe::get_int(value.referenceID(), value.referenceIDNullValue()),
+        roq::cme::mdp3::get_int(value.mDOrderPriority(), value.mDOrderPriorityNullValue()),
+        roq::cme::mdp3::get_int(value.mDDisplayQty(), value.mDDisplayQtyNullValue()),
+        roq::cme::mdp3::get_int(value.referenceID(), value.referenceIDNullValue()),
         value.orderUpdateAction());
   }
 };
@@ -193,13 +193,13 @@ struct fmt::formatter<cme_mdp3::MDIncrementalRefreshBook46> {
         value.actingVersion(),
         value.transactTime(),
         value.matchEventIndicator(),
-        roq::cme::sbe::Group{value.noMDEntries()});
+        roq::cme::mdp3::Group{value.noMDEntries()});
     return fmt::format_to(
         context.out(),
         "], "
         "no_order_id_entries=[{}]"
         "}}"sv,
-        roq::cme::sbe::Group{value.noOrderIDEntries()});
+        roq::cme::mdp3::Group{value.noOrderIDEntries()});
   }
 };
 
@@ -226,10 +226,10 @@ struct fmt::formatter<cme_mdp3::MDIncrementalRefreshOrderBook47::NoMDEntries> {
         R"(md_update_action={}, )"
         R"(md_entry_type={})"
         R"(}})"sv,
-        roq::cme::sbe::get_int(value.orderID(), value.orderIDNullValue()),
-        roq::cme::sbe::get_int(value.mDOrderPriority(), value.mDOrderPriorityNullValue()),
+        roq::cme::mdp3::get_int(value.orderID(), value.orderIDNullValue()),
+        roq::cme::mdp3::get_int(value.mDOrderPriority(), value.mDOrderPriorityNullValue()),
         const_cast<value_type &>(value).mDEntryPx(),
-        roq::cme::sbe::get_int(value.mDDisplayQty(), value.mDDisplayQtyNullValue()),
+        roq::cme::mdp3::get_int(value.mDDisplayQty(), value.mDDisplayQtyNullValue()),
         value.securityID(),
         value.mDUpdateAction(),
         value.mDEntryType());
@@ -258,7 +258,7 @@ struct fmt::formatter<cme_mdp3::MDIncrementalRefreshOrderBook47> {
         value.actingVersion(),
         value.transactTime(),
         value.matchEventIndicator(),
-        roq::cme::sbe::Group{value.noMDEntries()});
+        roq::cme::mdp3::Group{value.noMDEntries()});
   }
 };
 
@@ -295,7 +295,7 @@ struct fmt::formatter<cme_mdp3::MDIncrementalRefreshTradeSummary48::NoMDEntries>
         value.aggressorSide(),
         value.mDUpdateAction(),
         value.mDEntryType(),
-        roq::cme::sbe::get_int(value.mDTradeEntryID(), value.mDTradeEntryIDNullValue()));
+        roq::cme::mdp3::get_int(value.mDTradeEntryID(), value.mDTradeEntryIDNullValue()));
   }
 };
 
@@ -341,13 +341,13 @@ struct fmt::formatter<cme_mdp3::MDIncrementalRefreshTradeSummary48> {
         value.actingVersion(),
         value.transactTime(),
         value.matchEventIndicator(),
-        roq::cme::sbe::Group{value.noMDEntries()});
+        roq::cme::mdp3::Group{value.noMDEntries()});
     return fmt::format_to(
         context.out(),
         R"(], )"
         R"(no_order_id_entries=[{}])"
         R"(}})"sv,
-        roq::cme::sbe::Group{value.noOrderIDEntries()});
+        roq::cme::mdp3::Group{value.noOrderIDEntries()});
   }
 };
 
@@ -376,7 +376,7 @@ struct fmt::formatter<cme_mdp3::MDIncrementalRefreshDailyStatistics49::NoMDEntri
         R"(md_entry_type={})"
         R"(}})"sv,
         const_cast<value_type &>(value).mDEntryPx(),
-        roq::cme::sbe::get_int(value.mDEntrySize(), value.mDEntrySizeNullValue()),
+        roq::cme::mdp3::get_int(value.mDEntrySize(), value.mDEntrySizeNullValue()),
         value.securityID(),
         value.rptSeq(),
         value.tradingReferenceDate(),
@@ -408,7 +408,7 @@ struct fmt::formatter<cme_mdp3::MDIncrementalRefreshDailyStatistics49> {
         value.actingVersion(),
         value.transactTime(),
         value.matchEventIndicator(),
-        roq::cme::sbe::Group{value.noMDEntries()});
+        roq::cme::mdp3::Group{value.noMDEntries()});
   }
 };
 
@@ -467,7 +467,7 @@ struct fmt::formatter<cme_mdp3::MDIncrementalRefreshLimitsBanding50> {
         value.actingVersion(),
         value.transactTime(),
         value.matchEventIndicator(),
-        roq::cme::sbe::Group{value.noMDEntries()});
+        roq::cme::mdp3::Group{value.noMDEntries()});
   }
 };
 
@@ -500,7 +500,7 @@ struct fmt::formatter<cme_mdp3::MDIncrementalRefreshSessionStatistics51::NoMDEnt
         value.openCloseSettlFlag(),
         value.mDUpdateAction(),
         value.mDEntryType(),
-        roq::cme::sbe::get_int(value.mDEntrySize(), value.mDEntrySizeNullValue()));
+        roq::cme::mdp3::get_int(value.mDEntrySize(), value.mDEntrySizeNullValue()));
   }
 };
 
@@ -526,7 +526,7 @@ struct fmt::formatter<cme_mdp3::MDIncrementalRefreshSessionStatistics51> {
         value.actingVersion(),
         value.transactTime(),
         value.matchEventIndicator(),
-        roq::cme::sbe::Group{value.noMDEntries()});
+        roq::cme::mdp3::Group{value.noMDEntries()});
   }
 };
 
@@ -555,10 +555,10 @@ struct fmt::formatter<cme_mdp3::MDIncrementalRefreshBookLongQty64::NoMDEntries> 
         R"(md_entry_type={})"
         R"(}})"sv,
         const_cast<value_type &>(value).mDEntryPx(),
-        roq::cme::sbe::get_int(value.mDEntrySize(), value.mDEntrySizeNullValue()),
+        roq::cme::mdp3::get_int(value.mDEntrySize(), value.mDEntrySizeNullValue()),
         value.securityID(),
         value.rptSeq(),
-        roq::cme::sbe::get_int(value.numberOfOrders(), value.numberOfOrdersNullValue()),
+        roq::cme::mdp3::get_int(value.numberOfOrders(), value.numberOfOrdersNullValue()),
         value.mDPriceLevel(),
         value.mDUpdateAction(),
         value.mDEntryType());
@@ -585,9 +585,9 @@ struct fmt::formatter<cme_mdp3::MDIncrementalRefreshBookLongQty64::NoOrderIDEntr
         R"(order_update_action={})"
         R"(}})"sv,
         value.orderID(),
-        roq::cme::sbe::get_int(value.mDOrderPriority(), value.mDOrderPriorityNullValue()),
-        roq::cme::sbe::get_int(value.mDDisplayQty(), value.mDDisplayQtyNullValue()),
-        roq::cme::sbe::get_int(value.referenceID(), value.referenceIDNullValue()),
+        roq::cme::mdp3::get_int(value.mDOrderPriority(), value.mDOrderPriorityNullValue()),
+        roq::cme::mdp3::get_int(value.mDDisplayQty(), value.mDDisplayQtyNullValue()),
+        roq::cme::mdp3::get_int(value.referenceID(), value.referenceIDNullValue()),
         value.orderUpdateAction());
   }
 };
@@ -613,13 +613,13 @@ struct fmt::formatter<cme_mdp3::MDIncrementalRefreshBookLongQty64> {
         value.actingVersion(),
         value.transactTime(),
         value.matchEventIndicator(),
-        roq::cme::sbe::Group{value.noMDEntries()});
+        roq::cme::mdp3::Group{value.noMDEntries()});
     return fmt::format_to(
         context.out(),
         R"(], )"
         R"(no_order_id_entries=[{}])"
         R"(}})"sv,
-        roq::cme::sbe::Group{value.noOrderIDEntries()});
+        roq::cme::mdp3::Group{value.noOrderIDEntries()});
   }
 };
 
@@ -702,13 +702,13 @@ struct fmt::formatter<cme_mdp3::MDIncrementalRefreshTradeSummaryLongQty65> {
         value.actingVersion(),
         value.transactTime(),
         value.matchEventIndicator(),
-        roq::cme::sbe::Group{value.noMDEntries()});
+        roq::cme::mdp3::Group{value.noMDEntries()});
     return fmt::format_to(
         context.out(),
         R"(], )"
         R"(no_order_id_entries=[{}])"
         R"(}})"sv,
-        roq::cme::sbe::Group{value.noOrderIDEntries()});
+        roq::cme::mdp3::Group{value.noOrderIDEntries()});
   }
 };
 
@@ -763,7 +763,7 @@ struct fmt::formatter<cme_mdp3::MDIncrementalRefreshVolumeLongQty66> {
         value.actingVersion(),
         value.transactTime(),
         value.matchEventIndicator(),
-        roq::cme::sbe::Group{value.noMDEntries()});
+        roq::cme::mdp3::Group{value.noMDEntries()});
   }
 };
 
@@ -791,7 +791,7 @@ struct fmt::formatter<cme_mdp3::MDIncrementalRefreshSessionStatisticsLongQty67::
         R"(md_entry_type={})"
         R"(}})"sv,
         const_cast<value_type &>(value).mDEntryPx(),
-        roq::cme::sbe::get_int(value.mDEntrySize(), value.mDEntrySizeNullValue()),
+        roq::cme::mdp3::get_int(value.mDEntrySize(), value.mDEntrySizeNullValue()),
         value.securityID(),
         value.rptSeq(),
         value.openCloseSettlFlag(),
@@ -822,6 +822,6 @@ struct fmt::formatter<cme_mdp3::MDIncrementalRefreshSessionStatisticsLongQty67> 
         value.actingVersion(),
         value.transactTime(),
         value.matchEventIndicator(),
-        roq::cme::sbe::Group{value.noMDEntries()});
+        roq::cme::mdp3::Group{value.noMDEntries()});
   }
 };

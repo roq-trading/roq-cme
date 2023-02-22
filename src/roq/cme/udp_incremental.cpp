@@ -19,7 +19,7 @@
 #include "roq/cme/flags/config.hpp"
 #include "roq/cme/flags/multicast.hpp"
 
-#include "roq/cme/sbe/utils.hpp"
+#include "roq/cme/mdp3/utils.hpp"
 
 using namespace std::literals;
 
@@ -108,19 +108,19 @@ struct SecurityIterator final {
 
 template <typename T>
 void mbp_emplace_back(auto &result, T const &item, auto &security) {
-  auto price = sbe::get_double(const_cast<T &>(item).mDEntryPx());
-  auto quantity = sbe::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue());
-  auto number_of_orders = sbe::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue());
+  auto price = mdp3::get_double(const_cast<T &>(item).mDEntryPx());
+  auto quantity = mdp3::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue());
+  auto number_of_orders = mdp3::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue());
   auto update_action = [&]() -> UpdateAction {
     constexpr bool has_md_update_action = requires(T const &t) { t.mDUpdateAction(); };
     if constexpr (has_md_update_action) {
-      return sbe::map(item.mDUpdateAction());
+      return mdp3::map(item.mDUpdateAction());
     }
     return {};
   }();
   if (update_action == UpdateAction::DELETE)
     quantity = {};  // note! exchange gives us the *old* value / we need this to be zero
-  auto md_price_level = sbe::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue());
+  auto md_price_level = mdp3::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue());
   uint32_t price_level = md_price_level > 0 ? (md_price_level - 1) : 0;
   auto update = MBPUpdate{
       .price = price * security.display_factor,
@@ -135,9 +135,9 @@ void mbp_emplace_back(auto &result, T const &item, auto &security) {
 
 template <typename T>
 void trades_emplace_back(auto &result, T const &item, auto &security) {
-  auto side = sbe::map_side(item.aggressorSide());
-  auto price = sbe::get_double(const_cast<T &>(item).mDEntryPx());
-  auto quantity = sbe::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue());
+  auto side = mdp3::map_side(item.aggressorSide());
+  auto price = mdp3::get_double(const_cast<T &>(item).mDEntryPx());
+  auto quantity = mdp3::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue());
   auto trade = Trade{
       .side = side,
       .price = price * security.display_factor,
@@ -146,14 +146,14 @@ void trades_emplace_back(auto &result, T const &item, auto &security) {
       .taker_order_id = {},
       .maker_order_id = {},
   };
-  auto trade_id = sbe::get_int(item.mDTradeEntryID(), item.mDTradeEntryIDNullValue());
+  auto trade_id = mdp3::get_int(item.mDTradeEntryID(), item.mDTradeEntryIDNullValue());
   fmt::format_to(std::back_inserter(trade.trade_id), "{}"sv, trade_id);
   result.emplace_back(std::move(trade));
 }
 
 template <typename T>
 void statistics_emplace_back_price(auto &result, auto type, T const &item, auto factor) {
-  auto value = sbe::get_double(const_cast<T &>(item).mDEntryPx());
+  auto value = mdp3::get_double(const_cast<T &>(item).mDEntryPx());
   auto statistics = Statistics{
       .type = type,
       .value = value * factor,
@@ -164,7 +164,7 @@ void statistics_emplace_back_price(auto &result, auto type, T const &item, auto 
 }
 
 void statistics_emplace_back_size(auto &result, auto type, auto const &item) {
-  auto value = sbe::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue());
+  auto value = mdp3::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue());
   auto statistics = Statistics{
       .type = type,
       .value = utils::safe_cast(value),
@@ -176,7 +176,7 @@ void statistics_emplace_back_size(auto &result, auto type, auto const &item) {
 
 template <typename T>
 void statistics_emplace_back(auto &result, T const &item, auto &security) {
-  auto statistics_type = sbe::map(item.mDEntryType());
+  auto statistics_type = mdp3::map(item.mDEntryType());
   if (statistics_type == StatisticsType::OPEN_INTEREST) {
     statistics_emplace_back_size(result, statistics_type, item);
   } else {
@@ -206,12 +206,12 @@ void emplace_back(
     case BookReset:  // XXX ????????????????????????
       break;
     case MarketBestOffer: {
-      auto price = sbe::get_double(const_cast<value_type &>(item).mDEntryPx());
+      auto price = mdp3::get_double(const_cast<value_type &>(item).mDEntryPx());
       layer.ask_price = price * security.display_factor;
       break;
     }
     case MarketBestBid: {
-      auto price = sbe::get_double(const_cast<value_type &>(item).mDEntryPx());
+      auto price = mdp3::get_double(const_cast<value_type &>(item).mDEntryPx());
       layer.bid_price = price * security.display_factor;
       break;
     }
@@ -228,10 +228,10 @@ void emplace_back(
     auto &bids,
     auto &asks) {
   auto create_update = [&]() {
-    auto action = sbe::map(item.orderUpdateAction());
-    auto quantity = sbe::get_int(item.mDDisplayQty(), item.mDDisplayQtyNullValue());
-    auto priority = sbe::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue());
-    auto order_id = sbe::get_int(item.orderID(), item.orderIDNullValue());
+    auto action = mdp3::map(item.orderUpdateAction());
+    auto quantity = mdp3::get_int(item.mDDisplayQty(), item.mDDisplayQtyNullValue());
+    auto priority = mdp3::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue());
+    auto order_id = mdp3::get_int(item.orderID(), item.orderIDNullValue());
     auto result = MBOUpdate{
         .price = price * security.display_factor,
         .quantity = static_cast<double>(quantity),
@@ -264,11 +264,11 @@ void emplace_back(
     cme_mdp3::MDIncrementalRefreshOrderBook47::NoMDEntries const &item, auto &security, auto &bids, auto &asks) {
   using value_type = typename std::remove_cvref<decltype(item)>::type;
   auto create_update = [&]() {
-    auto price = sbe::get_double(const_cast<value_type &>(item).mDEntryPx());
-    auto quantity = sbe::get_int(item.mDDisplayQty(), item.mDDisplayQtyNullValue());
-    auto priority = sbe::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue());
-    auto order_id = sbe::get_int(item.orderID(), item.orderIDNullValue());
-    auto action = sbe::map(item.mDUpdateAction());
+    auto price = mdp3::get_double(const_cast<value_type &>(item).mDEntryPx());
+    auto quantity = mdp3::get_int(item.mDDisplayQty(), item.mDDisplayQtyNullValue());
+    auto priority = mdp3::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue());
+    auto order_id = mdp3::get_int(item.orderID(), item.orderIDNullValue());
+    auto action = mdp3::map(item.mDUpdateAction());
     auto result = MBOUpdate{
         .price = price * security.display_factor,
         .quantity = static_cast<double>(quantity),
@@ -383,7 +383,7 @@ void drain(auto &receiver, auto &channel, auto stream_id, auto parse, auto reset
           log::info<5>("{}"sv, debug::hex::Message{message});
           bool hold = false, drop = false;
           value_type sequence_number = {};
-          if (sbe::Frame::parse(message, [&](auto &frame) {
+          if (mdp3::Frame::parse(message, [&](auto &frame) {
                 log::info<5>("frame={}, last_sequence_number={}"sv, frame, channel.sequence.last_sequence_number);
                 // check sequence number
                 sequence_number = frame.sequence_number;
@@ -473,7 +473,7 @@ void UDPIncremental::operator()(io::net::udp::Receiver::Read const &) {
   publish_stream_status(trace_info, ConnectionStatus::READY);  // first message will publish
   auto parse = [&](auto &message) {
     log_this_message_ = false;  // DEBUG
-    if (!sbe::Parser::dispatch(*this, message, trace_info)) {
+    if (!mdp3::Parser::dispatch(*this, message, trace_info)) {
       log::warn("{}"sv, debug::hex::Message{message});
       log::fatal("Failed to parse message"sv);
     }
@@ -494,13 +494,13 @@ void UDPIncremental::operator()(io::net::udp::Receiver::Error const &error) {
   log::fatal("Error: what={}"sv, error.what);
 }
 
-// sbe::Parser::Handler
+// mdp3::Parser::Handler
 
-void UDPIncremental::operator()(sbe::Frame const &frame) {
+void UDPIncremental::operator()(mdp3::Frame const &frame) {
   channel_.incremental.last_sequence = {true, frame.sequence_number};
 }
 
-void UDPIncremental::operator()(Trace<cme_mdp3::AdminHeartbeat12> const &event, sbe::Frame const &frame) {
+void UDPIncremental::operator()(Trace<cme_mdp3::AdminHeartbeat12> const &event, mdp3::Frame const &frame) {
   profile_.admin_heartbeat([&]() {
     auto &[trace_info, value] = event;
     log::info<5>("admin_heartbeat_12={}, frame={}"sv, value, frame);
@@ -513,22 +513,22 @@ void UDPIncremental::operator()(Trace<cme_mdp3::AdminHeartbeat12> const &event, 
   });
 }
 
-void UDPIncremental::operator()(Trace<cme_mdp3::ChannelReset4> const &event, sbe::Frame const &frame) {
+void UDPIncremental::operator()(Trace<cme_mdp3::ChannelReset4> const &event, mdp3::Frame const &frame) {
   profile_.channel_reset([&]() {
     auto &[trace_info, value] = event;
     log::info<5>("channel_reset_4={}, frame={}"sv, value, frame);
   });
 }
 
-void UDPIncremental::operator()(Trace<cme_mdp3::SecurityStatus30> const &event, sbe::Frame const &frame) {
+void UDPIncremental::operator()(Trace<cme_mdp3::SecurityStatus30> const &event, mdp3::Frame const &frame) {
   profile_.security_status([&]() {
     auto &trace_info = event.trace_info;
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("security_status_30={}, frame={}"sv, value, frame);
     value.sbeRewind();  // note!
-    auto security_id = sbe::get_int(value.securityID(), value.securityIDNullValue());
-    auto trading_status = sbe::map_security_trading_status(value.securityTradingStatus());
+    auto security_id = mdp3::get_int(value.securityID(), value.securityIDNullValue());
+    auto trading_status = mdp3::map_security_trading_status(value.securityTradingStatus());
     auto dispatch = [&](auto security_id) {
       shared_.get_security(security_id, [&](auto &security) {
         auto market_status = MarketStatus{
@@ -543,13 +543,14 @@ void UDPIncremental::operator()(Trace<cme_mdp3::SecurityStatus30> const &event, 
     if (security_id) {
       dispatch(security_id);
     } else {
-      auto security_group = sbe::get_string_view(value.securityGroup(), value.securityGroupLength());
+      auto security_group = mdp3::get_string_view(value.securityGroup(), value.securityGroupLength());
       shared_.get_security_group(security_group, [&](auto security_id) { dispatch(security_id); });
     }
   });
 }
 
-void UDPIncremental::operator()(Trace<cme_mdp3::MDInstrumentDefinitionFuture54> const &event, sbe::Frame const &frame) {
+void UDPIncremental::operator()(
+    Trace<cme_mdp3::MDInstrumentDefinitionFuture54> const &event, mdp3::Frame const &frame) {
   profile_.md_instrument_definition_future([&]() {
     auto &trace_info = event.trace_info;
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
@@ -558,9 +559,9 @@ void UDPIncremental::operator()(Trace<cme_mdp3::MDInstrumentDefinitionFuture54> 
     value.sbeRewind();  // note!
     auto security_id = value.securityID();
     shared_.get_security_incl_discard(security_id, [&](auto &security) {
-      auto quote_currency = sbe::get_string_view(value.currency(), value.currencyLength());
-      auto min_price_increment = sbe::get_double(value.minPriceIncrement());
-      auto contract_multiplier = sbe::get_int(value.contractMultiplier(), value.contractMultiplierNullValue());
+      auto quote_currency = mdp3::get_string_view(value.currency(), value.currencyLength());
+      auto min_price_increment = mdp3::get_double(value.minPriceIncrement());
+      auto contract_multiplier = mdp3::get_int(value.contractMultiplier(), value.contractMultiplierNullValue());
       auto multiplier = contract_multiplier == 0 ? NaN : utils::safe_cast<double>(contract_multiplier);
       auto min_trade_vol = utils::safe_cast(value.minTradeVol());
       auto max_trade_vol = utils::safe_cast(value.maxTradeVol());
@@ -593,7 +594,7 @@ void UDPIncremental::operator()(Trace<cme_mdp3::MDInstrumentDefinitionFuture54> 
       create_trace_and_dispatch(handler_, trace_info, reference_data, true);
       if (security.discard)
         return;
-      auto trading_status = sbe::map_security_trading_status(value.mDSecurityTradingStatus());
+      auto trading_status = mdp3::map_security_trading_status(value.mDSecurityTradingStatus());
       auto market_status = MarketStatus{
           .stream_id = stream_id_,
           .exchange = security.exchange,
@@ -605,7 +606,8 @@ void UDPIncremental::operator()(Trace<cme_mdp3::MDInstrumentDefinitionFuture54> 
   });
 }
 
-void UDPIncremental::operator()(Trace<cme_mdp3::MDInstrumentDefinitionOption55> const &event, sbe::Frame const &frame) {
+void UDPIncremental::operator()(
+    Trace<cme_mdp3::MDInstrumentDefinitionOption55> const &event, mdp3::Frame const &frame) {
   profile_.md_instrument_definition_option([&]() {
     auto &trace_info = event.trace_info;
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
@@ -614,11 +616,11 @@ void UDPIncremental::operator()(Trace<cme_mdp3::MDInstrumentDefinitionOption55> 
     value.sbeRewind();  // note!
     auto security_id = value.securityID();
     shared_.get_security_incl_discard(security_id, [&](auto &security) {
-      auto quote_currency = sbe::get_string_view(value.currency(), value.currencyLength());
-      auto min_price_increment = sbe::get_double(value.minPriceIncrement());
+      auto quote_currency = mdp3::get_string_view(value.currency(), value.currencyLength());
+      auto min_price_increment = mdp3::get_double(value.minPriceIncrement());
       auto min_trade_vol = utils::safe_cast(value.minTradeVol());
       auto max_trade_vol = utils::safe_cast(value.maxTradeVol());
-      auto strike_currency = sbe::get_string_view(value.strikeCurrency(), value.strikeCurrencyLength());
+      auto strike_currency = mdp3::get_string_view(value.strikeCurrency(), value.strikeCurrencyLength());
       auto reference_data = ReferenceData{
           .stream_id = stream_id_,
           .exchange = security.exchange,
@@ -649,61 +651,7 @@ void UDPIncremental::operator()(Trace<cme_mdp3::MDInstrumentDefinitionOption55> 
       create_trace_and_dispatch(handler_, trace_info, reference_data, true);
       if (security.discard)
         return;
-      auto trading_status = sbe::map_security_trading_status(value.mDSecurityTradingStatus());
-      auto market_status = MarketStatus{
-          .stream_id = stream_id_,
-          .exchange = security.exchange,
-          .symbol = security.symbol,
-          .trading_status = trading_status,
-      };
-      create_trace_and_dispatch(handler_, trace_info, market_status, true);
-    });
-  });
-}
-
-void UDPIncremental::operator()(Trace<cme_mdp3::MDInstrumentDefinitionSpread56> const &event, sbe::Frame const &frame) {
-  profile_.md_instrument_definition_spread([&]() {
-    auto &trace_info = event.trace_info;
-    using value_type = std::remove_cvref<decltype(event)>::type::value_type;
-    auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
-    log::info<5>("md_instrument_definition_spread_56={}, frame={}"sv, value, frame);
-    value.sbeRewind();  // note!
-    auto security_id = value.securityID();
-    shared_.get_security_incl_discard(security_id, [&](auto &security) {
-      auto quote_currency = sbe::get_string_view(value.currency(), value.currencyLength());
-      auto tick_size = sbe::get_double(value.minPriceIncrement());
-      auto min_trade_vol = utils::safe_cast(value.minTradeVol());
-      auto max_trade_vol = utils::safe_cast(value.maxTradeVol());
-      auto reference_data = ReferenceData{
-          .stream_id = stream_id_,
-          .exchange = security.exchange,
-          .symbol = security.symbol,
-          .description = {},
-          .security_type = SecurityType::FUTURES,
-          .base_currency = {},
-          .quote_currency = quote_currency,
-          .margin_currency = {},
-          .commission_currency = {},
-          .tick_size = tick_size,
-          .multiplier = NaN,
-          .min_trade_vol = min_trade_vol,
-          .max_trade_vol = max_trade_vol,
-          .trade_vol_step_size = NaN,
-          .option_type = {},
-          .strike_currency = {},
-          .strike_price = NaN,
-          .underlying = {},
-          .time_zone = {},
-          .issue_date = {},
-          .settlement_date = {},
-          .expiry_datetime = {},  // MaturityMonthYear ???
-          .expiry_datetime_utc = {},
-          .discard = security.discard,
-      };
-      create_trace_and_dispatch(handler_, trace_info, reference_data, true);
-      if (security.discard)
-        return;
-      auto trading_status = sbe::map_security_trading_status(value.mDSecurityTradingStatus());
+      auto trading_status = mdp3::map_security_trading_status(value.mDSecurityTradingStatus());
       auto market_status = MarketStatus{
           .stream_id = stream_id_,
           .exchange = security.exchange,
@@ -716,7 +664,62 @@ void UDPIncremental::operator()(Trace<cme_mdp3::MDInstrumentDefinitionSpread56> 
 }
 
 void UDPIncremental::operator()(
-    Trace<cme_mdp3::MDInstrumentDefinitionFixedIncome57> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDInstrumentDefinitionSpread56> const &event, mdp3::Frame const &frame) {
+  profile_.md_instrument_definition_spread([&]() {
+    auto &trace_info = event.trace_info;
+    using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+    auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
+    log::info<5>("md_instrument_definition_spread_56={}, frame={}"sv, value, frame);
+    value.sbeRewind();  // note!
+    auto security_id = value.securityID();
+    shared_.get_security_incl_discard(security_id, [&](auto &security) {
+      auto quote_currency = mdp3::get_string_view(value.currency(), value.currencyLength());
+      auto tick_size = mdp3::get_double(value.minPriceIncrement());
+      auto min_trade_vol = utils::safe_cast(value.minTradeVol());
+      auto max_trade_vol = utils::safe_cast(value.maxTradeVol());
+      auto reference_data = ReferenceData{
+          .stream_id = stream_id_,
+          .exchange = security.exchange,
+          .symbol = security.symbol,
+          .description = {},
+          .security_type = SecurityType::FUTURES,
+          .base_currency = {},
+          .quote_currency = quote_currency,
+          .margin_currency = {},
+          .commission_currency = {},
+          .tick_size = tick_size,
+          .multiplier = NaN,
+          .min_trade_vol = min_trade_vol,
+          .max_trade_vol = max_trade_vol,
+          .trade_vol_step_size = NaN,
+          .option_type = {},
+          .strike_currency = {},
+          .strike_price = NaN,
+          .underlying = {},
+          .time_zone = {},
+          .issue_date = {},
+          .settlement_date = {},
+          .expiry_datetime = {},  // MaturityMonthYear ???
+          .expiry_datetime_utc = {},
+          .discard = security.discard,
+      };
+      create_trace_and_dispatch(handler_, trace_info, reference_data, true);
+      if (security.discard)
+        return;
+      auto trading_status = mdp3::map_security_trading_status(value.mDSecurityTradingStatus());
+      auto market_status = MarketStatus{
+          .stream_id = stream_id_,
+          .exchange = security.exchange,
+          .symbol = security.symbol,
+          .trading_status = trading_status,
+      };
+      create_trace_and_dispatch(handler_, trace_info, market_status, true);
+    });
+  });
+}
+
+void UDPIncremental::operator()(
+    Trace<cme_mdp3::MDInstrumentDefinitionFixedIncome57> const &event, mdp3::Frame const &frame) {
   profile_.md_instrument_definition_fixed_income([&]() {
     auto &trace_info = event.trace_info;
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
@@ -725,8 +728,8 @@ void UDPIncremental::operator()(
     value.sbeRewind();  // note!
     auto security_id = value.securityID();
     shared_.get_security_incl_discard(security_id, [&](auto &security) {
-      auto quote_currency = sbe::get_string_view(value.currency(), value.currencyLength());
-      auto tick_size = sbe::get_double(value.minPriceIncrement());
+      auto quote_currency = mdp3::get_string_view(value.currency(), value.currencyLength());
+      auto tick_size = mdp3::get_double(value.minPriceIncrement());
       auto min_trade_vol = utils::safe_cast(value.minTradeVol());
       auto max_trade_vol = utils::safe_cast(value.maxTradeVol());
       auto reference_data = ReferenceData{
@@ -758,7 +761,7 @@ void UDPIncremental::operator()(
       create_trace_and_dispatch(handler_, trace_info, reference_data, true);
       if (security.discard)
         return;
-      auto trading_status = sbe::map_security_trading_status(value.mDSecurityTradingStatus());
+      auto trading_status = mdp3::map_security_trading_status(value.mDSecurityTradingStatus());
       auto market_status = MarketStatus{
           .stream_id = stream_id_,
           .exchange = security.exchange,
@@ -770,7 +773,7 @@ void UDPIncremental::operator()(
   });
 }
 
-void UDPIncremental::operator()(Trace<cme_mdp3::MDInstrumentDefinitionRepo58> const &event, sbe::Frame const &frame) {
+void UDPIncremental::operator()(Trace<cme_mdp3::MDInstrumentDefinitionRepo58> const &event, mdp3::Frame const &frame) {
   profile_.md_instrument_definition_repo([&]() {
     auto &trace_info = event.trace_info;
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
@@ -779,8 +782,8 @@ void UDPIncremental::operator()(Trace<cme_mdp3::MDInstrumentDefinitionRepo58> co
     value.sbeRewind();  // note!
     auto security_id = value.securityID();
     shared_.get_security_incl_discard(security_id, [&](auto &security) {
-      auto quote_currency = sbe::get_string_view(value.currency(), value.currencyLength());
-      auto tick_size = sbe::get_double(value.minPriceIncrement());
+      auto quote_currency = mdp3::get_string_view(value.currency(), value.currencyLength());
+      auto tick_size = mdp3::get_double(value.minPriceIncrement());
       auto min_trade_vol = utils::safe_cast(value.minTradeVol());
       auto max_trade_vol = utils::safe_cast(value.maxTradeVol());
       auto reference_data = ReferenceData{
@@ -812,7 +815,7 @@ void UDPIncremental::operator()(Trace<cme_mdp3::MDInstrumentDefinitionRepo58> co
       create_trace_and_dispatch(handler_, trace_info, reference_data, true);
       if (security.discard)
         return;
-      auto trading_status = sbe::map_security_trading_status(value.mDSecurityTradingStatus());
+      auto trading_status = mdp3::map_security_trading_status(value.mDSecurityTradingStatus());
       auto market_status = MarketStatus{
           .stream_id = stream_id_,
           .exchange = security.exchange,
@@ -824,7 +827,7 @@ void UDPIncremental::operator()(Trace<cme_mdp3::MDInstrumentDefinitionRepo58> co
   });
 }
 
-void UDPIncremental::operator()(Trace<cme_mdp3::MDInstrumentDefinitionFX63> const &event, sbe::Frame const &frame) {
+void UDPIncremental::operator()(Trace<cme_mdp3::MDInstrumentDefinitionFX63> const &event, mdp3::Frame const &frame) {
   profile_.md_instrument_definition_fx([&]() {
     auto &trace_info = event.trace_info;
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
@@ -833,8 +836,8 @@ void UDPIncremental::operator()(Trace<cme_mdp3::MDInstrumentDefinitionFX63> cons
     value.sbeRewind();  // note!
     auto security_id = value.securityID();
     shared_.get_security_incl_discard(security_id, [&](auto &security) {
-      auto quote_currency = sbe::get_string_view(value.currency(), value.currencyLength());
-      auto tick_size = sbe::get_double(value.minPriceIncrement());
+      auto quote_currency = mdp3::get_string_view(value.currency(), value.currencyLength());
+      auto tick_size = mdp3::get_double(value.minPriceIncrement());
       auto min_trade_vol = utils::safe_cast(value.minTradeVol());
       auto max_trade_vol = utils::safe_cast(value.maxTradeVol());
       auto reference_data = ReferenceData{
@@ -866,7 +869,7 @@ void UDPIncremental::operator()(Trace<cme_mdp3::MDInstrumentDefinitionFX63> cons
       create_trace_and_dispatch(handler_, trace_info, reference_data, true);
       if (security.discard)
         return;
-      auto trading_status = sbe::map_security_trading_status(value.mDSecurityTradingStatus());
+      auto trading_status = mdp3::map_security_trading_status(value.mDSecurityTradingStatus());
       auto market_status = MarketStatus{
           .stream_id = stream_id_,
           .exchange = security.exchange,
@@ -878,16 +881,16 @@ void UDPIncremental::operator()(Trace<cme_mdp3::MDInstrumentDefinitionFX63> cons
   });
 }
 
-void UDPIncremental::operator()(Trace<cme_mdp3::SnapshotFullRefresh52> const &, sbe::Frame const &) {
+void UDPIncremental::operator()(Trace<cme_mdp3::SnapshotFullRefresh52> const &, mdp3::Frame const &) {
 }
 
-void UDPIncremental::operator()(Trace<cme_mdp3::SnapshotFullRefreshLongQty69> const &, sbe::Frame const &) {
+void UDPIncremental::operator()(Trace<cme_mdp3::SnapshotFullRefreshLongQty69> const &, mdp3::Frame const &) {
 }
 
-void UDPIncremental::operator()(Trace<cme_mdp3::QuoteRequest39> const &, sbe::Frame const &) {
+void UDPIncremental::operator()(Trace<cme_mdp3::QuoteRequest39> const &, mdp3::Frame const &) {
 }
 
-void UDPIncremental::operator()(Trace<cme_mdp3::MDIncrementalRefreshBook46> const &event, sbe::Frame const &frame) {
+void UDPIncremental::operator()(Trace<cme_mdp3::MDIncrementalRefreshBook46> const &event, mdp3::Frame const &frame) {
   profile_.md_incremental_refresh_book([&]() {
     auto &trace_info = event.trace_info;
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
@@ -944,9 +947,9 @@ void UDPIncremental::operator()(Trace<cme_mdp3::MDIncrementalRefreshBook46> cons
           check_report_sequence(*security, item, frame);
         using value_type = typename std::remove_cvref<decltype(item)>::type;
         auto &value = const_cast<value_type &>(item);  // note! not const-safe
-        auto price = sbe::get_double(value.mDEntryPx());
-        auto side = sbe::map(item.mDEntryType());
-        auto action = sbe::map(item.mDUpdateAction());
+        auto price = mdp3::get_double(value.mDEntryPx());
+        auto side = mdp3::map(item.mDEntryType());
+        auto action = mdp3::map(item.mDUpdateAction());
         // ... need these for MBO referencing
         if (market_by_order_)
           md_entries_.emplace_back(security_id, side, price, action);
@@ -992,7 +995,7 @@ void UDPIncremental::operator()(Trace<cme_mdp3::MDIncrementalRefreshBook46> cons
         }
       };
       value.noOrderIDEntries().forEach([&](auto const &item) {
-        auto reference_id = sbe::get_int(item.referenceID(), item.referenceIDNullValue());
+        auto reference_id = mdp3::get_int(item.referenceID(), item.referenceIDNullValue());
         if (!reference_id)
           return;
         auto index = static_cast<size_t>(reference_id) - 1;  // indexing is 1-based
@@ -1022,7 +1025,7 @@ void UDPIncremental::operator()(Trace<cme_mdp3::MDIncrementalRefreshBook46> cons
 }
 
 void UDPIncremental::operator()(
-    Trace<cme_mdp3::MDIncrementalRefreshBookLongQty64> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDIncrementalRefreshBookLongQty64> const &event, mdp3::Frame const &frame) {
   profile_.md_incremental_refresh_book_long_qty([&]() {
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -1033,11 +1036,11 @@ void UDPIncremental::operator()(
   });
 }
 
-void UDPIncremental::operator()(Trace<cme_mdp3::SnapshotFullRefreshOrderBook53> const &, sbe::Frame const &) {
+void UDPIncremental::operator()(Trace<cme_mdp3::SnapshotFullRefreshOrderBook53> const &, mdp3::Frame const &) {
 }
 
 void UDPIncremental::operator()(
-    Trace<cme_mdp3::MDIncrementalRefreshOrderBook47> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDIncrementalRefreshOrderBook47> const &event, mdp3::Frame const &frame) {
   profile_.md_incremental_refresh_order_book([&]() {
     auto &trace_info = event.trace_info;
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
@@ -1062,7 +1065,7 @@ void UDPIncremental::operator()(
 }
 
 void UDPIncremental::operator()(
-    Trace<cme_mdp3::MDIncrementalRefreshTradeSummary48> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDIncrementalRefreshTradeSummary48> const &event, mdp3::Frame const &frame) {
   profile_.md_incremental_refresh_trade_summary([&]() {
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -1072,7 +1075,7 @@ void UDPIncremental::operator()(
 }
 
 void UDPIncremental::operator()(
-    Trace<cme_mdp3::MDIncrementalRefreshTradeSummaryLongQty65> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDIncrementalRefreshTradeSummaryLongQty65> const &event, mdp3::Frame const &frame) {
   profile_.md_incremental_refresh_trade_summary_long_qty([&]() {
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -1082,7 +1085,7 @@ void UDPIncremental::operator()(
 }
 
 void UDPIncremental::operator()(
-    Trace<cme_mdp3::MDIncrementalRefreshDailyStatistics49> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDIncrementalRefreshDailyStatistics49> const &event, mdp3::Frame const &frame) {
   profile_.md_incremental_refresh_daily_statistics([&]() {
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -1094,7 +1097,7 @@ void UDPIncremental::operator()(
 }
 
 void UDPIncremental::operator()(
-    Trace<cme_mdp3::MDIncrementalRefreshSessionStatistics51> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDIncrementalRefreshSessionStatistics51> const &event, mdp3::Frame const &frame) {
   profile_.md_incremental_refresh_session_statistics([&]() {
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -1106,7 +1109,7 @@ void UDPIncremental::operator()(
 }
 
 void UDPIncremental::operator()(
-    Trace<cme_mdp3::MDIncrementalRefreshSessionStatisticsLongQty67> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDIncrementalRefreshSessionStatisticsLongQty67> const &event, mdp3::Frame const &frame) {
   profile_.md_incremental_refresh_session_statistics_long_qty([&]() {
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -1117,7 +1120,7 @@ void UDPIncremental::operator()(
   });
 }
 
-void UDPIncremental::operator()(Trace<cme_mdp3::MDIncrementalRefreshVolume37> const &event, sbe::Frame const &frame) {
+void UDPIncremental::operator()(Trace<cme_mdp3::MDIncrementalRefreshVolume37> const &event, mdp3::Frame const &frame) {
   profile_.md_incremental_refresh_volume([&]() {
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -1129,7 +1132,7 @@ void UDPIncremental::operator()(Trace<cme_mdp3::MDIncrementalRefreshVolume37> co
 }
 
 void UDPIncremental::operator()(
-    Trace<cme_mdp3::MDIncrementalRefreshVolumeLongQty66> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDIncrementalRefreshVolumeLongQty66> const &event, mdp3::Frame const &frame) {
   profile_.md_incremental_refresh_volume_long_qty([&]() {
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -1141,7 +1144,7 @@ void UDPIncremental::operator()(
 }
 
 void UDPIncremental::operator()(
-    Trace<cme_mdp3::MDIncrementalRefreshLimitsBanding50> const &event, sbe::Frame const &frame) {
+    Trace<cme_mdp3::MDIncrementalRefreshLimitsBanding50> const &event, mdp3::Frame const &frame) {
   profile_.md_incremental_refresh_limits_banding([&]() {
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -1303,7 +1306,7 @@ void UDPIncremental::dispatch_market_by_order(
 }
 
 template <typename T>
-void UDPIncremental::dispatch_trade_summary(Trace<T> const &event, sbe::Frame const &frame) {
+void UDPIncremental::dispatch_trade_summary(Trace<T> const &event, mdp3::Frame const &frame) {
   auto &trace_info = event.trace_info;
   using value_type = typename std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -1332,7 +1335,7 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event, sbe::Frame co
 }
 
 template <typename T, typename Callback>
-void UDPIncremental::dispatch_statistics(Trace<T> const &event, sbe::Frame const &frame, Callback callback) {
+void UDPIncremental::dispatch_statistics(Trace<T> const &event, mdp3::Frame const &frame, Callback callback) {
   auto &trace_info = event.trace_info;
   using value_type = typename std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -1361,7 +1364,7 @@ void UDPIncremental::dispatch_statistics(Trace<T> const &event, sbe::Frame const
   SecurityIterator{shared_}(value.noMDEntries(), dispatch, update);
 }
 
-void UDPIncremental::check_report_sequence(Security &security, auto const &value, sbe::Frame const &frame) {
+void UDPIncremental::check_report_sequence(Security &security, auto const &value, mdp3::Frame const &frame) {
   auto rpt_seq = value.rptSeq();
   if (!security.update_rpt_seq(rpt_seq))
     return;

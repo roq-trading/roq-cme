@@ -6,11 +6,11 @@
 
 #include "roq/core/sbe/iterator.hpp"
 
-#include "roq/cme/sbe/utils.hpp"
+#include "roq/cme/mdp3/utils.hpp"
 
 namespace roq {
 namespace cme {
-namespace sbe {
+namespace mdp3 {
 
 /*
 template <>
@@ -22,7 +22,7 @@ inline size_t compute_length(cme_mdp3::QuoteRequest39 &value) {
 }
 */
 
-}  // namespace sbe
+}  // namespace mdp3
 }  // namespace cme
 }  // namespace roq
 
@@ -79,6 +79,6 @@ struct fmt::formatter<cme_mdp3::QuoteRequest39> {
         value.transactTime(),
         value.quoteReqID(),
         value.matchEventIndicator(),
-        roq::cme::sbe::Group{value.noRelatedSym()});
+        roq::cme::mdp3::Group{value.noRelatedSym()});
   }
 };

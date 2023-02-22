@@ -1,4 +1,4 @@
-set(TARGET_NAME "${PROJECT_NAME}-sbe")
+set(TARGET_NAME "${PROJECT_NAME}-mdp3")
 
 set(SOURCES frame.cpp parser.cpp)
 
