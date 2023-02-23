@@ -1,0 +1,49 @@
+/* Copyright (c) 2017-2023, Hans Erik Thrane */
+
+#pragma once
+
+#include <cstdint>
+#include <span>
+
+#include "roq/trace.hpp"
+
+#include "roq/cme/ilink3/frame.hpp"
+
+#include "roq/cme/ilink3/business.hpp"
+#include "roq/cme/ilink3/execution_report.hpp"
+#include "roq/cme/ilink3/order.hpp"
+#include "roq/cme/ilink3/security_definition.hpp"
+
+namespace roq {
+namespace cme {
+namespace ilink3 {
+
+struct Parser final {
+  struct Handler {
+    virtual void operator()(Frame const &) = 0;
+    // business
+    virtual void operator()(Trace<cme_ilink3::BusinessReject521> const &, Frame const &) = 0;
+    // execution report
+    virtual void operator()(Trace<cme_ilink3::ExecutionReportNew522> const &, Frame const &) = 0;
+    virtual void operator()(Trace<cme_ilink3::ExecutionReportReject523> const &, Frame const &) = 0;
+    virtual void operator()(Trace<cme_ilink3::ExecutionReportTradeOutright525> const &, Frame const &) = 0;
+    virtual void operator()(Trace<cme_ilink3::ExecutionReportTradeSpread526> const &, Frame const &) = 0;
+    virtual void operator()(Trace<cme_ilink3::ExecutionReportTradeSpreadLeg527> const &, Frame const &) = 0;
+    virtual void operator()(Trace<cme_ilink3::ExecutionReportModify531> const &, Frame const &) = 0;
+    virtual void operator()(Trace<cme_ilink3::ExecutionReportStatus532> const &, Frame const &) = 0;
+    virtual void operator()(Trace<cme_ilink3::ExecutionReportCancel534> const &, Frame const &) = 0;
+    virtual void operator()(Trace<cme_ilink3::ExecutionReportPendingCancel564> const &, Frame const &) = 0;
+    virtual void operator()(Trace<cme_ilink3::ExecutionReportPendingReplace565> const &, Frame const &) = 0;
+    // order
+    virtual void operator()(Trace<cme_ilink3::OrderCancelReject535> const &, Frame const &) = 0;
+    virtual void operator()(Trace<cme_ilink3::OrderCancelReplaceReject536> const &, Frame const &) = 0;
+    // security definition
+    virtual void operator()(Trace<cme_ilink3::SecurityDefinitionResponse561> const &, Frame const &) = 0;
+  };
+
+  static bool dispatch(Handler &, std::span<std::byte const> const &buffer, TraceInfo const &);
+};
+
+}  // namespace ilink3
+}  // namespace cme
+}  // namespace roq

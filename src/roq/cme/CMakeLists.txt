@@ -2,6 +2,7 @@ set(TARGET_NAME "${PROJECT_NAME}")
 
 add_subdirectory("flags")
 add_subdirectory("mdp3")
+add_subdirectory("ilink3")
 add_subdirectory("multicast")
 add_subdirectory("secdef")
 add_subdirectory("channel_tester")
@@ -27,6 +28,7 @@ target_link_libraries(
   "${TARGET_NAME}"
   PRIVATE "${PROJECT_NAME}-flags"
           "${PROJECT_NAME}-mdp3"
+          "${PROJECT_NAME}-ilink3"
           "${PROJECT_NAME}-multicast"
           "${PROJECT_NAME}-secdef"
           roq-server::roq-server
