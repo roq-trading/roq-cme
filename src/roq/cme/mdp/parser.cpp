@@ -2,13 +2,13 @@
 
 #include "roq/cme/mdp/parser.hpp"
 
-#include <cme_mdp3/AdminLogout16.h>
-#include <cme_mdp3/CollateralMarketValue62.h>
-#include <cme_mdp3/QuoteRequest39.h>
-#include <cme_mdp3/SecurityStatusWorkup60.h>
-#include <cme_mdp3/SnapshotFullRefreshTCP61.h>
-#include <cme_mdp3/SnapshotFullRefreshTCPLongQty68.h>
-#include <cme_mdp3/SnapshotRefreshTopOrders59.h>
+#include <cme_mdp/AdminLogout16.h>
+#include <cme_mdp/CollateralMarketValue62.h>
+#include <cme_mdp/QuoteRequest39.h>
+#include <cme_mdp/SecurityStatusWorkup60.h>
+#include <cme_mdp/SnapshotFullRefreshTCP61.h>
+#include <cme_mdp/SnapshotFullRefreshTCPLongQty68.h>
+#include <cme_mdp/SnapshotRefreshTopOrders59.h>
 
 #include "roq/logging.hpp"
 
@@ -51,158 +51,158 @@ bool Parser::dispatch(Handler &handler, std::span<std::byte const> const &buffer
         std::span message{reinterpret_cast<char *>(const_cast<std::byte *>(std::data(tmp))), std::size(tmp)};
         while (!std::empty(message)) {
           MessageSize message_size(message);
-          cme_mdp3::MessageHeader header{std::data(message), std::size(message)};
-          message = message.subspan(cme_mdp3::MessageHeader::encodedLength());
+          cme_mdp::MessageHeader header{std::data(message), std::size(message)};
+          message = message.subspan(cme_mdp::MessageHeader::encodedLength());
           auto block_length = header.blockLength();
           auto template_id = header.templateId();
           auto version = header.version();
           log::debug("block_length={}, template={}, version={}"sv, block_length, template_id, version);
           auto length =
-              message_size.length - (sizeof(MessageSize::value_type) + cme_mdp3::MessageHeader::encodedLength());
+              message_size.length - (sizeof(MessageSize::value_type) + cme_mdp::MessageHeader::encodedLength());
           log::debug("length={}"sv, length);
           assert(std::size(message) >= length);
           auto tmp = message.subspan(0, length);
           switch (template_id) {
               // admin
-            case cme_mdp3::AdminHeartbeat12::SBE_TEMPLATE_ID: {
-              cme_mdp3::AdminHeartbeat12 value{std::data(tmp), std::size(tmp), block_length, version};
+            case cme_mdp::AdminHeartbeat12::SBE_TEMPLATE_ID: {
+              cme_mdp::AdminHeartbeat12 value{std::data(tmp), std::size(tmp), block_length, version};
               create_trace_and_dispatch(handler, trace_info, value, frame);
               break;
             }
-            case cme_mdp3::ChannelReset4::SBE_TEMPLATE_ID: {
-              cme_mdp3::ChannelReset4 value{std::data(tmp), std::size(tmp), block_length, version};
+            case cme_mdp::ChannelReset4::SBE_TEMPLATE_ID: {
+              cme_mdp::ChannelReset4 value{std::data(tmp), std::size(tmp), block_length, version};
               create_trace_and_dispatch(handler, trace_info, value, frame);
               break;
             }
-            case cme_mdp3::SecurityStatus30::SBE_TEMPLATE_ID: {
-              cme_mdp3::SecurityStatus30 value{std::data(tmp), std::size(tmp), block_length, version};
+            case cme_mdp::SecurityStatus30::SBE_TEMPLATE_ID: {
+              cme_mdp::SecurityStatus30 value{std::data(tmp), std::size(tmp), block_length, version};
               create_trace_and_dispatch(handler, trace_info, value, frame);
               break;
             }
               // instrument definitions
-            case cme_mdp3::MDInstrumentDefinitionFuture54::SBE_TEMPLATE_ID: {
-              cme_mdp3::MDInstrumentDefinitionFuture54 value{std::data(tmp), std::size(tmp), block_length, version};
+            case cme_mdp::MDInstrumentDefinitionFuture54::SBE_TEMPLATE_ID: {
+              cme_mdp::MDInstrumentDefinitionFuture54 value{std::data(tmp), std::size(tmp), block_length, version};
               create_trace_and_dispatch(handler, trace_info, value, frame);
               break;
             }
-            case cme_mdp3::MDInstrumentDefinitionOption55::SBE_TEMPLATE_ID: {
-              cme_mdp3::MDInstrumentDefinitionOption55 value{std::data(tmp), std::size(tmp), block_length, version};
+            case cme_mdp::MDInstrumentDefinitionOption55::SBE_TEMPLATE_ID: {
+              cme_mdp::MDInstrumentDefinitionOption55 value{std::data(tmp), std::size(tmp), block_length, version};
               create_trace_and_dispatch(handler, trace_info, value, frame);
               break;
             }
-            case cme_mdp3::MDInstrumentDefinitionSpread56::SBE_TEMPLATE_ID: {
-              cme_mdp3::MDInstrumentDefinitionSpread56 value{std::data(tmp), std::size(tmp), block_length, version};
+            case cme_mdp::MDInstrumentDefinitionSpread56::SBE_TEMPLATE_ID: {
+              cme_mdp::MDInstrumentDefinitionSpread56 value{std::data(tmp), std::size(tmp), block_length, version};
               create_trace_and_dispatch(handler, trace_info, value, frame);
               break;
             }
-            case cme_mdp3::MDInstrumentDefinitionFixedIncome57::SBE_TEMPLATE_ID: {
-              cme_mdp3::MDInstrumentDefinitionFixedIncome57 value{
+            case cme_mdp::MDInstrumentDefinitionFixedIncome57::SBE_TEMPLATE_ID: {
+              cme_mdp::MDInstrumentDefinitionFixedIncome57 value{
                   std::data(tmp), std::size(tmp), block_length, version};
               create_trace_and_dispatch(handler, trace_info, value, frame);
               break;
             }
-            case cme_mdp3::MDInstrumentDefinitionRepo58::SBE_TEMPLATE_ID: {
-              cme_mdp3::MDInstrumentDefinitionRepo58 value{std::data(tmp), std::size(tmp), block_length, version};
+            case cme_mdp::MDInstrumentDefinitionRepo58::SBE_TEMPLATE_ID: {
+              cme_mdp::MDInstrumentDefinitionRepo58 value{std::data(tmp), std::size(tmp), block_length, version};
               create_trace_and_dispatch(handler, trace_info, value, frame);
               break;
             }
-            case cme_mdp3::MDInstrumentDefinitionFX63::SBE_TEMPLATE_ID: {
-              cme_mdp3::MDInstrumentDefinitionFX63 value{std::data(tmp), std::size(tmp), block_length, version};
+            case cme_mdp::MDInstrumentDefinitionFX63::SBE_TEMPLATE_ID: {
+              cme_mdp::MDInstrumentDefinitionFX63 value{std::data(tmp), std::size(tmp), block_length, version};
               create_trace_and_dispatch(handler, trace_info, value, frame);
               break;
             }
               // market by price
-            case cme_mdp3::SnapshotFullRefresh52::SBE_TEMPLATE_ID: {
-              cme_mdp3::SnapshotFullRefresh52 value{std::data(tmp), std::size(tmp), block_length, version};
+            case cme_mdp::SnapshotFullRefresh52::SBE_TEMPLATE_ID: {
+              cme_mdp::SnapshotFullRefresh52 value{std::data(tmp), std::size(tmp), block_length, version};
               create_trace_and_dispatch(handler, trace_info, value, frame);
               break;
             }
-            case cme_mdp3::SnapshotFullRefreshLongQty69::SBE_TEMPLATE_ID: {
-              cme_mdp3::SnapshotFullRefreshLongQty69 value{std::data(tmp), std::size(tmp), block_length, version};
+            case cme_mdp::SnapshotFullRefreshLongQty69::SBE_TEMPLATE_ID: {
+              cme_mdp::SnapshotFullRefreshLongQty69 value{std::data(tmp), std::size(tmp), block_length, version};
               create_trace_and_dispatch(handler, trace_info, value, frame);
               break;
             }
-            case cme_mdp3::MDIncrementalRefreshBook46::SBE_TEMPLATE_ID: {
-              cme_mdp3::MDIncrementalRefreshBook46 value{std::data(tmp), std::size(tmp), block_length, version};
+            case cme_mdp::MDIncrementalRefreshBook46::SBE_TEMPLATE_ID: {
+              cme_mdp::MDIncrementalRefreshBook46 value{std::data(tmp), std::size(tmp), block_length, version};
               create_trace_and_dispatch(handler, trace_info, value, frame);
               break;
             }
-            case cme_mdp3::MDIncrementalRefreshBookLongQty64::SBE_TEMPLATE_ID: {
-              cme_mdp3::MDIncrementalRefreshBookLongQty64 value{std::data(tmp), std::size(tmp), block_length, version};
+            case cme_mdp::MDIncrementalRefreshBookLongQty64::SBE_TEMPLATE_ID: {
+              cme_mdp::MDIncrementalRefreshBookLongQty64 value{std::data(tmp), std::size(tmp), block_length, version};
               create_trace_and_dispatch(handler, trace_info, value, frame);
               break;
             }
               // market by order
-            case cme_mdp3::SnapshotFullRefreshOrderBook53::SBE_TEMPLATE_ID: {
-              cme_mdp3::SnapshotFullRefreshOrderBook53 value{std::data(tmp), std::size(tmp), block_length, version};
+            case cme_mdp::SnapshotFullRefreshOrderBook53::SBE_TEMPLATE_ID: {
+              cme_mdp::SnapshotFullRefreshOrderBook53 value{std::data(tmp), std::size(tmp), block_length, version};
               create_trace_and_dispatch(handler, trace_info, value, frame);
               break;
             }
-            case cme_mdp3::MDIncrementalRefreshOrderBook47::SBE_TEMPLATE_ID: {
-              cme_mdp3::MDIncrementalRefreshOrderBook47 value{std::data(tmp), std::size(tmp), block_length, version};
+            case cme_mdp::MDIncrementalRefreshOrderBook47::SBE_TEMPLATE_ID: {
+              cme_mdp::MDIncrementalRefreshOrderBook47 value{std::data(tmp), std::size(tmp), block_length, version};
               create_trace_and_dispatch(handler, trace_info, value, frame);
               break;
             }
               // trade summary
-            case cme_mdp3::MDIncrementalRefreshTradeSummary48::SBE_TEMPLATE_ID: {
-              cme_mdp3::MDIncrementalRefreshTradeSummary48 value{std::data(tmp), std::size(tmp), block_length, version};
+            case cme_mdp::MDIncrementalRefreshTradeSummary48::SBE_TEMPLATE_ID: {
+              cme_mdp::MDIncrementalRefreshTradeSummary48 value{std::data(tmp), std::size(tmp), block_length, version};
               create_trace_and_dispatch(handler, trace_info, value, frame);
               break;
             }
-            case cme_mdp3::MDIncrementalRefreshTradeSummaryLongQty65::SBE_TEMPLATE_ID: {
-              cme_mdp3::MDIncrementalRefreshTradeSummaryLongQty65 value{
+            case cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65::SBE_TEMPLATE_ID: {
+              cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65 value{
                   std::data(tmp), std::size(tmp), block_length, version};
               create_trace_and_dispatch(handler, trace_info, value, frame);
               break;
             }
               // statistics
-            case cme_mdp3::MDIncrementalRefreshDailyStatistics49::SBE_TEMPLATE_ID: {
-              cme_mdp3::MDIncrementalRefreshDailyStatistics49 value{
+            case cme_mdp::MDIncrementalRefreshDailyStatistics49::SBE_TEMPLATE_ID: {
+              cme_mdp::MDIncrementalRefreshDailyStatistics49 value{
                   std::data(tmp), std::size(tmp), block_length, version};
               create_trace_and_dispatch(handler, trace_info, value, frame);
               break;
             }
-            case cme_mdp3::MDIncrementalRefreshSessionStatistics51::SBE_TEMPLATE_ID: {
-              cme_mdp3::MDIncrementalRefreshSessionStatistics51 value{
+            case cme_mdp::MDIncrementalRefreshSessionStatistics51::SBE_TEMPLATE_ID: {
+              cme_mdp::MDIncrementalRefreshSessionStatistics51 value{
                   std::data(tmp), std::size(tmp), block_length, version};
               create_trace_and_dispatch(handler, trace_info, value, frame);
               break;
             }
-            case cme_mdp3::MDIncrementalRefreshSessionStatisticsLongQty67::SBE_TEMPLATE_ID: {
-              cme_mdp3::MDIncrementalRefreshSessionStatisticsLongQty67 value{
+            case cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67::SBE_TEMPLATE_ID: {
+              cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67 value{
                   std::data(tmp), std::size(tmp), block_length, version};
               create_trace_and_dispatch(handler, trace_info, value, frame);
               break;
             }
-            case cme_mdp3::MDIncrementalRefreshVolume37::SBE_TEMPLATE_ID: {
-              cme_mdp3::MDIncrementalRefreshVolume37 value{std::data(tmp), std::size(tmp), block_length, version};
+            case cme_mdp::MDIncrementalRefreshVolume37::SBE_TEMPLATE_ID: {
+              cme_mdp::MDIncrementalRefreshVolume37 value{std::data(tmp), std::size(tmp), block_length, version};
               create_trace_and_dispatch(handler, trace_info, value, frame);
               break;
             }
-            case cme_mdp3::MDIncrementalRefreshVolumeLongQty66::SBE_TEMPLATE_ID: {
-              cme_mdp3::MDIncrementalRefreshVolumeLongQty66 value{
+            case cme_mdp::MDIncrementalRefreshVolumeLongQty66::SBE_TEMPLATE_ID: {
+              cme_mdp::MDIncrementalRefreshVolumeLongQty66 value{
                   std::data(tmp), std::size(tmp), block_length, version};
               create_trace_and_dispatch(handler, trace_info, value, frame);
               break;
             }
               // misc
-            case cme_mdp3::MDIncrementalRefreshLimitsBanding50::SBE_TEMPLATE_ID: {
-              cme_mdp3::MDIncrementalRefreshLimitsBanding50 value{
+            case cme_mdp::MDIncrementalRefreshLimitsBanding50::SBE_TEMPLATE_ID: {
+              cme_mdp::MDIncrementalRefreshLimitsBanding50 value{
                   std::data(tmp), std::size(tmp), block_length, version};
               create_trace_and_dispatch(handler, trace_info, value, frame);
               break;
             }
-            case cme_mdp3::QuoteRequest39::SBE_TEMPLATE_ID: {
-              cme_mdp3::QuoteRequest39 value{std::data(tmp), std::size(tmp), block_length, version};
+            case cme_mdp::QuoteRequest39::SBE_TEMPLATE_ID: {
+              cme_mdp::QuoteRequest39 value{std::data(tmp), std::size(tmp), block_length, version};
               create_trace_and_dispatch(handler, trace_info, value, frame);
               break;
             }
-            case cme_mdp3::AdminLogout16::SBE_TEMPLATE_ID:
-            case cme_mdp3::SnapshotRefreshTopOrders59::SBE_TEMPLATE_ID:
-            case cme_mdp3::SecurityStatusWorkup60::SBE_TEMPLATE_ID:
-            case cme_mdp3::SnapshotFullRefreshTCP61::SBE_TEMPLATE_ID:
-            case cme_mdp3::CollateralMarketValue62::SBE_TEMPLATE_ID:
-            case cme_mdp3::SnapshotFullRefreshTCPLongQty68::SBE_TEMPLATE_ID:
+            case cme_mdp::AdminLogout16::SBE_TEMPLATE_ID:
+            case cme_mdp::SnapshotRefreshTopOrders59::SBE_TEMPLATE_ID:
+            case cme_mdp::SecurityStatusWorkup60::SBE_TEMPLATE_ID:
+            case cme_mdp::SnapshotFullRefreshTCP61::SBE_TEMPLATE_ID:
+            case cme_mdp::CollateralMarketValue62::SBE_TEMPLATE_ID:
+            case cme_mdp::SnapshotFullRefreshTCPLongQty68::SBE_TEMPLATE_ID:
               log::warn("{}"sv, debug::hex::Message{buffer});
               // don't parse / silent drop
               log::warn("Drop: template_id={}"sv, template_id);

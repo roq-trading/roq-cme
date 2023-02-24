@@ -4,16 +4,16 @@
 
 #include <fmt/format.h>
 
-#include <cme_ilink3/ExecutionReportCancel534.h>
-#include <cme_ilink3/ExecutionReportModify531.h>
-#include <cme_ilink3/ExecutionReportNew522.h>
-#include <cme_ilink3/ExecutionReportPendingCancel564.h>
-#include <cme_ilink3/ExecutionReportPendingReplace565.h>
-#include <cme_ilink3/ExecutionReportReject523.h>
-#include <cme_ilink3/ExecutionReportStatus532.h>
-#include <cme_ilink3/ExecutionReportTradeOutright525.h>
-#include <cme_ilink3/ExecutionReportTradeSpread526.h>
-#include <cme_ilink3/ExecutionReportTradeSpreadLeg527.h>
+#include <cme_ilink/ExecutionReportCancel534.h>
+#include <cme_ilink/ExecutionReportModify531.h>
+#include <cme_ilink/ExecutionReportNew522.h>
+#include <cme_ilink/ExecutionReportPendingCancel564.h>
+#include <cme_ilink/ExecutionReportPendingReplace565.h>
+#include <cme_ilink/ExecutionReportReject523.h>
+#include <cme_ilink/ExecutionReportStatus532.h>
+#include <cme_ilink/ExecutionReportTradeOutright525.h>
+#include <cme_ilink/ExecutionReportTradeSpread526.h>
+#include <cme_ilink/ExecutionReportTradeSpreadLeg527.h>
 
 #include "roq/core/sbe/iterator.hpp"
 
@@ -28,8 +28,8 @@ namespace ilink {}  // namespace ilink
 // messages
 
 template <>
-struct fmt::formatter<cme_ilink3::ExecutionReportNew522> {
-  using value_type = cme_ilink3::ExecutionReportNew522;
+struct fmt::formatter<cme_ilink::ExecutionReportNew522> {
+  using value_type = cme_ilink::ExecutionReportNew522;
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);
@@ -121,8 +121,8 @@ struct fmt::formatter<cme_ilink3::ExecutionReportNew522> {
 };
 
 template <>
-struct fmt::formatter<cme_ilink3::ExecutionReportReject523> {
-  using value_type = cme_ilink3::ExecutionReportReject523;
+struct fmt::formatter<cme_ilink::ExecutionReportReject523> {
+  using value_type = cme_ilink::ExecutionReportReject523;
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);
@@ -218,8 +218,8 @@ struct fmt::formatter<cme_ilink3::ExecutionReportReject523> {
 };
 
 template <>
-struct fmt::formatter<cme_ilink3::ExecutionReportModify531> {
-  using value_type = cme_ilink3::ExecutionReportModify531;
+struct fmt::formatter<cme_ilink::ExecutionReportModify531> {
+  using value_type = cme_ilink::ExecutionReportModify531;
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);
@@ -315,8 +315,8 @@ struct fmt::formatter<cme_ilink3::ExecutionReportModify531> {
 };
 
 template <>
-struct fmt::formatter<cme_ilink3::ExecutionReportStatus532> {
-  using value_type = cme_ilink3::ExecutionReportStatus532;
+struct fmt::formatter<cme_ilink::ExecutionReportStatus532> {
+  using value_type = cme_ilink::ExecutionReportStatus532;
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);
@@ -410,8 +410,8 @@ struct fmt::formatter<cme_ilink3::ExecutionReportStatus532> {
 };
 
 template <>
-struct fmt::formatter<cme_ilink3::ExecutionReportCancel534> {
-  using value_type = cme_ilink3::ExecutionReportCancel534;
+struct fmt::formatter<cme_ilink::ExecutionReportCancel534> {
+  using value_type = cme_ilink::ExecutionReportCancel534;
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);
@@ -507,8 +507,8 @@ struct fmt::formatter<cme_ilink3::ExecutionReportCancel534> {
 };
 
 template <>
-struct fmt::formatter<cme_ilink3::ExecutionReportPendingCancel564> {
-  using value_type = cme_ilink3::ExecutionReportPendingCancel564;
+struct fmt::formatter<cme_ilink::ExecutionReportPendingCancel564> {
+  using value_type = cme_ilink::ExecutionReportPendingCancel564;
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);
@@ -586,8 +586,8 @@ struct fmt::formatter<cme_ilink3::ExecutionReportPendingCancel564> {
 };
 
 template <>
-struct fmt::formatter<cme_ilink3::ExecutionReportPendingReplace565> {
-  using value_type = cme_ilink3::ExecutionReportPendingReplace565;
+struct fmt::formatter<cme_ilink::ExecutionReportPendingReplace565> {
+  using value_type = cme_ilink::ExecutionReportPendingReplace565;
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);
@@ -667,8 +667,8 @@ struct fmt::formatter<cme_ilink3::ExecutionReportPendingReplace565> {
 };
 
 template <>
-struct fmt::formatter<cme_ilink3::ExecutionReportTradeOutright525> {
-  using value_type = cme_ilink3::ExecutionReportTradeOutright525;
+struct fmt::formatter<cme_ilink::ExecutionReportTradeOutright525> {
+  using value_type = cme_ilink::ExecutionReportTradeOutright525;
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);
@@ -790,8 +790,8 @@ struct fmt::formatter<cme_ilink3::ExecutionReportTradeOutright525> {
 };
 
 template <>
-struct fmt::formatter<cme_ilink3::ExecutionReportTradeSpread526> {
-  using value_type = cme_ilink3::ExecutionReportTradeSpread526;
+struct fmt::formatter<cme_ilink::ExecutionReportTradeSpread526> {
+  using value_type = cme_ilink::ExecutionReportTradeSpread526;
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);
@@ -895,8 +895,8 @@ struct fmt::formatter<cme_ilink3::ExecutionReportTradeSpread526> {
 };
 
 template <>
-struct fmt::formatter<cme_ilink3::ExecutionReportTradeSpreadLeg527> {
-  using value_type = cme_ilink3::ExecutionReportTradeSpreadLeg527;
+struct fmt::formatter<cme_ilink::ExecutionReportTradeSpreadLeg527> {
+  using value_type = cme_ilink::ExecutionReportTradeSpreadLeg527;
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);

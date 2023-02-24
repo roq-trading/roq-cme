@@ -2,12 +2,12 @@
 
 #pragma once
 
-#include <cme_mdp3/MDInstrumentDefinitionFX63.h>
-#include <cme_mdp3/MDInstrumentDefinitionFixedIncome57.h>
-#include <cme_mdp3/MDInstrumentDefinitionFuture54.h>
-#include <cme_mdp3/MDInstrumentDefinitionOption55.h>
-#include <cme_mdp3/MDInstrumentDefinitionRepo58.h>
-#include <cme_mdp3/MDInstrumentDefinitionSpread56.h>
+#include <cme_mdp/MDInstrumentDefinitionFX63.h>
+#include <cme_mdp/MDInstrumentDefinitionFixedIncome57.h>
+#include <cme_mdp/MDInstrumentDefinitionFuture54.h>
+#include <cme_mdp/MDInstrumentDefinitionOption55.h>
+#include <cme_mdp/MDInstrumentDefinitionRepo58.h>
+#include <cme_mdp/MDInstrumentDefinitionSpread56.h>
 
 #include "roq/core/sbe/iterator.hpp"
 
@@ -23,7 +23,7 @@ namespace cme {
 namespace mdp {
 
 template <>
-inline size_t compute_length(cme_mdp3::MDInstrumentDefinitionFuture54 &value) {
+inline size_t compute_length(cme_mdp::MDInstrumentDefinitionFuture54 &value) {
   // NoEvents
   auto no_events_length = value.noEvents().count();
   value.sbeRewind();  // wtf!
@@ -42,7 +42,7 @@ inline size_t compute_length(cme_mdp3::MDInstrumentDefinitionFuture54 &value) {
 }
 
 template <>
-inline size_t compute_length(cme_mdp3::MDInstrumentDefinitionOption55 &value) {
+inline size_t compute_length(cme_mdp::MDInstrumentDefinitionOption55 &value) {
   // NoEvents
   auto no_events_length = value.noEvents().count();
   value.sbeRewind();  // wtf!
@@ -72,7 +72,7 @@ inline size_t compute_length(cme_mdp3::MDInstrumentDefinitionOption55 &value) {
 }
 
 template <>
-inline size_t compute_length(cme_mdp3::MDInstrumentDefinitionSpread56 &value) {
+inline size_t compute_length(cme_mdp::MDInstrumentDefinitionSpread56 &value) {
   // NoEvents
   auto no_events_length = value.noEvents().count();
   value.sbeRewind();  // wtf!
@@ -94,7 +94,7 @@ inline size_t compute_length(cme_mdp3::MDInstrumentDefinitionSpread56 &value) {
 }
 
 template <>
-inline size_t compute_length(cme_mdp3::MDInstrumentDefinitionFixedIncome57 &value) {
+inline size_t compute_length(cme_mdp::MDInstrumentDefinitionFixedIncome57 &value) {
   // NoEvents
   auto no_events_length = value.noEvents().count();
   value.sbeRewind();  // wtf!
@@ -113,7 +113,7 @@ inline size_t compute_length(cme_mdp3::MDInstrumentDefinitionFixedIncome57 &valu
 }
 
 template <>
-inline size_t compute_length(cme_mdp3::MDInstrumentDefinitionRepo58 &value) {
+inline size_t compute_length(cme_mdp::MDInstrumentDefinitionRepo58 &value) {
   // NoEvents
   auto no_events_length = value.noEvents().count();
   value.sbeRewind();  // wtf!
@@ -143,7 +143,7 @@ inline size_t compute_length(cme_mdp3::MDInstrumentDefinitionRepo58 &value) {
 }
 
 template <>
-inline size_t compute_length(cme_mdp3::MDInstrumentDefinitionFX63 &value) {
+inline size_t compute_length(cme_mdp::MDInstrumentDefinitionFX63 &value) {
   // NoEvents
   auto no_events_length = value.noEvents().count();
   value.sbeRewind();  // wtf!
@@ -177,8 +177,8 @@ inline size_t compute_length(cme_mdp3::MDInstrumentDefinitionFX63 &value) {
 // MDInstrumentDefinitionFuture54
 
 template <>
-struct fmt::formatter<cme_mdp3::MDInstrumentDefinitionFuture54::NoEvents> {
-  using value_type = cme_mdp3::MDInstrumentDefinitionFuture54::NoEvents;
+struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFuture54::NoEvents> {
+  using value_type = cme_mdp::MDInstrumentDefinitionFuture54::NoEvents;
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);
@@ -198,8 +198,8 @@ struct fmt::formatter<cme_mdp3::MDInstrumentDefinitionFuture54::NoEvents> {
 };
 
 template <>
-struct fmt::formatter<cme_mdp3::MDInstrumentDefinitionFuture54::NoMDFeedTypes> {
-  using value_type = cme_mdp3::MDInstrumentDefinitionFuture54::NoMDFeedTypes;
+struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFuture54::NoMDFeedTypes> {
+  using value_type = cme_mdp::MDInstrumentDefinitionFuture54::NoMDFeedTypes;
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);
@@ -219,8 +219,8 @@ struct fmt::formatter<cme_mdp3::MDInstrumentDefinitionFuture54::NoMDFeedTypes> {
 };
 
 template <>
-struct fmt::formatter<cme_mdp3::MDInstrumentDefinitionFuture54::NoInstAttrib> {
-  using value_type = cme_mdp3::MDInstrumentDefinitionFuture54::NoInstAttrib;
+struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFuture54::NoInstAttrib> {
+  using value_type = cme_mdp::MDInstrumentDefinitionFuture54::NoInstAttrib;
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);
@@ -249,8 +249,8 @@ struct fmt::formatter<cme_mdp3::MDInstrumentDefinitionFuture54::NoInstAttrib> {
 };
 
 template <>
-struct fmt::formatter<cme_mdp3::MDInstrumentDefinitionFuture54::NoLotTypeRules> {
-  using value_type = cme_mdp3::MDInstrumentDefinitionFuture54::NoLotTypeRules;
+struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFuture54::NoLotTypeRules> {
+  using value_type = cme_mdp::MDInstrumentDefinitionFuture54::NoLotTypeRules;
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);
@@ -279,8 +279,8 @@ struct fmt::formatter<cme_mdp3::MDInstrumentDefinitionFuture54::NoLotTypeRules> 
 };
 
 template <>
-struct fmt::formatter<cme_mdp3::MDInstrumentDefinitionFuture54> {
-  using value_type = cme_mdp3::MDInstrumentDefinitionFuture54;
+struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFuture54> {
+  using value_type = cme_mdp::MDInstrumentDefinitionFuture54;
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);
@@ -394,8 +394,8 @@ struct fmt::formatter<cme_mdp3::MDInstrumentDefinitionFuture54> {
 };
 
 template <>
-struct fmt::formatter<cme_mdp3::MDInstrumentDefinitionOption55> {
-  using value_type = cme_mdp3::MDInstrumentDefinitionOption55;
+struct fmt::formatter<cme_mdp::MDInstrumentDefinitionOption55> {
+  using value_type = cme_mdp::MDInstrumentDefinitionOption55;
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);
@@ -505,8 +505,8 @@ struct fmt::formatter<cme_mdp3::MDInstrumentDefinitionOption55> {
 };
 
 template <>
-struct fmt::formatter<cme_mdp3::MDInstrumentDefinitionSpread56> {
-  using value_type = cme_mdp3::MDInstrumentDefinitionSpread56;
+struct fmt::formatter<cme_mdp::MDInstrumentDefinitionSpread56> {
+  using value_type = cme_mdp::MDInstrumentDefinitionSpread56;
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);
@@ -616,8 +616,8 @@ struct fmt::formatter<cme_mdp3::MDInstrumentDefinitionSpread56> {
 };
 
 template <>
-struct fmt::formatter<cme_mdp3::MDInstrumentDefinitionFixedIncome57> {
-  using value_type = cme_mdp3::MDInstrumentDefinitionFixedIncome57;
+struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFixedIncome57> {
+  using value_type = cme_mdp::MDInstrumentDefinitionFixedIncome57;
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);
@@ -745,8 +745,8 @@ struct fmt::formatter<cme_mdp3::MDInstrumentDefinitionFixedIncome57> {
 };
 
 template <>
-struct fmt::formatter<cme_mdp3::MDInstrumentDefinitionRepo58> {
-  using value_type = cme_mdp3::MDInstrumentDefinitionRepo58;
+struct fmt::formatter<cme_mdp::MDInstrumentDefinitionRepo58> {
+  using value_type = cme_mdp::MDInstrumentDefinitionRepo58;
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);
@@ -856,8 +856,8 @@ struct fmt::formatter<cme_mdp3::MDInstrumentDefinitionRepo58> {
 };
 
 template <>
-struct fmt::formatter<cme_mdp3::MDInstrumentDefinitionFX63> {
-  using value_type = cme_mdp3::MDInstrumentDefinitionFX63;
+struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFX63> {
+  using value_type = cme_mdp::MDInstrumentDefinitionFX63;
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);

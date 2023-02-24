@@ -4,7 +4,7 @@
 
 #include <fmt/format.h>
 
-#include <cme_ilink3/SecurityDefinitionResponse561.h>
+#include <cme_ilink/SecurityDefinitionResponse561.h>
 
 #include "roq/core/sbe/iterator.hpp"
 
@@ -19,8 +19,8 @@ namespace ilink {}  // namespace ilink
 // messages
 
 template <>
-struct fmt::formatter<cme_ilink3::SecurityDefinitionResponse561> {
-  using value_type = cme_ilink3::SecurityDefinitionResponse561;
+struct fmt::formatter<cme_ilink::SecurityDefinitionResponse561> {
+  using value_type = cme_ilink::SecurityDefinitionResponse561;
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);

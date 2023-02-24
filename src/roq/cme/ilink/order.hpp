@@ -4,8 +4,8 @@
 
 #include <fmt/format.h>
 
-#include <cme_ilink3/OrderCancelReject535.h>
-#include <cme_ilink3/OrderCancelReplaceReject536.h>
+#include <cme_ilink/OrderCancelReject535.h>
+#include <cme_ilink/OrderCancelReplaceReject536.h>
 
 #include "roq/core/sbe/iterator.hpp"
 
@@ -20,8 +20,8 @@ namespace ilink {}  // namespace ilink
 // messages
 
 template <>
-struct fmt::formatter<cme_ilink3::OrderCancelReject535> {
-  using value_type = cme_ilink3::OrderCancelReject535;
+struct fmt::formatter<cme_ilink::OrderCancelReject535> {
+  using value_type = cme_ilink::OrderCancelReject535;
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);
@@ -81,8 +81,8 @@ struct fmt::formatter<cme_ilink3::OrderCancelReject535> {
 };
 
 template <>
-struct fmt::formatter<cme_ilink3::OrderCancelReplaceReject536> {
-  using value_type = cme_ilink3::OrderCancelReplaceReject536;
+struct fmt::formatter<cme_ilink::OrderCancelReplaceReject536> {
+  using value_type = cme_ilink::OrderCancelReplaceReject536;
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);

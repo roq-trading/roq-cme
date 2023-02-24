@@ -92,21 +92,21 @@ TEST_CASE("simple", "[mbofd_recovery]") {
     int count_52 = 0;
     int count_53 = 0;
     void operator()(mdp::Frame const &) override {}
-    void operator()(Trace<cme_mdp3::ChannelReset4> const &, mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::AdminHeartbeat12> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::ChannelReset4> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::AdminHeartbeat12> const &, mdp::Frame const &) override { FAIL(); }
     // - security status
-    void operator()(Trace<cme_mdp3::SecurityStatus30> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::SecurityStatus30> const &, mdp::Frame const &) override { FAIL(); }
     // - instrument definition
-    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionFuture54> const &, mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionOption55> const &, mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionSpread56> const &, mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionFixedIncome57> const &, mdp::Frame const &) override {
+    void operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDInstrumentDefinitionOption55> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDInstrumentDefinitionSpread56> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDInstrumentDefinitionFixedIncome57> const &, mdp::Frame const &) override {
       FAIL();
     }
-    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionRepo58> const &, mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionFX63> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDInstrumentDefinitionRepo58> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDInstrumentDefinitionFX63> const &, mdp::Frame const &) override { FAIL(); }
     // - SnapshotFullRefresh
-    void operator()(Trace<cme_mdp3::SnapshotFullRefresh52> const &event, mdp::Frame const &) override {
+    void operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &event, mdp::Frame const &) override {
       using value_type = std::remove_cvref<decltype(event)>::type::value_type;
       auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
       switch (++count_52) {
@@ -118,7 +118,7 @@ TEST_CASE("simple", "[mbofd_recovery]") {
           CHECK(value.transactTime() == 1675665709058730423);
           CHECK(value.lastUpdateTime() == 1675616678351000000);
           CHECK(value.tradeDate() == 19394);
-          CHECK(value.mDSecurityTradingStatus() == cme_mdp3::SecurityTradingStatus::ReadyToTrade);
+          CHECK(value.mDSecurityTradingStatus() == cme_mdp::SecurityTradingStatus::ReadyToTrade);
           CHECK(std::isnan(mdp::get_double(value.highLimitPrice())));
           CHECK(mdp::get_double(value.lowLimitPrice()) == 0.00390625_a);
           CHECK(mdp::get_double(value.maxPriceVariation()) == 0.125_a);
@@ -132,9 +132,9 @@ TEST_CASE("simple", "[mbofd_recovery]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 1);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 1);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
-                CHECK(item.openCloseSettlFlag() == cme_mdp3::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
-                CHECK(item.mDEntryType() == cme_mdp3::MDEntryType::Value::Bid);
+                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::Bid);
                 break;
               case 2:
                 CHECK(mdp::get_double(item.mDEntryPx()) == 104.03515625_a);
@@ -142,9 +142,9 @@ TEST_CASE("simple", "[mbofd_recovery]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 1);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 1);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
-                CHECK(item.openCloseSettlFlag() == cme_mdp3::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
-                CHECK(item.mDEntryType() == cme_mdp3::MDEntryType::Value::Offer);
+                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::Offer);
                 break;
               // ...
               case 6:
@@ -153,9 +153,9 @@ TEST_CASE("simple", "[mbofd_recovery]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 0);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 19391);
-                CHECK(item.openCloseSettlFlag() == cme_mdp3::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
-                CHECK(item.mDEntryType() == cme_mdp3::MDEntryType::Value::ClearedVolume);
+                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::ClearedVolume);
                 break;
               case 7:
                 CHECK(std::isnan(mdp::get_double(item.mDEntryPx())));
@@ -163,9 +163,9 @@ TEST_CASE("simple", "[mbofd_recovery]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 0);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 19391);
-                CHECK(item.openCloseSettlFlag() == cme_mdp3::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
-                CHECK(item.mDEntryType() == cme_mdp3::MDEntryType::Value::OpenInterest);
+                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::OpenInterest);
                 break;
             }
           });
@@ -180,7 +180,7 @@ TEST_CASE("simple", "[mbofd_recovery]") {
           CHECK(value.transactTime() == 1675666380446210435);
           CHECK(value.lastUpdateTime() == 1675616678351000000);
           CHECK(value.tradeDate() == 19394);
-          CHECK(value.mDSecurityTradingStatus() == cme_mdp3::SecurityTradingStatus::ReadyToTrade);
+          CHECK(value.mDSecurityTradingStatus() == cme_mdp::SecurityTradingStatus::ReadyToTrade);
           CHECK(std::isnan(mdp::get_double(value.highLimitPrice())));
           CHECK(mdp::get_double(value.lowLimitPrice()) == 0.03125_a);
           CHECK(mdp::get_double(value.maxPriceVariation()) == 0.5_a);
@@ -194,9 +194,9 @@ TEST_CASE("simple", "[mbofd_recovery]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 1);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 1);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
-                CHECK(item.openCloseSettlFlag() == cme_mdp3::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
-                CHECK(item.mDEntryType() == cme_mdp3::MDEntryType::Value::Bid);
+                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::Bid);
                 break;
               case 2:
                 CHECK(mdp::get_double(item.mDEntryPx()) == 133.34375_a);
@@ -204,9 +204,9 @@ TEST_CASE("simple", "[mbofd_recovery]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 1);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 1);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
-                CHECK(item.openCloseSettlFlag() == cme_mdp3::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
-                CHECK(item.mDEntryType() == cme_mdp3::MDEntryType::Value::Offer);
+                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::Offer);
                 break;
               // ...
               case 6:
@@ -215,9 +215,9 @@ TEST_CASE("simple", "[mbofd_recovery]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 0);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 19391);
-                CHECK(item.openCloseSettlFlag() == cme_mdp3::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
-                CHECK(item.mDEntryType() == cme_mdp3::MDEntryType::Value::ClearedVolume);
+                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::ClearedVolume);
                 break;
               case 7:
                 CHECK(std::isnan(mdp::get_double(item.mDEntryPx())));
@@ -225,9 +225,9 @@ TEST_CASE("simple", "[mbofd_recovery]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 0);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 19391);
-                CHECK(item.openCloseSettlFlag() == cme_mdp3::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
-                CHECK(item.mDEntryType() == cme_mdp3::MDEntryType::Value::OpenInterest);
+                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::OpenInterest);
                 break;
             }
           });
@@ -236,7 +236,7 @@ TEST_CASE("simple", "[mbofd_recovery]") {
         }
       }
     }
-    void operator()(Trace<cme_mdp3::SnapshotFullRefreshOrderBook53> const &event, mdp::Frame const &) override {
+    void operator()(Trace<cme_mdp::SnapshotFullRefreshOrderBook53> const &event, mdp::Frame const &) override {
       using value_type = std::remove_cvref<decltype(event)>::type::value_type;
       auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
       switch (++count_53) {
@@ -256,14 +256,14 @@ TEST_CASE("simple", "[mbofd_recovery]") {
                 CHECK(mdp::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue()) == 20485922177);
                 CHECK(mdp::get_double(item.mDEntryPx()) == 123.84375_a);
                 CHECK(item.mDDisplayQty() == 20);
-                CHECK(item.mDEntryType() == cme_mdp3::MDEntryTypeBook::Value::Offer);
+                CHECK(item.mDEntryType() == cme_mdp::MDEntryTypeBook::Value::Offer);
                 break;
               case 2:
                 CHECK(item.orderID() == 8411691669301);
                 CHECK(mdp::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue()) == 20500262087);
                 CHECK(mdp::get_double(item.mDEntryPx()) == 107.8125_a);
                 CHECK(item.mDDisplayQty() == 68);
-                CHECK(item.mDEntryType() == cme_mdp3::MDEntryTypeBook::Value::Bid);
+                CHECK(item.mDEntryType() == cme_mdp::MDEntryTypeBook::Value::Bid);
                 break;
               // ...
               case 23:
@@ -271,14 +271,14 @@ TEST_CASE("simple", "[mbofd_recovery]") {
                 CHECK(mdp::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue()) == 20509772503);
                 CHECK(mdp::get_double(item.mDEntryPx()) == 107.546875_a);
                 CHECK(item.mDDisplayQty() == 54);
-                CHECK(item.mDEntryType() == cme_mdp3::MDEntryTypeBook::Value::Bid);
+                CHECK(item.mDEntryType() == cme_mdp::MDEntryTypeBook::Value::Bid);
                 break;
               case 24:
                 CHECK(item.orderID() == 8411574718722);
                 CHECK(mdp::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue()) == 20318810934);
                 CHECK(mdp::get_double(item.mDEntryPx()) == 107.0_a);
                 CHECK(item.mDDisplayQty() == 22);
-                CHECK(item.mDEntryType() == cme_mdp3::MDEntryTypeBook::Value::Bid);
+                CHECK(item.mDEntryType() == cme_mdp::MDEntryTypeBook::Value::Bid);
                 break;
             }
           });
@@ -301,14 +301,14 @@ TEST_CASE("simple", "[mbofd_recovery]") {
                 CHECK(mdp::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue()) == 20509844662);
                 CHECK(mdp::get_double(item.mDEntryPx()) == 102.3359375_a);
                 CHECK(item.mDDisplayQty() == 1);
-                CHECK(item.mDEntryType() == cme_mdp3::MDEntryTypeBook::Value::Bid);
+                CHECK(item.mDEntryType() == cme_mdp::MDEntryTypeBook::Value::Bid);
                 break;
               case 2:
                 CHECK(item.orderID() == 8411697911987);
                 CHECK(mdp::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue()) == 20509844665);
                 CHECK(mdp::get_double(item.mDEntryPx()) == 104.03515625_a);
                 CHECK(item.mDDisplayQty() == 1);
-                CHECK(item.mDEntryType() == cme_mdp3::MDEntryTypeBook::Value::Offer);
+                CHECK(item.mDEntryType() == cme_mdp::MDEntryTypeBook::Value::Offer);
                 break;
             }
           });
@@ -317,35 +317,35 @@ TEST_CASE("simple", "[mbofd_recovery]") {
         }
       }
     }
-    void operator()(Trace<cme_mdp3::SnapshotFullRefreshLongQty69> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::SnapshotFullRefreshLongQty69> const &, mdp::Frame const &) override { FAIL(); }
     // - MDIncrementalRefresh
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshVolume37> const &, mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshBook46> const &, mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshOrderBook47> const &, mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshTradeSummary48> const &, mdp::Frame const &) override {
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshVolume37> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshOrderBook47> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshTradeSummary48> const &, mdp::Frame const &) override {
       FAIL();
     }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshDailyStatistics49> const &, mdp::Frame const &) override {
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshDailyStatistics49> const &, mdp::Frame const &) override {
       FAIL();
     }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshLimitsBanding50> const &, mdp::Frame const &) override {
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshLimitsBanding50> const &, mdp::Frame const &) override {
       FAIL();
     }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshSessionStatistics51> const &, mdp::Frame const &) override {
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshSessionStatistics51> const &, mdp::Frame const &) override {
       FAIL();
     }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshBookLongQty64> const &, mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshTradeSummaryLongQty65> const &, mdp::Frame const &) override {
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshBookLongQty64> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65> const &, mdp::Frame const &) override {
       FAIL();
     }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshVolumeLongQty66> const &, mdp::Frame const &) override {
+    void operator()(Trace<cme_mdp::MDIncrementalRefreshVolumeLongQty66> const &, mdp::Frame const &) override {
       FAIL();
     }
     void operator()(
-        Trace<cme_mdp3::MDIncrementalRefreshSessionStatisticsLongQty67> const &, mdp::Frame const &) override {
+        Trace<cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67> const &, mdp::Frame const &) override {
       FAIL();
     }
-    void operator()(Trace<cme_mdp3::QuoteRequest39> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp::QuoteRequest39> const &, mdp::Frame const &) override { FAIL(); }
   } handler;
   std::span buffer{reinterpret_cast<std::byte const *>(std::data(message)), std::size(message)};
   TraceInfo trace_info;

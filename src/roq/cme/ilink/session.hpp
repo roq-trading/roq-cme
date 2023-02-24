@@ -4,15 +4,15 @@
 
 #include <fmt/format.h>
 
-#include <cme_ilink3/EstablishmentAck504.h>
-#include <cme_ilink3/EstablishmentReject505.h>
-#include <cme_ilink3/NegotiationReject502.h>
-#include <cme_ilink3/NegotiationResponse501.h>
-#include <cme_ilink3/NotApplied513.h>
-#include <cme_ilink3/Retransmission509.h>
-#include <cme_ilink3/RetransmitReject510.h>
-#include <cme_ilink3/Sequence506.h>
-#include <cme_ilink3/Terminate507.h>
+#include <cme_ilink/EstablishmentAck504.h>
+#include <cme_ilink/EstablishmentReject505.h>
+#include <cme_ilink/NegotiationReject502.h>
+#include <cme_ilink/NegotiationResponse501.h>
+#include <cme_ilink/NotApplied513.h>
+#include <cme_ilink/Retransmission509.h>
+#include <cme_ilink/RetransmitReject510.h>
+#include <cme_ilink/Sequence506.h>
+#include <cme_ilink/Terminate507.h>
 
 #include "roq/core/sbe/iterator.hpp"
 
@@ -27,8 +27,8 @@ namespace ilink {}  // namespace ilink
 // messages
 
 template <>
-struct fmt::formatter<cme_ilink3::NegotiationResponse501> {
-  using value_type = cme_ilink3::NegotiationResponse501;
+struct fmt::formatter<cme_ilink::NegotiationResponse501> {
+  using value_type = cme_ilink::NegotiationResponse501;
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);
@@ -64,8 +64,8 @@ struct fmt::formatter<cme_ilink3::NegotiationResponse501> {
 };
 
 template <>
-struct fmt::formatter<cme_ilink3::NegotiationReject502> {
-  using value_type = cme_ilink3::NegotiationReject502;
+struct fmt::formatter<cme_ilink::NegotiationReject502> {
+  using value_type = cme_ilink::NegotiationReject502;
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);
@@ -95,8 +95,8 @@ struct fmt::formatter<cme_ilink3::NegotiationReject502> {
 };
 
 template <>
-struct fmt::formatter<cme_ilink3::EstablishmentAck504> {
-  using value_type = cme_ilink3::EstablishmentAck504;
+struct fmt::formatter<cme_ilink::EstablishmentAck504> {
+  using value_type = cme_ilink::EstablishmentAck504;
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);
@@ -132,8 +132,8 @@ struct fmt::formatter<cme_ilink3::EstablishmentAck504> {
 };
 
 template <>
-struct fmt::formatter<cme_ilink3::EstablishmentReject505> {
-  using value_type = cme_ilink3::EstablishmentReject505;
+struct fmt::formatter<cme_ilink::EstablishmentReject505> {
+  using value_type = cme_ilink::EstablishmentReject505;
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);
@@ -165,8 +165,8 @@ struct fmt::formatter<cme_ilink3::EstablishmentReject505> {
 };
 
 template <>
-struct fmt::formatter<cme_ilink3::Sequence506> {
-  using value_type = cme_ilink3::Sequence506;
+struct fmt::formatter<cme_ilink::Sequence506> {
+  using value_type = cme_ilink::Sequence506;
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);
@@ -192,8 +192,8 @@ struct fmt::formatter<cme_ilink3::Sequence506> {
 };
 
 template <>
-struct fmt::formatter<cme_ilink3::Terminate507> {
-  using value_type = cme_ilink3::Terminate507;
+struct fmt::formatter<cme_ilink::Terminate507> {
+  using value_type = cme_ilink::Terminate507;
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);
@@ -221,8 +221,8 @@ struct fmt::formatter<cme_ilink3::Terminate507> {
 };
 
 template <>
-struct fmt::formatter<cme_ilink3::Retransmission509> {
-  using value_type = cme_ilink3::Retransmission509;
+struct fmt::formatter<cme_ilink::Retransmission509> {
+  using value_type = cme_ilink::Retransmission509;
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);
@@ -252,8 +252,8 @@ struct fmt::formatter<cme_ilink3::Retransmission509> {
 };
 
 template <>
-struct fmt::formatter<cme_ilink3::RetransmitReject510> {
-  using value_type = cme_ilink3::RetransmitReject510;
+struct fmt::formatter<cme_ilink::RetransmitReject510> {
+  using value_type = cme_ilink::RetransmitReject510;
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);
@@ -283,8 +283,8 @@ struct fmt::formatter<cme_ilink3::RetransmitReject510> {
 };
 
 template <>
-struct fmt::formatter<cme_ilink3::NotApplied513> {
-  using value_type = cme_ilink3::NotApplied513;
+struct fmt::formatter<cme_ilink::NotApplied513> {
+  using value_type = cme_ilink::NotApplied513;
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);

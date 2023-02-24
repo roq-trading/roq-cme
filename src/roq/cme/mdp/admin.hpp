@@ -4,8 +4,8 @@
 
 #include <fmt/format.h>
 
-#include <cme_mdp3/AdminHeartbeat12.h>
-#include <cme_mdp3/ChannelReset4.h>
+#include <cme_mdp/AdminHeartbeat12.h>
+#include <cme_mdp/ChannelReset4.h>
 
 #include "roq/cme/mdp/utils.hpp"
 
@@ -20,8 +20,8 @@ namespace mdp {}  // namespace mdp
 // ChannelReset4
 
 template <>
-struct fmt::formatter<cme_mdp3::ChannelReset4::NoMDEntries> {
-  using value_type = cme_mdp3::ChannelReset4::NoMDEntries;
+struct fmt::formatter<cme_mdp::ChannelReset4::NoMDEntries> {
+  using value_type = cme_mdp::ChannelReset4::NoMDEntries;
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);
@@ -43,8 +43,8 @@ struct fmt::formatter<cme_mdp3::ChannelReset4::NoMDEntries> {
 };
 
 template <>
-struct fmt::formatter<cme_mdp3::ChannelReset4> {
-  using value_type = cme_mdp3::ChannelReset4;
+struct fmt::formatter<cme_mdp::ChannelReset4> {
+  using value_type = cme_mdp::ChannelReset4;
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);
@@ -69,8 +69,8 @@ struct fmt::formatter<cme_mdp3::ChannelReset4> {
 // AdminHeartbeat12
 
 template <>
-struct fmt::formatter<cme_mdp3::AdminHeartbeat12> {
-  using value_type = cme_mdp3::AdminHeartbeat12;
+struct fmt::formatter<cme_mdp::AdminHeartbeat12> {
+  using value_type = cme_mdp::AdminHeartbeat12;
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);

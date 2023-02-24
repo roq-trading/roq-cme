@@ -7,8 +7,8 @@
 #include <cmath>
 #include <span>
 
-#include <cme_ilink3/MessageHeader.h>
-#include <cme_ilink3/NewOrderSingle514.h>
+#include <cme_ilink/MessageHeader.h>
+#include <cme_ilink/NewOrderSingle514.h>
 
 #include "roq/debug/hex/message.hpp"
 
@@ -16,7 +16,7 @@ using namespace std::literals;
 
 using namespace Catch::literals;
 
-using namespace cme_ilink3;
+using namespace cme_ilink;
 
 using namespace roq;
 

@@ -1,0 +1,264 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<configuration environment="Production" updated="Thu Feb 23 18:00:05 2023 CST">
+  <marketsegment id="70" label="CME Commodity Futures">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>205.209.201.117</primary-host-ip>
+    <backup-host-ip>205.209.201.41</backup-host-ip>
+    <dr-primary-host-ip>205.209.201.117</dr-primary-host-ip>
+    <dr-backup-host-ip>205.209.201.41</dr-backup-host-ip>
+    <ToCMESchemaVersion>8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="72" label="CBOT and CME Equity Options no SandP">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>205.209.201.125</primary-host-ip>
+    <backup-host-ip>205.209.201.49</backup-host-ip>
+    <dr-primary-host-ip>205.209.201.125</dr-primary-host-ip>
+    <dr-backup-host-ip>205.209.201.49</dr-backup-host-ip>
+    <ToCMESchemaVersion>8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="60" label="CBOT and CME Commodity Options">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>205.209.201.85</primary-host-ip>
+    <backup-host-ip>205.209.201.9</backup-host-ip>
+    <dr-primary-host-ip>205.209.201.85</dr-primary-host-ip>
+    <dr-backup-host-ip>205.209.201.9</dr-backup-host-ip>
+    <ToCMESchemaVersion>8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="74" label="CME Cryptocurrency Futures and Options">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>205.209.201.29</primary-host-ip>
+    <backup-host-ip>205.209.201.105</backup-host-ip>
+    <dr-primary-host-ip>205.209.201.29</dr-primary-host-ip>
+    <dr-backup-host-ip>205.209.201.105</dr-backup-host-ip>
+    <ToCMESchemaVersion>8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="52" label="CME Globex FX Options">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>205.209.201.81</primary-host-ip>
+    <backup-host-ip>205.209.201.5</backup-host-ip>
+    <dr-primary-host-ip>205.209.201.81</dr-primary-host-ip>
+    <dr-backup-host-ip>205.209.201.5</dr-backup-host-ip>
+    <ToCMESchemaVersion>8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="8" label="EBS OESGW for all CGWs">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>164.74.5.36</primary-host-ip>
+    <backup-host-ip>164.74.5.37</backup-host-ip>
+    <dr-primary-host-ip>164.74.45.30</dr-primary-host-ip>
+    <dr-backup-host-ip>164.74.45.31</dr-backup-host-ip>
+    <ToCMESchemaVersion>7</ToCMESchemaVersion>
+    <FromCMESchemaVersion>7</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="64" label="CME E-mini S&amp;P 500 Futures">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>205.209.201.1</primary-host-ip>
+    <backup-host-ip>205.209.201.77</backup-host-ip>
+    <dr-primary-host-ip>205.209.201.1</dr-primary-host-ip>
+    <dr-backup-host-ip>205.209.201.77</dr-backup-host-ip>
+    <ToCMESchemaVersion>8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="68" label="CBOT and CME Equity Futures excluding E-mini S&amp;P">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>205.209.201.69</primary-host-ip>
+    <backup-host-ip>205.209.201.145</backup-host-ip>
+    <dr-primary-host-ip>205.209.201.69</dr-primary-host-ip>
+    <dr-backup-host-ip>205.209.201.145</dr-backup-host-ip>
+    <ToCMESchemaVersion>8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="54" label="CME SandP Options">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>205.209.201.97</primary-host-ip>
+    <backup-host-ip>205.209.201.21</backup-host-ip>
+    <dr-primary-host-ip>205.209.201.97</dr-primary-host-ip>
+    <dr-backup-host-ip>205.209.201.21</dr-backup-host-ip>
+    <ToCMESchemaVersion>8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="50" label="CME Eurodollar Options">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>205.209.201.57</primary-host-ip>
+    <backup-host-ip>205.209.201.133</backup-host-ip>
+    <dr-primary-host-ip>205.209.201.57</dr-primary-host-ip>
+    <dr-backup-host-ip>205.209.201.133</dr-backup-host-ip>
+    <ToCMESchemaVersion>8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="40" label="BrokerTec US Treasury Actives">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>164.74.2.65</primary-host-ip>
+    <backup-host-ip>164.74.2.1</backup-host-ip>
+    <dr-primary-host-ip>205.209.207.19</dr-primary-host-ip>
+    <dr-backup-host-ip>205.209.207.20</dr-backup-host-ip>
+    <ToCMESchemaVersion>5</ToCMESchemaVersion>
+    <FromCMESchemaVersion>5</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="44" label="BrokerTec EGB and UK Gilts">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>164.74.42.1</primary-host-ip>
+    <backup-host-ip>164.74.42.33</backup-host-ip>
+    <dr-primary-host-ip>164.74.2.97</dr-primary-host-ip>
+    <dr-backup-host-ip>164.74.2.33</dr-backup-host-ip>
+    <ToCMESchemaVersion>5,8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="58" label="CBOT Treasury Options">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>205.209.201.25</primary-host-ip>
+    <backup-host-ip>205.209.201.101</backup-host-ip>
+    <dr-primary-host-ip>205.209.201.25</dr-primary-host-ip>
+    <dr-backup-host-ip>205.209.201.101</dr-backup-host-ip>
+    <ToCMESchemaVersion>8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="42" label="BrokerTec US Repo and TBAs">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>164.74.2.85</primary-host-ip>
+    <backup-host-ip>164.74.2.17</backup-host-ip>
+    <dr-primary-host-ip>205.209.207.21</dr-primary-host-ip>
+    <dr-backup-host-ip>205.209.207.22</dr-backup-host-ip>
+    <ToCMESchemaVersion>5</ToCMESchemaVersion>
+    <FromCMESchemaVersion>5</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="46" label="BrokerTec EU Repo">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>164.74.42.21</primary-host-ip>
+    <backup-host-ip>164.74.42.49</backup-host-ip>
+    <dr-primary-host-ip>164.74.2.101</dr-primary-host-ip>
+    <dr-backup-host-ip>164.74.2.37</dr-backup-host-ip>
+    <ToCMESchemaVersion>5,8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="36" label="EBS NYC FX Spot and Spot Metals">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>164.74.1.65</primary-host-ip>
+    <backup-host-ip>164.74.1.1</backup-host-ip>
+    <dr-primary-host-ip>164.74.41.65</dr-primary-host-ip>
+    <dr-backup-host-ip>164.74.41.1</dr-backup-host-ip>
+    <ToCMESchemaVersion>7</ToCMESchemaVersion>
+    <FromCMESchemaVersion>7</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="38" label="EBS LON FX Spot and NDFs">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>164.74.43.65</primary-host-ip>
+    <backup-host-ip>164.74.43.1</backup-host-ip>
+    <dr-primary-host-ip>164.74.3.16</dr-primary-host-ip>
+    <dr-backup-host-ip>164.74.3.17</dr-backup-host-ip>
+    <ToCMESchemaVersion>7</ToCMESchemaVersion>
+    <FromCMESchemaVersion>7</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="88" label="CME Globex FX Futures">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>205.209.201.153</primary-host-ip>
+    <backup-host-ip>205.209.201.157</backup-host-ip>
+    <dr-primary-host-ip>205.209.201.153</dr-primary-host-ip>
+    <dr-backup-host-ip>205.209.201.157</dr-backup-host-ip>
+    <ToCMESchemaVersion>8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="82" label="CME Eurodollar Futures">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>205.209.201.109</primary-host-ip>
+    <backup-host-ip>205.209.201.33</backup-host-ip>
+    <dr-primary-host-ip>205.209.201.109</dr-primary-host-ip>
+    <dr-backup-host-ip>205.209.201.33</dr-backup-host-ip>
+    <ToCMESchemaVersion>8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="84" label="CBOT Treasury Futures">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>205.209.201.61</primary-host-ip>
+    <backup-host-ip>205.209.201.137</backup-host-ip>
+    <dr-primary-host-ip>205.209.201.61</dr-primary-host-ip>
+    <dr-backup-host-ip>205.209.201.137</dr-backup-host-ip>
+    <ToCMESchemaVersion>8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="76" label="NYMEX and COMEX Metals and Alternative Market Futures">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>205.209.201.113</primary-host-ip>
+    <backup-host-ip>205.209.201.37</backup-host-ip>
+    <dr-primary-host-ip>205.209.201.113</dr-primary-host-ip>
+    <dr-backup-host-ip>205.209.201.37</dr-backup-host-ip>
+    <ToCMESchemaVersion>8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="78" label="NYMEX Non-Crude Energy Futures">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>205.209.201.53</primary-host-ip>
+    <backup-host-ip>205.209.201.129</backup-host-ip>
+    <dr-primary-host-ip>205.209.201.53</dr-primary-host-ip>
+    <dr-backup-host-ip>205.209.201.129</dr-backup-host-ip>
+    <ToCMESchemaVersion>8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="80" label="NYMEX Crude Energy Futures">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>205.209.201.17</primary-host-ip>
+    <backup-host-ip>205.209.201.93</backup-host-ip>
+    <dr-primary-host-ip>205.209.201.17</dr-primary-host-ip>
+    <dr-backup-host-ip>205.209.201.93</dr-backup-host-ip>
+    <ToCMESchemaVersion>8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="56" label="NYMEX and COMEX Options">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>205.209.201.149</primary-host-ip>
+    <backup-host-ip>205.209.201.73</backup-host-ip>
+    <dr-primary-host-ip>205.209.201.149</dr-primary-host-ip>
+    <dr-backup-host-ip>205.209.201.73</dr-backup-host-ip>
+    <ToCMESchemaVersion>8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="14" label="BTEC US Order Entry Service Gateway">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>164.74.4.81</primary-host-ip>
+    <backup-host-ip>164.74.4.82</backup-host-ip>
+    <dr-primary-host-ip>205.209.209.44</dr-primary-host-ip>
+    <dr-backup-host-ip>205.209.209.45</dr-backup-host-ip>
+    <ToCMESchemaVersion>5</ToCMESchemaVersion>
+    <FromCMESchemaVersion>5</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="16" label="BTEC EU Order Entry Service Gateway">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>164.74.44.49</primary-host-ip>
+    <backup-host-ip>164.74.44.50</backup-host-ip>
+    <dr-primary-host-ip>164.74.4.83</dr-primary-host-ip>
+    <dr-backup-host-ip>164.74.4.84</dr-backup-host-ip>
+    <ToCMESchemaVersion>5,8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="12" label="Order Entry Service Gateway">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>205.209.202.89</primary-host-ip>
+    <backup-host-ip>205.209.202.109</backup-host-ip>
+    <dr-primary-host-ip>205.209.202.89</dr-primary-host-ip>
+    <dr-backup-host-ip>205.209.202.109</dr-backup-host-ip>
+    <ToCMESchemaVersion>8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="18" label="EBS OESGW for NYC MSGW">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>164.74.5.38</primary-host-ip>
+    <backup-host-ip>164.74.5.39</backup-host-ip>
+    <dr-primary-host-ip>164.74.45.32</dr-primary-host-ip>
+    <dr-backup-host-ip>164.74.45.33</dr-backup-host-ip>
+    <ToCMESchemaVersion>7</ToCMESchemaVersion>
+    <FromCMESchemaVersion>7</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="20" label="EBS OESGW for LON MSGW">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>164.74.47.48</primary-host-ip>
+    <backup-host-ip>164.74.47.49</backup-host-ip>
+    <dr-primary-host-ip>164.74.5.40</dr-primary-host-ip>
+    <dr-backup-host-ip>164.74.5.41</dr-backup-host-ip>
+    <ToCMESchemaVersion>7</ToCMESchemaVersion>
+    <FromCMESchemaVersion>7</FromCMESchemaVersion>
+  </marketsegment>
+</configuration>

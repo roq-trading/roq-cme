@@ -1,0 +1,255 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<configuration environment="Certification" updated="Wed Sep  9 18:00:02 2015 CDT">
+  <marketsegment id="99" label="ACP">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>69.50.112.199</primary-host-ip>
+    <backup-host-ip>69.50.112.205</backup-host-ip>
+    <ToCMESchemaVersion>8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="70" label="CME Commodity Futures">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>69.50.112.183</primary-host-ip>
+    <backup-host-ip>69.50.112.182</backup-host-ip>
+    <ToCMESchemaVersion>8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="72" label="CBOT and CME Equity Options no SandP">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>69.50.112.189</primary-host-ip>
+    <backup-host-ip>69.50.112.188</backup-host-ip>
+    <ToCMESchemaVersion>8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="60" label="CBOT and CME Commodity Options">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>69.50.112.195</primary-host-ip>
+    <backup-host-ip>69.50.112.194</backup-host-ip>
+    <ToCMESchemaVersion>8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="74" label="KRX Futures; BMD Futures and Options">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>69.50.112.197</primary-host-ip>
+    <backup-host-ip>69.50.112.196</backup-host-ip>
+    <ToCMESchemaVersion>8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="52" label="CME Globex FX Options">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>69.50.112.181</primary-host-ip>
+    <backup-host-ip>69.50.112.180</backup-host-ip>
+    <ToCMESchemaVersion>8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="64" label="CME E-mini S&amp;P 500 Futures">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>69.50.112.177</primary-host-ip>
+    <backup-host-ip>69.50.112.176</backup-host-ip>
+    <ToCMESchemaVersion>8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="68" label="CBOT and CME Equity Futures excluding E-mini S&amp;P">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>69.50.112.168</primary-host-ip>
+    <backup-host-ip>69.50.112.170</backup-host-ip>
+    <ToCMESchemaVersion>8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="54" label="CME SandP Options">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>69.50.112.191</primary-host-ip>
+    <backup-host-ip>69.50.112.190</backup-host-ip>
+    <ToCMESchemaVersion>8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="50" label="CME Eurodollar Options">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>69.50.112.202</primary-host-ip>
+    <backup-host-ip>69.50.112.201</backup-host-ip>
+    <ToCMESchemaVersion>8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="58" label="CBOT Treasury Options">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>69.50.112.172</primary-host-ip>
+    <backup-host-ip>69.50.112.171</backup-host-ip>
+    <ToCMESchemaVersion>8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="82" label="CME Eurodollar Futures">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>69.50.112.179</primary-host-ip>
+    <backup-host-ip>69.50.112.178</backup-host-ip>
+    <ToCMESchemaVersion>8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="84" label="CBOT Treasury Futures">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>69.50.112.198</primary-host-ip>
+    <backup-host-ip>69.50.112.200</backup-host-ip>
+    <ToCMESchemaVersion>8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="88" label="CME Globex FX Futures">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>69.50.112.169</primary-host-ip>
+    <backup-host-ip>69.50.112.175</backup-host-ip>
+    <ToCMESchemaVersion>8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="76" label="NYMEX and COMEX Metals and Alternative Market Futures">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>69.50.112.204</primary-host-ip>
+    <backup-host-ip>69.50.112.203</backup-host-ip>
+    <ToCMESchemaVersion>8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="78" label="NYMEX Non-Crude Energy Futures">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>69.50.112.167</primary-host-ip>
+    <backup-host-ip>69.50.112.166</backup-host-ip>
+    <ToCMESchemaVersion>8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="80" label="NYMEX Crude Energy Futures">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>69.50.112.187</primary-host-ip>
+    <backup-host-ip>69.50.112.186</backup-host-ip>
+    <ToCMESchemaVersion>8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="56" label="NYMEX and COMEX Options">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>69.50.112.174</primary-host-ip>
+    <backup-host-ip>69.50.112.173</backup-host-ip>
+    <ToCMESchemaVersion>8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="12" label="Order Entry Service Gateway">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>69.50.112.184</primary-host-ip>
+    <backup-host-ip>69.50.112.185</backup-host-ip>
+    <ToCMESchemaVersion>8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="16" label="BTEC EU Order Entry Service Gateway">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>69.50.113.61</primary-host-ip>
+    <backup-host-ip>69.50.113.62</backup-host-ip>
+    <ToCMESchemaVersion>5,8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="44" label="BrokerTec EGB and UK Gilts">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>69.50.113.51</primary-host-ip>
+    <backup-host-ip>69.50.113.52</backup-host-ip>
+    <ToCMESchemaVersion>5,8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="46" label="BrokerTec EU Repo">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>69.50.113.53</primary-host-ip>
+    <backup-host-ip>69.50.113.54</backup-host-ip>
+    <ToCMESchemaVersion>5,8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="95" label="ACP BTEC EU Repo">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>69.50.113.65</primary-host-ip>
+    <backup-host-ip>69.50.113.66</backup-host-ip>
+    <ToCMESchemaVersion>5,8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="96" label="ACP BTEC EU EGB">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>69.50.113.63</primary-host-ip>
+    <backup-host-ip>69.50.113.64</backup-host-ip>
+    <ToCMESchemaVersion>5,8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="14" label="BTEC US Order Entry Service Gateway">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>69.50.113.59</primary-host-ip>
+    <backup-host-ip>69.50.113.60</backup-host-ip>
+    <ToCMESchemaVersion>5,8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="40" label="BrokerTec US Treasury Actives">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>69.50.113.49</primary-host-ip>
+    <backup-host-ip>69.50.113.50</backup-host-ip>
+    <ToCMESchemaVersion>5,8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+<marketsegment id="42" label="BrokerTec US Repo and TBAs">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>69.50.113.47</primary-host-ip>
+    <backup-host-ip>69.50.113.48</backup-host-ip>
+    <ToCMESchemaVersion>5,8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="97" label="ACP BTEC US Repo">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>69.50.113.57</primary-host-ip>
+    <backup-host-ip>69.50.113.58</backup-host-ip>
+    <ToCMESchemaVersion>5,8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="98" label="ACP BTEC UST">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>69.50.113.55</primary-host-ip>
+    <backup-host-ip>69.50.113.56</backup-host-ip>
+    <ToCMESchemaVersion>5,8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+    <marketsegment id="18" label="EBS OESGW for NYC MSGW">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>69.50.114.38</primary-host-ip>
+    <backup-host-ip>69.50.114.39</backup-host-ip>
+    <ToCMESchemaVersion>7</ToCMESchemaVersion>
+    <FromCMESchemaVersion>7</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="36" label="EBS NYC FX Spot and Spot Metals">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>69.50.114.20</primary-host-ip>
+    <backup-host-ip>69.50.114.28</backup-host-ip>
+    <ToCMESchemaVersion>7</ToCMESchemaVersion>
+    <FromCMESchemaVersion>7</FromCMESchemaVersion>
+  </marketsegment>
+    <marketsegment id="94" label="AutoCert EBS NYC FX Spot and Spot Metals">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>69.50.114.16</primary-host-ip>
+    <backup-host-ip>69.50.114.17</backup-host-ip>
+    <ToCMESchemaVersion>7</ToCMESchemaVersion>
+    <FromCMESchemaVersion>7</FromCMESchemaVersion>
+  </marketsegment>
+    <marketsegment id="20" label="EBS OESGW for LON MSGW">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>69.50.114.40</primary-host-ip>
+    <backup-host-ip>69.50.114.41</backup-host-ip>
+    <ToCMESchemaVersion>7</ToCMESchemaVersion>
+    <FromCMESchemaVersion>7</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="38" label="EBS LON FX Spot and NDFs">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>69.50.114.29</primary-host-ip>
+    <backup-host-ip>69.50.114.37</backup-host-ip>
+    <ToCMESchemaVersion>7</ToCMESchemaVersion>
+    <FromCMESchemaVersion>7</FromCMESchemaVersion>
+  </marketsegment>
+    <marketsegment id="93" label="AutoCert EBS LON FX Spot and NDFs">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>69.50.114.18</primary-host-ip>
+    <backup-host-ip>69.50.114.19</backup-host-ip>
+    <ToCMESchemaVersion>7</ToCMESchemaVersion>
+    <FromCMESchemaVersion>7</FromCMESchemaVersion>
+  </marketsegment>
+    <marketsegment id="8" label="EBS OESGW for all CGWs">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>69.50.114.27</primary-host-ip>
+    <backup-host-ip>69.50.114.49</backup-host-ip>
+    <ToCMESchemaVersion>7</ToCMESchemaVersion>
+    <FromCMESchemaVersion>7</FromCMESchemaVersion>
+  </marketsegment>
+</configuration>

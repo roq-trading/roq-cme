@@ -173,7 +173,7 @@ void UDPInstrumentDefinition::operator()(io::net::udp::Receiver::Error const &er
 void UDPInstrumentDefinition::operator()(mdp::Frame const &) {
 }
 
-void UDPInstrumentDefinition::operator()(Trace<cme_mdp3::AdminHeartbeat12> const &event, mdp::Frame const &frame) {
+void UDPInstrumentDefinition::operator()(Trace<cme_mdp::AdminHeartbeat12> const &event, mdp::Frame const &frame) {
   profile_.admin_heartbeat([&]() {
     auto &[trace_info, value] = event;
     log::info<5>("admin_heartbeat_12={}, frame={}"sv, value, frame);
@@ -186,14 +186,14 @@ void UDPInstrumentDefinition::operator()(Trace<cme_mdp3::AdminHeartbeat12> const
   });
 }
 
-void UDPInstrumentDefinition::operator()(Trace<cme_mdp3::ChannelReset4> const &event, mdp::Frame const &frame) {
+void UDPInstrumentDefinition::operator()(Trace<cme_mdp::ChannelReset4> const &event, mdp::Frame const &frame) {
   profile_.channel_reset([&]() {
     auto &[trace_info, value] = event;
     log::info<5>("channel_reset_4={}, frame={}"sv, value, frame);
   });
 }
 
-void UDPInstrumentDefinition::operator()(Trace<cme_mdp3::SecurityStatus30> const &event, mdp::Frame const &frame) {
+void UDPInstrumentDefinition::operator()(Trace<cme_mdp::SecurityStatus30> const &event, mdp::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -202,7 +202,7 @@ void UDPInstrumentDefinition::operator()(Trace<cme_mdp3::SecurityStatus30> const
 }
 
 void UDPInstrumentDefinition::operator()(
-    Trace<cme_mdp3::MDInstrumentDefinitionFuture54> const &event, mdp::Frame const &frame) {
+    Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &event, mdp::Frame const &frame) {
   profile_.md_instrument_definition_future([&]() {
     auto &trace_info = event.trace_info;
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
@@ -257,7 +257,7 @@ void UDPInstrumentDefinition::operator()(
 }
 
 void UDPInstrumentDefinition::operator()(
-    Trace<cme_mdp3::MDInstrumentDefinitionOption55> const &event, mdp::Frame const &frame) {
+    Trace<cme_mdp::MDInstrumentDefinitionOption55> const &event, mdp::Frame const &frame) {
   profile_.md_instrument_definition_option([&]() {
     auto &trace_info = event.trace_info;
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
@@ -312,7 +312,7 @@ void UDPInstrumentDefinition::operator()(
 }
 
 void UDPInstrumentDefinition::operator()(
-    Trace<cme_mdp3::MDInstrumentDefinitionSpread56> const &event, mdp::Frame const &frame) {
+    Trace<cme_mdp::MDInstrumentDefinitionSpread56> const &event, mdp::Frame const &frame) {
   profile_.md_instrument_definition_spread([&]() {
     auto &trace_info = event.trace_info;
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
@@ -365,7 +365,7 @@ void UDPInstrumentDefinition::operator()(
 }
 
 void UDPInstrumentDefinition::operator()(
-    Trace<cme_mdp3::MDInstrumentDefinitionFixedIncome57> const &event, mdp::Frame const &frame) {
+    Trace<cme_mdp::MDInstrumentDefinitionFixedIncome57> const &event, mdp::Frame const &frame) {
   profile_.md_instrument_definition_fixed_income([&]() {
     auto &trace_info = event.trace_info;
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
@@ -418,7 +418,7 @@ void UDPInstrumentDefinition::operator()(
 }
 
 void UDPInstrumentDefinition::operator()(
-    Trace<cme_mdp3::MDInstrumentDefinitionRepo58> const &event, mdp::Frame const &frame) {
+    Trace<cme_mdp::MDInstrumentDefinitionRepo58> const &event, mdp::Frame const &frame) {
   profile_.md_instrument_definition_repo([&]() {
     auto &trace_info = event.trace_info;
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
@@ -471,7 +471,7 @@ void UDPInstrumentDefinition::operator()(
 }
 
 void UDPInstrumentDefinition::operator()(
-    Trace<cme_mdp3::MDInstrumentDefinitionFX63> const &event, mdp::Frame const &frame) {
+    Trace<cme_mdp::MDInstrumentDefinitionFX63> const &event, mdp::Frame const &frame) {
   profile_.md_instrument_definition_fx([&]() {
     auto &trace_info = event.trace_info;
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
@@ -523,7 +523,7 @@ void UDPInstrumentDefinition::operator()(
   });
 }
 
-void UDPInstrumentDefinition::operator()(Trace<cme_mdp3::SnapshotFullRefresh52> const &event, mdp::Frame const &frame) {
+void UDPInstrumentDefinition::operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &event, mdp::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -532,7 +532,7 @@ void UDPInstrumentDefinition::operator()(Trace<cme_mdp3::SnapshotFullRefresh52> 
 }
 
 void UDPInstrumentDefinition::operator()(
-    Trace<cme_mdp3::SnapshotFullRefreshLongQty69> const &event, mdp::Frame const &frame) {
+    Trace<cme_mdp::SnapshotFullRefreshLongQty69> const &event, mdp::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -541,7 +541,7 @@ void UDPInstrumentDefinition::operator()(
 }
 
 void UDPInstrumentDefinition::operator()(
-    Trace<cme_mdp3::MDIncrementalRefreshBook46> const &event, mdp::Frame const &frame) {
+    Trace<cme_mdp::MDIncrementalRefreshBook46> const &event, mdp::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -550,7 +550,7 @@ void UDPInstrumentDefinition::operator()(
 }
 
 void UDPInstrumentDefinition::operator()(
-    Trace<cme_mdp3::MDIncrementalRefreshBookLongQty64> const &event, mdp::Frame const &frame) {
+    Trace<cme_mdp::MDIncrementalRefreshBookLongQty64> const &event, mdp::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -559,7 +559,7 @@ void UDPInstrumentDefinition::operator()(
 }
 
 void UDPInstrumentDefinition::operator()(
-    Trace<cme_mdp3::SnapshotFullRefreshOrderBook53> const &event, mdp::Frame const &frame) {
+    Trace<cme_mdp::SnapshotFullRefreshOrderBook53> const &event, mdp::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -568,7 +568,7 @@ void UDPInstrumentDefinition::operator()(
 }
 
 void UDPInstrumentDefinition::operator()(
-    Trace<cme_mdp3::MDIncrementalRefreshOrderBook47> const &event, mdp::Frame const &frame) {
+    Trace<cme_mdp::MDIncrementalRefreshOrderBook47> const &event, mdp::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -577,7 +577,7 @@ void UDPInstrumentDefinition::operator()(
 }
 
 void UDPInstrumentDefinition::operator()(
-    Trace<cme_mdp3::MDIncrementalRefreshTradeSummary48> const &event, mdp::Frame const &frame) {
+    Trace<cme_mdp::MDIncrementalRefreshTradeSummary48> const &event, mdp::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -586,7 +586,7 @@ void UDPInstrumentDefinition::operator()(
 }
 
 void UDPInstrumentDefinition::operator()(
-    Trace<cme_mdp3::MDIncrementalRefreshTradeSummaryLongQty65> const &event, mdp::Frame const &frame) {
+    Trace<cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65> const &event, mdp::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -595,7 +595,7 @@ void UDPInstrumentDefinition::operator()(
 }
 
 void UDPInstrumentDefinition::operator()(
-    Trace<cme_mdp3::MDIncrementalRefreshDailyStatistics49> const &event, mdp::Frame const &frame) {
+    Trace<cme_mdp::MDIncrementalRefreshDailyStatistics49> const &event, mdp::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -604,7 +604,7 @@ void UDPInstrumentDefinition::operator()(
 }
 
 void UDPInstrumentDefinition::operator()(
-    Trace<cme_mdp3::MDIncrementalRefreshSessionStatistics51> const &event, mdp::Frame const &frame) {
+    Trace<cme_mdp::MDIncrementalRefreshSessionStatistics51> const &event, mdp::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -613,7 +613,7 @@ void UDPInstrumentDefinition::operator()(
 }
 
 void UDPInstrumentDefinition::operator()(
-    Trace<cme_mdp3::MDIncrementalRefreshSessionStatisticsLongQty67> const &event, mdp::Frame const &frame) {
+    Trace<cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67> const &event, mdp::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -622,7 +622,7 @@ void UDPInstrumentDefinition::operator()(
 }
 
 void UDPInstrumentDefinition::operator()(
-    Trace<cme_mdp3::MDIncrementalRefreshVolume37> const &event, mdp::Frame const &frame) {
+    Trace<cme_mdp::MDIncrementalRefreshVolume37> const &event, mdp::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -631,7 +631,7 @@ void UDPInstrumentDefinition::operator()(
 }
 
 void UDPInstrumentDefinition::operator()(
-    Trace<cme_mdp3::MDIncrementalRefreshVolumeLongQty66> const &event, mdp::Frame const &frame) {
+    Trace<cme_mdp::MDIncrementalRefreshVolumeLongQty66> const &event, mdp::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -640,7 +640,7 @@ void UDPInstrumentDefinition::operator()(
 }
 
 void UDPInstrumentDefinition::operator()(
-    Trace<cme_mdp3::MDIncrementalRefreshLimitsBanding50> const &event, mdp::Frame const &frame) {
+    Trace<cme_mdp::MDIncrementalRefreshLimitsBanding50> const &event, mdp::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -648,7 +648,7 @@ void UDPInstrumentDefinition::operator()(
 #endif
 }
 
-void UDPInstrumentDefinition::operator()(Trace<cme_mdp3::QuoteRequest39> const &event, mdp::Frame const &frame) {
+void UDPInstrumentDefinition::operator()(Trace<cme_mdp::QuoteRequest39> const &event, mdp::Frame const &frame) {
 #ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe

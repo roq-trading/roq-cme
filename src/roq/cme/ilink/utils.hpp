@@ -5,8 +5,8 @@
 #include <fmt/chrono.h>
 #include <fmt/format.h>
 
-#include <cme_ilink3/ExecutionReportNew522.h>
-#include <cme_ilink3/MessageHeader.h>
+#include <cme_ilink/ExecutionReportNew522.h>
+#include <cme_ilink/MessageHeader.h>
 
 #include <magic_enum.hpp>
 
@@ -26,26 +26,26 @@ inline T get_int(T value, T null_value) {
   return T{};
 }
 
-inline double get_double(cme_ilink3::PRICE9 const &value) {
+inline double get_double(cme_ilink::PRICE9 const &value) {
   auto mantissa = value.mantissa();
   return static_cast<double>(mantissa) * std::pow(10.0, value.exponent());
 }
 
-inline double get_double(cme_ilink3::PRICENULL9 const &value) {
+inline double get_double(cme_ilink::PRICENULL9 const &value) {
   auto mantissa = value.mantissa();
   if (mantissa != value.mantissaNullValue())
     return static_cast<double>(mantissa) * std::pow(10.0, value.exponent());
   return NaN;
 }
 
-inline double get_double(cme_ilink3::Decimal32NULL const &value) {
+inline double get_double(cme_ilink::Decimal32NULL const &value) {
   auto mantissa = value.mantissa();
   if (mantissa != value.mantissaNullValue())
     return static_cast<double>(mantissa) * std::pow(10.0, value.exponent());
   return NaN;
 }
 
-inline double get_double(cme_ilink3::Decimal64NULL const &value) {
+inline double get_double(cme_ilink::Decimal64NULL const &value) {
   auto mantissa = value.mantissa();
   if (mantissa != value.mantissaNullValue())
     return static_cast<double>(mantissa) * std::pow(10.0, value.exponent());
@@ -81,13 +81,13 @@ struct Group final {
 
 /*
 template <>
-struct fmt::formatter<cme_ilink3::MessageHeader> {
+struct fmt::formatter<cme_ilink::MessageHeader> {
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);
   }
   template <typename Context>
-  auto format(cme_ilink3::MessageHeader const &value, Context &context) const {
+  auto format(cme_ilink::MessageHeader const &value, Context &context) const {
     using namespace std::literals;
     return fmt::format_to(
         context.out(),
@@ -108,8 +108,8 @@ struct fmt::formatter<cme_ilink3::MessageHeader> {
 // types
 
 template <>
-struct fmt::formatter<cme_ilink3::PRICE9> {
-  using value_type = cme_ilink3::PRICE9;
+struct fmt::formatter<cme_ilink::PRICE9> {
+  using value_type = cme_ilink::PRICE9;
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);
@@ -122,8 +122,8 @@ struct fmt::formatter<cme_ilink3::PRICE9> {
 };
 
 template <>
-struct fmt::formatter<cme_ilink3::PRICENULL9> {
-  using value_type = cme_ilink3::PRICENULL9;
+struct fmt::formatter<cme_ilink::PRICENULL9> {
+  using value_type = cme_ilink::PRICENULL9;
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);
@@ -136,8 +136,8 @@ struct fmt::formatter<cme_ilink3::PRICENULL9> {
 };
 
 template <>
-struct fmt::formatter<cme_ilink3::Decimal32NULL> {
-  using value_type = cme_ilink3::Decimal32NULL;
+struct fmt::formatter<cme_ilink::Decimal32NULL> {
+  using value_type = cme_ilink::Decimal32NULL;
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);
@@ -150,8 +150,8 @@ struct fmt::formatter<cme_ilink3::Decimal32NULL> {
 };
 
 template <>
-struct fmt::formatter<cme_ilink3::Decimal64NULL> {
-  using value_type = cme_ilink3::Decimal64NULL;
+struct fmt::formatter<cme_ilink::Decimal64NULL> {
+  using value_type = cme_ilink::Decimal64NULL;
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);
@@ -166,8 +166,8 @@ struct fmt::formatter<cme_ilink3::Decimal64NULL> {
 // complex
 
 template <>
-struct fmt::formatter<cme_ilink3::MaturityMonthYear> {
-  using value_type = cme_ilink3::MaturityMonthYear;
+struct fmt::formatter<cme_ilink::MaturityMonthYear> {
+  using value_type = cme_ilink::MaturityMonthYear;
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);
@@ -192,8 +192,8 @@ struct fmt::formatter<cme_ilink3::MaturityMonthYear> {
 
 // note! set
 template <>
-struct fmt::formatter<cme_ilink3::ExecInst> {
-  using value_type = cme_ilink3::ExecInst;
+struct fmt::formatter<cme_ilink::ExecInst> {
+  using value_type = cme_ilink::ExecInst;
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);
