@@ -38,6 +38,20 @@ inline double get_double(cme_ilink3::PRICENULL9 const &value) {
   return NaN;
 }
 
+inline double get_double(cme_ilink3::Decimal32NULL const &value) {
+  auto mantissa = value.mantissa();
+  if (mantissa != value.mantissaNullValue())
+    return static_cast<double>(mantissa) * std::pow(10.0, value.exponent());
+  return NaN;
+}
+
+inline double get_double(cme_ilink3::Decimal64NULL const &value) {
+  auto mantissa = value.mantissa();
+  if (mantissa != value.mantissaNullValue())
+    return static_cast<double>(mantissa) * std::pow(10.0, value.exponent());
+  return NaN;
+}
+
 inline std::string_view get_string_view(char const *buffer, size_t length) {
   for (auto iter = buffer; iter < (buffer + length); ++iter)
     if (!iter || (*iter) == '\0')
@@ -118,6 +132,61 @@ struct fmt::formatter<cme_ilink3::PRICENULL9> {
   auto format(value_type const &value, Context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), R"({})"sv, roq::cme::ilink3::get_double(value));
+  }
+};
+
+template <>
+struct fmt::formatter<cme_ilink3::Decimal32NULL> {
+  using value_type = cme_ilink3::Decimal32NULL;
+  template <typename Context>
+  constexpr auto parse(Context &context) {
+    return std::begin(context);
+  }
+  template <typename Context>
+  auto format(value_type const &value, Context &context) const {
+    using namespace std::literals;
+    return fmt::format_to(context.out(), R"({})"sv, roq::cme::ilink3::get_double(value));
+  }
+};
+
+template <>
+struct fmt::formatter<cme_ilink3::Decimal64NULL> {
+  using value_type = cme_ilink3::Decimal64NULL;
+  template <typename Context>
+  constexpr auto parse(Context &context) {
+    return std::begin(context);
+  }
+  template <typename Context>
+  auto format(value_type const &value, Context &context) const {
+    using namespace std::literals;
+    return fmt::format_to(context.out(), R"({})"sv, roq::cme::ilink3::get_double(value));
+  }
+};
+
+// complex
+
+template <>
+struct fmt::formatter<cme_ilink3::MaturityMonthYear> {
+  using value_type = cme_ilink3::MaturityMonthYear;
+  template <typename Context>
+  constexpr auto parse(Context &context) {
+    return std::begin(context);
+  }
+  template <typename Context>
+  auto format(value_type const &value, Context &context) const {
+    using namespace std::literals;
+    return fmt::format_to(
+        context.out(),
+        R"({{)"
+        R"(year={}, )"
+        R"(month={}, )"
+        R"(day={}, )"
+        R"(week={})"
+        R"(}}))"sv,
+        value.year(),
+        value.month(),
+        value.day(),
+        value.week());
   }
 };
 

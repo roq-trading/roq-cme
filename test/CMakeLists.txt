@@ -1,6 +1,13 @@
 set(TARGET_NAME "${PROJECT_NAME}-test")
 
-set(SOURCES config.cpp mdp3.cpp secdef.cpp incremental.cpp mbofd_recovery.cpp main.cpp)
+set(SOURCES
+    config.cpp
+    mdp3.cpp
+    secdef.cpp
+    incremental.cpp
+    mbofd_recovery.cpp
+    new_order_single.cpp
+    main.cpp)
 
 roq_gitignore(OUTPUT ".gitignore" SOURCES "${TARGET_NAME}")
 

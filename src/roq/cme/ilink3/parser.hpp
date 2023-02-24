@@ -13,6 +13,7 @@
 #include "roq/cme/ilink3/execution_report.hpp"
 #include "roq/cme/ilink3/order.hpp"
 #include "roq/cme/ilink3/security_definition.hpp"
+#include "roq/cme/ilink3/session.hpp"
 
 namespace roq {
 namespace cme {
@@ -21,6 +22,16 @@ namespace ilink3 {
 struct Parser final {
   struct Handler {
     virtual void operator()(Frame const &) = 0;
+    // session
+    virtual void operator()(Trace<cme_ilink3::NegotiationResponse501> const &, Frame const &) = 0;
+    virtual void operator()(Trace<cme_ilink3::NegotiationReject502> const &, Frame const &) = 0;
+    virtual void operator()(Trace<cme_ilink3::EstablishmentAck504> const &, Frame const &) = 0;
+    virtual void operator()(Trace<cme_ilink3::EstablishmentReject505> const &, Frame const &) = 0;
+    virtual void operator()(Trace<cme_ilink3::Sequence506> const &, Frame const &) = 0;
+    virtual void operator()(Trace<cme_ilink3::Terminate507> const &, Frame const &) = 0;
+    virtual void operator()(Trace<cme_ilink3::Retransmission509> const &, Frame const &) = 0;
+    virtual void operator()(Trace<cme_ilink3::RetransmitReject510> const &, Frame const &) = 0;
+    virtual void operator()(Trace<cme_ilink3::NotApplied513> const &, Frame const &) = 0;
     // business
     virtual void operator()(Trace<cme_ilink3::BusinessReject521> const &, Frame const &) = 0;
     // execution report

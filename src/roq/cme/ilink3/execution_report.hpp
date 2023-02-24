@@ -976,4 +976,3 @@ struct fmt::formatter<cme_ilink3::ExecutionReportTradeSpreadLeg527> {
     // + noOrderEvents()
   }
 };
-
