@@ -17,11 +17,11 @@
 
 #include "roq/core/sbe/iterator.hpp"
 
-#include "roq/cme/ilink3/utils.hpp"
+#include "roq/cme/ilink/utils.hpp"
 
 namespace roq {
 namespace cme {
-namespace ilink3 {}  // namespace ilink3
+namespace ilink {}  // namespace ilink
 }  // namespace cme
 }  // namespace roq
 
@@ -37,7 +37,7 @@ struct fmt::formatter<cme_ilink3::ExecutionReportNew522> {
   template <typename Context>
   auto format(value_type &value, Context &context) const {
     using namespace std::literals;
-    using namespace roq::cme::ilink3;
+    using namespace roq::cme::ilink;
     value.sbeRewind();  // note!
     return fmt::format_to(
         context.out(),
@@ -130,7 +130,7 @@ struct fmt::formatter<cme_ilink3::ExecutionReportReject523> {
   template <typename Context>
   auto format(value_type &value, Context &context) const {
     using namespace std::literals;
-    using namespace roq::cme::ilink3;
+    using namespace roq::cme::ilink;
     value.sbeRewind();  // note!
     return fmt::format_to(
         context.out(),
@@ -227,7 +227,7 @@ struct fmt::formatter<cme_ilink3::ExecutionReportModify531> {
   template <typename Context>
   auto format(value_type &value, Context &context) const {
     using namespace std::literals;
-    using namespace roq::cme::ilink3;
+    using namespace roq::cme::ilink;
     value.sbeRewind();  // note!
     return fmt::format_to(
         context.out(),
@@ -324,7 +324,7 @@ struct fmt::formatter<cme_ilink3::ExecutionReportStatus532> {
   template <typename Context>
   auto format(value_type &value, Context &context) const {
     using namespace std::literals;
-    using namespace roq::cme::ilink3;
+    using namespace roq::cme::ilink;
     value.sbeRewind();  // note!
     return fmt::format_to(
         context.out(),
@@ -419,7 +419,7 @@ struct fmt::formatter<cme_ilink3::ExecutionReportCancel534> {
   template <typename Context>
   auto format(value_type &value, Context &context) const {
     using namespace std::literals;
-    using namespace roq::cme::ilink3;
+    using namespace roq::cme::ilink;
     value.sbeRewind();  // note!
     return fmt::format_to(
         context.out(),
@@ -516,7 +516,7 @@ struct fmt::formatter<cme_ilink3::ExecutionReportPendingCancel564> {
   template <typename Context>
   auto format(value_type &value, Context &context) const {
     using namespace std::literals;
-    using namespace roq::cme::ilink3;
+    using namespace roq::cme::ilink;
     value.sbeRewind();  // note!
     return fmt::format_to(
         context.out(),
@@ -595,7 +595,7 @@ struct fmt::formatter<cme_ilink3::ExecutionReportPendingReplace565> {
   template <typename Context>
   auto format(value_type &value, Context &context) const {
     using namespace std::literals;
-    using namespace roq::cme::ilink3;
+    using namespace roq::cme::ilink;
     value.sbeRewind();  // note!
     return fmt::format_to(
         context.out(),
@@ -676,7 +676,7 @@ struct fmt::formatter<cme_ilink3::ExecutionReportTradeOutright525> {
   template <typename Context>
   auto format(value_type &value, Context &context) const {
     using namespace std::literals;
-    using namespace roq::cme::ilink3;
+    using namespace roq::cme::ilink;
     value.sbeRewind();  // note!
     return fmt::format_to(
         context.out(),
@@ -799,7 +799,7 @@ struct fmt::formatter<cme_ilink3::ExecutionReportTradeSpread526> {
   template <typename Context>
   auto format(value_type &value, Context &context) const {
     using namespace std::literals;
-    using namespace roq::cme::ilink3;
+    using namespace roq::cme::ilink;
     value.sbeRewind();  // note!
     return fmt::format_to(
         context.out(),
@@ -904,7 +904,7 @@ struct fmt::formatter<cme_ilink3::ExecutionReportTradeSpreadLeg527> {
   template <typename Context>
   auto format(value_type &value, Context &context) const {
     using namespace std::literals;
-    using namespace roq::cme::ilink3;
+    using namespace roq::cme::ilink;
     value.sbeRewind();  // note!
     return fmt::format_to(
         context.out(),

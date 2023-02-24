@@ -7,18 +7,18 @@
 
 #include "roq/trace.hpp"
 
-#include "roq/cme/mdp3/frame.hpp"
+#include "roq/cme/mdp/frame.hpp"
 
-#include "roq/cme/mdp3/admin.hpp"
-#include "roq/cme/mdp3/md_incremental_refresh.hpp"
-#include "roq/cme/mdp3/md_instrument_definition.hpp"
-#include "roq/cme/mdp3/quote_request.hpp"
-#include "roq/cme/mdp3/security_status.hpp"
-#include "roq/cme/mdp3/snapshot_full_refresh.hpp"
+#include "roq/cme/mdp/admin.hpp"
+#include "roq/cme/mdp/md_incremental_refresh.hpp"
+#include "roq/cme/mdp/md_instrument_definition.hpp"
+#include "roq/cme/mdp/quote_request.hpp"
+#include "roq/cme/mdp/security_status.hpp"
+#include "roq/cme/mdp/snapshot_full_refresh.hpp"
 
 namespace roq {
 namespace cme {
-namespace mdp3 {
+namespace mdp {
 
 struct Parser final {
   struct Handler {
@@ -60,6 +60,6 @@ struct Parser final {
   static bool dispatch(Handler &, std::span<std::byte const> const &buffer, TraceInfo const &);
 };
 
-}  // namespace mdp3
+}  // namespace mdp
 }  // namespace cme
 }  // namespace roq

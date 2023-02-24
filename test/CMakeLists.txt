@@ -2,7 +2,7 @@ set(TARGET_NAME "${PROJECT_NAME}-test")
 
 set(SOURCES
     config.cpp
-    mdp3.cpp
+    mdp.cpp
     secdef.cpp
     incremental.cpp
     mbofd_recovery.cpp
@@ -17,7 +17,8 @@ target_link_libraries(
   "${TARGET_NAME}"
   "${PROJECT_NAME}-multicast"
   "${PROJECT_NAME}-secdef"
-  "${PROJECT_NAME}-mdp3"
+  "${PROJECT_NAME}-mdp"
+  "${PROJECT_NAME}-ilink"
   roq-server::roq-server
   roq-core::roq-core
   roq-io::roq-io

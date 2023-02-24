@@ -9,7 +9,7 @@ add_executable("${TARGET_NAME}" ${SOURCES})
 target_link_libraries(
   "${TARGET_NAME}"
   PRIVATE "${PROJECT_NAME}-channel-tester-flags"
-          "${PROJECT_NAME}-mdp3"
+          "${PROJECT_NAME}-mdp"
           roq-io::roq-io
           roq-core::roq-core
           roq-logging::roq-logging

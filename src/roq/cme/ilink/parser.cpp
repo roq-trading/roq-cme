@@ -1,6 +1,6 @@
 /* Copyright (c) 2017-2023, Hans Erik Thrane */
 
-#include "roq/cme/ilink3/parser.hpp"
+#include "roq/cme/ilink/parser.hpp"
 
 #include "roq/logging.hpp"
 
@@ -8,7 +8,7 @@
 
 #include "roq/core/byte_order.hpp"
 
-#include "roq/cme/ilink3/utils.hpp"
+#include "roq/cme/ilink/utils.hpp"
 
 #include <iostream>
 
@@ -16,7 +16,7 @@ using namespace std::literals;
 
 namespace roq {
 namespace cme {
-namespace ilink3 {
+namespace ilink {
 
 namespace {
 struct MessageSize final {
@@ -213,6 +213,6 @@ bool Parser::dispatch(Handler &handler, std::span<std::byte const> const &buffer
   return result;
 }
 
-}  // namespace ilink3
+}  // namespace ilink
 }  // namespace cme
 }  // namespace roq

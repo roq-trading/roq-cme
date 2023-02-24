@@ -1,6 +1,6 @@
 /* Copyright (c) 2017-2023, Hans Erik Thrane */
 
-#include "roq/cme/mdp3/frame.hpp"
+#include "roq/cme/mdp/frame.hpp"
 
 #include "roq/logging.hpp"
 
@@ -10,7 +10,7 @@ using namespace std::literals;
 
 namespace roq {
 namespace cme {
-namespace mdp3 {
+namespace mdp {
 
 std::pair<bool, Frame> Frame::parse_helper(std::span<std::byte const> const &buffer) {
   if (std::size(buffer) < size()) {
@@ -30,6 +30,6 @@ std::pair<bool, Frame> Frame::parse_helper(std::span<std::byte const> const &buf
   };
 }
 
-}  // namespace mdp3
+}  // namespace mdp
 }  // namespace cme
 }  // namespace roq

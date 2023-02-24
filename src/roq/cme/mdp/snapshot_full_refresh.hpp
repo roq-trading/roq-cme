@@ -10,11 +10,11 @@
 
 #include "roq/core/sbe/iterator.hpp"
 
-#include "roq/cme/mdp3/utils.hpp"
+#include "roq/cme/mdp/utils.hpp"
 
 namespace roq {
 namespace cme {
-namespace mdp3 {
+namespace mdp {
 
 template <>
 inline size_t compute_length(cme_mdp3::SnapshotFullRefresh52 &value) {
@@ -32,7 +32,7 @@ inline size_t compute_length(cme_mdp3::SnapshotFullRefreshOrderBook53 &value) {
   return value.computeLength(no_md_entries_length);
 }
 
-}  // namespace mdp3
+}  // namespace mdp
 }  // namespace cme
 }  // namespace roq
 
@@ -60,10 +60,10 @@ struct fmt::formatter<cme_mdp3::SnapshotFullRefresh52::NoMDEntries> {
         R"(settl_price_type={}, )"
         R"(md_entry_type={})"
         R"(}})"sv,
-        roq::cme::mdp3::get_double(const_cast<value_type &>(value).mDEntryPx()),
-        roq::cme::mdp3::get_int(value.mDEntrySize(), value.mDEntrySizeNullValue()),
-        roq::cme::mdp3::get_int(value.numberOfOrders(), value.numberOfOrdersNullValue()),
-        roq::cme::mdp3::get_int(value.mDPriceLevel(), value.mDPriceLevelNullValue()),
+        roq::cme::mdp::get_double(const_cast<value_type &>(value).mDEntryPx()),
+        roq::cme::mdp::get_int(value.mDEntrySize(), value.mDEntrySizeNullValue()),
+        roq::cme::mdp::get_int(value.numberOfOrders(), value.numberOfOrdersNullValue()),
+        roq::cme::mdp::get_int(value.mDPriceLevel(), value.mDPriceLevelNullValue()),
         value.tradingReferenceDate(),
         value.openCloseSettlFlag(),
         const_cast<value_type &>(value).settlPriceType(),
@@ -108,10 +108,10 @@ struct fmt::formatter<cme_mdp3::SnapshotFullRefresh52> {
         value.lastUpdateTime(),
         value.tradeDate(),
         value.mDSecurityTradingStatus(),
-        roq::cme::mdp3::get_double(value.highLimitPrice()),
-        roq::cme::mdp3::get_double(value.lowLimitPrice()),
-        roq::cme::mdp3::get_double(value.maxPriceVariation()),
-        roq::cme::mdp3::Group{value.noMDEntries()});
+        roq::cme::mdp::get_double(value.highLimitPrice()),
+        roq::cme::mdp::get_double(value.lowLimitPrice()),
+        roq::cme::mdp::get_double(value.maxPriceVariation()),
+        roq::cme::mdp::Group{value.noMDEntries()});
   }
 };
 
@@ -137,7 +137,7 @@ struct fmt::formatter<cme_mdp3::SnapshotFullRefreshOrderBook53::NoMDEntries> {
         R"(md_entry_type={})"
         R"(}})"sv,
         value.orderID(),
-        roq::cme::mdp3::get_int(value.mDOrderPriority(), value.mDOrderPriorityNullValue()),
+        roq::cme::mdp::get_int(value.mDOrderPriority(), value.mDOrderPriorityNullValue()),
         const_cast<value_type &>(value).mDEntryPx(),
         value.mDDisplayQty(),
         value.mDEntryType());
@@ -174,7 +174,7 @@ struct fmt::formatter<cme_mdp3::SnapshotFullRefreshOrderBook53> {
         value.noChunks(),
         value.currentChunk(),
         value.transactTime(),
-        roq::cme::mdp3::Group{value.noMDEntries()});
+        roq::cme::mdp::Group{value.noMDEntries()});
   }
 };
 
@@ -201,9 +201,9 @@ struct fmt::formatter<cme_mdp3::SnapshotFullRefreshLongQty69::NoMDEntries> {
         R"(md_entry_type={})"
         R"(}})"sv,
         const_cast<value_type &>(value).mDEntryPx(),
-        roq::cme::mdp3::get_int(value.mDEntrySize(), value.mDEntrySizeNullValue()),
-        roq::cme::mdp3::get_int(value.numberOfOrders(), value.numberOfOrdersNullValue()),
-        roq::cme::mdp3::get_int(value.mDPriceLevel(), value.mDPriceLevelNullValue()),
+        roq::cme::mdp::get_int(value.mDEntrySize(), value.mDEntrySizeNullValue()),
+        roq::cme::mdp::get_int(value.numberOfOrders(), value.numberOfOrdersNullValue()),
+        roq::cme::mdp::get_int(value.mDPriceLevel(), value.mDPriceLevelNullValue()),
         value.openCloseSettlFlag(),
         value.mDEntryType());
   }
@@ -249,6 +249,6 @@ struct fmt::formatter<cme_mdp3::SnapshotFullRefreshLongQty69> {
         value.highLimitPrice(),
         value.lowLimitPrice(),
         value.maxPriceVariation(),
-        roq::cme::mdp3::Group{value.noMDEntries()});
+        roq::cme::mdp::Group{value.noMDEntries()});
   }
 };

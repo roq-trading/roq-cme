@@ -7,17 +7,17 @@
 
 #include "roq/trace.hpp"
 
-#include "roq/cme/ilink3/frame.hpp"
+#include "roq/cme/ilink/frame.hpp"
 
-#include "roq/cme/ilink3/business.hpp"
-#include "roq/cme/ilink3/execution_report.hpp"
-#include "roq/cme/ilink3/order.hpp"
-#include "roq/cme/ilink3/security_definition.hpp"
-#include "roq/cme/ilink3/session.hpp"
+#include "roq/cme/ilink/business.hpp"
+#include "roq/cme/ilink/execution_report.hpp"
+#include "roq/cme/ilink/order.hpp"
+#include "roq/cme/ilink/security_definition.hpp"
+#include "roq/cme/ilink/session.hpp"
 
 namespace roq {
 namespace cme {
-namespace ilink3 {
+namespace ilink {
 
 struct Parser final {
   struct Handler {
@@ -55,6 +55,6 @@ struct Parser final {
   static bool dispatch(Handler &, std::span<std::byte const> const &buffer, TraceInfo const &);
 };
 
-}  // namespace ilink3
+}  // namespace ilink
 }  // namespace cme
 }  // namespace roq

@@ -10,7 +10,7 @@
 
 namespace roq {
 namespace cme {
-namespace ilink3 {
+namespace ilink {
 
 struct Frame final {
   uint32_t sequence_number = {};
@@ -30,18 +30,18 @@ struct Frame final {
   static std::pair<bool, Frame> parse_helper(std::span<std::byte const> const &buffer);
 };
 
-}  // namespace ilink3
+}  // namespace ilink
 }  // namespace cme
 }  // namespace roq
 
 template <>
-struct fmt::formatter<roq::cme::ilink3::Frame> {
+struct fmt::formatter<roq::cme::ilink::Frame> {
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);
   }
   template <typename Context>
-  auto format(roq::cme::ilink3::Frame const &value, Context &context) const {
+  auto format(roq::cme::ilink::Frame const &value, Context &context) const {
     using namespace std::literals;
     return fmt::format_to(
         context.out(),

@@ -1,4 +1,4 @@
-set(TARGET_NAME "${PROJECT_NAME}-ilink3")
+set(TARGET_NAME "${PROJECT_NAME}-mdp")
 
 set(SOURCES frame.cpp parser.cpp)
 

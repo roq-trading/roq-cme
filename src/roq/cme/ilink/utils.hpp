@@ -16,7 +16,7 @@
 
 namespace roq {
 namespace cme {
-namespace ilink3 {
+namespace ilink {
 // types
 
 template <typename T>
@@ -73,7 +73,7 @@ struct Group final {
  private:
   T &value_;
 };
-}  // namespace ilink3
+}  // namespace ilink
 }  // namespace cme
 }  // namespace roq
 
@@ -117,7 +117,7 @@ struct fmt::formatter<cme_ilink3::PRICE9> {
   template <typename Context>
   auto format(value_type const &value, Context &context) const {
     using namespace std::literals;
-    return fmt::format_to(context.out(), R"({})"sv, roq::cme::ilink3::get_double(value));
+    return fmt::format_to(context.out(), R"({})"sv, roq::cme::ilink::get_double(value));
   }
 };
 
@@ -131,7 +131,7 @@ struct fmt::formatter<cme_ilink3::PRICENULL9> {
   template <typename Context>
   auto format(value_type const &value, Context &context) const {
     using namespace std::literals;
-    return fmt::format_to(context.out(), R"({})"sv, roq::cme::ilink3::get_double(value));
+    return fmt::format_to(context.out(), R"({})"sv, roq::cme::ilink::get_double(value));
   }
 };
 
@@ -145,7 +145,7 @@ struct fmt::formatter<cme_ilink3::Decimal32NULL> {
   template <typename Context>
   auto format(value_type const &value, Context &context) const {
     using namespace std::literals;
-    return fmt::format_to(context.out(), R"({})"sv, roq::cme::ilink3::get_double(value));
+    return fmt::format_to(context.out(), R"({})"sv, roq::cme::ilink::get_double(value));
   }
 };
 
@@ -159,7 +159,7 @@ struct fmt::formatter<cme_ilink3::Decimal64NULL> {
   template <typename Context>
   auto format(value_type const &value, Context &context) const {
     using namespace std::literals;
-    return fmt::format_to(context.out(), R"({})"sv, roq::cme::ilink3::get_double(value));
+    return fmt::format_to(context.out(), R"({})"sv, roq::cme::ilink::get_double(value));
   }
 };
 

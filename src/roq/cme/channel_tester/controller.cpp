@@ -10,7 +10,7 @@
 
 #include "roq/io/engine/context_factory.hpp"
 
-#include "roq/cme/mdp3/parser.hpp"
+#include "roq/cme/mdp/parser.hpp"
 
 #include "roq/cme/channel_tester/flags/flags.hpp"
 
@@ -71,7 +71,7 @@ void Controller::operator()(io::net::udp::Receiver::Read const &read) {
     auto message = std::span{std::data(buffer_), bytes};
     log::info<5>("received {} byte(s)"sv, std::size(message));
     // log::print("{}\n"sv, debug::hex::Message{message});
-    if (mdp3::Frame::parse(message, [&](auto &frame) {
+    if (mdp::Frame::parse(message, [&](auto &frame) {
           log::info<1>("frame={}"sv, frame);
           auto sequence_number = frame.sequence_number;
           if (sequence_number < flags::Flags::filter_snapshot_from_incremental())

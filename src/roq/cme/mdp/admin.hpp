@@ -7,11 +7,11 @@
 #include <cme_mdp3/AdminHeartbeat12.h>
 #include <cme_mdp3/ChannelReset4.h>
 
-#include "roq/cme/mdp3/utils.hpp"
+#include "roq/cme/mdp/utils.hpp"
 
 namespace roq {
 namespace cme {
-namespace mdp3 {}  // namespace mdp3
+namespace mdp {}  // namespace mdp
 }  // namespace cme
 }  // namespace roq
 
@@ -62,7 +62,7 @@ struct fmt::formatter<cme_mdp3::ChannelReset4> {
         R"(}})"sv,
         value.transactTime(),
         const_cast<value_type &>(value).matchEventIndicator(),
-        roq::cme::mdp3::Group{const_cast<value_type &>(value).noMDEntries()});
+        roq::cme::mdp::Group{const_cast<value_type &>(value).noMDEntries()});
   }
 };
 

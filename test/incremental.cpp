@@ -7,7 +7,7 @@
 #include <cmath>
 #include <span>
 
-#include "roq/cme/mdp3/parser.hpp"
+#include "roq/cme/mdp/parser.hpp"
 
 using namespace std::literals;
 
@@ -66,24 +66,24 @@ TEST_CASE("batched", "[incremental]") {
       "\xff\x7f\x01\xff\xff\xff\x80\x46\x8a\x41\xc8\xf8\xff\xff\xff\xff\x03\x00\x00\x00\xff\xff\xff\x7f\x02\xff\xff\xff"
       "\x80\x46\x00\x00\x00\x00\x00\x00\x00\x00\xff\xff\xff\x7f\xff\xff\xff\x7f\x7f\xbf\x4b\xff\x03\x36"sv;
   REQUIRE(std::size(message) == 970);
-  struct MyHandler final : public mdp3::Parser::Handler {
+  struct MyHandler final : public mdp::Parser::Handler {
     int counter = 0;
-    void operator()(mdp3::Frame const &) override {}
-    void operator()(Trace<cme_mdp3::ChannelReset4> const &, mdp3::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::AdminHeartbeat12> const &, mdp3::Frame const &) override { FAIL(); }
+    void operator()(mdp::Frame const &) override {}
+    void operator()(Trace<cme_mdp3::ChannelReset4> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::AdminHeartbeat12> const &, mdp::Frame const &) override { FAIL(); }
     // - security status
-    void operator()(Trace<cme_mdp3::SecurityStatus30> const &, mdp3::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::SecurityStatus30> const &, mdp::Frame const &) override { FAIL(); }
     // - instrument definition
-    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionFuture54> const &, mdp3::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionOption55> const &, mdp3::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionSpread56> const &, mdp3::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionFixedIncome57> const &, mdp3::Frame const &) override {
+    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionFuture54> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionOption55> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionSpread56> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionFixedIncome57> const &, mdp::Frame const &) override {
       FAIL();
     }
-    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionRepo58> const &, mdp3::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionFX63> const &, mdp3::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionRepo58> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionFX63> const &, mdp::Frame const &) override { FAIL(); }
     // - SnapshotFullRefresh
-    void operator()(Trace<cme_mdp3::SnapshotFullRefresh52> const &event, mdp3::Frame const &) override {
+    void operator()(Trace<cme_mdp3::SnapshotFullRefresh52> const &event, mdp::Frame const &) override {
       using value_type = std::remove_cvref<decltype(event)>::type::value_type;
       auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
       switch (++counter) {
@@ -96,50 +96,50 @@ TEST_CASE("batched", "[incremental]") {
           CHECK(value.lastUpdateTime() == 1675616678351000000);
           CHECK(value.tradeDate() == 19394);
           CHECK(value.mDSecurityTradingStatus() == cme_mdp3::SecurityTradingStatus::ReadyToTrade);
-          CHECK(std::isnan(mdp3::get_double(value.highLimitPrice())));
-          CHECK(std::isnan(mdp3::get_double(value.lowLimitPrice())));
-          CHECK(mdp3::get_double(value.maxPriceVariation()) == 0.5_a);
+          CHECK(std::isnan(mdp::get_double(value.highLimitPrice())));
+          CHECK(std::isnan(mdp::get_double(value.lowLimitPrice())));
+          CHECK(mdp::get_double(value.maxPriceVariation()) == 0.5_a);
           value.sbeRewind();  // wtf!
           auto no_md_entries_rows = 0;
           value.noMDEntries().forEach([&no_md_entries_rows](auto &item) {
             switch (++no_md_entries_rows) {
               case 1:
-                CHECK(mdp3::get_double(item.mDEntryPx()) == -0.21875_a);
-                CHECK(mdp3::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 2);
-                CHECK(mdp3::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 1);
-                CHECK(mdp3::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 1);
-                CHECK(mdp3::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
+                CHECK(mdp::get_double(item.mDEntryPx()) == -0.21875_a);
+                CHECK(mdp::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 2);
+                CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 1);
+                CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 1);
+                CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
                 CHECK(item.openCloseSettlFlag() == cme_mdp3::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
                 CHECK(item.mDEntryType() == cme_mdp3::MDEntryType::Value::Bid);
                 break;
               case 2:
-                CHECK(mdp3::get_double(item.mDEntryPx()) == -0.234375_a);
-                CHECK(mdp3::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 4);
-                CHECK(mdp3::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 2);
-                CHECK(mdp3::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 2);
-                CHECK(mdp3::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
+                CHECK(mdp::get_double(item.mDEntryPx()) == -0.234375_a);
+                CHECK(mdp::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 4);
+                CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 2);
+                CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 2);
+                CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
                 CHECK(item.openCloseSettlFlag() == cme_mdp3::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
                 CHECK(item.mDEntryType() == cme_mdp3::MDEntryType::Value::Bid);
                 break;
               // ...
               case 31:
-                CHECK(mdp3::get_double(item.mDEntryPx()) == -0.09375_a);
-                CHECK(mdp3::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 0);
-                CHECK(mdp3::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
-                CHECK(mdp3::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 0);
-                CHECK(mdp3::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
+                CHECK(mdp::get_double(item.mDEntryPx()) == -0.09375_a);
+                CHECK(mdp::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 0);
+                CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
+                CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 0);
+                CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
                 CHECK(item.openCloseSettlFlag() == cme_mdp3::OpenCloseSettlFlag::DailyOpenPrice);
                 CHECK(item.settlPriceType().nullValue());
                 CHECK(item.mDEntryType() == cme_mdp3::MDEntryType::Value::OpenPrice);
                 break;
               case 32:
-                CHECK(mdp3::get_double(item.mDEntryPx()) == 0.0_a);
-                CHECK(mdp3::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 0);
-                CHECK(mdp3::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
-                CHECK(mdp3::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 0);
-                CHECK(mdp3::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 19391);
+                CHECK(mdp::get_double(item.mDEntryPx()) == 0.0_a);
+                CHECK(mdp::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 0);
+                CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
+                CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 0);
+                CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 19391);
                 CHECK(item.openCloseSettlFlag() == cme_mdp3::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().rawValue() == 3);  // note! 3 == intraday
                 CHECK(item.mDEntryType() == cme_mdp3::MDEntryType::Value::SettlementPrice);
@@ -158,50 +158,50 @@ TEST_CASE("batched", "[incremental]") {
           CHECK(value.lastUpdateTime() == 1675616678351000000);
           CHECK(value.tradeDate() == 19394);
           CHECK(value.mDSecurityTradingStatus() == cme_mdp3::SecurityTradingStatus::ReadyToTrade);
-          CHECK(std::isnan(mdp3::get_double(value.highLimitPrice())));
-          CHECK(std::isnan(mdp3::get_double(value.lowLimitPrice())));
-          CHECK(mdp3::get_double(value.maxPriceVariation()) == 0.5_a);
+          CHECK(std::isnan(mdp::get_double(value.highLimitPrice())));
+          CHECK(std::isnan(mdp::get_double(value.lowLimitPrice())));
+          CHECK(mdp::get_double(value.maxPriceVariation()) == 0.5_a);
           value.sbeRewind();  // wtf!
           auto no_md_entries_rows = 0;
           value.noMDEntries().forEach([&no_md_entries_rows](auto &item) {
             switch (++no_md_entries_rows) {
               case 1:
-                CHECK(mdp3::get_double(item.mDEntryPx()) == -0.140625_a);
-                CHECK(mdp3::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 2);
-                CHECK(mdp3::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
-                CHECK(mdp3::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 1);
-                CHECK(mdp3::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
+                CHECK(mdp::get_double(item.mDEntryPx()) == -0.140625_a);
+                CHECK(mdp::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 2);
+                CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
+                CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 1);
+                CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
                 CHECK(item.openCloseSettlFlag() == cme_mdp3::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
                 CHECK(item.mDEntryType() == cme_mdp3::MDEntryType::Value::ImpliedBid);
                 break;
               case 2:
-                CHECK(mdp3::get_double(item.mDEntryPx()) == -0.14453125_a);
-                CHECK(mdp3::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 2);
-                CHECK(mdp3::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
-                CHECK(mdp3::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 2);
-                CHECK(mdp3::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
+                CHECK(mdp::get_double(item.mDEntryPx()) == -0.14453125_a);
+                CHECK(mdp::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 2);
+                CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
+                CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 2);
+                CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
                 CHECK(item.openCloseSettlFlag() == cme_mdp3::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
                 CHECK(item.mDEntryType() == cme_mdp3::MDEntryType::Value::ImpliedBid);
                 break;
               // ...
               case 4:
-                CHECK(mdp3::get_double(item.mDEntryPx()) == -0.12109375_a);
-                CHECK(mdp3::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 3);
-                CHECK(mdp3::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
-                CHECK(mdp3::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 2);
-                CHECK(mdp3::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
+                CHECK(mdp::get_double(item.mDEntryPx()) == -0.12109375_a);
+                CHECK(mdp::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 3);
+                CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
+                CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 2);
+                CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
                 CHECK(item.openCloseSettlFlag() == cme_mdp3::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
                 CHECK(item.mDEntryType() == cme_mdp3::MDEntryType::Value::ImpliedOffer);
                 break;
               case 5:
-                CHECK(mdp3::get_double(item.mDEntryPx()) == 0.0_a);
-                CHECK(mdp3::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 0);
-                CHECK(mdp3::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
-                CHECK(mdp3::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 0);
-                CHECK(mdp3::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 19391);
+                CHECK(mdp::get_double(item.mDEntryPx()) == 0.0_a);
+                CHECK(mdp::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 0);
+                CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
+                CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 0);
+                CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 19391);
                 CHECK(item.openCloseSettlFlag() == cme_mdp3::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().rawValue() == 3);  // note! 3 == intraday
                 CHECK(item.mDEntryType() == cme_mdp3::MDEntryType::Value::SettlementPrice);
@@ -213,42 +213,40 @@ TEST_CASE("batched", "[incremental]") {
         }
       }
     }
-    void operator()(Trace<cme_mdp3::SnapshotFullRefreshOrderBook53> const &, mdp3::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::SnapshotFullRefreshLongQty69> const &, mdp3::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::SnapshotFullRefreshOrderBook53> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::SnapshotFullRefreshLongQty69> const &, mdp::Frame const &) override { FAIL(); }
     // - MDIncrementalRefresh
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshVolume37> const &, mdp3::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshBook46> const &, mdp3::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshOrderBook47> const &, mdp3::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshTradeSummary48> const &, mdp3::Frame const &) override {
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshVolume37> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshBook46> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshOrderBook47> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshTradeSummary48> const &, mdp::Frame const &) override {
       FAIL();
     }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshDailyStatistics49> const &, mdp3::Frame const &) override {
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshDailyStatistics49> const &, mdp::Frame const &) override {
       FAIL();
     }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshLimitsBanding50> const &, mdp3::Frame const &) override {
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshLimitsBanding50> const &, mdp::Frame const &) override {
       FAIL();
     }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshSessionStatistics51> const &, mdp3::Frame const &) override {
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshSessionStatistics51> const &, mdp::Frame const &) override {
       FAIL();
     }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshBookLongQty64> const &, mdp3::Frame const &) override {
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshBookLongQty64> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshTradeSummaryLongQty65> const &, mdp::Frame const &) override {
       FAIL();
     }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshTradeSummaryLongQty65> const &, mdp3::Frame const &) override {
-      FAIL();
-    }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshVolumeLongQty66> const &, mdp3::Frame const &) override {
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshVolumeLongQty66> const &, mdp::Frame const &) override {
       FAIL();
     }
     void operator()(
-        Trace<cme_mdp3::MDIncrementalRefreshSessionStatisticsLongQty67> const &, mdp3::Frame const &) override {
+        Trace<cme_mdp3::MDIncrementalRefreshSessionStatisticsLongQty67> const &, mdp::Frame const &) override {
       FAIL();
     }
-    void operator()(Trace<cme_mdp3::QuoteRequest39> const &, mdp3::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::QuoteRequest39> const &, mdp::Frame const &) override { FAIL(); }
   } handler;
   std::span buffer{reinterpret_cast<std::byte const *>(std::data(message)), std::size(message)};
   TraceInfo trace_info;
-  auto res = mdp3::Parser::dispatch(handler, buffer, trace_info);
+  auto res = mdp::Parser::dispatch(handler, buffer, trace_info);
   CHECK(res);
   CHECK(handler.counter == 2);
 }
@@ -267,31 +265,31 @@ TEST_CASE("simple", "[incremental]") {
       "\x4e\x80\xa6\x07\x00\x00\x25\x00\x00\x00\x00\x00\x00\x00\xe9\x1f\x9d\x7f\xa6\x07\x00\x00\x25\x00\x00\x00\x00\x00"
       "\x00\x00"sv;
   REQUIRE(std::size(message) == 108);
-  struct MyHandler final : public mdp3::Parser::Handler {
+  struct MyHandler final : public mdp::Parser::Handler {
     int counter = 0;
-    void operator()(mdp3::Frame const &) override {}
-    void operator()(Trace<cme_mdp3::ChannelReset4> const &, mdp3::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::AdminHeartbeat12> const &, mdp3::Frame const &) override { FAIL(); }
+    void operator()(mdp::Frame const &) override {}
+    void operator()(Trace<cme_mdp3::ChannelReset4> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::AdminHeartbeat12> const &, mdp::Frame const &) override { FAIL(); }
     // - security status
-    void operator()(Trace<cme_mdp3::SecurityStatus30> const &, mdp3::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::SecurityStatus30> const &, mdp::Frame const &) override { FAIL(); }
     // - instrument definition
-    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionFuture54> const &, mdp3::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionOption55> const &, mdp3::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionSpread56> const &, mdp3::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionFixedIncome57> const &, mdp3::Frame const &) override {
+    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionFuture54> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionOption55> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionSpread56> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionFixedIncome57> const &, mdp::Frame const &) override {
       FAIL();
     }
-    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionRepo58> const &, mdp3::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionFX63> const &, mdp3::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionRepo58> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionFX63> const &, mdp::Frame const &) override { FAIL(); }
     // - SnapshotFullRefresh
-    void operator()(Trace<cme_mdp3::SnapshotFullRefresh52> const &, mdp3::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::SnapshotFullRefreshOrderBook53> const &, mdp3::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::SnapshotFullRefreshLongQty69> const &, mdp3::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::SnapshotFullRefresh52> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::SnapshotFullRefreshOrderBook53> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::SnapshotFullRefreshLongQty69> const &, mdp::Frame const &) override { FAIL(); }
     // - MDIncrementalRefresh
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshVolume37> const &, mdp3::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshBook46> const &, mdp3::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshOrderBook47> const &, mdp3::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshTradeSummary48> const &event, mdp3::Frame const &) override {
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshVolume37> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshBook46> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshOrderBook47> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshTradeSummary48> const &event, mdp::Frame const &) override {
       using value_type = std::remove_cvref<decltype(event)>::type::value_type;
       auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
       switch (++counter) {
@@ -303,7 +301,7 @@ TEST_CASE("simple", "[incremental]") {
           value.noMDEntries().forEach([&no_md_entries_rows](auto &item) {
             switch (++no_md_entries_rows) {
               case 1:
-                CHECK(mdp3::get_double(item.mDEntryPx()) == 108.7578125_a);
+                CHECK(mdp::get_double(item.mDEntryPx()) == 108.7578125_a);
                 CHECK(item.mDEntrySize() == 37);
                 CHECK(item.securityID() == 492654);
                 CHECK(item.rptSeq() == 597792);
@@ -311,7 +309,7 @@ TEST_CASE("simple", "[incremental]") {
                 CHECK(item.aggressorSide() == cme_mdp3::AggressorSide::Value::Sell);
                 CHECK(item.mDUpdateAction() == cme_mdp3::MDUpdateAction::Value::New);
                 // CHECK(item.mDEntryType().rawValue() == 2); // note! constant
-                CHECK(mdp3::get_int(item.mDTradeEntryID(), item.mDTradeEntryIDNullValue()) == 782562);
+                CHECK(mdp::get_int(item.mDTradeEntryID(), item.mDTradeEntryIDNullValue()) == 782562);
                 break;
             }
           });
@@ -320,33 +318,31 @@ TEST_CASE("simple", "[incremental]") {
         }
       }
     }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshDailyStatistics49> const &, mdp3::Frame const &) override {
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshDailyStatistics49> const &, mdp::Frame const &) override {
       FAIL();
     }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshLimitsBanding50> const &, mdp3::Frame const &) override {
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshLimitsBanding50> const &, mdp::Frame const &) override {
       FAIL();
     }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshSessionStatistics51> const &, mdp3::Frame const &) override {
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshSessionStatistics51> const &, mdp::Frame const &) override {
       FAIL();
     }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshBookLongQty64> const &, mdp3::Frame const &) override {
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshBookLongQty64> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshTradeSummaryLongQty65> const &, mdp::Frame const &) override {
       FAIL();
     }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshTradeSummaryLongQty65> const &, mdp3::Frame const &) override {
-      FAIL();
-    }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshVolumeLongQty66> const &, mdp3::Frame const &) override {
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshVolumeLongQty66> const &, mdp::Frame const &) override {
       FAIL();
     }
     void operator()(
-        Trace<cme_mdp3::MDIncrementalRefreshSessionStatisticsLongQty67> const &, mdp3::Frame const &) override {
+        Trace<cme_mdp3::MDIncrementalRefreshSessionStatisticsLongQty67> const &, mdp::Frame const &) override {
       FAIL();
     }
-    void operator()(Trace<cme_mdp3::QuoteRequest39> const &, mdp3::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::QuoteRequest39> const &, mdp::Frame const &) override { FAIL(); }
   } handler;
   std::span buffer{reinterpret_cast<std::byte const *>(std::data(message)), std::size(message)};
   TraceInfo trace_info;
-  auto res = mdp3::Parser::dispatch(handler, buffer, trace_info);
+  auto res = mdp::Parser::dispatch(handler, buffer, trace_info);
   CHECK(res);
   CHECK(handler.counter == 1);
 }
@@ -423,31 +419,31 @@ TEST_CASE("complex", "[incremental]") {
       "\x3b\x08\x7c\x9b\x55\x31\x41\x17\x04\x00\x00\x20\x00\x01\x00\xf4\xed\x8a\x1a\x00\x00\x00\x5b\x09\x00\x00\xa2\x11"
       "\x06\x00\xbc\x3b\x13\x00\x8a\x00\x00\x00\x01\x01\x30\x00\x00\x00\x00\x00\x18\x00\x00\x00\x00\x00\x00\x00"sv;
   REQUIRE(std::size(message) == 876);
-  struct MyHandler final : public mdp3::Parser::Handler {
+  struct MyHandler final : public mdp::Parser::Handler {
     int count_37 = 0;
     int count_46 = 0;
     int count_47 = 0;
     int count_48 = 0;
-    void operator()(mdp3::Frame const &) override {}
-    void operator()(Trace<cme_mdp3::ChannelReset4> const &, mdp3::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::AdminHeartbeat12> const &, mdp3::Frame const &) override { FAIL(); }
+    void operator()(mdp::Frame const &) override {}
+    void operator()(Trace<cme_mdp3::ChannelReset4> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::AdminHeartbeat12> const &, mdp::Frame const &) override { FAIL(); }
     // - security status
-    void operator()(Trace<cme_mdp3::SecurityStatus30> const &, mdp3::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::SecurityStatus30> const &, mdp::Frame const &) override { FAIL(); }
     // - instrument definition
-    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionFuture54> const &, mdp3::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionOption55> const &, mdp3::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionSpread56> const &, mdp3::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionFixedIncome57> const &, mdp3::Frame const &) override {
+    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionFuture54> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionOption55> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionSpread56> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionFixedIncome57> const &, mdp::Frame const &) override {
       FAIL();
     }
-    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionRepo58> const &, mdp3::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionFX63> const &, mdp3::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionRepo58> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionFX63> const &, mdp::Frame const &) override { FAIL(); }
     // - SnapshotFullRefresh
-    void operator()(Trace<cme_mdp3::SnapshotFullRefresh52> const &, mdp3::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::SnapshotFullRefreshOrderBook53> const &, mdp3::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::SnapshotFullRefreshLongQty69> const &, mdp3::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::SnapshotFullRefresh52> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::SnapshotFullRefreshOrderBook53> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::SnapshotFullRefreshLongQty69> const &, mdp::Frame const &) override { FAIL(); }
     // - MDIncrementalRefresh
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshVolume37> const &event, mdp3::Frame const &) override {
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshVolume37> const &event, mdp::Frame const &) override {
       using value_type = std::remove_cvref<decltype(event)>::type::value_type;
       auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
       switch (++count_37) {
@@ -472,7 +468,7 @@ TEST_CASE("complex", "[incremental]") {
         }
       }
     }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshBook46> const &event, mdp3::Frame const &) override {
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshBook46> const &event, mdp::Frame const &) override {
       using value_type = std::remove_cvref<decltype(event)>::type::value_type;
       auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
       switch (++count_46) {
@@ -483,15 +479,15 @@ TEST_CASE("complex", "[incremental]") {
           value.noMDEntries().forEach([&no_md_entries_rows](auto &item) {
             switch (++no_md_entries_rows) {
               case 1:
-                CHECK(mdp3::get_double(item.mDEntryPx()) == 108.7578125_a);
-                CHECK(mdp3::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 303);
+                CHECK(mdp::get_double(item.mDEntryPx()) == 108.7578125_a);
+                CHECK(mdp::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 303);
                 CHECK(item.securityID() == 492654);
                 CHECK(item.rptSeq() == 597794);
-                CHECK(mdp3::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 39);
+                CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 39);
                 CHECK(item.mDPriceLevel() == 1);
                 CHECK(item.mDUpdateAction() == cme_mdp3::MDUpdateAction::Value::Change);
                 CHECK(item.mDEntryType() == cme_mdp3::MDEntryTypeBook::Value::Bid);
-                CHECK(mdp3::get_int(item.tradeableSize(), item.tradeableSizeNullValue()) == 0);
+                CHECK(mdp::get_int(item.tradeableSize(), item.tradeableSizeNullValue()) == 0);
                 break;
             }
           });
@@ -501,9 +497,9 @@ TEST_CASE("complex", "[incremental]") {
             switch (++no_order_id_entries) {
               case 1:
                 CHECK(item.orderID() == 8411686969321);
-                CHECK(mdp3::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue()) == 20492778632);
-                CHECK(mdp3::get_int(item.mDDisplayQty(), item.mDDisplayQtyNullValue()) == 46);
-                CHECK(mdp3::get_int(item.referenceID(), item.referenceIDNullValue()) == 1);
+                CHECK(mdp::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue()) == 20492778632);
+                CHECK(mdp::get_int(item.mDDisplayQty(), item.mDDisplayQtyNullValue()) == 46);
+                CHECK(mdp::get_int(item.referenceID(), item.referenceIDNullValue()) == 1);
                 CHECK(item.orderUpdateAction() == cme_mdp3::OrderUpdateAction::Value::Update);
                 break;
             }
@@ -518,27 +514,27 @@ TEST_CASE("complex", "[incremental]") {
           value.noMDEntries().forEach([&no_md_entries_rows](auto &item) {
             switch (++no_md_entries_rows) {
               case 1:
-                CHECK(mdp3::get_double(item.mDEntryPx()) == 0.078125_a);
-                CHECK(mdp3::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 303);
+                CHECK(mdp::get_double(item.mDEntryPx()) == 0.078125_a);
+                CHECK(mdp::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 303);
                 CHECK(item.securityID() == 8827);
                 CHECK(item.rptSeq() == 894013);
-                CHECK(mdp3::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
+                CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
                 CHECK(item.mDPriceLevel() == 1);
                 CHECK(item.mDUpdateAction() == cme_mdp3::MDUpdateAction::Value::Change);
                 CHECK(item.mDEntryType() == cme_mdp3::MDEntryTypeBook::Value::ImpliedBid);
-                CHECK(mdp3::get_int(item.tradeableSize(), item.tradeableSizeNullValue()) == 0);
+                CHECK(mdp::get_int(item.tradeableSize(), item.tradeableSizeNullValue()) == 0);
                 break;
               // ...
               case 12:
-                CHECK(mdp3::get_double(item.mDEntryPx()) == 113.96875_a);
-                CHECK(mdp3::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 53);
+                CHECK(mdp::get_double(item.mDEntryPx()) == 113.96875_a);
+                CHECK(mdp::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 53);
                 CHECK(item.securityID() == 397730);
                 CHECK(item.rptSeq() == 1260473);
-                CHECK(mdp3::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
+                CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
                 CHECK(item.mDPriceLevel() == 2);
                 CHECK(item.mDUpdateAction() == cme_mdp3::MDUpdateAction::Value::Change);
                 CHECK(item.mDEntryType() == cme_mdp3::MDEntryTypeBook::Value::ImpliedBid);
-                CHECK(mdp3::get_int(item.tradeableSize(), item.tradeableSizeNullValue()) == 0);
+                CHECK(mdp::get_int(item.tradeableSize(), item.tradeableSizeNullValue()) == 0);
                 break;
             }
           });
@@ -556,15 +552,15 @@ TEST_CASE("complex", "[incremental]") {
           value.noMDEntries().forEach([&no_md_entries_rows](auto &item) {
             switch (++no_md_entries_rows) {
               case 1:
-                CHECK(mdp3::get_double(item.mDEntryPx()) == 114.0_a);
-                CHECK(mdp3::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 2395);
+                CHECK(mdp::get_double(item.mDEntryPx()) == 114.0_a);
+                CHECK(mdp::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 2395);
                 CHECK(item.securityID() == 397730);
                 CHECK(item.rptSeq() == 1260476);
-                CHECK(mdp3::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 138);
+                CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 138);
                 CHECK(item.mDPriceLevel() == 1);
                 CHECK(item.mDUpdateAction() == cme_mdp3::MDUpdateAction::Value::Change);
                 CHECK(item.mDEntryType() == cme_mdp3::MDEntryTypeBook::Value::Bid);
-                CHECK(mdp3::get_int(item.tradeableSize(), item.tradeableSizeNullValue()) == 0);
+                CHECK(mdp::get_int(item.tradeableSize(), item.tradeableSizeNullValue()) == 0);
                 break;
             }
           });
@@ -577,7 +573,7 @@ TEST_CASE("complex", "[incremental]") {
         }
       }
     }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshOrderBook47> const &event, mdp3::Frame const &) override {
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshOrderBook47> const &event, mdp::Frame const &) override {
       using value_type = std::remove_cvref<decltype(event)>::type::value_type;
       auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
       switch (++count_47) {
@@ -588,19 +584,19 @@ TEST_CASE("complex", "[incremental]") {
           value.noMDEntries().forEach([&no_md_entries_rows](auto &item) {
             switch (++no_md_entries_rows) {
               case 1:
-                CHECK(mdp3::get_int(item.orderID(), item.orderIDNullValue()) == 8411677212257);
-                CHECK(mdp3::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue()) == 20477446525);
-                CHECK(mdp3::get_double(item.mDEntryPx()) == 114.0_a);
-                CHECK(mdp3::get_int(item.mDDisplayQty(), item.mDDisplayQtyNullValue()) == 3);
+                CHECK(mdp::get_int(item.orderID(), item.orderIDNullValue()) == 8411677212257);
+                CHECK(mdp::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue()) == 20477446525);
+                CHECK(mdp::get_double(item.mDEntryPx()) == 114.0_a);
+                CHECK(mdp::get_int(item.mDDisplayQty(), item.mDDisplayQtyNullValue()) == 3);
                 CHECK(item.securityID() == 397730);
                 CHECK(item.mDUpdateAction() == cme_mdp3::MDUpdateAction::Value::Delete);
                 CHECK(item.mDEntryType() == cme_mdp3::MDEntryTypeBook::Value::Bid);
                 break;
               case 2:
-                CHECK(mdp3::get_int(item.orderID(), item.orderIDNullValue()) == 8411677273574);
-                CHECK(mdp3::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue()) == 20477532317);
-                CHECK(mdp3::get_double(item.mDEntryPx()) == 114.0_a);
-                CHECK(mdp3::get_int(item.mDDisplayQty(), item.mDDisplayQtyNullValue()) == 283);
+                CHECK(mdp::get_int(item.orderID(), item.orderIDNullValue()) == 8411677273574);
+                CHECK(mdp::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue()) == 20477532317);
+                CHECK(mdp::get_double(item.mDEntryPx()) == 114.0_a);
+                CHECK(mdp::get_int(item.mDDisplayQty(), item.mDDisplayQtyNullValue()) == 283);
                 CHECK(item.securityID() == 397730);
                 CHECK(item.mDUpdateAction() == cme_mdp3::MDUpdateAction::Value::Change);
                 CHECK(item.mDEntryType() == cme_mdp3::MDEntryTypeBook::Value::Bid);
@@ -612,7 +608,7 @@ TEST_CASE("complex", "[incremental]") {
         }
       }
     }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshTradeSummary48> const &event, mdp3::Frame const &) override {
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshTradeSummary48> const &event, mdp::Frame const &) override {
       using value_type = std::remove_cvref<decltype(event)>::type::value_type;
       auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
       switch (++count_48) {
@@ -623,7 +619,7 @@ TEST_CASE("complex", "[incremental]") {
           value.noMDEntries().forEach([&no_md_entries_rows](auto &item) {
             switch (++no_md_entries_rows) {
               case 1:
-                CHECK(mdp3::get_double(item.mDEntryPx()) == 114.0_a);
+                CHECK(mdp::get_double(item.mDEntryPx()) == 114.0_a);
                 CHECK(item.mDEntrySize() == 8);
                 CHECK(item.securityID() == 397730);
                 CHECK(item.rptSeq() == 1260474);
@@ -631,7 +627,7 @@ TEST_CASE("complex", "[incremental]") {
                 CHECK(item.aggressorSide() == cme_mdp3::AggressorSide::Value::Sell);
                 CHECK(item.mDUpdateAction() == cme_mdp3::MDUpdateAction::Value::New);
                 // CHECK(item.mDEntryType() == cme_mdp3::MDEntryTypeBook::Value::Trade); // constant '2'
-                CHECK(mdp3::get_int(item.mDTradeEntryID(), item.mDTradeEntryIDNullValue()) == 782563);
+                CHECK(mdp::get_int(item.mDTradeEntryID(), item.mDTradeEntryIDNullValue()) == 782563);
                 break;
             }
           });
@@ -658,33 +654,31 @@ TEST_CASE("complex", "[incremental]") {
         }
       }
     }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshDailyStatistics49> const &, mdp3::Frame const &) override {
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshDailyStatistics49> const &, mdp::Frame const &) override {
       FAIL();
     }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshLimitsBanding50> const &, mdp3::Frame const &) override {
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshLimitsBanding50> const &, mdp::Frame const &) override {
       FAIL();
     }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshSessionStatistics51> const &, mdp3::Frame const &) override {
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshSessionStatistics51> const &, mdp::Frame const &) override {
       FAIL();
     }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshBookLongQty64> const &, mdp3::Frame const &) override {
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshBookLongQty64> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshTradeSummaryLongQty65> const &, mdp::Frame const &) override {
       FAIL();
     }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshTradeSummaryLongQty65> const &, mdp3::Frame const &) override {
-      FAIL();
-    }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshVolumeLongQty66> const &, mdp3::Frame const &) override {
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshVolumeLongQty66> const &, mdp::Frame const &) override {
       FAIL();
     }
     void operator()(
-        Trace<cme_mdp3::MDIncrementalRefreshSessionStatisticsLongQty67> const &, mdp3::Frame const &) override {
+        Trace<cme_mdp3::MDIncrementalRefreshSessionStatisticsLongQty67> const &, mdp::Frame const &) override {
       FAIL();
     }
-    void operator()(Trace<cme_mdp3::QuoteRequest39> const &, mdp3::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::QuoteRequest39> const &, mdp::Frame const &) override { FAIL(); }
   } handler;
   std::span buffer{reinterpret_cast<std::byte const *>(std::data(message)), std::size(message)};
   TraceInfo trace_info;
-  auto res = mdp3::Parser::dispatch(handler, buffer, trace_info);
+  auto res = mdp::Parser::dispatch(handler, buffer, trace_info);
   CHECK(res);
   CHECK(handler.count_37 == 2);
   CHECK(handler.count_46 == 3);
@@ -711,29 +705,29 @@ TEST_CASE("46_with_orders", "[incremental]") {
       "\x09\x00"  // version (9)
       "\x89\xfb\x55\x32\x9a\x7f\x41\x17\x80\x00\x00\x20\x00\x00\x18\x00\x00\x00\x00\x00\x00\x00"sv;
   REQUIRE(std::size(message) == 132);
-  struct MyHandler final : public mdp3::Parser::Handler {
+  struct MyHandler final : public mdp::Parser::Handler {
     int counter = 0;
-    void operator()(mdp3::Frame const &) override {}
-    void operator()(Trace<cme_mdp3::ChannelReset4> const &, mdp3::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::AdminHeartbeat12> const &, mdp3::Frame const &) override { FAIL(); }
+    void operator()(mdp::Frame const &) override {}
+    void operator()(Trace<cme_mdp3::ChannelReset4> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::AdminHeartbeat12> const &, mdp::Frame const &) override { FAIL(); }
     // - security status
-    void operator()(Trace<cme_mdp3::SecurityStatus30> const &, mdp3::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::SecurityStatus30> const &, mdp::Frame const &) override { FAIL(); }
     // - instrument definition
-    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionFuture54> const &, mdp3::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionOption55> const &, mdp3::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionSpread56> const &, mdp3::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionFixedIncome57> const &, mdp3::Frame const &) override {
+    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionFuture54> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionOption55> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionSpread56> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionFixedIncome57> const &, mdp::Frame const &) override {
       FAIL();
     }
-    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionRepo58> const &, mdp3::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionFX63> const &, mdp3::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionRepo58> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::MDInstrumentDefinitionFX63> const &, mdp::Frame const &) override { FAIL(); }
     // - SnapshotFullRefresh
-    void operator()(Trace<cme_mdp3::SnapshotFullRefresh52> const &, mdp3::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::SnapshotFullRefreshOrderBook53> const &, mdp3::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::SnapshotFullRefreshLongQty69> const &, mdp3::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::SnapshotFullRefresh52> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::SnapshotFullRefreshOrderBook53> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::SnapshotFullRefreshLongQty69> const &, mdp::Frame const &) override { FAIL(); }
     // - MDIncrementalRefresh
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshVolume37> const &, mdp3::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshBook46> const &event, mdp3::Frame const &) override {
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshVolume37> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshBook46> const &event, mdp::Frame const &) override {
       using value_type = std::remove_cvref<decltype(event)>::type::value_type;
       auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
       switch (++counter) {
@@ -745,15 +739,15 @@ TEST_CASE("46_with_orders", "[incremental]") {
           value.noMDEntries().forEach([&no_md_entries_rows](auto &item) {
             switch (++no_md_entries_rows) {
               case 1:
-                CHECK(mdp3::get_double(item.mDEntryPx()) == 113.6875_a);
-                CHECK(mdp3::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 1738);
+                CHECK(mdp::get_double(item.mDEntryPx()) == 113.6875_a);
+                CHECK(mdp::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 1738);
                 CHECK(item.securityID() == 397730);
                 CHECK(item.rptSeq() == 5621861);
-                CHECK(mdp3::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 120);
+                CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 120);
                 CHECK(item.mDPriceLevel() == 6);
                 CHECK(item.mDUpdateAction() == cme_mdp3::MDUpdateAction::Value::Change);
                 CHECK(item.mDEntryType() == cme_mdp3::MDEntryTypeBook::Value::Offer);
-                CHECK(mdp3::get_int(item.tradeableSize(), item.tradeableSizeNullValue()) == 0);
+                CHECK(mdp::get_int(item.tradeableSize(), item.tradeableSizeNullValue()) == 0);
                 break;
             }
           });
@@ -763,9 +757,9 @@ TEST_CASE("46_with_orders", "[incremental]") {
             switch (++no_order_id_entries_rows) {
               case 1:
                 CHECK(item.orderID() == 8411704836505);
-                CHECK(mdp3::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue()) == 20521508366);
-                CHECK(mdp3::get_int(item.mDDisplayQty(), item.mDDisplayQtyNullValue()) == 25);
-                CHECK(mdp3::get_int(item.referenceID(), item.referenceIDNullValue()) == 1);
+                CHECK(mdp::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue()) == 20521508366);
+                CHECK(mdp::get_int(item.mDDisplayQty(), item.mDDisplayQtyNullValue()) == 25);
+                CHECK(mdp::get_int(item.referenceID(), item.referenceIDNullValue()) == 1);
                 CHECK(item.orderUpdateAction() == cme_mdp3::OrderUpdateAction::Value::New);
                 break;
             }
@@ -788,37 +782,35 @@ TEST_CASE("46_with_orders", "[incremental]") {
         }
       }
     }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshOrderBook47> const &, mdp3::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshTradeSummary48> const &, mdp3::Frame const &) override {
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshOrderBook47> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshTradeSummary48> const &, mdp::Frame const &) override {
       FAIL();
     }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshDailyStatistics49> const &, mdp3::Frame const &) override {
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshDailyStatistics49> const &, mdp::Frame const &) override {
       FAIL();
     }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshLimitsBanding50> const &, mdp3::Frame const &) override {
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshLimitsBanding50> const &, mdp::Frame const &) override {
       FAIL();
     }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshSessionStatistics51> const &, mdp3::Frame const &) override {
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshSessionStatistics51> const &, mdp::Frame const &) override {
       FAIL();
     }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshBookLongQty64> const &, mdp3::Frame const &) override {
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshBookLongQty64> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshTradeSummaryLongQty65> const &, mdp::Frame const &) override {
       FAIL();
     }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshTradeSummaryLongQty65> const &, mdp3::Frame const &) override {
-      FAIL();
-    }
-    void operator()(Trace<cme_mdp3::MDIncrementalRefreshVolumeLongQty66> const &, mdp3::Frame const &) override {
+    void operator()(Trace<cme_mdp3::MDIncrementalRefreshVolumeLongQty66> const &, mdp::Frame const &) override {
       FAIL();
     }
     void operator()(
-        Trace<cme_mdp3::MDIncrementalRefreshSessionStatisticsLongQty67> const &, mdp3::Frame const &) override {
+        Trace<cme_mdp3::MDIncrementalRefreshSessionStatisticsLongQty67> const &, mdp::Frame const &) override {
       FAIL();
     }
-    void operator()(Trace<cme_mdp3::QuoteRequest39> const &, mdp3::Frame const &) override { FAIL(); }
+    void operator()(Trace<cme_mdp3::QuoteRequest39> const &, mdp::Frame const &) override { FAIL(); }
   } handler;
   std::span buffer{reinterpret_cast<std::byte const *>(std::data(message)), std::size(message)};
   TraceInfo trace_info;
-  auto res = mdp3::Parser::dispatch(handler, buffer, trace_info);
+  auto res = mdp::Parser::dispatch(handler, buffer, trace_info);
   CHECK(res);
   CHECK(handler.counter == 2);
 }

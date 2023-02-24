@@ -16,11 +16,11 @@
 
 #include "roq/core/sbe/iterator.hpp"
 
-#include "roq/cme/ilink3/utils.hpp"
+#include "roq/cme/ilink/utils.hpp"
 
 namespace roq {
 namespace cme {
-namespace ilink3 {}  // namespace ilink3
+namespace ilink {}  // namespace ilink
 }  // namespace cme
 }  // namespace roq
 
@@ -36,7 +36,7 @@ struct fmt::formatter<cme_ilink3::NegotiationResponse501> {
   template <typename Context>
   auto format(value_type &value, Context &context) const {
     using namespace std::literals;
-    using namespace roq::cme::ilink3;
+    using namespace roq::cme::ilink;
     value.sbeRewind();  // note!
     return fmt::format_to(
         context.out(),
@@ -73,7 +73,7 @@ struct fmt::formatter<cme_ilink3::NegotiationReject502> {
   template <typename Context>
   auto format(value_type &value, Context &context) const {
     using namespace std::literals;
-    using namespace roq::cme::ilink3;
+    using namespace roq::cme::ilink;
     value.sbeRewind();  // note!
     return fmt::format_to(
         context.out(),
@@ -104,7 +104,7 @@ struct fmt::formatter<cme_ilink3::EstablishmentAck504> {
   template <typename Context>
   auto format(value_type &value, Context &context) const {
     using namespace std::literals;
-    using namespace roq::cme::ilink3;
+    using namespace roq::cme::ilink;
     value.sbeRewind();  // note!
     return fmt::format_to(
         context.out(),
@@ -141,7 +141,7 @@ struct fmt::formatter<cme_ilink3::EstablishmentReject505> {
   template <typename Context>
   auto format(value_type &value, Context &context) const {
     using namespace std::literals;
-    using namespace roq::cme::ilink3;
+    using namespace roq::cme::ilink;
     value.sbeRewind();  // note!
     return fmt::format_to(
         context.out(),
@@ -174,7 +174,7 @@ struct fmt::formatter<cme_ilink3::Sequence506> {
   template <typename Context>
   auto format(value_type &value, Context &context) const {
     using namespace std::literals;
-    using namespace roq::cme::ilink3;
+    using namespace roq::cme::ilink;
     value.sbeRewind();  // note!
     return fmt::format_to(
         context.out(),
@@ -201,7 +201,7 @@ struct fmt::formatter<cme_ilink3::Terminate507> {
   template <typename Context>
   auto format(value_type &value, Context &context) const {
     using namespace std::literals;
-    using namespace roq::cme::ilink3;
+    using namespace roq::cme::ilink;
     value.sbeRewind();  // note!
     return fmt::format_to(
         context.out(),
@@ -230,7 +230,7 @@ struct fmt::formatter<cme_ilink3::Retransmission509> {
   template <typename Context>
   auto format(value_type &value, Context &context) const {
     using namespace std::literals;
-    using namespace roq::cme::ilink3;
+    using namespace roq::cme::ilink;
     value.sbeRewind();  // note!
     return fmt::format_to(
         context.out(),
@@ -261,7 +261,7 @@ struct fmt::formatter<cme_ilink3::RetransmitReject510> {
   template <typename Context>
   auto format(value_type &value, Context &context) const {
     using namespace std::literals;
-    using namespace roq::cme::ilink3;
+    using namespace roq::cme::ilink;
     value.sbeRewind();  // note!
     return fmt::format_to(
         context.out(),
@@ -292,7 +292,7 @@ struct fmt::formatter<cme_ilink3::NotApplied513> {
   template <typename Context>
   auto format(value_type &value, Context &context) const {
     using namespace std::literals;
-    using namespace roq::cme::ilink3;
+    using namespace roq::cme::ilink;
     value.sbeRewind();  // note!
     return fmt::format_to(
         context.out(),

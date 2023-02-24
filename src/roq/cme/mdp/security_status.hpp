@@ -4,11 +4,11 @@
 
 #include <cme_mdp3/SecurityStatus30.h>
 
-#include "roq/cme/mdp3/utils.hpp"
+#include "roq/cme/mdp/utils.hpp"
 
 namespace roq {
 namespace cme {
-namespace mdp3 {}  // namespace mdp3
+namespace mdp {}  // namespace mdp
 }  // namespace cme
 }  // namespace roq
 
@@ -26,7 +26,7 @@ struct fmt::formatter<cme_mdp3::SecurityStatus30> {
   template <typename Context>
   auto format(value_type &value, Context &context) const {
     using namespace std::literals;
-    using namespace roq::cme::mdp3;
+    using namespace roq::cme::mdp;
     value.sbeRewind();  // note!
     return fmt::format_to(
         context.out(),

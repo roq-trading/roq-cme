@@ -10,7 +10,7 @@
 
 namespace roq {
 namespace cme {
-namespace mdp3 {
+namespace mdp {
 
 struct Frame final {
   uint32_t sequence_number = {};
@@ -30,18 +30,18 @@ struct Frame final {
   static std::pair<bool, Frame> parse_helper(std::span<std::byte const> const &buffer);
 };
 
-}  // namespace mdp3
+}  // namespace mdp
 }  // namespace cme
 }  // namespace roq
 
 template <>
-struct fmt::formatter<roq::cme::mdp3::Frame> {
+struct fmt::formatter<roq::cme::mdp::Frame> {
   template <typename Context>
   constexpr auto parse(Context &context) {
     return std::begin(context);
   }
   template <typename Context>
-  auto format(roq::cme::mdp3::Frame const &value, Context &context) const {
+  auto format(roq::cme::mdp::Frame const &value, Context &context) const {
     using namespace std::literals;
     return fmt::format_to(
         context.out(),
