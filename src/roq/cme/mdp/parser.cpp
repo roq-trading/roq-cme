@@ -96,8 +96,7 @@ bool Parser::dispatch(Handler &handler, std::span<std::byte const> const &buffer
               break;
             }
             case cme_mdp::MDInstrumentDefinitionFixedIncome57::SBE_TEMPLATE_ID: {
-              cme_mdp::MDInstrumentDefinitionFixedIncome57 value{
-                  std::data(tmp), std::size(tmp), block_length, version};
+              cme_mdp::MDInstrumentDefinitionFixedIncome57 value{std::data(tmp), std::size(tmp), block_length, version};
               create_trace_and_dispatch(handler, trace_info, value, frame);
               break;
             }
@@ -180,15 +179,13 @@ bool Parser::dispatch(Handler &handler, std::span<std::byte const> const &buffer
               break;
             }
             case cme_mdp::MDIncrementalRefreshVolumeLongQty66::SBE_TEMPLATE_ID: {
-              cme_mdp::MDIncrementalRefreshVolumeLongQty66 value{
-                  std::data(tmp), std::size(tmp), block_length, version};
+              cme_mdp::MDIncrementalRefreshVolumeLongQty66 value{std::data(tmp), std::size(tmp), block_length, version};
               create_trace_and_dispatch(handler, trace_info, value, frame);
               break;
             }
               // misc
             case cme_mdp::MDIncrementalRefreshLimitsBanding50::SBE_TEMPLATE_ID: {
-              cme_mdp::MDIncrementalRefreshLimitsBanding50 value{
-                  std::data(tmp), std::size(tmp), block_length, version};
+              cme_mdp::MDIncrementalRefreshLimitsBanding50 value{std::data(tmp), std::size(tmp), block_length, version};
               create_trace_and_dispatch(handler, trace_info, value, frame);
               break;
             }
