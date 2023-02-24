@@ -1,0 +1,29 @@
+symbols = ".*"
+
+[accounts]
+
+  [accounts.A1]
+  master = true
+  login = "YOUR_CME_LOGIN_GOES_HERE"
+  secret = "YOUR_CME_SECRET_GOES_HERE"
+  symbols = [ ".*" ]
+
+[users]
+
+  [users.test]
+  password = "1234"
+  symbols = ".*"
+
+  [users.trader]
+  password = "secret"
+  accounts = [ "A1" ]
+  symbols = [ ".*BTC.*", ".*ETH.*" ]
+
+[rate_limits]
+
+  [rate_limits.global]
+    type = "ORDER_ACTION"
+    aggregate = true
+    request_limit = 100
+    monitor_period = "10s"
+    ban_period = "5m"
