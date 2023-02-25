@@ -2,7 +2,9 @@
 roq-cme-flags
 common.hpp
 config.hpp
+ilink.hpp
 multicast.hpp
 common.cpp
 config.cpp
+ilink.cpp
 multicast.cpp

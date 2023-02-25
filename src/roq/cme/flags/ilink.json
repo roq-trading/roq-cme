@@ -1,0 +1,17 @@
+{
+  "name": "iLink",
+  "type": "flags",
+  "values": [
+    {
+      "name": "ilink_config_file",
+      "type": "std::string",
+      "validator": "roq::core::flags::Path",
+      "description": "config file (path)"
+    },
+    {
+      "name": "ilink_market_segments",
+      "type": "std::vector<std::string>",
+      "description": "Comma-separated list of market segments, e.g. 70"
+    }
+  ]
+}
