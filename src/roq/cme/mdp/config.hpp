@@ -9,11 +9,11 @@
 
 #include "roq/priority.hpp"
 
-#include "roq/cme/multicast/type.hpp"
+#include "roq/cme/mdp/connection_type.hpp"
 
 namespace roq {
 namespace cme {
-namespace multicast {
+namespace mdp {
 
 struct Config final {
   struct Connection final {
@@ -24,7 +24,7 @@ struct Config final {
   explicit Config(std::string_view const &filename);
 
   template <typename Callback>
-  bool find(std::string_view const &channel_id, Type type, Priority priority, Callback callback) const {
+  bool find(std::string_view const &channel_id, ConnectionType type, Priority priority, Callback callback) const {
     auto iter_1 = connections_.find(channel_id);
     if (iter_1 == std::end(connections_))
       return false;
@@ -42,9 +42,10 @@ struct Config final {
 
  private:
   // channel => type => feed => connectoin
-  absl::node_hash_map<std::string, absl::node_hash_map<Type, absl::node_hash_map<Priority, Connection>>> connections_;
+  absl::node_hash_map<std::string, absl::node_hash_map<ConnectionType, absl::node_hash_map<Priority, Connection>>>
+      connections_;
 };
 
-}  // namespace multicast
+}  // namespace mdp
 }  // namespace cme
 }  // namespace roq

@@ -1,12 +1,13 @@
 set(TARGET_NAME "${PROJECT_NAME}-test")
 
 set(SOURCES
-    config.cpp
-    mdp.cpp
-    secdef.cpp
+    ilink_config_reader.cpp
     incremental.cpp
     mbofd_recovery.cpp
+    mdp_config_reader.cpp
+    mdp.cpp
     new_order_single.cpp
+    secdef.cpp
     main.cpp)
 
 roq_gitignore(OUTPUT ".gitignore" SOURCES "${TARGET_NAME}")
@@ -15,7 +16,6 @@ add_executable("${TARGET_NAME}" ${SOURCES})
 
 target_link_libraries(
   "${TARGET_NAME}"
-  "${PROJECT_NAME}-multicast"
   "${PROJECT_NAME}-secdef"
   "${PROJECT_NAME}-mdp"
   "${PROJECT_NAME}-ilink"

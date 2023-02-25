@@ -1,23 +1,22 @@
 /* Copyright (c) 2017-2023, Hans Erik Thrane */
 
-#include "roq/cme/multicast/config.hpp"
+#include "roq/cme/mdp/config.hpp"
 
 #include "roq/logging.hpp"
 
 #include "roq/core/charconv.hpp"
 
-#include "roq/cme/multicast/config_reader.hpp"
-#include "roq/cme/multicast/type.hpp"
+#include "roq/cme/mdp/config_reader.hpp"
 
 using namespace std::literals;
 
 namespace roq {
 namespace cme {
-namespace multicast {
+namespace mdp {
 
 namespace {
 auto get_type(auto &value) {
-  using enum Type;
+  using enum ConnectionType;
   if (value.compare("H"sv) == 0)
     return HISTORICAL_REPLAY;
   if (value.compare("N"sv) == 0)
@@ -75,6 +74,6 @@ auto read_connections(auto &filename) {
 Config::Config(std::string_view const &filename) : connections_(read_connections<decltype(connections_)>(filename)) {
 }
 
-}  // namespace multicast
+}  // namespace mdp
 }  // namespace cme
 }  // namespace roq

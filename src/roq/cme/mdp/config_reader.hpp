@@ -12,7 +12,7 @@
 
 namespace roq {
 namespace cme {
-namespace multicast {
+namespace mdp {
 
 struct ConfigReader final {
   struct Connection final {
@@ -39,6 +39,6 @@ struct ConfigReader final {
   static void dispatch(Handler &, std::string_view const &buffer);
 };
 
-}  // namespace multicast
+}  // namespace mdp
 }  // namespace cme
 }  // namespace roq

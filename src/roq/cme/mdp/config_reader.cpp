@@ -1,14 +1,12 @@
 /* Copyright (c) 2017-2023, Hans Erik Thrane */
 
-#include "roq/cme/multicast/config_reader.hpp"
+#include "roq/cme/mdp/config_reader.hpp"
 
 #include <absl/strings/ascii.h>
 
 #include <fmt/ranges.h>
 
 #include "roq/logging.hpp"
-
-#include "roq/core/charconv.hpp"
 
 #include "roq/core/fs/file.hpp"
 
@@ -20,7 +18,7 @@ using namespace std::literals;
 
 namespace roq {
 namespace cme {
-namespace multicast {
+namespace mdp {
 
 namespace {
 void trim(auto &value) {
@@ -183,6 +181,6 @@ void ConfigReader::dispatch(Handler &handler, std::string_view const &buffer) {
   parser.parse(buffer, true);
 }
 
-}  // namespace multicast
+}  // namespace mdp
 }  // namespace cme
 }  // namespace roq

@@ -49,7 +49,7 @@ auto create_name(auto stream_id, auto const &channel_id) {
 auto create_receiver(auto &handler, auto &context, auto &shared, auto &channel_id, auto priority) {
   log::info(R"(Create channel_id="{}, priority={}")"sv, channel_id, priority);
   auto [multicast_address, port] =
-      shared.get_multicast_config(channel_id, multicast::Type::INSTRUMENT_REPLAY, priority);
+      shared.get_multicast_config(channel_id, mdp::ConnectionType::INSTRUMENT_REPLAY, priority);
   log::info("Create multicast receiver port={}"sv, port);
   auto network_address = io::NetworkAddress{port};
   auto socket_options = Mask{

@@ -4,7 +4,7 @@
 
 #include <algorithm>
 
-#include "roq/cme/multicast/config_reader.hpp"
+#include "roq/cme/mdp/config_reader.hpp"
 
 using namespace std::literals;
 
@@ -13,7 +13,7 @@ using namespace Catch::literals;
 using namespace roq;
 using namespace roq::cme;
 
-TEST_CASE("config_reader", "[config]") {
+TEST_CASE("simple", "[mdp_config_reader]") {
   auto message = R"(<?xml version="1.0" encoding="UTF-8"?>)"
                  R"(<configuration environment="PROD" updated="2022/08/02-21:12:03">)"
                  R"(<channel id="310" label="CME Globex Equity Futures">)"
@@ -46,9 +46,9 @@ TEST_CASE("config_reader", "[config]") {
                  R"(</connections>)"
                  R"(</channel>)"
                  R"(</configuration>)"sv;
-  struct MyHandler final : public multicast::ConfigReader::Handler {
+  struct MyHandler final : public mdp::ConfigReader::Handler {
     int counter = 0;
-    void operator()(std::string_view const &channel_id, multicast::ConfigReader::Channel const &channel) override {
+    void operator()(std::string_view const &channel_id, mdp::ConfigReader::Channel const &channel) override {
       switch (++counter) {
         case 1: {
           CHECK(channel_id == "310"sv);
@@ -96,6 +96,6 @@ TEST_CASE("config_reader", "[config]") {
       }
     }
   } handler;
-  multicast::ConfigReader::dispatch(handler, message);
+  mdp::ConfigReader::dispatch(handler, message);
   CHECK(handler.counter == 1);
 }

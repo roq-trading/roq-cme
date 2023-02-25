@@ -1,14 +1,15 @@
 set(TARGET_NAME "${PROJECT_NAME}")
 
 add_subdirectory("flags")
+add_subdirectory("tools")
 add_subdirectory("mdp")
 add_subdirectory("ilink")
-add_subdirectory("multicast")
 add_subdirectory("secdef")
 add_subdirectory("channel_tester")
 
 set(SOURCES
     application.cpp
+    authenticator.cpp
     channel.cpp
     config.cpp
     gateway.cpp
@@ -27,9 +28,9 @@ add_executable("${TARGET_NAME}" ${SOURCES})
 target_link_libraries(
   "${TARGET_NAME}"
   PRIVATE "${PROJECT_NAME}-flags"
+  PRIVATE "${PROJECT_NAME}-tools"
           "${PROJECT_NAME}-mdp"
           "${PROJECT_NAME}-ilink"
-          "${PROJECT_NAME}-multicast"
           "${PROJECT_NAME}-secdef"
           roq-server::roq-server
           roq-web::roq-web

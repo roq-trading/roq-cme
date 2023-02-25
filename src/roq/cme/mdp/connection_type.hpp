@@ -4,9 +4,9 @@
 
 namespace roq {
 namespace cme {
-namespace multicast {
+namespace mdp {
 
-enum class Type {
+enum class ConnectionType {
   HISTORICAL_REPLAY,
   INSTRUMENT_REPLAY,
   SNAPSHOT,
@@ -14,6 +14,6 @@ enum class Type {
   INCREMENTAL,
 };
 
-}  // namespace multicast
+}  // namespace mdp
 }  // namespace cme
 }  // namespace roq

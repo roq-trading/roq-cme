@@ -87,14 +87,14 @@ void read_secdef(T &securities, D &dispatcher) {
 // === IMPLEMENTATION ===
 
 Shared::Shared(server::Dispatcher &dispatcher)
-    : dispatcher_{dispatcher}, multicast_config_{flags::Multicast::multicast_config_file()}, buffer(BUFFER_SIZE) {
+    : dispatcher_{dispatcher}, mdp_config_{flags::Multicast::multicast_config_file()}, buffer(BUFFER_SIZE) {
   read_secdef(securities, dispatcher);
 }
 
 std::pair<std::string, uint16_t> Shared::get_multicast_config(
-    std::string_view const &channel_id, multicast::Type type, Priority priority) const {
+    std::string_view const &channel_id, mdp::ConnectionType type, Priority priority) const {
   std::pair<std::string, uint16_t> result;
-  if (multicast_config_.find(channel_id, type, priority, [&](auto &connection) {
+  if (mdp_config_.find(channel_id, type, priority, [&](auto &connection) {
         result = {connection.multicast_address, connection.port};
       })) {
   } else {

@@ -40,14 +40,7 @@ Account const &Config::get_master_account() const {
   return master_account_;
 }
 
-std::string const &Config::get_access_key(Account const &account) const {
-  auto iter = accounts.find(account);
-  if (iter == std::end(accounts))
-    log::fatal(R"(Unknown account="{}")"sv, account);
-  return (*iter).second.login;
-}
-
-std::string const &Config::get_access_secret(Account const &account) const {
+std::string const &Config::get_secret(Account const &account) const {
   auto iter = accounts.find(account);
   if (iter == std::end(accounts))
     log::fatal(R"(Unknown account="{}")"sv, account);

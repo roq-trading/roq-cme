@@ -15,14 +15,14 @@
 
 #include "roq/cme/security.hpp"
 
-#include "roq/cme/multicast/config.hpp"
+#include "roq/cme/mdp/config.hpp"
 
 namespace roq {
 namespace cme {
 
 struct Shared final {
   server::Dispatcher &dispatcher_;
-  multicast::Config multicast_config_;
+  mdp::Config mdp_config_;
 
   absl::node_hash_map<int32_t, Security> securities;
   absl::flat_hash_map<std::string, absl::flat_hash_set<int32_t>> security_groups;
@@ -56,7 +56,7 @@ struct Shared final {
   Shared(Shared const &) = delete;
 
   std::pair<std::string, uint16_t> get_multicast_config(
-      std::string_view const &channel_id, multicast::Type, Priority) const;
+      std::string_view const &channel_id, mdp::ConnectionType, Priority) const;
 
   auto discard_symbol(std::string_view const &name) const { return dispatcher_.discard_symbol(name); }
 
