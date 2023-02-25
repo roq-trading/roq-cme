@@ -15,8 +15,6 @@
 
 #include "roq/io/network_address.hpp"
 
-#include "roq/cme/utils.hpp"
-
 #include "roq/cme/flags/common.hpp"
 #include "roq/cme/flags/config.hpp"
 #include "roq/cme/flags/multicast.hpp"

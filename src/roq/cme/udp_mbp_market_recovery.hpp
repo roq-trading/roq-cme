@@ -14,7 +14,6 @@
 
 #include "roq/server.hpp"
 
-#include "roq/cme/aggregator.hpp"
 #include "roq/cme/channel.hpp"
 #include "roq/cme/shared.hpp"
 
