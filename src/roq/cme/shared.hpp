@@ -17,12 +17,16 @@
 
 #include "roq/cme/mdp/config.hpp"
 
+#include "roq/cme/ilink/config_reader.hpp"
+
 namespace roq {
 namespace cme {
 
 struct Shared final {
   server::Dispatcher &dispatcher_;
+
   mdp::Config mdp_config_;
+  absl::flat_hash_map<uint32_t, ilink::ConfigReader::MarketSegment> ilink_config_;
 
   absl::node_hash_map<int32_t, Security> securities;
   absl::flat_hash_map<std::string, absl::flat_hash_set<int32_t>> security_groups;

@@ -7,6 +7,7 @@
 #include "roq/utils/safe_cast.hpp"
 
 #include "roq/cme/flags/common.hpp"
+#include "roq/cme/flags/ilink.hpp"
 #include "roq/cme/flags/multicast.hpp"
 
 #include "roq/cme/secdef/config_reader.hpp"
@@ -25,6 +26,26 @@ auto const BUFFER_SIZE = size_t{4096};
 // === HELPERS ===
 
 namespace {
+template <typename R>
+R read_ilink_config(auto const &filename) {
+  R result;
+  if (!std::empty(filename)) {
+    struct Handler final : public ilink::ConfigReader::Handler {
+      explicit Handler(R &result) : result_{result} {}
+
+     protected:
+      void operator()(uint32_t market_segment_id, ilink::ConfigReader::MarketSegment const &market_segment) override {
+        result_.try_emplace(market_segment_id, market_segment);
+      }
+
+     private:
+      R &result_;
+    } handler{result};
+    ilink::ConfigReader::read(handler, filename);
+  }
+  return result;
+}
+
 template <typename T, typename D>
 void read_secdef(T &securities, D &dispatcher) {
   auto config_file = flags::Common::secdef_config_file();
@@ -87,7 +108,9 @@ void read_secdef(T &securities, D &dispatcher) {
 // === IMPLEMENTATION ===
 
 Shared::Shared(server::Dispatcher &dispatcher)
-    : dispatcher_{dispatcher}, mdp_config_{flags::Multicast::multicast_config_file()}, buffer(BUFFER_SIZE) {
+    : dispatcher_{dispatcher}, mdp_config_{flags::Multicast::multicast_config_file()},
+      ilink_config_{read_ilink_config<decltype(ilink_config_)>(flags::iLink::ilink_config_file())},
+      buffer(BUFFER_SIZE) {
   read_secdef(securities, dispatcher);
 }
 
