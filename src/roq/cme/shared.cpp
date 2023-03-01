@@ -59,7 +59,7 @@ void read_secdef(T &securities, D &dispatcher) {
       // note! it's too much -- always discard
       if (discard)
         return;
-      auto security = Security{
+      auto security = tools::Security{
           .exchange = item.exchange,
           .symbol = item.symbol,
           .display_factor = item.display_factor,

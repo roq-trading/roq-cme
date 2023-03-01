@@ -13,7 +13,7 @@
 #include "roq/api.hpp"
 #include "roq/server.hpp"
 
-#include "roq/cme/security.hpp"
+#include "roq/cme/tools/security.hpp"
 
 #include "roq/cme/mdp/config.hpp"
 
@@ -28,7 +28,7 @@ struct Shared final {
   mdp::Config mdp_config_;
   absl::flat_hash_map<uint32_t, ilink::ConfigReader::MarketSegment> ilink_config_;
 
-  absl::node_hash_map<int32_t, Security> securities;
+  absl::node_hash_map<int32_t, tools::Security> securities;
   absl::flat_hash_map<std::string, absl::flat_hash_set<int32_t>> security_groups;
 
  private:
@@ -75,7 +75,7 @@ struct Shared final {
 
   template <typename Callback>
   void create_security(
-      std::string_view const &security_group, int32_t security_id, Security &&security, Callback callback) {
+      std::string_view const &security_group, int32_t security_id, tools::Security &&security, Callback callback) {
     if (!security.discard)
       security_groups[security_group].insert(security_id);
     auto iter = securities.try_emplace(security_id, std::move(security)).first;

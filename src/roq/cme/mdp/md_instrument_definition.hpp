@@ -9,8 +9,13 @@
 #include <cme_mdp/MDInstrumentDefinitionRepo58.h>
 #include <cme_mdp/MDInstrumentDefinitionSpread56.h>
 
+#include "roq/api.hpp"
+
 #include "roq/core/sbe/iterator.hpp"
 
+#include "roq/cme/tools/security.hpp"
+
+#include "roq/cme/mdp/frame.hpp"
 #include "roq/cme/mdp/utils.hpp"
 
 /*
@@ -21,6 +26,34 @@
 namespace roq {
 namespace cme {
 namespace mdp {
+
+extern ReferenceData create_reference_data(
+    cme_mdp::MDInstrumentDefinitionFuture54 const &, uint16_t stream_id, tools::Security &);
+extern ReferenceData create_reference_data(
+    cme_mdp::MDInstrumentDefinitionOption55 const &, uint16_t stream_id, tools::Security &);
+extern ReferenceData create_reference_data(
+    cme_mdp::MDInstrumentDefinitionSpread56 const &, uint16_t stream_id, tools::Security &);
+extern ReferenceData create_reference_data(
+    cme_mdp::MDInstrumentDefinitionFixedIncome57 const &, uint16_t stream_id, tools::Security &);
+extern ReferenceData create_reference_data(
+    cme_mdp::MDInstrumentDefinitionRepo58 const &, uint16_t stream_id, tools::Security &);
+extern ReferenceData create_reference_data(
+    cme_mdp::MDInstrumentDefinitionFX63 const &, uint16_t stream_id, tools::Security &);
+
+extern MarketStatus create_market_status(
+    cme_mdp::MDInstrumentDefinitionFuture54 const &, uint16_t stream_id, tools::Security &);
+extern MarketStatus create_market_status(
+    cme_mdp::MDInstrumentDefinitionOption55 const &, uint16_t stream_id, tools::Security &);
+extern MarketStatus create_market_status(
+    cme_mdp::MDInstrumentDefinitionSpread56 const &, uint16_t stream_id, tools::Security &);
+extern MarketStatus create_market_status(
+    cme_mdp::MDInstrumentDefinitionFixedIncome57 const &, uint16_t stream_id, tools::Security &);
+extern MarketStatus create_market_status(
+    cme_mdp::MDInstrumentDefinitionRepo58 const &, uint16_t stream_id, tools::Security &);
+extern MarketStatus create_market_status(
+    cme_mdp::MDInstrumentDefinitionFX63 const &, uint16_t stream_id, tools::Security &);
+
+// compute length
 
 template <>
 inline size_t compute_length(cme_mdp::MDInstrumentDefinitionFuture54 &value) {

@@ -1,6 +1,6 @@
 /* Copyright (c) 2017-2023, Hans Erik Thrane */
 
-#include "roq/cme/security.hpp"
+#include "roq/cme/tools/security.hpp"
 
 #include "roq/logging.hpp"
 
@@ -8,6 +8,7 @@ using namespace std::literals;
 
 namespace roq {
 namespace cme {
+namespace tools {
 
 bool Security::update_rpt_seq(uint32_t rpt_seq) {
   if (rpt_seq == 0)  // conflated feed
@@ -27,5 +28,6 @@ bool Security::update_rpt_seq(uint32_t rpt_seq) {
   return result;
 }
 
+}  // namespace tools
 }  // namespace cme
 }  // namespace roq

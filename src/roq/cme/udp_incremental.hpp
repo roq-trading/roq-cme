@@ -113,7 +113,7 @@ struct UDPIncremental final : public io::net::udp::Receiver::Handler, public mdp
   template <typename T, typename Callback>
   void dispatch_statistics(Trace<T> const &, mdp::Frame const &, Callback);
 
-  void check_report_sequence(Security &, auto const &, mdp::Frame const &);
+  void check_report_sequence(tools::Security &, auto const &, mdp::Frame const &);
 
  protected:
   void publish_stream_status(TraceInfo const &, ConnectionStatus connection_status);

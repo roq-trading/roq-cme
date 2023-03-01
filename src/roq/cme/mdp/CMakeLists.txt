@@ -1,6 +1,6 @@
 set(TARGET_NAME "${PROJECT_NAME}-mdp")
 
-set(SOURCES config.cpp config_reader.cpp frame.cpp parser.cpp)
+set(SOURCES config.cpp config_reader.cpp frame.cpp md_instrument_definition.cpp parser.cpp)
 
 include(RoqAutogen)
 

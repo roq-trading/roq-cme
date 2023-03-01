@@ -10,6 +10,7 @@
 
 namespace roq {
 namespace cme {
+namespace tools {
 
 struct Security final {
   Exchange exchange;
@@ -67,5 +68,6 @@ struct Security final {
   }
 };
 
+}  // namespace tools
 }  // namespace cme
 }  // namespace roq

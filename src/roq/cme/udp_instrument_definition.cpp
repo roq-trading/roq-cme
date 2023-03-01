@@ -79,7 +79,7 @@ void create_security(auto &shared, auto &value, Callback callback) {
   auto display_factor = mdp::get_double(value.displayFactor());
   auto security_group = mdp::get_string_view(value.securityGroup(), value.securityGroupLength());
   auto discard = shared.discard_symbol(symbol);
-  auto security = Security{
+  auto security = tools::Security{
       .exchange = security_exchange,
       .symbol = symbol,
       .display_factor = display_factor,
@@ -207,48 +207,11 @@ void UDPInstrumentDefinition::operator()(
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("md_instrument_definition_future_54={}, frame={}"sv, value, frame);
     create_security(shared_, value, [&](auto &security) {
-      auto quote_currency = mdp::get_string_view(value.currency(), value.currencyLength());
-      auto min_price_increment = mdp::get_double(value.minPriceIncrement());
-      auto contract_multiplier = mdp::get_int(value.contractMultiplier(), value.contractMultiplierNullValue());
-      auto multiplier = contract_multiplier == 0 ? NaN : utils::safe_cast<double>(contract_multiplier);
-      auto min_trade_vol = utils::safe_cast(value.minTradeVol());
-      auto max_trade_vol = utils::safe_cast(value.maxTradeVol());
-      auto reference_data = ReferenceData{
-          .stream_id = stream_id_,
-          .exchange = security.exchange,
-          .symbol = security.symbol,
-          .description = {},
-          .security_type = SecurityType::FUTURES,
-          .base_currency = {},
-          .quote_currency = quote_currency,
-          .margin_currency = {},
-          .commission_currency = {},
-          .tick_size = min_price_increment * security.display_factor,
-          .multiplier = multiplier,
-          .min_trade_vol = min_trade_vol,
-          .max_trade_vol = max_trade_vol,
-          .trade_vol_step_size = NaN,
-          .option_type = {},
-          .strike_currency = {},
-          .strike_price = NaN,
-          .underlying = {},
-          .time_zone = {},
-          .issue_date = {},
-          .settlement_date = {},
-          .expiry_datetime = {},  // MaturityMonthYear ???
-          .expiry_datetime_utc = {},
-          .discard = security.discard,
-      };
+      auto reference_data = mdp::create_reference_data(value, stream_id_, security);
       create_trace_and_dispatch(handler_, trace_info, reference_data, true);
       if (security.discard)
         return;
-      auto trading_status = mdp::map_security_trading_status(value.mDSecurityTradingStatus());
-      auto market_status = MarketStatus{
-          .stream_id = stream_id_,
-          .exchange = security.exchange,
-          .symbol = security.symbol,
-          .trading_status = trading_status,
-      };
+      auto market_status = mdp::create_market_status(value, stream_id_, security);
       create_trace_and_dispatch(handler_, trace_info, market_status, true);
     });
   });
@@ -262,48 +225,11 @@ void UDPInstrumentDefinition::operator()(
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("md_instrument_definition_option_55={}, frame={}"sv, value, frame);
     create_security(shared_, value, [&](auto &security) {
-      auto quote_currency = mdp::get_string_view(value.currency(), value.currencyLength());
-      auto min_price_increment = mdp::get_double(value.minPriceIncrement());
-      auto min_trade_vol = utils::safe_cast(value.minTradeVol());
-      auto max_trade_vol = utils::safe_cast(value.maxTradeVol());
-      auto strike_currency = mdp::get_string_view(value.strikeCurrency(), value.strikeCurrencyLength());
-      auto reference_data = ReferenceData{
-          .stream_id = stream_id_,
-          .exchange = security.exchange,
-          .symbol = security.symbol,
-          .description = {},
-          .security_type = SecurityType::OPTION,
-          .base_currency = {},
-          .quote_currency = quote_currency,
-          .margin_currency = {},
-          .commission_currency = {},
-          .tick_size = min_price_increment * security.display_factor,
-          .multiplier = NaN,
-          .min_notional = NaN,
-          .min_trade_vol = min_trade_vol,
-          .max_trade_vol = max_trade_vol,
-          .trade_vol_step_size = NaN,
-          .option_type = {},
-          .strike_currency = strike_currency,
-          .strike_price = NaN,
-          .underlying = {},
-          .time_zone = {},
-          .issue_date = {},
-          .settlement_date = {},
-          .expiry_datetime = {},  // MaturityMonthYear ???
-          .expiry_datetime_utc = {},
-          .discard = security.discard,
-      };
+      auto reference_data = mdp::create_reference_data(value, stream_id_, security);
       create_trace_and_dispatch(handler_, trace_info, reference_data, true);
       if (security.discard)
         return;
-      auto trading_status = mdp::map_security_trading_status(value.mDSecurityTradingStatus());
-      auto market_status = MarketStatus{
-          .stream_id = stream_id_,
-          .exchange = security.exchange,
-          .symbol = security.symbol,
-          .trading_status = trading_status,
-      };
+      auto market_status = mdp::create_market_status(value, stream_id_, security);
       create_trace_and_dispatch(handler_, trace_info, market_status, true);
     });
   });
@@ -317,46 +243,11 @@ void UDPInstrumentDefinition::operator()(
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("md_instrument_definition_spread_56={}, frame={}"sv, value, frame);
     create_security(shared_, value, [&](auto &security) {
-      auto quote_currency = mdp::get_string_view(value.currency(), value.currencyLength());
-      auto tick_size = mdp::get_double(value.minPriceIncrement());
-      auto min_trade_vol = utils::safe_cast(value.minTradeVol());
-      auto max_trade_vol = utils::safe_cast(value.maxTradeVol());
-      auto reference_data = ReferenceData{
-          .stream_id = stream_id_,
-          .exchange = security.exchange,
-          .symbol = security.symbol,
-          .description = {},
-          .security_type = SecurityType::FUTURES,
-          .base_currency = {},
-          .quote_currency = quote_currency,
-          .margin_currency = {},
-          .commission_currency = {},
-          .tick_size = tick_size,
-          .multiplier = NaN,
-          .min_trade_vol = min_trade_vol,
-          .max_trade_vol = max_trade_vol,
-          .trade_vol_step_size = NaN,
-          .option_type = {},
-          .strike_currency = {},
-          .strike_price = NaN,
-          .underlying = {},
-          .time_zone = {},
-          .issue_date = {},
-          .settlement_date = {},
-          .expiry_datetime = {},  // MaturityMonthYear ???
-          .expiry_datetime_utc = {},
-          .discard = security.discard,
-      };
+      auto reference_data = mdp::create_reference_data(value, stream_id_, security);
       create_trace_and_dispatch(handler_, trace_info, reference_data, true);
       if (security.discard)
         return;
-      auto trading_status = mdp::map_security_trading_status(value.mDSecurityTradingStatus());
-      auto market_status = MarketStatus{
-          .stream_id = stream_id_,
-          .exchange = security.exchange,
-          .symbol = security.symbol,
-          .trading_status = trading_status,
-      };
+      auto market_status = mdp::create_market_status(value, stream_id_, security);
       create_trace_and_dispatch(handler_, trace_info, market_status, true);
     });
   });
@@ -370,46 +261,11 @@ void UDPInstrumentDefinition::operator()(
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("md_instrument_definition_fixed_income_57={}, frame={}"sv, value, frame);
     create_security(shared_, value, [&](auto &security) {
-      auto quote_currency = mdp::get_string_view(value.currency(), value.currencyLength());
-      auto tick_size = mdp::get_double(value.minPriceIncrement());
-      auto min_trade_vol = utils::safe_cast(value.minTradeVol());
-      auto max_trade_vol = utils::safe_cast(value.maxTradeVol());
-      auto reference_data = ReferenceData{
-          .stream_id = stream_id_,
-          .exchange = security.exchange,
-          .symbol = security.symbol,
-          .description = {},
-          .security_type = SecurityType::FUTURES,
-          .base_currency = {},
-          .quote_currency = quote_currency,
-          .margin_currency = {},
-          .commission_currency = {},
-          .tick_size = tick_size,
-          .multiplier = NaN,
-          .min_trade_vol = min_trade_vol,
-          .max_trade_vol = max_trade_vol,
-          .trade_vol_step_size = NaN,
-          .option_type = {},
-          .strike_currency = {},
-          .strike_price = NaN,
-          .underlying = {},
-          .time_zone = {},
-          .issue_date = {},
-          .settlement_date = {},
-          .expiry_datetime = {},  // MaturityMonthYear ???
-          .expiry_datetime_utc = {},
-          .discard = security.discard,
-      };
+      auto reference_data = mdp::create_reference_data(value, stream_id_, security);
       create_trace_and_dispatch(handler_, trace_info, reference_data, true);
       if (security.discard)
         return;
-      auto trading_status = mdp::map_security_trading_status(value.mDSecurityTradingStatus());
-      auto market_status = MarketStatus{
-          .stream_id = stream_id_,
-          .exchange = security.exchange,
-          .symbol = security.symbol,
-          .trading_status = trading_status,
-      };
+      auto market_status = mdp::create_market_status(value, stream_id_, security);
       create_trace_and_dispatch(handler_, trace_info, market_status, true);
     });
   });
@@ -423,46 +279,11 @@ void UDPInstrumentDefinition::operator()(
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("md_instrument_definition_repo_58={}, frame={}"sv, value, frame);
     create_security(shared_, value, [&](auto &security) {
-      auto quote_currency = mdp::get_string_view(value.currency(), value.currencyLength());
-      auto tick_size = mdp::get_double(value.minPriceIncrement());
-      auto min_trade_vol = utils::safe_cast(value.minTradeVol());
-      auto max_trade_vol = utils::safe_cast(value.maxTradeVol());
-      auto reference_data = ReferenceData{
-          .stream_id = stream_id_,
-          .exchange = security.exchange,
-          .symbol = security.symbol,
-          .description = {},
-          .security_type = SecurityType::FUTURES,
-          .base_currency = {},
-          .quote_currency = quote_currency,
-          .margin_currency = {},
-          .commission_currency = {},
-          .tick_size = tick_size,
-          .multiplier = NaN,
-          .min_trade_vol = min_trade_vol,
-          .max_trade_vol = max_trade_vol,
-          .trade_vol_step_size = NaN,
-          .option_type = {},
-          .strike_currency = {},
-          .strike_price = NaN,
-          .underlying = {},
-          .time_zone = {},
-          .issue_date = {},
-          .settlement_date = {},
-          .expiry_datetime = {},  // MaturityMonthYear ???
-          .expiry_datetime_utc = {},
-          .discard = security.discard,
-      };
+      auto reference_data = mdp::create_reference_data(value, stream_id_, security);
       create_trace_and_dispatch(handler_, trace_info, reference_data, true);
       if (security.discard)
         return;
-      auto trading_status = mdp::map_security_trading_status(value.mDSecurityTradingStatus());
-      auto market_status = MarketStatus{
-          .stream_id = stream_id_,
-          .exchange = security.exchange,
-          .symbol = security.symbol,
-          .trading_status = trading_status,
-      };
+      auto market_status = mdp::create_market_status(value, stream_id_, security);
       create_trace_and_dispatch(handler_, trace_info, market_status, true);
     });
   });
@@ -476,46 +297,11 @@ void UDPInstrumentDefinition::operator()(
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("md_instrument_definition_fx_63={}, frame={}"sv, value, frame);
     create_security(shared_, value, [&](auto &security) {
-      auto quote_currency = mdp::get_string_view(value.currency(), value.currencyLength());
-      auto tick_size = mdp::get_double(value.minPriceIncrement());
-      auto min_trade_vol = utils::safe_cast(value.minTradeVol());
-      auto max_trade_vol = utils::safe_cast(value.maxTradeVol());
-      auto reference_data = ReferenceData{
-          .stream_id = stream_id_,
-          .exchange = security.exchange,
-          .symbol = security.symbol,
-          .description = {},
-          .security_type = SecurityType::FUTURES,
-          .base_currency = {},
-          .quote_currency = quote_currency,
-          .margin_currency = {},
-          .commission_currency = {},
-          .tick_size = tick_size,
-          .multiplier = NaN,
-          .min_trade_vol = min_trade_vol,
-          .max_trade_vol = max_trade_vol,
-          .trade_vol_step_size = NaN,
-          .option_type = {},
-          .strike_currency = {},
-          .strike_price = NaN,
-          .underlying = {},
-          .time_zone = {},
-          .issue_date = {},
-          .settlement_date = {},
-          .expiry_datetime = {},  // MaturityMonthYear ???
-          .expiry_datetime_utc = {},
-          .discard = security.discard,
-      };
+      auto reference_data = mdp::create_reference_data(value, stream_id_, security);
       create_trace_and_dispatch(handler_, trace_info, reference_data, true);
       if (security.discard)
         return;
-      auto trading_status = mdp::map_security_trading_status(value.mDSecurityTradingStatus());
-      auto market_status = MarketStatus{
-          .stream_id = stream_id_,
-          .exchange = security.exchange,
-          .symbol = security.symbol,
-          .trading_status = trading_status,
-      };
+      auto market_status = mdp::create_market_status(value, stream_id_, security);
       create_trace_and_dispatch(handler_, trace_info, market_status, true);
     });
   });
