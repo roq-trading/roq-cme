@@ -7,6 +7,7 @@
 
 #include <cme_mdp/MessageHeader.h>
 
+#include <cme_mdp/AggressorSide.h>
 #include <cme_mdp/Side.h>
 
 #include <cme_mdp/MDInstrumentDefinitionFX63.h>

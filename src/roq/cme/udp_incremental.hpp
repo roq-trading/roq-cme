@@ -156,6 +156,9 @@ struct UDPIncremental final : public io::net::udp::Receiver::Handler, public mdp
   // state
   std::chrono::nanoseconds last_update_time_ = {};
   std::vector<std::tuple<int32_t, Side, double, UpdateAction>> md_entries_;
+  std::vector<std::tuple<int32_t, Side, double, size_t, uint32_t>> trade_summary_;
+  std::vector<int32_t> security_ids_;
+  std::vector<std::pair<uint64_t, int32_t>> orders_;
   // DEBUG
   bool log_this_message_ = false;
 };

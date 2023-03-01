@@ -235,6 +235,8 @@ void emplace_back(
         .reason = {},
     };
     fmt::format_to(std::back_inserter(result.order_id), "{}"sv, order_id);
+    if (action != UpdateAction::DELETE && !quantity) [[unlikely]]  // DEBUG
+      log::warn("Unexpected: update={}"sv, result);
     return result;
   };
   switch (side) {
@@ -272,6 +274,8 @@ void emplace_back(
         .reason = {},
     };
     fmt::format_to(std::back_inserter(result.order_id), "{}"sv, order_id);
+    if (action != UpdateAction::DELETE && !quantity) [[unlikely]]  // DEBUG
+      log::warn("Unexpected: update={}"sv, result);
     return result;
   };
   using value_type = typename std::remove_cvref<decltype(item)>::type;
@@ -1302,10 +1306,40 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame co
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   value.sbeRewind();                                    // note!
   auto exchange_time_utc = std::chrono::nanoseconds{value.transactTime()};
+  auto exchange_sequence = frame.sequence_number;
+  security_ids_.clear();
+  trade_summary_.clear();
+  orders_.clear();
+  auto insert_security_id = [&](auto security_id) {
+    for (auto iter : security_ids_) {
+      if (iter == security_id)
+        return;
+    }
+    security_ids_.emplace_back(security_id);
+  };
+  size_t total_number_of_orders = 0;
+  value.noMDEntries().forEach([&]<typename U>(U &item) {
+    auto security_id = item.securityID();
+    auto aggressor_side = item.aggressorSide();
+    auto price = mdp::get_double(const_cast<U &>(item).mDEntryPx());
+    auto number_of_orders = item.numberOfOrders();
+    auto trade_id = mdp::get_int(item.mDTradeEntryID(), item.mDTradeEntryIDNullValue());
+    insert_security_id(security_id);
+    auto side = mdp::map_side(aggressor_side);
+    trade_summary_.emplace_back(security_id, side, price, number_of_orders, trade_id);
+    total_number_of_orders += number_of_orders;
+  });
+  value.noOrderIDEntries().forEach([&](auto &item) {
+    auto order_id = item.orderID();
+    auto last_qty = item.lastQty();
+    orders_.emplace_back(order_id, last_qty);
+  });
+  if (std::size(orders_) != total_number_of_orders) {
+    log::warn("Unexpected: len(orders)={}, expected={}"sv, std::size(orders_), total_number_of_orders);
+    return;
+  }
   auto &trades = shared_.get_trades();
-  auto dispatch = [&]([[maybe_unused]] auto security_id, auto &security) {
-    if (std::empty(trades))
-      return;
+  auto dispatch_trade_summary = [&](auto &security) {
     auto trade_summary = TradeSummary{
         .stream_id = stream_id_,
         .exchange = security.exchange,
@@ -1317,11 +1351,95 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame co
     create_trace_and_dispatch(handler_, trace_info, trade_summary, true);
     trades.clear();
   };
-  auto update = [&](auto &security, auto &item) {
-    check_report_sequence(security, item, frame);
-    trades_emplace_back(trades, item, security);
+  for (auto security_id : security_ids_) {
+    shared_.get_security(security_id, [&](auto &security) {
+      size_t offset = 0;
+      for (auto [security_id_2, side, price, number_of_orders, trade_id] : trade_summary_) {
+        if (security_id == security_id_2) {
+          size_t offset_2 = 0;
+          auto trade_id_2 = fmt::format("{}"sv, trade_id);
+          std::string taker_order_id;
+          if (side != Side::UNDEFINED) {
+            taker_order_id = fmt::format("{}"sv, orders_[offset + offset_2].first);
+            ++offset_2;
+          }
+          for (; offset_2 < number_of_orders; ++offset_2) {
+            auto &[order_id, last_qty] = orders_[offset + offset_2];
+            auto trade = Trade{
+                .side = side,
+                .price = price * security.display_factor,
+                .quantity = utils::safe_cast(last_qty),
+                .trade_id = trade_id_2,
+                .taker_order_id = taker_order_id,
+                .maker_order_id = {},
+            };
+            fmt::format_to(std::back_inserter(trade.maker_order_id), "{}"sv, order_id);
+            trades.emplace_back(std::move(trade));
+          }
+        }
+        offset += number_of_orders;
+      }
+      dispatch_trade_summary(security);
+    });
+  }
+  auto &mbo = shared_.get_mbo();
+  auto dispatch_market_by_order = [&](auto &security) {
+    auto market_by_order_update = MarketByOrderUpdate{
+        .stream_id = stream_id_,
+        .exchange = security.exchange,
+        .symbol = security.symbol,
+        .bids = mbo.bids,
+        .asks = mbo.asks,
+        .update_type = UpdateType::INCREMENTAL,
+        .exchange_time_utc = exchange_time_utc,
+        .exchange_sequence = exchange_sequence,
+        .price_decimals = {},
+        .quantity_decimals = {},
+        .max_depth = {},
+        .checksum = {},
+    };
+    create_trace_and_dispatch(handler_, trace_info, market_by_order_update, true);
+    mbo.clear();
   };
-  SecurityIterator{shared_}(value.noMDEntries(), dispatch, update);
+  for (auto security_id : security_ids_) {
+    shared_.get_security(security_id, [&](auto &security) {
+      size_t offset = 0;
+      for (auto [security_id_2, side, price, number_of_orders, trade_id] : trade_summary_) {
+        if (security_id == security_id_2) {
+          size_t offset_2 = 0;
+          if (side != Side::UNDEFINED) {
+            ++offset_2;
+          }
+          for (; offset_2 < number_of_orders; ++offset_2) {
+            auto &[order_id, last_qty] = orders_[offset + offset_2];
+            auto result = MBOUpdate{
+                .price = price * security.display_factor,
+                .quantity = static_cast<double>(last_qty),
+                .priority = {},
+                .order_id = {},
+                .action = UpdateAction::FILL,
+                .reason = {},
+            };
+            fmt::format_to(std::back_inserter(result.order_id), "{}"sv, order_id);
+            if (!last_qty) [[unlikely]]  // DEBUG
+              log::warn("Unexpected: update={}"sv, result);
+            switch (side) {
+              using enum Side;
+              case UNDEFINED:
+              case BUY:
+                mbo.asks.emplace_back(std::move(result));
+                break;
+              case SELL:
+                mbo.bids.emplace_back(std::move(result));
+                break;
+            }
+          }
+        }
+        offset += number_of_orders;
+      }
+      dispatch_market_by_order(security);
+    });
+  }
 }
 
 template <typename T, typename Callback>

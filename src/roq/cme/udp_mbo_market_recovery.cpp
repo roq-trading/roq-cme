@@ -330,10 +330,11 @@ void UDPMBOMarketRecovery::operator()(
                 // HANS fix exchange_sequence
                 auto publish_snapshot = [&](auto &bids, auto &asks, auto exchange_sequence) {
                   log::info(
-                      R"(PUBLISH SNAPSHOT exchange="{}", symbol="{}", exchange_sequence={})"sv,
+                      R"(PUBLISH SNAPSHOT exchange="{}", symbol="{}", exchange_sequence={}, last_sequence={})"sv,
                       security.exchange,
                       security.symbol,
-                      last_msg_seq_num_processed);
+                      last_msg_seq_num_processed,
+                      sequencer.last_sequence());
                   auto exchange_sequence_2 = std::max(exchange_sequence, sequencer.last_sequence());
                   auto market_by_order_update = MarketByOrderUpdate{
                       .stream_id = stream_id_,
