@@ -1064,6 +1064,8 @@ void UDPIncremental::operator()(
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("md_incremental_refresh_trade_summary_48={}, frame={}"sv, value, frame);
+    if (!flags::Common::test_trade_summary())
+      return;
     dispatch_trade_summary(event, frame);
   });
 }
@@ -1074,6 +1076,8 @@ void UDPIncremental::operator()(
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     log::info<5>("md_incremental_refresh_trade_summary_long_qty_65={}, frame={}"sv, value, frame);
+    if (!flags::Common::test_trade_summary())
+      return;
     dispatch_trade_summary(event, frame);
   });
 }
