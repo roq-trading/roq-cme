@@ -1480,7 +1480,7 @@ void UDPIncremental::check_report_sequence(Security &security, auto const &value
   auto rpt_seq = value.rptSeq();
   if (!security.update_rpt_seq(rpt_seq))
     return;
-  log::warn(R"(RESUBSCRIBE exchange="{}", sybmol="{}", rpt_seq={})"sv, security.exchange, security.symbol, rpt_seq);
+  log::warn(R"(RESUBSCRIBE exchange="{}", symbol="{}", rpt_seq={})"sv, security.exchange, security.symbol, rpt_seq);
   security.mbp.sequencer.clear();
   security.mbp.resubscribe = frame.sequence_number;
   security.mbo.sequencer.clear();
