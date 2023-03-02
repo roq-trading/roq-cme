@@ -482,7 +482,6 @@ void UDPMBPMarketRecovery::dispatch_market_by_price(
           security.exchange,
           security.symbol,
           exchange_sequence);
-      auto exchange_sequence_2 = std::max(exchange_sequence, sequencer.last_sequence());
       auto market_by_price_update = MarketByPriceUpdate{
           .stream_id = stream_id_,
           .exchange = security.exchange,
@@ -491,7 +490,7 @@ void UDPMBPMarketRecovery::dispatch_market_by_price(
           .asks = asks,
           .update_type = UpdateType::SNAPSHOT,
           .exchange_time_utc = exchange_time_utc,
-          .exchange_sequence = exchange_sequence_2,
+          .exchange_sequence = sequencer.last_sequence(),
           .price_decimals = {},
           .quantity_decimals = {},
           .checksum = {},

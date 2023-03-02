@@ -327,7 +327,6 @@ void UDPMBOMarketRecovery::operator()(
             if (last) {
               auto &sequencer = security.mbo.sequencer;
               try {
-                // HANS fix exchange_sequence
                 auto publish_snapshot = [&](auto &bids, auto &asks, auto exchange_sequence) {
                   log::info(
                       R"(PUBLISH SNAPSHOT exchange="{}", symbol="{}", exchange_sequence={}, last_sequence={})"sv,
@@ -335,7 +334,6 @@ void UDPMBOMarketRecovery::operator()(
                       security.symbol,
                       last_msg_seq_num_processed,
                       sequencer.last_sequence());
-                  auto exchange_sequence_2 = std::max(exchange_sequence, sequencer.last_sequence());
                   auto market_by_order_update = MarketByOrderUpdate{
                       .stream_id = stream_id_,
                       .exchange = security.exchange,
@@ -344,15 +342,15 @@ void UDPMBOMarketRecovery::operator()(
                       .asks = asks,
                       .update_type = UpdateType::SNAPSHOT,
                       .exchange_time_utc = {},
-                      .exchange_sequence = exchange_sequence_2,
+                      .exchange_sequence = sequencer.last_sequence(),
                       .price_decimals = {},
                       .quantity_decimals = {},
                       .checksum = {},
                   };
-                  create_trace_and_dispatch(handler_, trace_info, market_by_order_update, true);
                   Trace event(trace_info, market_by_order_update);
                   shared_(event, true, [&](auto &market_by_order) {
-                    sequencer.apply(market_by_order, last_msg_seq_num_processed, false);
+                    sequencer.apply(market_by_order, exchange_sequence, false);
+                    // sequencer.apply(market_by_order, last_msg_seq_num_processed, false);
                   });
                   security.mbo.resubscribe = {};
                 };
