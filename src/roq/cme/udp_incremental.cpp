@@ -1169,7 +1169,8 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame co
     });
   }
   auto &mbo = shared_.get_mbo();
-  auto dispatch_market_by_order = [&](auto &security) {
+  auto dispatch_market_by_order_2 = [&](auto security_id, auto &security) {
+    /*
     auto market_by_order_update = MarketByOrderUpdate{
         .stream_id = stream_id_,
         .exchange = security.exchange,
@@ -1185,6 +1186,9 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame co
         .checksum = {},
     };
     create_trace_and_dispatch(handler_, trace_info, market_by_order_update, true);
+    */
+    dispatch_market_by_order(
+        trace_info, security_id, security, exchange_sequence, exchange_time_utc, mbo.bids, mbo.asks);
     mbo.clear();
   };
   for (auto security_id : security_ids_) {
@@ -1223,7 +1227,7 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame co
         }
         offset += number_of_orders;
       }
-      dispatch_market_by_order(security);
+      dispatch_market_by_order_2(security_id, security);
     });
   }
 }
