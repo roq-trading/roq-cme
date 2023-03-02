@@ -342,7 +342,7 @@ void UDPMBOMarketRecovery::operator()(
                       .asks = asks,
                       .update_type = UpdateType::SNAPSHOT,
                       .exchange_time_utc = {},
-                      .exchange_sequence = sequencer.last_sequence(),
+                      .exchange_sequence = exchange_sequence,
                       .price_decimals = {},
                       .quantity_decimals = {},
                       .checksum = {},
