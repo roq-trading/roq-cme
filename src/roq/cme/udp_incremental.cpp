@@ -1114,6 +1114,7 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame co
     auto side = mdp::map_side(aggressor_side);
     trade_summary_.emplace_back(security_id, side, price, number_of_orders, trade_id);
     total_number_of_orders += number_of_orders;
+    shared_.get_security(security_id, [&](auto &security) { check_report_sequence(security, item, frame); });
   });
   value.noOrderIDEntries().forEach([&](auto &item) {
     auto order_id = item.orderID();
