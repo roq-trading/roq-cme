@@ -31,12 +31,6 @@
       "type": "uint32_t",
       "default": 0,
       "description": "test"
-    },
-    {
-      "name": "test_trade_summary",
-      "type": "bool",
-      "default": false,
-      "description": "test"
     }
   ]
 }
