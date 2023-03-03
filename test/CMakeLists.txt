@@ -4,6 +4,10 @@ set(SOURCES
     ilink_config_reader.cpp
     incremental.cpp
     mbofd_recovery.cpp
+    snapshot_full_refresh.cpp
+    md_incremental_refresh_book.cpp
+    md_incremental_refresh_trade_summary.cpp
+    md_instrument_definition.cpp
     mdp_config_reader.cpp
     mdp.cpp
     new_order_single.cpp
