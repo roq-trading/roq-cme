@@ -99,13 +99,7 @@ struct UDPIncremental final : public io::net::udp::Receiver::Handler, public mdp
       auto &asks);
 
   void dispatch_market_by_order(
-      auto &trace_info,
-      auto security_id,
-      auto &security,
-      auto exchange_sequence,
-      auto exchange_time_utc,
-      auto &bids,
-      auto &asks);
+      auto &trace_info, auto security_id, auto &security, auto exchange_sequence, auto exchange_time_utc, auto &orders);
 
   template <typename T>
   void dispatch_trade_summary(Trace<T> const &, mdp::Frame const &);

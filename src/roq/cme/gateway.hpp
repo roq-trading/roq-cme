@@ -88,7 +88,7 @@ struct Gateway final : public server::Handler,
   std::vector<std::unique_ptr<UDPMBOMarketRecovery>> udp_mbo_market_recovery_;
   // cache
   std::vector<MBPUpdate> bids_, asks_;
-  std::vector<MBOUpdate> mbo_bids_, mbo_asks_;
+  std::vector<MBOUpdate> orders_;
 };
 
 }  // namespace cme

@@ -61,40 +61,23 @@ struct create_metrics final : public core::metrics::Factory {
       : core::metrics::Factory(server::Flags::name(), group, function) {}
 };
 
-void emplace_back(
-    cme_mdp::SnapshotFullRefreshOrderBook53::NoMDEntries const &item, auto &security, auto &bids, auto &asks) {
-  auto create_update = [&]() {
-    auto price = mdp::get_double(const_cast<cme_mdp::SnapshotFullRefreshOrderBook53::NoMDEntries &>(item).mDEntryPx());
-    auto quantity = item.mDDisplayQty();
-    auto priority = mdp::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue());
-    auto order_id = mdp::get_int(item.orderID(), item.orderIDNullValue());
-    auto result = MBOUpdate{
-        .price = price * security.display_factor,
-        .quantity = static_cast<double>(quantity),
-        .priority = priority,
-        .order_id = {},
-        .action = UpdateAction::NEW,
-        .reason = {},
-    };
-    fmt::format_to(std::back_inserter(result.order_id), "{}"sv, order_id);
-    return result;
-  };
+void emplace_back(cme_mdp::SnapshotFullRefreshOrderBook53::NoMDEntries const &item, auto &security, auto &orders) {
+  auto price = mdp::get_double(const_cast<cme_mdp::SnapshotFullRefreshOrderBook53::NoMDEntries &>(item).mDEntryPx());
+  auto quantity = item.mDDisplayQty();
+  auto priority = mdp::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue());
+  auto order_id = mdp::get_int(item.orderID(), item.orderIDNullValue());
   auto side = mdp::map(item.mDEntryType());
-  switch (side) {
-    using enum Side;
-    case UNDEFINED:
-      break;
-    case BUY: {
-      auto update = create_update();
-      bids.emplace_back(std::move(update));
-      break;
-    }
-    case SELL: {
-      auto update = create_update();
-      asks.emplace_back(std::move(update));
-      break;
-    }
-  }
+  auto order = MBOUpdate{
+      .price = price * security.display_factor,
+      .quantity = static_cast<double>(quantity),
+      .priority = priority,
+      .order_id = {},
+      .side = side,
+      .action = UpdateAction::NEW,
+      .reason = {},
+  };
+  fmt::format_to(std::back_inserter(order.order_id), "{}"sv, order_id);
+  orders.emplace_back(std::move(order));
 }
 
 // note! don't care about re-ordering or dropped messages (*** maybe we should ??? ***)
@@ -319,15 +302,14 @@ void UDPMBOMarketRecovery::operator()(
             security.symbol,
             last_msg_seq_num_processed);
       */
-      if (security.update_mbo_snapshot(current_chunk, no_chunks, [&](auto &bids, auto &asks, bool last) {
+      if (security.update_mbo_snapshot(current_chunk, no_chunks, [&](auto &orders, bool last) {
             value.sbeRewind();  // note!
-            value.noMDEntries().forEach([&](auto const &item) { emplace_back(item, security, bids, asks); });
-            log::info<5>("DEBUG MBO bids=[{}]"sv, fmt::join(bids, ","sv));
-            log::info<5>("DEBUG MBO asks=[{}]"sv, fmt::join(asks, ","sv));
+            value.noMDEntries().forEach([&](auto const &item) { emplace_back(item, security, orders); });
+            log::info<5>("DEBUG MBO orders=[{}]"sv, fmt::join(orders, ","sv));
             if (last) {
               auto &sequencer = security.mbo.sequencer;
               try {
-                auto publish_snapshot = [&](auto &bids, auto &asks, auto exchange_sequence) {
+                auto publish_snapshot = [&](auto &orders, auto exchange_sequence) {
                   log::info(
                       R"(PUBLISH SNAPSHOT exchange="{}", symbol="{}", exchange_sequence={}, last_sequence={})"sv,
                       security.exchange,
@@ -338,8 +320,7 @@ void UDPMBOMarketRecovery::operator()(
                       .stream_id = stream_id_,
                       .exchange = security.exchange,
                       .symbol = security.symbol,
-                      .bids = bids,
-                      .asks = asks,
+                      .orders = orders,
                       .update_type = UpdateType::SNAPSHOT,
                       .exchange_time_utc = {},
                       .exchange_sequence = sequencer.last_sequence(),
@@ -378,7 +359,7 @@ void UDPMBOMarketRecovery::operator()(
                     security.mbo.resubscribe,
                     last_msg_seq_num_processed,
                     channel_.sequence.last_sequence_number);
-                sequencer(bids, asks, last_msg_seq_num_processed, force, publish_snapshot, request_snapshot);
+                sequencer(orders, last_msg_seq_num_processed, force, publish_snapshot, request_snapshot);
               } catch (BadState &) {
                 log::warn(
                     R"(RESUBSCRIBE MBO exchange="{}", symbol="{}", exchange_sequence={}, security_id={})"sv,

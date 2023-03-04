@@ -42,13 +42,12 @@ struct Shared final {
     bool empty() const { return std::empty(bids) && std::empty(asks); }
   } mbp;
   struct {
-    std::vector<MBOUpdate> bids, asks;
+    std::vector<MBOUpdate> orders;
     auto &clear() {
-      bids.clear();
-      asks.clear();
+      orders.clear();
       return *this;
     }
-    bool empty() const { return std::empty(bids) && std::empty(asks); }
+    bool empty() const { return std::empty(orders); }
   } mbo;
   std::vector<Trade> trades;
   std::vector<Statistics> statistics;

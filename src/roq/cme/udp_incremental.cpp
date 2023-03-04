@@ -219,47 +219,29 @@ void emplace_back(
     auto &security,
     auto side,
     auto price,
-    auto &bids,
-    auto &asks) {
-  auto create_update = [&]() {
-    auto action = mdp::map(item.orderUpdateAction());
-    auto quantity = mdp::get_int(item.mDDisplayQty(), item.mDDisplayQtyNullValue());
-    auto priority = mdp::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue());
-    auto order_id = mdp::get_int(item.orderID(), item.orderIDNullValue());
-    auto result = MBOUpdate{
-        .price = price * security.display_factor,
-        .quantity = static_cast<double>(quantity),
-        .priority = priority,
-        .order_id = {},
-        .action = action,
-        .reason = {},
-    };
-    fmt::format_to(std::back_inserter(result.order_id), "{}"sv, order_id);
-    if (action != UpdateAction::DELETE && !quantity) [[unlikely]]  // DEBUG
-      log::warn("Unexpected: update={}"sv, result);
-    return result;
+    auto &orders) {
+  auto action = mdp::map(item.orderUpdateAction());
+  auto quantity = mdp::get_int(item.mDDisplayQty(), item.mDDisplayQtyNullValue());
+  auto priority = mdp::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue());
+  auto order_id = mdp::get_int(item.orderID(), item.orderIDNullValue());
+  auto order = MBOUpdate{
+      .price = price * security.display_factor,
+      .quantity = static_cast<double>(quantity),
+      .priority = priority,
+      .order_id = {},
+      .side = side,
+      .action = action,
+      .reason = {},
   };
-  switch (side) {
-    using enum Side;
-    case UNDEFINED:
-      break;
-    case BUY: {
-      auto update = create_update();
-      bids.emplace_back(std::move(update));
-      break;
-    }
-    case SELL: {
-      auto update = create_update();
-      asks.emplace_back(std::move(update));
-      break;
-    }
-  }
+  fmt::format_to(std::back_inserter(order.order_id), "{}"sv, order_id);
+  if (action != UpdateAction::DELETE && !quantity) [[unlikely]]  // DEBUG
+    log::warn("Unexpected: update={}"sv, order);
+  orders.emplace_back(std::move(order));
 }
 
-void emplace_back(
-    cme_mdp::MDIncrementalRefreshOrderBook47::NoMDEntries const &item, auto &security, auto &bids, auto &asks) {
+void emplace_back(cme_mdp::MDIncrementalRefreshOrderBook47::NoMDEntries const &item, auto &security, auto &orders) {
   using value_type = typename std::remove_cvref<decltype(item)>::type;
-  auto create_update = [&]() {
+  auto create_update = [&](auto side) {
     auto price = mdp::get_double(const_cast<value_type &>(item).mDEntryPx());
     auto quantity = mdp::get_int(item.mDDisplayQty(), item.mDDisplayQtyNullValue());
     auto priority = mdp::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue());
@@ -270,6 +252,7 @@ void emplace_back(
         .quantity = static_cast<double>(quantity),
         .priority = priority,
         .order_id = {},
+        .side = side,
         .action = action,
         .reason = {},
     };
@@ -282,13 +265,13 @@ void emplace_back(
   switch (item.mDEntryType()) {
     using enum cme_mdp::MDEntryTypeBook::Value;
     case Bid: {
-      auto update = create_update();
-      bids.emplace_back(std::move(update));
+      auto update = create_update(Side::BUY);
+      orders.emplace_back(std::move(update));
       break;
     }
     case Offer: {
-      auto update = create_update();
-      asks.emplace_back(std::move(update));
+      auto update = create_update(Side::SELL);
+      orders.emplace_back(std::move(update));
       break;
     }
     case ImpliedBid:
@@ -705,8 +688,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
           mbp.clear();
         }
         if (!std::empty(mbo)) {
-          dispatch_market_by_order(
-              trace_info, security_id, security, exchange_sequence, exchange_time_utc, mbo.bids, mbo.asks);
+          dispatch_market_by_order(trace_info, security_id, security, exchange_sequence, exchange_time_utc, mbo.orders);
           mbo.clear();
         }
       };
@@ -743,20 +725,11 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
                   .quantity = {},
                   .priority = {},
                   .order_id = {},
+                  .side = side,
                   .action = action,
                   .reason = {},
               };
-              switch (side) {
-                using enum Side;
-                case UNDEFINED:
-                  break;
-                case BUY:
-                  mbo.bids.emplace_back(std::move(update));
-                  break;
-                case SELL:
-                  mbo.asks.emplace_back(std::move(update));
-                  break;
-              }
+              mbo.orders.emplace_back(std::move(update));
             }
           }
         }
@@ -770,8 +743,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
       auto &mbo = shared_.get_mbo();
       auto dispatch = [&](auto security_id, auto &security) {
         if (!std::empty(mbo)) {
-          dispatch_market_by_order(
-              trace_info, security_id, security, exchange_sequence, exchange_time_utc, mbo.bids, mbo.asks);
+          dispatch_market_by_order(trace_info, security_id, security, exchange_sequence, exchange_time_utc, mbo.orders);
           mbo.clear();
         }
       };
@@ -796,7 +768,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
         }
         if (security) {
           if (action != UpdateAction::DELETE)
-            emplace_back(item, *security, side, price, mbo.bids, mbo.asks);
+            emplace_back(item, *security, side, price, mbo.orders);
         }
       });
       if (security)
@@ -835,11 +807,10 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshOrderBook47> 
     auto dispatch = [&](auto security_id, auto &security) {
       if (std::empty(mbo))
         return;
-      dispatch_market_by_order(
-          trace_info, security_id, security, exchange_sequence, exchange_time_utc, mbo.bids, mbo.asks);
+      dispatch_market_by_order(trace_info, security_id, security, exchange_sequence, exchange_time_utc, mbo.orders);
       mbo.clear();
     };
-    auto update = [&](auto &security, auto &item) { emplace_back(item, security, mbo.bids, mbo.asks); };
+    auto update = [&](auto &security, auto &item) { emplace_back(item, security, mbo.orders); };
     SecurityIterator{shared_}(value.noMDEntries(), dispatch, update);
   });
 }
@@ -1011,18 +982,16 @@ void UDPIncremental::dispatch_market_by_order(
     auto &security,
     auto exchange_sequence,
     auto exchange_time_utc,
-    auto &bids,
-    auto &asks) {
+    auto &orders) {
   auto &sequencer = security.mbo.sequencer;
   try {
     auto last_exchange_sequence = sequencer.last_sequence();  // note! the protocol doesn't tell us
-    auto create_update = [&](auto &bids, auto &asks, auto update_type) -> MarketByOrderUpdate {
+    auto create_update = [&](auto &orders, auto update_type) -> MarketByOrderUpdate {
       return {
           .stream_id = stream_id_,
           .exchange = security.exchange,
           .symbol = security.symbol,
-          .bids = bids,
-          .asks = asks,
+          .orders = orders,
           .update_type = update_type,
           .exchange_time_utc = exchange_time_utc,
           .exchange_sequence = exchange_sequence,
@@ -1032,17 +1001,17 @@ void UDPIncremental::dispatch_market_by_order(
           .checksum = {},
       };
     };
-    auto publish_update = [&](auto &bids, auto &asks) {
-      auto market_by_order_update = create_update(bids, asks, UpdateType::INCREMENTAL);
+    auto publish_update = [&](auto &orders) {
+      auto market_by_order_update = create_update(orders, UpdateType::INCREMENTAL);
       create_trace_and_dispatch(handler_, trace_info, market_by_order_update, true);
     };
-    auto publish_snapshot = [&](auto &bids, auto &asks, [[maybe_unused]] auto exchange_sequence) {
+    auto publish_snapshot = [&](auto &orders, [[maybe_unused]] auto exchange_sequence) {
       log::info(
           R"(PUBLISH MBO SNAPSHOT exchange={}, symbol="{}", exchange_sequence={})"sv,
           security.exchange,
           security.symbol,
           exchange_sequence);
-      auto market_by_order_update = create_update(bids, asks, UpdateType::SNAPSHOT);
+      auto market_by_order_update = create_update(orders, UpdateType::SNAPSHOT);
       create_trace_and_dispatch(handler_, trace_info, market_by_order_update, true);
       security.mbo.resubscribe = {};
     };
@@ -1056,16 +1025,14 @@ void UDPIncremental::dispatch_market_by_order(
       security.mbo.resubscribe = exchange_sequence;
     };
     log::info<5>(
-        R"(DEBUG UPDATE exchange="{}", symbol="{}", len(bids)={}, len(asks)={}, exchange_sequence={}, last_exchange_sequence={})"sv,
+        R"(DEBUG UPDATE exchange="{}", symbol="{}", len(orders)={}, exchange_sequence={}, last_exchange_sequence={})"sv,
         security.exchange,
         security.symbol,
-        std::size(bids),
-        std::size(asks),
+        std::size(orders),
         exchange_sequence,
         last_exchange_sequence);
     sequencer(
-        bids,
-        asks,
+        orders,
         exchange_sequence,
         exchange_sequence,
         last_exchange_sequence,
@@ -1171,25 +1138,7 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame co
   }
   auto &mbo = shared_.get_mbo();
   auto dispatch_market_by_order_2 = [&](auto security_id, auto &security) {
-    /*
-    auto market_by_order_update = MarketByOrderUpdate{
-        .stream_id = stream_id_,
-        .exchange = security.exchange,
-        .symbol = security.symbol,
-        .bids = mbo.bids,
-        .asks = mbo.asks,
-        .update_type = UpdateType::INCREMENTAL,
-        .exchange_time_utc = exchange_time_utc,
-        .exchange_sequence = exchange_sequence,
-        .price_decimals = {},
-        .quantity_decimals = {},
-        .max_depth = {},
-        .checksum = {},
-    };
-    create_trace_and_dispatch(handler_, trace_info, market_by_order_update, true);
-    */
-    dispatch_market_by_order(
-        trace_info, security_id, security, exchange_sequence, exchange_time_utc, mbo.bids, mbo.asks);
+    dispatch_market_by_order(trace_info, security_id, security, exchange_sequence, exchange_time_utc, mbo.orders);
     mbo.clear();
   };
   for (auto security_id : security_ids_) {
@@ -1208,22 +1157,14 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame co
                 .quantity = static_cast<double>(last_qty),
                 .priority = {},
                 .order_id = {},
+                .side = side,
                 .action = UpdateAction::FILL,
                 .reason = {},
             };
             fmt::format_to(std::back_inserter(result.order_id), "{}"sv, order_id);
             if (!last_qty) [[unlikely]]  // DEBUG
               log::warn("Unexpected: update={}"sv, result);
-            switch (side) {
-              using enum Side;
-              case UNDEFINED:
-              case BUY:
-                mbo.asks.emplace_back(std::move(result));
-                break;
-              case SELL:
-                mbo.bids.emplace_back(std::move(result));
-                break;
-            }
+            mbo.orders.emplace_back(std::move(result));
           }
         }
         offset += number_of_orders;
