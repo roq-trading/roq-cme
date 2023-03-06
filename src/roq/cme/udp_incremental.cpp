@@ -719,7 +719,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
         if (security) {
           emplace_back(item, *security, layer, mbp.bids, mbp.asks);
           if (market_by_order_) {
-            if (action == UpdateAction::DELETE) {
+            if (action == UpdateAction::DELETE && side != Side::UNDEFINED) {
               auto update = MBOUpdate{
                   .price = price * (*security).display_factor,
                   .quantity = {},
