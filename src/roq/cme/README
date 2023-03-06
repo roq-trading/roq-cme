@@ -1,3 +1,57 @@
+I0306 04:43:22.048453 2718569 L5 udp_incremental.cpp:662] md_incremental_refresh_book_46={version=9, transact_time=1678077802001259643, match_event_indicator=4, no_md_entries=[{md_entry_px=-0.00390625, md_entry_size=1, security_id=18135, rpt_seq=145535, number_of_orders=1, md_price_level=1, md_update_action=Delete, md_entry_type=Offer, tradeable_size=0}, {md_entry_px=0.03515625, md_entry_size=4, security_id=18135, rpt_seq=145536, number_of_orders=3, md_price_level=10, md_update_action=New, md_entry_type=Offer, tradeable_size=0}], no_order_id_entries=[{order_id=8411836053562, md_order_priority=20738905866, md_display_qty=1, reference_id=1, order_update_action=Delete}]}, frame={sequence_number=667025, sending_time=1678077802001351205ns}
+I0306 04:43:22.048467 2718569 L5 udp_incremental.cpp:662] md_incremental_refresh_book_46={version=9, transact_time=1678077802001259643, match_event_indicator=144, no_md_entries=[{md_entry_px=106.75, md_entry_size=1, security_id=687964, rpt_seq=128673, number_of_orders=0, md_price_level=1, md_update_action=Delete, md_entry_type=ImpliedBid, tradeable_size=0}, {md_entry_px=106.734375, md_entry_size=6, security_id=687964, rpt_seq=128674, number_of_orders=0, md_price_level=2, md_update_action=New, md_entry_type=ImpliedBid, tradeable_size=0}, {md_entry_px=101.7578125, md_entry_size=1, security_id=699486, rpt_seq=60662, number_of_orders=0, md_price_level=1, md_update_action=Delete, md_entry_type=ImpliedOffer, tradeable_size=0}, {md_entry_px=101.765625, md_entry_size=6, security_id=699486, rpt_seq=60663, number_of_orders=0, md_price_level=2, md_update_action=New, md_entry_type=ImpliedOffer, tradeable_size=0}], no_order_id_entries=[]}, frame={sequence_number=667025, sending_time=1678077802001351205ns}
+I0306 04:43:22.048478 2718569 L5 security.cpp:16] rpt_seq=128673, last_rpt_seq=128672
+I0306 04:43:22.048487 2718569 L5 security.cpp:16] rpt_seq=128674, last_rpt_seq=128673
+I0306 04:43:22.048497 2718569 L5 udp_incremental.cpp:1027] DEBUG UPDATE exchange="XCBT", symbol="ZFM3", orders=[{price=106.75, quantity=0, priority=0, order_id="", side=UNDEFINED, action=DELETE, reason=UNDEFINED}], exchange_sequence=667025, last_exchange_sequence=667021
+W0306 04:43:22.048508 2718569 L3 simple_2.cpp:262] Unable to infer side for update={price=106.75, quantity=0, priority=0, order_id="", side=UNDEFINED, action=DELETE, reason=UNDEFINED}
+I0306 04:43:22.048520 2718569 L3 dispatcher.cpp:432] event={market_by_order_update={stream_id=1, exchange="XCBT", symbol="ZFM3", orders=[{price=106.75, quantity=0, priority=0, order_id="", side=UNDEFINED, action=DELETE, reason=UNDEFINED}], update_type=INCREMENTAL, exchange_time_utc=1678077802001259643ns, exchange_sequence=667025, price_decimals=_7, quantity_decimals=_0, max_depth=0, checksum=0}, trace_info={source_receive_time=46634168032485608ns, origin_create_time=46634168032485608ns, origin_create_time_utc=1678077802048395115ns}}, is_last=true
+
+
+I0306 04:52:53.802095 2718604 L0 udp_mbp_market_recovery.cpp:511] DEBUG UPDATE MBP SNAPSHOT exchange="XCBT", symbol="ZNH3", exchange_sequence=672558
+I0306 04:52:53.802151 2718604 L0 udp_mbp_market_recovery.cpp:503] REQUEST MBP SNAPSHOT exchange="XCBT", symbol="ZNH3", exchange_sequence=672558, retries=39
+I0306 04:52:55.686769 2718604 L0 udp_mbp_market_recovery.cpp:511] DEBUG UPDATE MBP SNAPSHOT exchange="XCBT", symbol="ZNH3", exchange_sequence=672562
+I0306 04:52:55.686810 2718604 L0 udp_mbp_market_recovery.cpp:503] REQUEST MBP SNAPSHOT exchange="XCBT", symbol="ZNH3", exchange_sequence=672562, retries=40
+
+W0306 06:31:11.043312 2720923 L0 udp_incremental.cpp:1092] Unexpected: len(orders)=77, expected=87
+W0306 06:31:11.043362 2720923 L0 udp_incremental.cpp:1092] Unexpected: len(orders)=10, expected=0
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 missing:
 - external latency?
 - sequence number overflow
