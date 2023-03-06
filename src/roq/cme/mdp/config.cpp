@@ -64,6 +64,7 @@ struct Handler final : public ConfigReader::Handler {
 
 template <typename T>
 auto read_connections(auto &filename) {
+  log::info(R"(Reading "{}"...)"sv, filename);
   T result;
   Handler handler{result};
   ConfigReader::read(handler, filename);
