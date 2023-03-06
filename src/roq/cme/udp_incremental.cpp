@@ -1062,9 +1062,13 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame co
   value.sbeRewind();                                    // note!
   auto exchange_time_utc = std::chrono::nanoseconds{value.transactTime()};
   auto exchange_sequence = frame.sequence_number;
-  security_ids_.clear();
-  trade_summary_.clear();
-  orders_.clear();
+  if (exchange_time_utc != transact_time_) {
+    transact_time_ = exchange_time_utc;
+    security_ids_.clear();
+    trade_summary_.clear();
+    orders_.clear();
+    total_number_of_orders_ = 0;
+  }
   auto insert_security_id = [&](auto security_id) {
     for (auto iter : security_ids_) {
       if (iter == security_id)
@@ -1072,7 +1076,6 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame co
     }
     security_ids_.emplace_back(security_id);
   };
-  size_t total_number_of_orders = 0;
   value.noMDEntries().forEach([&]<typename U>(U &item) {
     auto security_id = item.securityID();
     auto aggressor_side = item.aggressorSide();
@@ -1082,7 +1085,7 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame co
     insert_security_id(security_id);
     auto side = mdp::map_side(aggressor_side);
     trade_summary_.emplace_back(security_id, side, price, number_of_orders, trade_id);
-    total_number_of_orders += number_of_orders;
+    total_number_of_orders_ += number_of_orders;
     shared_.get_security(security_id, [&](auto &security) { check_report_sequence(security, item, frame); });
   });
   value.noOrderIDEntries().forEach([&](auto &item) {
@@ -1090,9 +1093,12 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame co
     auto last_qty = item.lastQty();
     orders_.emplace_back(order_id, last_qty);
   });
-  if (std::size(orders_) != total_number_of_orders) {
-    log::warn("Unexpected: len(orders)={}, expected={}"sv, std::size(orders_), total_number_of_orders);
+  if (std::size(orders_) < total_number_of_orders_) {
+    log::warn("Message is fragmented: len(orders)={}, expected={}"sv, std::size(orders_), total_number_of_orders_);
     return;
+  }
+  if (std::size(orders_) > total_number_of_orders_) {
+    log::warn("Unexpected: len(orders)={}, expected={}"sv, std::size(orders_), total_number_of_orders_);
   }
   auto &trades = shared_.get_trades();
   auto dispatch_trade_summary = [&](auto &security) {

@@ -165,7 +165,6 @@ TEST_CASE("multiple_fills", "[md_incremental_refresh_trade_summary]") {
 // XXX need example with multiple securities
 // XXX need example with _65
 
-/*
 TEST_CASE("span_multiple messages", "[md_incremental_refresh_trade_summary]") {
   constexpr auto const message_1 =
       "\xce\x2e\x12\x00"
@@ -284,7 +283,7 @@ TEST_CASE("span_multiple messages", "[md_incremental_refresh_trade_summary]") {
       "\x00\x00\x86\x04\x83\x88\xa6\x07\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x8d\x04\x83\x88\xa6\x07\x00\x00\x01\x00"
       "\x00\x00\x00\x00\x00\x00\x9d\x04\x83\x88\xa6\x07\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x27\x0f\x82\x88\xa6\x07"
       "\x00\x00\x03\x00\x00\x00\x00\x00\x00\x00"sv;
-  static_assert(std::size(message_2) == 828);
+  static_assert(std::size(message_2) < 1500);
   struct MyHandler final : public mdp::Parser::Handler {
     int counter = 0;
     void operator()(mdp::Frame const &) override {}
@@ -313,6 +312,7 @@ TEST_CASE("span_multiple messages", "[md_incremental_refresh_trade_summary]") {
       using value_type = std::remove_cvref<decltype(event)>::type::value_type;
       auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
       ++counter;
+      fmt::print("{}"sv, value);
     }
     void operator()(Trace<cme_mdp::MDIncrementalRefreshDailyStatistics49> const &, mdp::Frame const &) override {
       FAIL();
@@ -336,10 +336,13 @@ TEST_CASE("span_multiple messages", "[md_incremental_refresh_trade_summary]") {
     }
     void operator()(Trace<cme_mdp::QuoteRequest39> const &, mdp::Frame const &) override { FAIL(); }
   } handler;
-  std::span buffer{reinterpret_cast<std::byte const *>(std::data(message)), std::size(message)};
   TraceInfo trace_info;
-  auto res = mdp::Parser::dispatch(handler, buffer, trace_info);
+  std::span buffer_1{reinterpret_cast<std::byte const *>(std::data(message_1)), std::size(message_1)};
+  auto res = mdp::Parser::dispatch(handler, buffer_1, trace_info);
   CHECK(res);
   CHECK(handler.counter == 1);
+  std::span buffer_2{reinterpret_cast<std::byte const *>(std::data(message_2)), std::size(message_2)};
+  res = mdp::Parser::dispatch(handler, buffer_2, trace_info);
+  CHECK(res);
+  CHECK(handler.counter == 2);
 }
-*/
