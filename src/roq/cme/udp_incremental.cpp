@@ -1062,12 +1062,15 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame co
   value.sbeRewind();                                    // note!
   auto exchange_time_utc = std::chrono::nanoseconds{value.transactTime()};
   auto exchange_sequence = frame.sequence_number;
-  if (exchange_time_utc != transact_time_) {
-    transact_time_ = exchange_time_utc;
+  auto clear_state = [&]() {
     security_ids_.clear();
     trade_summary_.clear();
     orders_.clear();
     total_number_of_orders_ = 0;
+  };
+  if (exchange_time_utc != transact_time_) {
+    transact_time_ = exchange_time_utc;
+    clear_state();
   }
   auto insert_security_id = [&](auto security_id) {
     for (auto iter : security_ids_) {
@@ -1095,11 +1098,50 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame co
   });
   if (std::size(orders_) < total_number_of_orders_) {
     log::warn("Message is fragmented: len(orders)={}, expected={}"sv, std::size(orders_), total_number_of_orders_);
-    return;
+    return;  // note!
   }
   if (std::size(orders_) > total_number_of_orders_) {
     log::warn("Unexpected: len(orders)={}, expected={}"sv, std::size(orders_), total_number_of_orders_);
   }
+  // mbo
+  auto &mbo = shared_.get_mbo();
+  auto dispatch_market_by_order_2 = [&](auto security_id, auto &security) {
+    dispatch_market_by_order(trace_info, security_id, security, exchange_sequence, exchange_time_utc, mbo.orders);
+    mbo.clear();
+  };
+  for (auto security_id : security_ids_) {
+    shared_.get_security(security_id, [&](auto &security) {
+      size_t offset = 0;
+      for (auto [security_id_2, side, price, number_of_orders, trade_id] : trade_summary_) {
+        auto maker_side = utils::invert(side);
+        if (security_id == security_id_2) {
+          size_t offset_2 = 0;
+          if (side != Side::UNDEFINED) {
+            ++offset_2;
+          }
+          for (; offset_2 < number_of_orders; ++offset_2) {
+            auto &[order_id, last_qty] = orders_[offset + offset_2];
+            auto result = MBOUpdate{
+                .price = price * security.display_factor,
+                .quantity = static_cast<double>(last_qty),
+                .priority = {},
+                .order_id = {},
+                .side = maker_side,
+                .action = UpdateAction::FILL,
+                .reason = {},
+            };
+            fmt::format_to(std::back_inserter(result.order_id), "{}"sv, order_id);
+            if (!last_qty) [[unlikely]]  // DEBUG
+              log::warn("Unexpected: update={}"sv, result);
+            mbo.orders.emplace_back(std::move(result));
+          }
+        }
+        offset += number_of_orders;
+      }
+      dispatch_market_by_order_2(security_id, security);
+    });
+  }
+  // trades
   auto &trades = shared_.get_trades();
   auto dispatch_trade_summary = [&](auto &security) {
     auto trade_summary = TradeSummary{
@@ -1144,43 +1186,8 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame co
       dispatch_trade_summary(security);
     });
   }
-  auto &mbo = shared_.get_mbo();
-  auto dispatch_market_by_order_2 = [&](auto security_id, auto &security) {
-    dispatch_market_by_order(trace_info, security_id, security, exchange_sequence, exchange_time_utc, mbo.orders);
-    mbo.clear();
-  };
-  for (auto security_id : security_ids_) {
-    shared_.get_security(security_id, [&](auto &security) {
-      size_t offset = 0;
-      for (auto [security_id_2, side, price, number_of_orders, trade_id] : trade_summary_) {
-        auto maker_side = utils::invert(side);
-        if (security_id == security_id_2) {
-          size_t offset_2 = 0;
-          if (side != Side::UNDEFINED) {
-            ++offset_2;
-          }
-          for (; offset_2 < number_of_orders; ++offset_2) {
-            auto &[order_id, last_qty] = orders_[offset + offset_2];
-            auto result = MBOUpdate{
-                .price = price * security.display_factor,
-                .quantity = static_cast<double>(last_qty),
-                .priority = {},
-                .order_id = {},
-                .side = maker_side,
-                .action = UpdateAction::FILL,
-                .reason = {},
-            };
-            fmt::format_to(std::back_inserter(result.order_id), "{}"sv, order_id);
-            if (!last_qty) [[unlikely]]  // DEBUG
-              log::warn("Unexpected: update={}"sv, result);
-            mbo.orders.emplace_back(std::move(result));
-          }
-        }
-        offset += number_of_orders;
-      }
-      dispatch_market_by_order_2(security_id, security);
-    });
-  }
+  // done
+  clear_state();
 }
 
 template <typename T, typename Callback>
