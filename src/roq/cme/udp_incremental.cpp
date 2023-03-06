@@ -1025,10 +1025,10 @@ void UDPIncremental::dispatch_market_by_order(
       security.mbo.resubscribe = exchange_sequence;
     };
     log::info<5>(
-        R"(DEBUG UPDATE exchange="{}", symbol="{}", len(orders)={}, exchange_sequence={}, last_exchange_sequence={})"sv,
+        R"(DEBUG UPDATE exchange="{}", symbol="{}", orders=[{}], exchange_sequence={}, last_exchange_sequence={})"sv,
         security.exchange,
         security.symbol,
-        std::size(orders),
+        fmt::join(orders, ", "sv),
         exchange_sequence,
         last_exchange_sequence);
     sequencer(
