@@ -9,6 +9,12 @@
       "description": "enable market by order updates?"
     },
     {
+      "name": "test_mbp_to_mbo_clear_price_level",
+      "type": "bool",
+      "default": false,
+      "description": "use mbp to delete mbo price levels?"
+    },
+    {
       "name": "filter_snapshot_from_incremental",
       "type": "uint32_t",
       "default": 1024,

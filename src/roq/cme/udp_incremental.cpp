@@ -4,6 +4,7 @@
 
 #include <fmt/ranges.h>
 
+#include "roq/utils/common.hpp"
 #include "roq/utils/safe_cast.hpp"
 #include "roq/utils/update.hpp"
 
@@ -719,7 +720,8 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
         if (security) {
           emplace_back(item, *security, layer, mbp.bids, mbp.asks);
           if (market_by_order_) {
-            if (action == UpdateAction::DELETE && side != Side::UNDEFINED) {
+            if (action == UpdateAction::DELETE && side != Side::UNDEFINED &&
+                flags::Common::test_mbp_to_mbo_clear_price_level()) {
               auto update = MBOUpdate{
                   .price = price * (*security).display_factor,
                   .quantity = {},
@@ -1145,6 +1147,7 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame co
     shared_.get_security(security_id, [&](auto &security) {
       size_t offset = 0;
       for (auto [security_id_2, side, price, number_of_orders, trade_id] : trade_summary_) {
+        auto maker_side = utils::invert(side);
         if (security_id == security_id_2) {
           size_t offset_2 = 0;
           if (side != Side::UNDEFINED) {
@@ -1157,7 +1160,7 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame co
                 .quantity = static_cast<double>(last_qty),
                 .priority = {},
                 .order_id = {},
-                .side = side,
+                .side = maker_side,
                 .action = UpdateAction::FILL,
                 .reason = {},
             };
