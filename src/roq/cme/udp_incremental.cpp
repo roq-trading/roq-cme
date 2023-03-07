@@ -1098,14 +1098,23 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame co
     orders_.emplace_back(order_id, last_qty);
   });
   if (std::size(orders_) < total_number_of_orders_) {
-    log::warn("Message is fragmented: len(orders)={}, expected={}"sv, std::size(orders_), total_number_of_orders_);
+    log::warn(
+        "Message is fragmented: sequence={}, len(orders)={}, expected={}"sv,
+        exchange_sequence,
+        std::size(orders_),
+        total_number_of_orders_);
     return;  // note!
   }
   if (std::size(orders_) > total_number_of_orders_) {
-    log::warn("Unexpected: len(orders)={}, expected={}"sv, std::size(orders_), total_number_of_orders_);
+    log::warn(
+        "Unexpected: sequence={}, len(orders)={}, expected={}"sv,
+        exchange_sequence,
+        std::size(orders_),
+        total_number_of_orders_);
   } else if (fragmented) {
     log::warn(
-        "Message was fragmented and now fully assembled: len(orders)={}, expected={}"sv,
+        "Message was fragmented and now fully assembled: sequence={}, len(orders)={}, expected={}"sv,
+        exchange_sequence,
         std::size(orders_),
         total_number_of_orders_);
   }
