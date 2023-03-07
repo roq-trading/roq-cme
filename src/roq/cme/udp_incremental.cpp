@@ -1068,7 +1068,8 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame co
     orders_.clear();
     total_number_of_orders_ = 0;
   };
-  if (exchange_time_utc != transact_time_) {
+  auto fragmented = exchange_time_utc == transact_time_;
+  if (!fragmented) {
     transact_time_ = exchange_time_utc;
     clear_state();
   }
@@ -1102,7 +1103,7 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame co
   }
   if (std::size(orders_) > total_number_of_orders_) {
     log::warn("Unexpected: len(orders)={}, expected={}"sv, std::size(orders_), total_number_of_orders_);
-  } else {
+  } else if (fragmented) {
     log::warn(
         "Message was fragmented and now fully assembled: len(orders)={}, expected={}"sv,
         std::size(orders_),
