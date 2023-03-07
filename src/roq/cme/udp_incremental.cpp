@@ -1102,6 +1102,11 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame co
   }
   if (std::size(orders_) > total_number_of_orders_) {
     log::warn("Unexpected: len(orders)={}, expected={}"sv, std::size(orders_), total_number_of_orders_);
+  } else {
+    log::warn(
+        "Message was fragmented and now fully assembled: len(orders)={}, expected={}"sv,
+        std::size(orders_),
+        total_number_of_orders_);
   }
   // mbo
   auto &mbo = shared_.get_mbo();
