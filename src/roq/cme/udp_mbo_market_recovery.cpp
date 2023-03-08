@@ -326,6 +326,10 @@ void UDPMBOMarketRecovery::operator()(
                       security.symbol,
                       last_msg_seq_num_processed,
                       sequencer.last_sequence());
+                  for (auto &order : orders) {
+                    if (order.quantity == 0)
+                      log::warn("MBO UNEXPECTED update="sv, order);
+                  }
                   auto market_by_order_update = MarketByOrderUpdate{
                       .stream_id = stream_id_,
                       .exchange = security.exchange,
