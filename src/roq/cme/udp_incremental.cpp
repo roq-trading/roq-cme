@@ -237,9 +237,6 @@ void emplace_back(
   fmt::format_to(std::back_inserter(order.order_id), "{}"sv, order_id);
   if (action != UpdateAction::DELETE && !quantity) [[unlikely]]  // DEBUG
     log::warn("Unexpected: update={}"sv, order);
-  if (quantity == 0 && order_id == 0) {
-    log::warn("DEBUG MBO UNEXPECTED update={}"sv, order);
-  }
   orders.emplace_back(std::move(order));
 }
 
@@ -263,9 +260,6 @@ void emplace_back(cme_mdp::MDIncrementalRefreshOrderBook47::NoMDEntries const &i
     fmt::format_to(std::back_inserter(result.order_id), "{}"sv, order_id);
     if (action != UpdateAction::DELETE && !quantity) [[unlikely]]  // DEBUG
       log::warn("Unexpected: update={}"sv, result);
-    if (quantity == 0 && order_id == 0) {
-      log::warn("DEBUG MBO UNEXPECTED update={}"sv, result);
-    }
     return result;
   };
   using value_type = typename std::remove_cvref<decltype(item)>::type;
@@ -1019,10 +1013,6 @@ void UDPIncremental::dispatch_market_by_order(
           security.exchange,
           security.symbol,
           exchange_sequence);
-      for (auto &order : orders) {
-        if (order.quantity == 0)
-          log::warn("MBO UNEXPECTED update="sv, order);
-      }
       auto market_by_order_update = create_update(orders, UpdateType::SNAPSHOT);
       create_trace_and_dispatch(handler_, trace_info, market_by_order_update, true);
       security.mbo.resubscribe = {};
