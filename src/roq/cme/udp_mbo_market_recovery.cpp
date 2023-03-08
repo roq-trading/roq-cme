@@ -77,7 +77,7 @@ void emplace_back(cme_mdp::SnapshotFullRefreshOrderBook53::NoMDEntries const &it
       .reason = {},
   };
   fmt::format_to(std::back_inserter(order.order_id), "{}"sv, order_id);
-  if (quantity == 0 && order_id == 0) {
+  if (quantity == 0) {
     log::warn("DEBUG MBO UNEXPECTED update={}"sv, order);
   }
   orders.emplace_back(std::move(order));
@@ -306,9 +306,16 @@ void UDPMBOMarketRecovery::operator()(
             last_msg_seq_num_processed);
       */
       if (security.update_mbo_snapshot(current_chunk, no_chunks, [&](auto &orders, bool last) {
+            if (current_chunk == 1 && !std::empty(orders)) {
+              log::warn("MBO UNEXPECTED"sv);
+            }
             value.sbeRewind();  // note!
             value.noMDEntries().forEach([&](auto const &item) { emplace_back(item, security, orders); });
             log::info<5>("DEBUG MBO orders=[{}]"sv, fmt::join(orders, ","sv));
+            for (auto &order : orders) {
+              if (order.quantity == 0)
+                log::warn("MBO UNEXPECTED update="sv, order);
+            }
             if (last) {
               auto &sequencer = security.mbo.sequencer;
               try {
