@@ -1019,6 +1019,10 @@ void UDPIncremental::dispatch_market_by_order(
           security.exchange,
           security.symbol,
           exchange_sequence);
+      for (auto &order : orders) {
+        if (order.quantity == 0)
+          log::warn("MBO UNEXPECTED update="sv, order);
+      }
       auto market_by_order_update = create_update(orders, UpdateType::SNAPSHOT);
       create_trace_and_dispatch(handler_, trace_info, market_by_order_update, true);
       security.mbo.resubscribe = {};
