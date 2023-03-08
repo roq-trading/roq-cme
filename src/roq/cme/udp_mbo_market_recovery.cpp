@@ -77,6 +77,9 @@ void emplace_back(cme_mdp::SnapshotFullRefreshOrderBook53::NoMDEntries const &it
       .reason = {},
   };
   fmt::format_to(std::back_inserter(order.order_id), "{}"sv, order_id);
+  if (quantity == 0 && order_id == 0) {
+    log::info<1>("DEBUG MBO UNEXPECTED update={}"sv, order);
+  }
   orders.emplace_back(std::move(order));
 }
 
