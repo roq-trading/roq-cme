@@ -685,11 +685,19 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
         }
         if (!std::empty(mbp)) {
           dispatch_market_by_price(
-              trace_info, security_id, security, exchange_sequence, exchange_time_utc, mbp.bids, mbp.asks);
+              trace_info,
+              security_id,
+              security,
+              exchange_sequence,
+              exchange_time_utc,
+              frame.sending_time,
+              mbp.bids,
+              mbp.asks);
           mbp.clear();
         }
         if (!std::empty(mbo)) {
-          dispatch_market_by_order(trace_info, security_id, security, exchange_sequence, exchange_time_utc, mbo.orders);
+          dispatch_market_by_order(
+              trace_info, security_id, security, exchange_sequence, exchange_time_utc, frame.sending_time, mbo.orders);
           mbo.clear();
         }
       };
@@ -745,7 +753,8 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
       auto &mbo = shared_.get_mbo();
       auto dispatch = [&](auto security_id, auto &security) {
         if (!std::empty(mbo)) {
-          dispatch_market_by_order(trace_info, security_id, security, exchange_sequence, exchange_time_utc, mbo.orders);
+          dispatch_market_by_order(
+              trace_info, security_id, security, exchange_sequence, exchange_time_utc, frame.sending_time, mbo.orders);
           mbo.clear();
         }
       };
@@ -809,7 +818,8 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshOrderBook47> 
     auto dispatch = [&](auto security_id, auto &security) {
       if (std::empty(mbo))
         return;
-      dispatch_market_by_order(trace_info, security_id, security, exchange_sequence, exchange_time_utc, mbo.orders);
+      dispatch_market_by_order(
+          trace_info, security_id, security, exchange_sequence, exchange_time_utc, frame.sending_time, mbo.orders);
       mbo.clear();
     };
     auto update = [&](auto &security, auto &item) { emplace_back(item, security, mbo.orders); };
@@ -914,6 +924,7 @@ void UDPIncremental::dispatch_market_by_price(
     auto &security,
     auto exchange_sequence,
     auto exchange_time_utc,
+    auto sending_time_utc,
     auto &bids,
     auto &asks) {
   auto &sequencer = security.mbp.sequencer;
@@ -929,6 +940,7 @@ void UDPIncremental::dispatch_market_by_price(
           .update_type = update_type,
           .exchange_time_utc = exchange_time_utc,
           .exchange_sequence = exchange_sequence,
+          .sending_time_utc = sending_time_utc,
           .price_decimals = {},
           .quantity_decimals = {},
           .checksum = {},
@@ -984,6 +996,7 @@ void UDPIncremental::dispatch_market_by_order(
     auto &security,
     auto exchange_sequence,
     auto exchange_time_utc,
+    auto sending_time_utc,
     auto &orders) {
   auto &sequencer = security.mbo.sequencer;
   try {
@@ -997,6 +1010,7 @@ void UDPIncremental::dispatch_market_by_order(
           .update_type = update_type,
           .exchange_time_utc = exchange_time_utc,
           .exchange_sequence = exchange_sequence,
+          .sending_time_utc = sending_time_utc,
           .price_decimals = {},
           .quantity_decimals = {},
           .max_depth = {},
@@ -1122,7 +1136,8 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame co
   // mbo
   auto &mbo = shared_.get_mbo();
   auto dispatch_market_by_order_2 = [&](auto security_id, auto &security) {
-    dispatch_market_by_order(trace_info, security_id, security, exchange_sequence, exchange_time_utc, mbo.orders);
+    dispatch_market_by_order(
+        trace_info, security_id, security, exchange_sequence, exchange_time_utc, frame.sending_time, mbo.orders);
     mbo.clear();
   };
   for (auto security_id : security_ids_) {
@@ -1170,6 +1185,7 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame co
         .trades = trades,
         .exchange_time_utc = exchange_time_utc,
         .exchange_sequence = frame.sequence_number,
+        .sending_time_utc = frame.sending_time,
     };
     create_trace_and_dispatch(handler_, trace_info, trade_summary, true);
     trades.clear();
@@ -1241,6 +1257,8 @@ void UDPIncremental::dispatch_statistics(Trace<T> const &event, mdp::Frame const
         .statistics = statistics,
         .update_type = UpdateType::INCREMENTAL,
         .exchange_time_utc = exchange_time_utc,
+        .exchange_sequence = frame.sequence_number,
+        .sending_time_utc = frame.sending_time,
     };
     log::info<3>("statistics_update={}"sv, statistics_update);
     create_trace_and_dispatch(handler_, trace_info, statistics_update, true);

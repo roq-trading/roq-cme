@@ -316,7 +316,14 @@ void UDPMBPMarketRecovery::operator()(Trace<cme_mdp::SnapshotFullRefresh52> cons
       value.noMDEntries().forEach([&](auto const &item) { emplace_back(item, security, mbp.bids, mbp.asks); });
       if (!std::empty(mbp)) {
         dispatch_market_by_price(
-            trace_info, security_id, security, last_msg_seq_num_processed, transact_time, mbp.bids, mbp.asks);
+            trace_info,
+            security_id,
+            security,
+            last_msg_seq_num_processed,
+            transact_time,
+            frame.sending_time,
+            mbp.bids,
+            mbp.asks);
       }
     });
   });
@@ -342,7 +349,14 @@ void UDPMBPMarketRecovery::operator()(
       value.noMDEntries().forEach([&](auto const &item) { emplace_back(item, security, mbp.bids, mbp.asks); });
       if (!std::empty(mbp)) {
         dispatch_market_by_price(
-            trace_info, security_id, security, last_msg_seq_num_processed, transact_time, mbp.bids, mbp.asks);
+            trace_info,
+            security_id,
+            security,
+            last_msg_seq_num_processed,
+            transact_time,
+            frame.sending_time,
+            mbp.bids,
+            mbp.asks);
       }
     });
   });
@@ -470,6 +484,7 @@ void UDPMBPMarketRecovery::dispatch_market_by_price(
     auto &security,
     auto exchange_sequence,
     auto exchange_time_utc,
+    auto sending_time_utc,
     auto &bids,
     auto &asks) {
   if (!security.mbp.resubscribe)
@@ -491,6 +506,7 @@ void UDPMBPMarketRecovery::dispatch_market_by_price(
           .update_type = UpdateType::SNAPSHOT,
           .exchange_time_utc = exchange_time_utc,
           .exchange_sequence = sequencer.last_sequence(),
+          .sending_time_utc = sending_time_utc,
           .price_decimals = {},
           .quantity_decimals = {},
           .checksum = {},
