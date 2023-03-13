@@ -1084,11 +1084,12 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame co
     auto security_id = item.securityID();
     auto aggressor_side = item.aggressorSide();
     auto price = mdp::get_double(const_cast<U &>(item).mDEntryPx());
+    auto size = item.mDEntrySize();
     auto number_of_orders = item.numberOfOrders();
     auto trade_id = mdp::get_int(item.mDTradeEntryID(), item.mDTradeEntryIDNullValue());
     insert_security_id(security_id);
     auto side = mdp::map_side(aggressor_side);
-    trade_summary_.emplace_back(security_id, side, price, number_of_orders, trade_id);
+    trade_summary_.emplace_back(security_id, side, price, size, number_of_orders, trade_id);
     total_number_of_orders_ += number_of_orders;
     shared_.get_security(security_id, [&](auto &security) { check_report_sequence(security, item, frame); });
   });
@@ -1127,23 +1128,14 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame co
   for (auto security_id : security_ids_) {
     shared_.get_security(security_id, [&](auto &security) {
       size_t offset = 0;
-      for (auto [security_id_2, side, price, number_of_orders, trade_id] : trade_summary_) {
-        // auto maker_side = utils::invert(side);
-        auto maker_side = [](auto side) {
-          switch (side) {
-            using enum Side;
-            case UNDEFINED:
-              break;
-            case BUY:
-              return SELL;
-            case SELL:
-              return BUY;
-          }
-          return side;
-        }(side);
+      for (auto [security_id_2, aggressor_side, price, size, number_of_orders, trade_id] : trade_summary_) {
+        auto side = aggressor_side;
         if (security_id == security_id_2) {
           size_t offset_2 = 0;
-          if (side != Side::UNDEFINED) {
+          if (aggressor_side != Side::UNDEFINED) {
+            auto &[order_id, last_qty] = orders_[offset + offset_2];
+            if (last_qty == size)
+              side = utils::invert(side);
             ++offset_2;
           }
           for (; offset_2 < number_of_orders; ++offset_2) {
@@ -1153,7 +1145,7 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame co
                 .quantity = static_cast<double>(last_qty),
                 .priority = {},
                 .order_id = {},
-                .side = maker_side,
+                .side = side,
                 .action = UpdateAction::FILL,
                 .reason = {},
             };
@@ -1185,19 +1177,33 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame co
   for (auto security_id : security_ids_) {
     shared_.get_security(security_id, [&](auto &security) {
       size_t offset = 0;
-      for (auto [security_id_2, side, price, number_of_orders, trade_id] : trade_summary_) {
+      for (auto [security_id_2, aggressor_side, price, size, number_of_orders, trade_id] : trade_summary_) {
         if (security_id == security_id_2) {
           size_t offset_2 = 0;
           auto trade_id_2 = fmt::format("{}"sv, trade_id);
           std::string taker_order_id;
-          if (side != Side::UNDEFINED) {
-            taker_order_id = fmt::format("{}"sv, orders_[offset + offset_2].first);
+          if (aggressor_side != Side::UNDEFINED) {
+            auto &[order_id, last_qty] = orders_[offset + offset_2];
+            if (last_qty == size) {
+              taker_order_id = fmt::format("{}"sv, order_id);
+            } else {  // join
+              auto trade = Trade{
+                  .side = aggressor_side,
+                  .price = price * security.display_factor,
+                  .quantity = utils::safe_cast(last_qty),
+                  .trade_id = trade_id_2,
+                  .taker_order_id = {},
+                  .maker_order_id = {},
+              };
+              fmt::format_to(std::back_inserter(trade.taker_order_id), "{}"sv, order_id);
+              trades.emplace_back(std::move(trade));
+            }
             ++offset_2;
           }
           for (; offset_2 < number_of_orders; ++offset_2) {
             auto &[order_id, last_qty] = orders_[offset + offset_2];
             auto trade = Trade{
-                .side = side,
+                .side = aggressor_side,
                 .price = price * security.display_factor,
                 .quantity = utils::safe_cast(last_qty),
                 .trade_id = trade_id_2,

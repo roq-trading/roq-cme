@@ -152,7 +152,7 @@ struct UDPIncremental final : public io::net::udp::Receiver::Handler, public mdp
   // - refresh book
   std::vector<std::tuple<int32_t, Side, double, UpdateAction>> md_entries_;
   // - trade summary
-  std::vector<std::tuple<int32_t, Side, double, size_t, uint32_t>> trade_summary_;
+  std::vector<std::tuple<int32_t, Side, double, int32_t, size_t, uint32_t>> trade_summary_;
   std::vector<int32_t> security_ids_;
   std::vector<std::pair<uint64_t, int32_t>> orders_;
   std::chrono::nanoseconds transact_time_ = {};
