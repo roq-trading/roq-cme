@@ -1128,7 +1128,19 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame co
     shared_.get_security(security_id, [&](auto &security) {
       size_t offset = 0;
       for (auto [security_id_2, side, price, number_of_orders, trade_id] : trade_summary_) {
-        auto maker_side = utils::invert(side);
+        // auto maker_side = utils::invert(side);
+        auto maker_side = [](auto side) {
+          switch (side) {
+            using enum Side;
+            case UNDEFINED:
+              break;
+            case BUY:
+              return SELL;
+            case SELL:
+              return BUY;
+          }
+          return side;
+        }(side);
         if (security_id == security_id_2) {
           size_t offset_2 = 0;
           if (side != Side::UNDEFINED) {
