@@ -1203,7 +1203,7 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame co
           std::string taker_order_id;
           if (aggressor_side != Side::UNDEFINED) {
             auto &[order_id, last_qty] = orders_[offset + offset_2];
-            if (last_qty == size) {
+            if (last_qty != size) {
               taker_order_id = fmt::format("{}"sv, order_id);
             } else {  // join
               auto trade = Trade{
