@@ -1178,6 +1178,10 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame co
   // trades
   auto &trades = shared_.get_trades();
   auto dispatch_trade_summary = [&](auto &security) {
+    if (std::empty(trades)) {
+      log::warn("EMPTY TRADES"sv);
+      return;
+    }
     auto trade_summary = TradeSummary{
         .stream_id = stream_id_,
         .exchange = security.exchange,
@@ -1187,9 +1191,6 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame co
         .exchange_sequence = frame.sequence_number,
         .sending_time_utc = frame.sending_time,
     };
-    if (std::empty(trades)) [[unlikely]] {  // DEBUG
-      log::warn("EMPTY TRADES trade_summary={}"sv, trade_summary);
-    }
     create_trace_and_dispatch(handler_, trace_info, trade_summary, true);
     trades.clear();
   };
@@ -1203,8 +1204,20 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame co
           std::string taker_order_id;
           if (aggressor_side != Side::UNDEFINED) {
             auto &[order_id, last_qty] = orders_[offset + offset_2];
-            if (last_qty != size) {
+            if (last_qty == size) {
               taker_order_id = fmt::format("{}"sv, order_id);
+              if (number_of_orders == 1) {
+                auto trade = Trade{
+                    .side = aggressor_side,
+                    .price = price * security.display_factor,
+                    .quantity = utils::safe_cast(last_qty),
+                    .trade_id = trade_id_2,
+                    .taker_order_id = {},
+                    .maker_order_id = {},
+                };
+                fmt::format_to(std::back_inserter(trade.taker_order_id), "{}"sv, order_id);
+                trades.emplace_back(std::move(trade));
+              }
             } else {  // join
               auto trade = Trade{
                   .side = aggressor_side,
