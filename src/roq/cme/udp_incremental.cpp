@@ -1187,6 +1187,9 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame co
         .exchange_sequence = frame.sequence_number,
         .sending_time_utc = frame.sending_time,
     };
+    if (std::empty(trades)) [[unlikely]] {  // DEBUG
+      log::warn("EMPTY TRADES trade_summary={}"sv, trade_summary);
+    }
     create_trace_and_dispatch(handler_, trace_info, trade_summary, true);
     trades.clear();
   };
