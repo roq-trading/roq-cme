@@ -1178,8 +1178,8 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame co
   // trades
   auto &trades = shared_.get_trades();
   auto dispatch_trade_summary = [&](auto &security) {
-    if (std::empty(trades)) {
-      log::warn("EMPTY TRADES"sv);
+    if (std::empty(trades)) [[unlikely]] {  // DEBUG
+      log::warn("DEBUG EMPTY TRADES"sv);
       return;
     }
     auto trade_summary = TradeSummary{
@@ -1207,7 +1207,6 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame co
             if (last_qty == size) {
               taker_order_id = fmt::format("{}"sv, order_id);
               if (number_of_orders == 1) {
-                log::warn("EMPTY TRADES FIXED"sv);
                 auto trade = Trade{
                     .side = aggressor_side,
                     .price = price * security.display_factor,
