@@ -1161,7 +1161,7 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame co
                 .priority = {},
                 .order_id = {},
                 .side = side,
-                .action = UpdateAction::FILL,
+                .action = UpdateAction::TRADE,
                 .reason = {},
             };
             fmt::format_to(std::back_inserter(result.order_id), "{}"sv, order_id);
