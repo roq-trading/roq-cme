@@ -4,6 +4,8 @@ All notable changes will be documented in this file.
 
 ## Head
 
+## 0.9.3 &ndash; 2023-03-20
+
 ### Changed
 
 * [BREAKING CHANGE] `MarketByOrderUpdate` and `MBOUpdate` has been changed to support CME's TradeSummary (#322)
