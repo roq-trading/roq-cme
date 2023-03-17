@@ -1136,6 +1136,8 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame co
   // mbo
   auto &mbo = shared_.get_mbo();
   auto dispatch_market_by_order_2 = [&](auto security_id, auto &security) {
+    if (std::empty(mbo))
+      return;
     dispatch_market_by_order(
         trace_info, security_id, security, exchange_sequence, exchange_time_utc, frame.sending_time, mbo.orders);
     mbo.clear();
