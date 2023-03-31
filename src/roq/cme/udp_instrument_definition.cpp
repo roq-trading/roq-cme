@@ -452,6 +452,10 @@ void UDPInstrumentDefinition::publish_stream_status(TraceInfo const &trace_info,
       .encoding = {Encoding::SBE},
       .priority = Priority::PRIMARY,
       .connection_status = connection_status_,
+      .interface = {},
+      .authority = {},
+      .path = {},
+      .proxy = {},
   };
   log::info("stream_status={}"sv, stream_status);
   create_trace_and_dispatch(handler_, trace_info, stream_status);
