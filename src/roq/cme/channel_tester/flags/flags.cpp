@@ -6,7 +6,8 @@
 
 #include <string>
 
-#include "roq/core/flags/common.hpp"
+#include "roq/core/flags/common.hpp"  // IWYU pragma: keep
+
 #include "roq/core/flags/non_empty.hpp"
 #include "roq/core/flags/non_zero.hpp"
 
