@@ -1,6 +1,6 @@
 set(TARGET_NAME "${PROJECT_NAME}-ilink")
 
-set(SOURCES config_reader.cpp frame.cpp parser.cpp)
+set(SOURCES config_reader.cpp parser.cpp)
 
 include(RoqAutogen)
 

@@ -12,6 +12,7 @@
 
 #include "roq/io/context.hpp"
 
+#include "roq/cme/authenticator.hpp"
 #include "roq/cme/channel.hpp"
 #include "roq/cme/config.hpp"
 #include "roq/cme/shared.hpp"
@@ -21,6 +22,8 @@
 #include "roq/cme/udp_mbo_market_recovery.hpp"
 #include "roq/cme/udp_mbp_market_recovery.hpp"
 
+#include "roq/cme/order_entry.hpp"
+
 namespace roq {
 namespace cme {
 
@@ -28,7 +31,8 @@ struct Gateway final : public server::Handler,
                        public UDPIncremental::Handler,
                        public UDPInstrumentDefinition::Handler,
                        public UDPMBPMarketRecovery::Handler,
-                       public UDPMBOMarketRecovery::Handler {
+                       public UDPMBOMarketRecovery::Handler,
+                       public OrderEntry::Handler {
   Gateway(server::Dispatcher &, Config const &, io::Context &);
 
   Gateway(Gateway &&) = delete;
@@ -70,10 +74,13 @@ struct Gateway final : public server::Handler,
   void operator()(Trace<MarketByOrderUpdate> const &, bool is_last) override;
   void operator()(Trace<TradeSummary> const &, bool is_last) override;
   void operator()(Trace<StatisticsUpdate> const &, bool is_last) override;
+  void operator()(Trace<oms::TradeUpdate> const &, uint16_t stream_id, bool is_last, uint8_t user_id) override;
 
  private:
   server::Dispatcher &dispatcher_;
   // config
+  // authentication
+  absl::flat_hash_map<Account, std::unique_ptr<Authenticator>> authenticator_;
   // io
   io::Context &context_;
   // shared
@@ -86,6 +93,7 @@ struct Gateway final : public server::Handler,
   std::vector<std::unique_ptr<UDPInstrumentDefinition>> udp_instrument_definition_;
   std::vector<std::unique_ptr<UDPMBPMarketRecovery>> udp_mbp_market_recovery_;
   std::vector<std::unique_ptr<UDPMBOMarketRecovery>> udp_mbo_market_recovery_;
+  absl::flat_hash_map<Account, std::unique_ptr<OrderEntry>> order_entry_;
   // cache
   std::vector<MBPUpdate> bids_, asks_;
   std::vector<MBOUpdate> orders_;

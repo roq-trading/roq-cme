@@ -13,6 +13,7 @@ set(SOURCES
     channel.cpp
     config.cpp
     gateway.cpp
+    order_entry.cpp
     shared.cpp
     udp_incremental.cpp
     udp_instrument_definition.cpp

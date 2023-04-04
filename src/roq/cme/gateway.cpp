@@ -61,16 +61,34 @@ auto create_udp_mbo_market_recovery(auto &gateway, auto &context, auto &stream_i
   }
   return result;
 }
+
+template <typename R>
+auto create_authenticator(auto const &config) {
+  R result;
+  for (auto &[_, account] : config.accounts)
+    result.try_emplace(account.name, std::make_unique<Authenticator>(config, account.name));
+  return result;
+}
+
+template <typename R>
+auto create_order_entry(auto &gateway, auto &context, auto &stream_id, auto &authenticator_by_name, auto &shared) {
+  R result;
+  for (auto &[account, authenticator] : authenticator_by_name)
+    result.try_emplace(account, std::make_unique<OrderEntry>(gateway, context, ++stream_id, *authenticator, shared));
+  return result;
+}
 }  // namespace
 
 // === IMPLEMENTATION ===
 
-Gateway::Gateway(server::Dispatcher &dispatcher, Config const &, io::Context &context)
-    : dispatcher_{dispatcher}, context_{context}, shared_{dispatcher_}, channels_{create_channels()},
+Gateway::Gateway(server::Dispatcher &dispatcher, Config const &config, io::Context &context)
+    : dispatcher_{dispatcher}, authenticator_{create_authenticator<decltype(authenticator_)>(config)},
+      context_{context}, shared_{dispatcher_}, channels_{create_channels()},
       udp_incremental_{create_udp_incremental(*this, context_, stream_id_, shared_, channels_)},
       udp_instrument_definition_{create_udp_instrument_definition(*this, context_, stream_id_, shared_, channels_)},
       udp_mbp_market_recovery_{create_udp_mbp_market_recovery(*this, context_, stream_id_, shared_, channels_)},
-      udp_mbo_market_recovery_{create_udp_mbo_market_recovery(*this, context_, stream_id_, shared_, channels_)} {
+      udp_mbo_market_recovery_{create_udp_mbo_market_recovery(*this, context_, stream_id_, shared_, channels_)},
+      order_entry_{create_order_entry<decltype(order_entry_)>(*this, context_, stream_id_, authenticator_, shared_)} {
 }
 
 void Gateway::operator()(Event<Start> const &event) {
@@ -83,10 +101,14 @@ void Gateway::operator()(Event<Start> const &event) {
     (*item)(event);
   for (auto &item : udp_mbo_market_recovery_)
     (*item)(event);
+  for (auto &[_, item] : order_entry_)
+    (*item)(event);
 }
 
 void Gateway::operator()(Event<Stop> const &event) {
   log::info("Stopping..."sv);
+  for (auto &[_, item] : order_entry_)
+    (*item)(event);
   for (auto &item : udp_mbo_market_recovery_)
     (*item)(event);
   for (auto &item : udp_mbp_market_recovery_)
@@ -105,6 +127,8 @@ void Gateway::operator()(Event<Timer> const &event) {
   for (auto &item : udp_mbp_market_recovery_)
     (*item)(event);
   for (auto &item : udp_mbo_market_recovery_)
+    (*item)(event);
+  for (auto &[_, item] : order_entry_)
     (*item)(event);
 }
 
@@ -159,6 +183,8 @@ void Gateway::operator()(metrics::Writer &writer) {
     (*item)(writer);
   for (auto &item : udp_mbo_market_recovery_)
     (*item)(writer);
+  for (auto &[_, item] : order_entry_)
+    (*item)(writer);
 }
 
 void Gateway::operator()(Trace<StreamStatus> const &event) {
@@ -197,6 +223,9 @@ void Gateway::operator()(Trace<TradeSummary> const &event, bool is_last) {
 
 void Gateway::operator()(Trace<StatisticsUpdate> const &event, bool is_last) {
   dispatcher_(event, is_last);
+}
+
+void Gateway::operator()(Trace<oms::TradeUpdate> const &, uint16_t stream_id, bool is_last, uint8_t user_id) {
 }
 
 }  // namespace cme
