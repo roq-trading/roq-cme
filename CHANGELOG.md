@@ -4,6 +4,10 @@ All notable changes will be documented in this file.
 
 ## Head
 
+### Fixed
+
+* `OrderUpdate` incorrect for `MBOUpdate` with changed price and quantity (#338)
+
 ## 0.9.3 &ndash; 2023-03-20
 
 ### Changed
