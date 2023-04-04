@@ -4,6 +4,8 @@
 
 #include <string>
 
+#include "roq/priority.hpp"
+
 #include "roq/core/udp/buffer.hpp"
 
 namespace roq {
@@ -16,6 +18,8 @@ struct Channel final {
   Channel(Channel const &) = delete;
 
   std::string const channel_id;
+
+  std::string get_channel_name(std::string_view const &prefix, Priority = {}) const;
 
   struct ReorderBuffer final {
     std::pair<bool, uint32_t> last_sequence = {};

@@ -122,6 +122,8 @@ struct UDPIncremental final : public io::net::udp::Receiver::Handler, public mdp
  private:
   Handler &handler_;
   // config
+  Priority const priority_;
+  std::string const channel_name_;
   uint16_t const stream_id_;
   std::string const name_;
   bool const market_by_order_;

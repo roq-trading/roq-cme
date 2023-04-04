@@ -91,8 +91,9 @@ struct UDPInstrumentDefinition final : public io::net::udp::Receiver::Handler, p
  private:
   Handler &handler_;
   // config
-  const uint16_t stream_id_;
-  const std::string name_;
+  std::string const channel_name_;
+  uint16_t const stream_id_;
+  std::string const name_;
   // receiver
   std::unique_ptr<io::net::udp::Receiver> receiver_;
   io::Buffer receive_buffer_;

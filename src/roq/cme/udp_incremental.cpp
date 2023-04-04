@@ -34,8 +34,8 @@ auto const NAME = "I"sv;
 // === HELPERS ===
 
 namespace {
-auto create_name(auto stream_id, auto const &channel_id) {
-  return fmt::format("{}:{}{}"sv, stream_id, NAME, channel_id);
+auto create_name(auto stream_id, auto &channel_name) {
+  return fmt::format("{}:{}"sv, stream_id, channel_name);
 }
 
 auto create_receiver(auto &handler, auto &context, auto &shared, auto &channel_id, Priority priority) {
@@ -295,9 +295,10 @@ void emplace_back(cme_mdp::MDIncrementalRefreshOrderBook47::NoMDEntries const &i
 
 UDPIncremental::UDPIncremental(
     Handler &handler, io::Context &context, uint16_t stream_id, Shared &shared, Channel &channel, Priority priority)
-    : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_, channel.channel_id)},
+    : handler_{handler}, priority_{priority}, channel_name_{channel.get_channel_name(NAME, priority_)},
+      stream_id_{stream_id}, name_{create_name(stream_id_, channel_name_)},
       market_by_order_{flags::Common::enable_market_by_order()},
-      receiver_{create_receiver(*this, context, shared, channel.channel_id, priority)},
+      receiver_{create_receiver(*this, context, shared, channel.channel_id, priority_)},
       counter_{
           .disconnect = create_metrics(name_, "disconnect"sv),
           .sequence_reset = create_metrics(name_, "sequence_reset"sv),
@@ -1310,11 +1311,11 @@ void UDPIncremental::publish_stream_status(TraceInfo const &trace_info, Connecti
       .transport = Transport::UDP,
       .protocol = Protocol::SBE,
       .encoding = {Encoding::SBE},
-      .priority = Priority::PRIMARY,
+      .priority = priority_,
       .connection_status = connection_status_,
-      .interface = {},
+      .interface = flags::Multicast::multicast_local_interface(),
       .authority = {},
-      .path = {},
+      .path = channel_name_,
       .proxy = {},
   };
   log::info("stream_status={}"sv, stream_status);

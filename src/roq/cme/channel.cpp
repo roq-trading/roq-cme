@@ -27,5 +27,21 @@ Channel::Channel(std::string_view const &channel_id, size_t buffer_size, size_t 
   log::info(R"(Create channel id="{}")"sv, channel_id);
 }
 
+std::string Channel::get_channel_name(std::string_view const &prefix, Priority priority) const {
+  auto postfix = [&]() {
+    switch (priority) {
+      using enum Priority;
+      case UNDEFINED:
+        return std::string_view{};
+      case PRIMARY:
+        return "A"sv;
+      case SECONDARY:
+        return "B"sv;
+    }
+    return "?"sv;
+  }();
+  return fmt::format("{}{}{}"sv, prefix, channel_id, postfix);
+}
+
 }  // namespace cme
 }  // namespace roq
