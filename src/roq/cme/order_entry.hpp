@@ -96,6 +96,9 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public ili
  private:
   void operator()(ConnectionStatus);
 
+  void send_negotiate();
+  void send_establish();
+
   template <typename T>
   void send(T const &);
 
@@ -135,10 +138,10 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public ili
   Shared &shared_;
   // state
   ConnectionStatus status_ = {};
-
-  // state
   bool ready_ = false;
   std::chrono::nanoseconds next_heartbeat_ = {};
+  // EXPERIMENTAL
+  std::chrono::nanoseconds uuid_ = {};
 };
 
 }  // namespace cme

@@ -1,6 +1,7 @@
 set(TARGET_NAME "${PROJECT_NAME}-test")
 
 set(SOURCES
+    establish.cpp
     ilink_config_reader.cpp
     incremental.cpp
     mbofd_recovery.cpp

@@ -52,17 +52,20 @@ std::span<std::byte const> Crypto::create_signature(
       .write('\n')
       .write(message.session)
       .write('\n')
-      .write(message.firm_id)
-      .write('\n')
-      .write(message.trading_system_name)
-      .write('\n')
-      .write(message.trading_version_id)
-      .write('\n')
-      .write(message.trading_system_vendor_id)
-      .write('\n')
-      .write(message.next_seq_no)
-      .write('\n')
-      .write(message.keep_alive_interval.count());
+      .write(message.firm_id);
+  if (!std::empty(message.trading_system_name)) {
+    writer  //
+        .write('\n')
+        .write(message.trading_system_name)
+        .write('\n')
+        .write(message.trading_system_version)
+        .write('\n')
+        .write(message.trading_system_vendor)
+        .write('\n')
+        .write(message.next_seq_no)
+        .write('\n')
+        .write(message.keep_alive_interval.count());
+  }
   auto tmp = static_cast<std::string_view>(writer);
   mac_.clear();
   mac_.update(tmp);

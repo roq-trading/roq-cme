@@ -7,8 +7,8 @@
 #include <cmath>
 #include <span>
 
+#include <cme_ilink/Establish503.h>
 #include <cme_ilink/MessageHeader.h>
-#include <cme_ilink/Negotiate500.h>
 
 #include "roq/debug/hex/message.hpp"
 
@@ -26,10 +26,10 @@ template <typename T>
 auto encode(auto &buffer, auto &message_header, T &value) {
   value.sbeRewind();  // note!
   message_header.wrap(reinterpret_cast<char *>(std::data(buffer)), 0, 0, std::size(buffer))
-      .blockLength(Negotiate500::sbeBlockLength())
-      .templateId(Negotiate500::sbeTemplateId())
-      .schemaId(Negotiate500::sbeSchemaId())
-      .version(Negotiate500::sbeSchemaVersion());
+      .blockLength(Establish503::sbeBlockLength())
+      .templateId(Establish503::sbeTemplateId())
+      .schemaId(Establish503::sbeSchemaId())
+      .version(Establish503::sbeSchemaVersion());
   value.wrapForEncode(reinterpret_cast<char *>(std::data(buffer)), message_header.encodedLength(), std::size(buffer));
   value.sbeRewind();  // note!
   auto length = value.computeLength();
@@ -38,26 +38,31 @@ auto encode(auto &buffer, auto &message_header, T &value) {
 }  // namespace
 */
 
-TEST_CASE("simple", "[negotiate]") {
+TEST_CASE("simple", "[establish]") {
   std::vector<std::byte> buffer(4096);
   // MessageHeader message_header;
-  Negotiate500 negotiate;
-  auto &ngo = negotiate.wrapAndApplyHeader(reinterpret_cast<char *>(std::data(buffer)), 0, std::size(buffer));
-  ngo  //
+  Establish503 establish;
+  auto &est = establish.wrapAndApplyHeader(reinterpret_cast<char *>(std::data(buffer)), 0, std::size(buffer));
+  est  //
       .putHMACSignature("abc"sv)
       .putAccessKeyID("abc"sv)
+      .putTradingSystemName("abc"sv)
+      .putTradingSystemVersion("abc"sv)
+      .putTradingSystemVendor("abc"sv)
       .uUID(123)
       .requestTimestamp(123)
+      .nextSeqNo(123)
       .putSession("abc"sv)
-      .putFirm("abc"sv);
-  std::span message{std::data(buffer), Negotiate500::sbeBlockAndHeaderLength()};
+      .putFirm("abc"sv)
+      .keepAliveInterval(123);
+  std::span message{std::data(buffer), Establish503::sbeBlockAndHeaderLength()};
   fmt::print(stderr, "{}\n"sv, debug::hex::Message{message});
   fmt::print(
       stderr,
       "{} {} {}\n"sv,
       std::size(message),
-      Negotiate500::sbeBlockAndHeaderLength(),
-      Negotiate500::sbeBlockLength());
+      Establish503::sbeBlockAndHeaderLength(),
+      Establish503::sbeBlockLength());
   auto expected =
       "\x4c\x00"  // block length
       "\xf4\x01"  // template id (500)

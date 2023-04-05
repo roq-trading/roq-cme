@@ -4,6 +4,7 @@
 
 #include "roq/mask.hpp"
 
+#include "roq/utils/safe_cast.hpp"
 #include "roq/utils/update.hpp"
 
 #include "roq/core/metrics/factory.hpp"
@@ -12,6 +13,7 @@
 
 #include "roq/cme/ilink/session.hpp"
 
+#include "roq/cme/ilink/establish.hpp"
 #include "roq/cme/ilink/negotiate.hpp"
 
 using namespace std::literals;
@@ -160,6 +162,7 @@ void OrderEntry::operator()(Trace<cme_ilink::NegotiationResponse501> const &even
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &[trace_info, value] = event;
   log::info("negotiation_response_501={}"sv, const_cast<value_type &>(value));
+  send_establish();
 }
 
 void OrderEntry::operator()(Trace<cme_ilink::NegotiationReject502> const &event) {
@@ -260,27 +263,7 @@ void OrderEntry::operator()(Trace<cme_ilink::SecurityDefinitionResponse561> cons
 }
 
 void OrderEntry::operator()(io::net::ConnectionManager::Connected const &) {
-  auto timestamp = clock::get_realtime<std::chrono::milliseconds>();
-  auto canonical_message = tools::CanonicalMessage{
-      .request_timestamp = timestamp,
-      .uuid = timestamp.count(),
-      .session = authenticator_.get_login(),
-      .firm_id = flags::iLink::ilink_firm(),
-      .trading_system_name = "ROQ"sv,
-      .trading_version_id = "0.9.3"sv,
-      .trading_system_vendor_id = "ROQ"sv,
-      .next_seq_no = 1,
-      .keep_alive_interval = 30s,
-  };
-  auto signature = authenticator_.create_signature(canonical_message);
-  auto negotiate = ilink::Negotiate{
-      .signature = {},
-      .uuid = timestamp.count(),
-      .request_timestamp = timestamp,
-      .session = authenticator_.get_login(),
-      .firm = flags::iLink::ilink_firm(),
-  };
-  send(negotiate);
+  send_negotiate();
 }
 
 void OrderEntry::operator()(io::net::ConnectionManager::Disconnected const &) {
@@ -322,6 +305,64 @@ void OrderEntry::operator()(ConnectionStatus status) {
     log::info("stream_status={}"sv, stream_status);
     create_trace_and_dispatch(handler_, trace_info, stream_status);
   }
+}
+
+//
+
+void OrderEntry::send_negotiate() {
+  uuid_ = clock::get_realtime();
+  auto canonical_message = tools::CanonicalMessage{
+      .request_timestamp = uuid_,
+      .uuid = utils::safe_cast{uuid_.count()},
+      .session = authenticator_.get_login(),
+      .firm_id = flags::iLink::ilink_firm(),
+      .trading_system_name = {},
+      .trading_system_version = {},
+      .trading_system_vendor = {},
+      .next_seq_no = {},
+      .keep_alive_interval = {},
+  };
+  auto hmac_signature = authenticator_.create_signature(canonical_message);
+  auto negotiate = ilink::Negotiate{
+      .hmac_signature = hmac_signature,
+      .access_key_id = authenticator_.get_password(),
+      .uuid = canonical_message.uuid,
+      .request_timestamp = canonical_message.request_timestamp,
+      .session = canonical_message.session,
+      .firm = canonical_message.firm_id,
+  };
+  log::info("negotiate={}"sv, negotiate);
+  send(negotiate);
+}
+
+void OrderEntry::send_establish() {
+  auto canonical_message = tools::CanonicalMessage{
+      .request_timestamp = uuid_,
+      .uuid = utils::safe_cast{uuid_.count()},
+      .session = authenticator_.get_login(),
+      .firm_id = flags::iLink::ilink_firm(),
+      .trading_system_name = ROQ_PACKAGE_NAME,
+      .trading_system_version = ROQ_BUILD_VERSION,
+      .trading_system_vendor = "ROQ"sv,
+      .next_seq_no = 1,
+      .keep_alive_interval = 30s,
+  };
+  auto hmac_signature = authenticator_.create_signature(canonical_message);
+  auto establish = ilink::Establish{
+      .hmac_signature = hmac_signature,
+      .access_key_id = authenticator_.get_password(),
+      .trading_system_name = canonical_message.trading_system_name,
+      .trading_system_version = canonical_message.trading_system_version,
+      .trading_system_vendor = canonical_message.trading_system_vendor,
+      .uuid = canonical_message.uuid,
+      .request_timestamp = canonical_message.request_timestamp,
+      .next_seq_no = canonical_message.next_seq_no,
+      .session = canonical_message.session,
+      .firm = canonical_message.firm_id,
+      .keep_alive_interval = canonical_message.keep_alive_interval,
+  };
+  log::info("establish={}"sv, establish);
+  send(establish);
 }
 
 template <typename T>

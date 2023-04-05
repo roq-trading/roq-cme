@@ -1,8 +1,8 @@
 /* Copyright (c) 2017-2023, Hans Erik Thrane */
 
-#include "roq/cme/ilink/negotiate.hpp"
+#include "roq/cme/ilink/establish.hpp"
 
-#include <cme_ilink/Negotiate500.h>
+#include <cme_ilink/Establish503.h>
 
 using namespace std::literals;
 
@@ -10,18 +10,24 @@ namespace roq {
 namespace cme {
 namespace ilink {
 
-std::span<std::byte const> Negotiate::encode(std::span<std::byte> const &buffer) const {
-  using value_type = cme_ilink::Negotiate500;
+std::span<std::byte const> Establish::encode(std::span<std::byte> const &buffer) const {
+  using value_type = cme_ilink::Establish503;
   value_type value;
   std::string_view tmp{reinterpret_cast<char const *>(std::data(hmac_signature)), std::size(hmac_signature)};
   auto &result = value.wrapAndApplyHeader(reinterpret_cast<char *>(std::data(buffer)), 0, std::size(buffer));
   result  //
-      .putHMACSignature(tmp)
+      .putHMACSignature(
+          std::string_view{reinterpret_cast<char const *>(std::data(hmac_signature)), std::size(hmac_signature)})
       .putAccessKeyID(access_key_id)
+      .putTradingSystemName(trading_system_name)
+      .putTradingSystemVersion(trading_system_version)
+      .putTradingSystemVendor(trading_system_vendor)
       .uUID(uuid)
       .requestTimestamp(request_timestamp.count())
+      .nextSeqNo(next_seq_no)
       .putSession(session)
-      .putFirm(firm);
+      .putFirm(firm)
+      .keepAliveInterval(keep_alive_interval.count());
   return std::span{std::data(buffer), value_type::sbeBlockAndHeaderLength()};
 }
 
