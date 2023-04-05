@@ -13,6 +13,7 @@ set(SOURCES
     new_order_single.cpp
     secdef.cpp
     snapshot_full_refresh.cpp
+    tools_crypto.cpp
     main.cpp)
 
 roq_gitignore(OUTPUT ".gitignore" SOURCES "${TARGET_NAME}")
@@ -24,6 +25,7 @@ target_link_libraries(
   "${PROJECT_NAME}-secdef"
   "${PROJECT_NAME}-mdp"
   "${PROJECT_NAME}-ilink"
+  "${PROJECT_NAME}-tools"
   roq-server::roq-server
   roq-core::roq-core
   roq-io::roq-io

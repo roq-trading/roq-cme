@@ -7,7 +7,9 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-#include <roq/core/hash/sha256.hpp>
+#include "roq/debug/hex/message.hpp"
+
+#include "roq/core/hash/sha256.hpp"
 
 #include "roq/cme/tools/crypto.hpp"
 
@@ -29,13 +31,19 @@ TEST_CASE("simple", "[tools_crypto]") {
   tools::Crypto crypto{SECRET};
   std::vector<std::byte> buffer(4096);
   auto message = tools::CanonicalMessage{
-      .request_timestamp = {},
+      .request_timestamp = 1563720650008ms,
+      .uuid = 1563720660068,
+      .session = "ABC"sv,
+      .firm_id = "007"sv,
+      .trading_system_name = {},
+      .trading_version_id = {},
+      .trading_system_vendor_id = {},
+      .next_seq_no = 1,
+      .keep_alive_interval = 30s,
   };
-
   auto signature = crypto.create_signature(buffer, message);
-  /*
-  auto expected =
-      "?timestamp=1674303865000&signature=fa3ec135cd0ca6fd1267e30feb51147885209b0ee6c997ace0a6c7694b29736f"sv;
-  CHECK(query == expected);
-  */
+  auto tmp = fmt::format("{}"sv, debug::hex::Message{signature});
+  auto const expected = R"(\x42\x99\x33\x00\x7b\xf5\xdd\xd8\xc4\xff\xc3\x5f\x94\x23\x43\x8c)"
+                        R"(\x25\x2a\xa9\xb4\x36\xd2\x2b\xfa\xf5\xf4\xe7\xea\xcb\xbb\x0b\x64)"sv;
+  CHECK(tmp == expected);
 }
