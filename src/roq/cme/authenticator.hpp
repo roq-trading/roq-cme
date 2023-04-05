@@ -21,6 +21,8 @@ struct Authenticator final {
   Authenticator(Authenticator const &) = delete;
 
   std::string_view get_account() const { return account_; }
+  std::string_view get_login() const { return login_; }
+  std::string_view get_password() const { return password_; }
 
   inline std::span<std::byte const> create_signature(tools::CanonicalMessage const &message) {
     return crypto_.create_signature(encode_buffer_, message);
@@ -28,6 +30,8 @@ struct Authenticator final {
 
  private:
   std::string const account_;
+  std::string const login_;
+  std::string const password_;
   tools::Crypto crypto_;
   std::vector<std::byte> encode_buffer_;
 };

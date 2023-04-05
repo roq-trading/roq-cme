@@ -5,11 +5,9 @@ symbols = [
 [accounts]
 
   [accounts.A1]
-  master = true
-  #login = "2tZQEQRV"
-  #secret = "saQaP6WmDefitTmd6DcAqnhJFtpC9eubZ3bzYm21af4"
-  login = "Npu-0mAR"
-  secret = "NExsbfKHjTqisZ9qJL8c2_15yk4brIrooxQ1n9uoW7M"
+  login = "M9H"
+  password = "uaxIRXP9SuJZ02z7cVN1"
+  secret = "6YPQyMHZH8_bVh_rJ6N250cNXy901j_zYnuVsKrFz00"
   symbols = ".*"
 
 [users]

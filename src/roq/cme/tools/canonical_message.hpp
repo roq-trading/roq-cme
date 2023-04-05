@@ -11,7 +11,7 @@ namespace tools {
 
 struct CanonicalMessage final {
   std::chrono::milliseconds request_timestamp = {};
-  uint64_t uuid = {};
+  int64_t uuid = {};
   std::string_view session;
   std::string_view firm_id;
   std::string_view trading_system_name;

@@ -18,6 +18,8 @@ struct Config final : public server::Config, public server::ConfigReader::Handle
 
   Account const &get_master_account() const;
 
+  std::string const &get_login(Account const &) const;
+  std::string const &get_password(Account const &) const;
   std::string const &get_secret(Account const &) const;
 
  protected:

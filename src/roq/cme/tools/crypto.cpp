@@ -32,7 +32,7 @@ template <typename R>
 R create_hmac(auto const &access_secret) {
   std::vector<std::byte> buffer;
   buffer.resize(core::codec::Base64::get_max_binary_length(std::size(access_secret)));
-  auto key = core::codec::Base64::decode(buffer, access_secret, false, false);
+  auto key = core::codec::Base64::decode(buffer, access_secret, true, true);
   return R{key};
 }
 }  // namespace

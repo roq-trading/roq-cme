@@ -36,4 +36,5 @@ $PREFIX "./roq-cme" \
   --multicast_channel_ids "310" \
   --multicast_config_file "$MULTICAST_CONFIG_FILE" \
   --multicast_local_interface "1.2.3.4" \
+  --ilink_firm "ROQL" \
   $@

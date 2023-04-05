@@ -96,6 +96,9 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public ili
  private:
   void operator()(ConnectionStatus);
 
+  template <typename T>
+  void send(T const &);
+
  private:
   Handler &handler_;
   // config
@@ -107,6 +110,7 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public ili
   // buffers
   core::Buffer decode_buffer_;
   std::string encode_buffer_;
+  std::vector<std::byte> encode_buffer_2_;
   // metrics
   struct {
     core::metrics::Counter disconnect;

@@ -10,6 +10,10 @@
 
 #include "roq/cme/flags/ilink.hpp"
 
+#include "roq/cme/ilink/session.hpp"
+
+#include "roq/cme/ilink/negotiate.hpp"
+
 using namespace std::literals;
 
 using namespace fmt::literals;
@@ -73,7 +77,7 @@ OrderEntry::OrderEntry(
     : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_, authenticator.get_account())},
       connection_factory_{create_connection_factory(context)},
       connection_manager_{create_connection_manager(*this, *connection_factory_)},
-      decode_buffer_{flags::iLink::decode_buffer_size()},
+      decode_buffer_{flags::iLink::decode_buffer_size()}, encode_buffer_2_(flags::iLink::encode_buffer_size()),
       counter_{
           .disconnect = create_metrics(name_, "disconnect"sv),
       },
@@ -152,31 +156,58 @@ void OrderEntry::operator()(metrics::Writer &writer) {
 
 // session
 
-void OrderEntry::operator()(Trace<cme_ilink::NegotiationResponse501> const &) {
+void OrderEntry::operator()(Trace<cme_ilink::NegotiationResponse501> const &event) {
+  using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+  auto &[trace_info, value] = event;
+  log::info("negotiation_response_501={}"sv, const_cast<value_type &>(value));
 }
 
-void OrderEntry::operator()(Trace<cme_ilink::NegotiationReject502> const &) {
+void OrderEntry::operator()(Trace<cme_ilink::NegotiationReject502> const &event) {
+  using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+  auto &[trace_info, value] = event;
+  log::info("negotiation_reject_502={}"sv, const_cast<value_type &>(value));
 }
 
-void OrderEntry::operator()(Trace<cme_ilink::EstablishmentAck504> const &) {
+void OrderEntry::operator()(Trace<cme_ilink::EstablishmentAck504> const &event) {
+  using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+  auto &[trace_info, value] = event;
+  log::info("establishment_ack_504={}"sv, const_cast<value_type &>(value));
 }
 
-void OrderEntry::operator()(Trace<cme_ilink::EstablishmentReject505> const &) {
+void OrderEntry::operator()(Trace<cme_ilink::EstablishmentReject505> const &event) {
+  using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+  auto &[trace_info, value] = event;
+  log::info("establishment_reject_505={}"sv, const_cast<value_type &>(value));
 }
 
-void OrderEntry::operator()(Trace<cme_ilink::Sequence506> const &) {
+void OrderEntry::operator()(Trace<cme_ilink::Sequence506> const &event) {
+  using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+  auto &[trace_info, value] = event;
+  log::info("sequence_506={}"sv, const_cast<value_type &>(value));
 }
 
-void OrderEntry::operator()(Trace<cme_ilink::Terminate507> const &) {
+void OrderEntry::operator()(Trace<cme_ilink::Terminate507> const &event) {
+  using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+  auto &[trace_info, value] = event;
+  log::info("terminate_507={}"sv, const_cast<value_type &>(value));
 }
 
-void OrderEntry::operator()(Trace<cme_ilink::Retransmission509> const &) {
+void OrderEntry::operator()(Trace<cme_ilink::Retransmission509> const &event) {
+  using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+  auto &[trace_info, value] = event;
+  log::info("retransmission_509={}"sv, const_cast<value_type &>(value));
 }
 
-void OrderEntry::operator()(Trace<cme_ilink::RetransmitReject510> const &) {
+void OrderEntry::operator()(Trace<cme_ilink::RetransmitReject510> const &event) {
+  using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+  auto &[trace_info, value] = event;
+  log::info("retransmit_reject_510={}"sv, const_cast<value_type &>(value));
 }
 
-void OrderEntry::operator()(Trace<cme_ilink::NotApplied513> const &) {
+void OrderEntry::operator()(Trace<cme_ilink::NotApplied513> const &event) {
+  using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+  auto &[trace_info, value] = event;
+  log::info("not_applied_513={}"sv, const_cast<value_type &>(value));
 }
 
 // business
@@ -229,6 +260,27 @@ void OrderEntry::operator()(Trace<cme_ilink::SecurityDefinitionResponse561> cons
 }
 
 void OrderEntry::operator()(io::net::ConnectionManager::Connected const &) {
+  auto timestamp = clock::get_realtime<std::chrono::milliseconds>();
+  auto canonical_message = tools::CanonicalMessage{
+      .request_timestamp = timestamp,
+      .uuid = timestamp.count(),
+      .session = authenticator_.get_login(),
+      .firm_id = flags::iLink::ilink_firm(),
+      .trading_system_name = "ROQ"sv,
+      .trading_version_id = "0.9.3"sv,
+      .trading_system_vendor_id = "ROQ"sv,
+      .next_seq_no = 1,
+      .keep_alive_interval = 30s,
+  };
+  auto signature = authenticator_.create_signature(canonical_message);
+  auto negotiate = ilink::Negotiate{
+      .signature = {},
+      .uuid = timestamp.count(),
+      .request_timestamp = timestamp,
+      .session = authenticator_.get_login(),
+      .firm = flags::iLink::ilink_firm(),
+  };
+  send(negotiate);
 }
 
 void OrderEntry::operator()(io::net::ConnectionManager::Disconnected const &) {
@@ -270,6 +322,13 @@ void OrderEntry::operator()(ConnectionStatus status) {
     log::info("stream_status={}"sv, stream_status);
     create_trace_and_dispatch(handler_, trace_info, stream_status);
   }
+}
+
+template <typename T>
+void OrderEntry::send(T const &value) {
+  auto message = value.encode(encode_buffer_2_);
+  log::info("{}"sv, debug::hex::Message{message});
+  (*connection_manager_).send(message);
 }
 
 }  // namespace cme

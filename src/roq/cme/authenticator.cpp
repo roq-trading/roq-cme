@@ -14,7 +14,8 @@ auto const ENCODE_BUFFER_LENGTH = size_t{512};
 // === IMPLEMENTATION ===
 
 Authenticator::Authenticator(Config const &config, std::string_view const &account)
-    : account_{account}, crypto_{config.get_secret(account_)}, encode_buffer_(ENCODE_BUFFER_LENGTH) {
+    : account_{account}, login_{config.get_login(account_)}, password_{config.get_password(account_)},
+      crypto_{config.get_secret(account_)}, encode_buffer_(ENCODE_BUFFER_LENGTH) {
 }
 
 }  // namespace cme
