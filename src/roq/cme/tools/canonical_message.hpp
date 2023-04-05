@@ -9,7 +9,7 @@ namespace roq {
 namespace cme {
 namespace tools {
 
-struct Canonical final {
+struct CanonicalMessage final {
   std::chrono::milliseconds request_timestamp = {};
   uint64_t uuid = {};
   std::string_view session;

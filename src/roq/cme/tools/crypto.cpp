@@ -42,9 +42,11 @@ R create_hmac(auto const &access_secret) {
 Crypto::Crypto(std::string_view const &secret) : mac_{create_hmac<decltype(mac_)>(secret)} {
 }
 
-std::span<std::byte const> Crypto::create_signature(std::span<std::byte> const &buffer, Canonical const &message) {
+std::span<std::byte const> Crypto::create_signature(
+    std::span<std::byte> const &buffer, CanonicalMessage const &message) {
   core::text::Writer writer{buffer};
-  writer.write(message.request_timestamp.count())
+  writer  //
+      .write(message.request_timestamp.count())
       .write('\n')
       .write(message.uuid)
       .write('\n')

@@ -4,14 +4,15 @@ set(SOURCES
     ilink_config_reader.cpp
     incremental.cpp
     mbofd_recovery.cpp
-    snapshot_full_refresh.cpp
     md_incremental_refresh_book.cpp
     md_incremental_refresh_trade_summary.cpp
     md_instrument_definition.cpp
     mdp_config_reader.cpp
     mdp.cpp
+    negotiate.cpp
     new_order_single.cpp
     secdef.cpp
+    snapshot_full_refresh.cpp
     main.cpp)
 
 roq_gitignore(OUTPUT ".gitignore" SOURCES "${TARGET_NAME}")

@@ -8,7 +8,7 @@
 
 #include "roq/core/mac/hmac.hpp"
 
-#include "roq/cme/tools/canonical.hpp"
+#include "roq/cme/tools/canonical_message.hpp"
 
 namespace roq {
 namespace cme {
@@ -20,7 +20,7 @@ struct Crypto final {
   Crypto(Crypto &&) = delete;
   Crypto(Crypto const &) = delete;
 
-  std::span<std::byte const> create_signature(std::span<std::byte> const &buffer, Canonical const &);
+  std::span<std::byte const> create_signature(std::span<std::byte> const &buffer, CanonicalMessage const &);
 
  private:
   using MAC = core::mac::HMAC<core::hash::SHA256>;
