@@ -7,6 +7,8 @@
 #include "roq/utils/safe_cast.hpp"
 #include "roq/utils/update.hpp"
 
+#include "roq/core/byte_order.hpp"
+
 #include "roq/core/metrics/factory.hpp"
 
 #include "roq/cme/flags/ilink.hpp"
@@ -369,7 +371,20 @@ template <typename T>
 void OrderEntry::send(T const &value) {
   auto message = value.encode(encode_buffer_2_);
   log::info("{}"sv, debug::hex::Message{message});
-  (*connection_manager_).send(message);
+  struct SOFH final {
+    uint16_t message_length = {};
+    uint8_t dummy_1 = 0xFE;
+    uint8_t dummy_2 = 0xCA;
+  } sofh{
+      .message_length = utils::safe_cast{core::host_to_little_endian(sizeof(message))},
+  };
+  static_assert(sizeof(SOFH) == 4);
+  std::array<std::span<std::byte const>, 2> data{{
+      {reinterpret_cast<std::byte const *>(&sofh), sizeof(sofh)},
+      message,
+  }};
+  std::span<std::span<std::byte const> const> tmp{data};  // XXX HANS fix this
+  (*connection_manager_).send(tmp);
 }
 
 }  // namespace cme
