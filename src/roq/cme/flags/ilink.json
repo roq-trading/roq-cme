@@ -22,7 +22,7 @@
       "name": "test_uri",
       "type": "roq::io::web::URI",
       "validator": "roq::core::flags::URI",
-      "default": "tcp://69.50.112.179:65301",
+      "default": "tcp://69.50.112.198:65301",
       "description": "MSGW end-point (URI)"
     },
     {

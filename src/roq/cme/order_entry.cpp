@@ -371,12 +371,13 @@ template <typename T>
 void OrderEntry::send(T const &value) {
   auto message = value.encode(encode_buffer_2_);
   log::info("{}"sv, debug::hex::Message{message});
+  uint16_t length = utils::safe_cast{sizeof(message) + 4};
   struct SOFH final {
-    uint16_t message_length = {};
+    uint16_t message_length;
     uint8_t dummy_1 = 0xFE;
     uint8_t dummy_2 = 0xCA;
   } sofh{
-      .message_length = utils::safe_cast{core::host_to_little_endian(sizeof(message))},
+      .message_length = core::host_to_little_endian(length),
   };
   static_assert(sizeof(SOFH) == 4);
   std::array<std::span<std::byte const>, 2> data{{
