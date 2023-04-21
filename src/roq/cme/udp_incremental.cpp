@@ -678,8 +678,10 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
               .exchange = security.exchange,
               .symbol = security.symbol,
               .layer = layer,
+              .update_type = UpdateType::SNAPSHOT,
               .exchange_time_utc = exchange_time_utc,
               .exchange_sequence = exchange_sequence,
+              .sending_time_utc = frame.sending_time,
           };
           create_trace_and_dispatch(handler_, trace_info, std::as_const(top_of_book), is_last);
           layer = {};
