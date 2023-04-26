@@ -76,6 +76,11 @@ struct Gateway final : public server::Handler,
   void operator()(Trace<StatisticsUpdate> const &, bool is_last) override;
   void operator()(Trace<oms::TradeUpdate> const &, uint16_t stream_id, bool is_last, uint8_t user_id) override;
 
+  // utilities
+
+  template <typename... Args>
+  void dispatch(Args &&...);
+
  private:
   server::Dispatcher &dispatcher_;
   // config

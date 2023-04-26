@@ -93,43 +93,16 @@ Gateway::Gateway(server::Dispatcher &dispatcher, Config const &config, io::Conte
 
 void Gateway::operator()(Event<Start> const &event) {
   log::info("Starting..."sv);
-  for (auto &item : udp_incremental_)
-    (*item)(event);
-  for (auto &item : udp_instrument_definition_)
-    (*item)(event);
-  for (auto &item : udp_mbp_market_recovery_)
-    (*item)(event);
-  for (auto &item : udp_mbo_market_recovery_)
-    (*item)(event);
-  for (auto &[_, item] : order_entry_)
-    (*item)(event);
+  dispatch(event);
 }
 
 void Gateway::operator()(Event<Stop> const &event) {
   log::info("Stopping..."sv);
-  for (auto &[_, item] : order_entry_)
-    (*item)(event);
-  for (auto &item : udp_mbo_market_recovery_)
-    (*item)(event);
-  for (auto &item : udp_mbp_market_recovery_)
-    (*item)(event);
-  for (auto &item : udp_instrument_definition_)
-    (*item)(event);
-  for (auto &item : udp_incremental_)
-    (*item)(event);
+  dispatch(event);
 }
 
 void Gateway::operator()(Event<Timer> const &event) {
-  for (auto &item : udp_incremental_)
-    (*item)(event);
-  for (auto &item : udp_instrument_definition_)
-    (*item)(event);
-  for (auto &item : udp_mbp_market_recovery_)
-    (*item)(event);
-  for (auto &item : udp_mbo_market_recovery_)
-    (*item)(event);
-  for (auto &[_, item] : order_entry_)
-    (*item)(event);
+  dispatch(event);
 }
 
 void Gateway::operator()(Event<Connected> const &) {
@@ -175,16 +148,7 @@ uint16_t Gateway::operator()(Event<CancelAllOrders> const &event, [[maybe_unused
 }
 
 void Gateway::operator()(metrics::Writer &writer) {
-  for (auto &item : udp_incremental_)
-    (*item)(writer);
-  for (auto &item : udp_instrument_definition_)
-    (*item)(writer);
-  for (auto &item : udp_mbp_market_recovery_)
-    (*item)(writer);
-  for (auto &item : udp_mbo_market_recovery_)
-    (*item)(writer);
-  for (auto &[_, item] : order_entry_)
-    (*item)(writer);
+  dispatch(writer);
 }
 
 void Gateway::operator()(Trace<StreamStatus> const &event) {
@@ -226,6 +190,20 @@ void Gateway::operator()(Trace<StatisticsUpdate> const &event, bool is_last) {
 }
 
 void Gateway::operator()(Trace<oms::TradeUpdate> const &, uint16_t stream_id, bool is_last, uint8_t user_id) {
+}
+
+template <typename... Args>
+void Gateway::dispatch(Args &&...args) {
+  for (auto &item : udp_incremental_)
+    (*item)(std::forward<Args>(args)...);
+  for (auto &item : udp_instrument_definition_)
+    (*item)(std::forward<Args>(args)...);
+  for (auto &item : udp_mbp_market_recovery_)
+    (*item)(std::forward<Args>(args)...);
+  for (auto &item : udp_mbo_market_recovery_)
+    (*item)(std::forward<Args>(args)...);
+  for (auto &[_, item] : order_entry_)
+    (*item)(std::forward<Args>(args)...);
 }
 
 }  // namespace cme
