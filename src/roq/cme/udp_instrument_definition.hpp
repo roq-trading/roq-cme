@@ -95,7 +95,8 @@ struct UDPInstrumentDefinition final : public io::net::udp::Receiver::Handler, p
   uint16_t const stream_id_;
   std::string const name_;
   // receiver
-  std::unique_ptr<io::net::udp::Receiver> receiver_;
+  std::unique_ptr<io::net::udp::Receiver> const receiver_;
+  // buffer
   io::Buffer receive_buffer_;
   // metrics
   struct {

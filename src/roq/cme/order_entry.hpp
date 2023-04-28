@@ -16,7 +16,7 @@
 
 #include "roq/server.hpp"
 
-#include "roq/cme/authenticator.hpp"
+#include "roq/cme/account.hpp"
 #include "roq/cme/shared.hpp"
 
 #include "roq/cme/ilink/parser.hpp"
@@ -31,7 +31,7 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public ili
     virtual void operator()(Trace<oms::TradeUpdate> const &, uint16_t stream_id, bool is_last, uint8_t user_id) = 0;
   };
 
-  OrderEntry(Handler &, io::Context &, uint16_t stream_id, Authenticator &, Shared &);
+  OrderEntry(Handler &, io::Context &, uint16_t stream_id, Account &, Shared &);
 
   OrderEntry(OrderEntry const &) = delete;
   OrderEntry(OrderEntry &&) = delete;
@@ -108,8 +108,8 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public ili
   uint16_t const stream_id_;
   Source const name_;
   // connection
-  std::unique_ptr<io::net::ConnectionFactory> connection_factory_;
-  std::unique_ptr<io::net::ConnectionManager> connection_manager_;
+  std::unique_ptr<io::net::ConnectionFactory> const connection_factory_;
+  std::unique_ptr<io::net::ConnectionManager> const connection_manager_;
   // buffers
   core::Buffer decode_buffer_;
   std::string encode_buffer_;
@@ -132,8 +132,8 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public ili
   struct {
     uint64_t msg_seq_num = {};
   } inbound_;
-  // authenticator
-  Authenticator &authenticator_;
+  // account
+  Account &account_;
   // cache
   Shared &shared_;
   // state

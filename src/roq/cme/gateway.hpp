@@ -12,7 +12,7 @@
 
 #include "roq/io/context.hpp"
 
-#include "roq/cme/authenticator.hpp"
+#include "roq/cme/account.hpp"
 #include "roq/cme/channel.hpp"
 #include "roq/cme/config.hpp"
 #include "roq/cme/shared.hpp"
@@ -83,9 +83,8 @@ struct Gateway final : public server::Handler,
 
  private:
   server::Dispatcher &dispatcher_;
-  // config
-  // authentication
-  absl::flat_hash_map<Account, std::unique_ptr<Authenticator>> authenticator_;
+  // accounts
+  absl::flat_hash_map<std::string, std::unique_ptr<Account>> const accounts_;
   // io
   io::Context &context_;
   // shared
@@ -98,7 +97,7 @@ struct Gateway final : public server::Handler,
   std::vector<std::unique_ptr<UDPInstrumentDefinition>> udp_instrument_definition_;
   std::vector<std::unique_ptr<UDPMBPMarketRecovery>> udp_mbp_market_recovery_;
   std::vector<std::unique_ptr<UDPMBOMarketRecovery>> udp_mbo_market_recovery_;
-  absl::flat_hash_map<Account, std::unique_ptr<OrderEntry>> order_entry_;
+  absl::flat_hash_map<std::string, std::unique_ptr<OrderEntry>> order_entry_;
   // cache
   std::vector<MBPUpdate> bids_, asks_;
   std::vector<MBOUpdate> orders_;

@@ -76,9 +76,8 @@ struct create_metrics final : public core::metrics::Factory {
 
 // === IMPLEMENTATION ===
 
-OrderEntry::OrderEntry(
-    Handler &handler, io::Context &context, uint16_t stream_id, Authenticator &authenticator, Shared &shared)
-    : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_, authenticator.get_account())},
+OrderEntry::OrderEntry(Handler &handler, io::Context &context, uint16_t stream_id, Account &account, Shared &shared)
+    : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_, account.get_name())},
       connection_factory_{create_connection_factory(context)},
       connection_manager_{create_connection_manager(*this, *connection_factory_)},
       decode_buffer_{flags::iLink::decode_buffer_size()}, encode_buffer_2_(flags::iLink::encode_buffer_size()),
@@ -96,7 +95,7 @@ OrderEntry::OrderEntry(
       latency_{
           .ping = create_metrics(name_, "ping"sv),
       },
-      authenticator_{authenticator}, shared_{shared} {
+      account_{account}, shared_{shared} {
 }
 
 void OrderEntry::operator()(Event<Start> const &) {
@@ -292,7 +291,7 @@ void OrderEntry::operator()(ConnectionStatus status) {
     TraceInfo trace_info;
     auto stream_status = StreamStatus{
         .stream_id = stream_id_,
-        .account = authenticator_.get_account(),
+        .account = account_.get_name(),
         .supports = SUPPORTS,
         .transport = Transport::TCP,
         .protocol = Protocol::FIX,
@@ -316,7 +315,7 @@ void OrderEntry::send_negotiate() {
   auto canonical_message = tools::CanonicalMessage{
       .request_timestamp = uuid_,
       .uuid = utils::safe_cast{uuid_.count()},
-      .session = authenticator_.get_login(),
+      .session = account_.get_login(),
       .firm_id = flags::iLink::ilink_firm(),
       .trading_system_name = {},
       .trading_system_version = {},
@@ -324,10 +323,10 @@ void OrderEntry::send_negotiate() {
       .next_seq_no = {},
       .keep_alive_interval = {},
   };
-  auto hmac_signature = authenticator_.create_signature(canonical_message);
+  auto hmac_signature = account_.create_signature(canonical_message);
   auto negotiate = ilink::Negotiate{
       .hmac_signature = hmac_signature,
-      .access_key_id = authenticator_.get_password(),
+      .access_key_id = account_.get_password(),
       .uuid = canonical_message.uuid,
       .request_timestamp = canonical_message.request_timestamp,
       .session = canonical_message.session,
@@ -341,7 +340,7 @@ void OrderEntry::send_establish() {
   auto canonical_message = tools::CanonicalMessage{
       .request_timestamp = uuid_,
       .uuid = utils::safe_cast{uuid_.count()},
-      .session = authenticator_.get_login(),
+      .session = account_.get_login(),
       .firm_id = flags::iLink::ilink_firm(),
       .trading_system_name = ROQ_PACKAGE_NAME,
       .trading_system_version = ROQ_BUILD_VERSION,
@@ -349,10 +348,10 @@ void OrderEntry::send_establish() {
       .next_seq_no = 1,
       .keep_alive_interval = 30s,
   };
-  auto hmac_signature = authenticator_.create_signature(canonical_message);
+  auto hmac_signature = account_.create_signature(canonical_message);
   auto establish = ilink::Establish{
       .hmac_signature = hmac_signature,
-      .access_key_id = authenticator_.get_password(),
+      .access_key_id = account_.get_password(),
       .trading_system_name = canonical_message.trading_system_name,
       .trading_system_version = canonical_message.trading_system_version,
       .trading_system_vendor = canonical_message.trading_system_vendor,

@@ -128,7 +128,7 @@ struct UDPIncremental final : public io::net::udp::Receiver::Handler, public mdp
   std::string const name_;
   bool const market_by_order_;
   // receiver
-  std::unique_ptr<io::net::udp::Receiver> receiver_;
+  std::unique_ptr<io::net::udp::Receiver> const receiver_;
   // metrics
   struct {
     core::metrics::Counter disconnect, sequence_reset;

@@ -14,13 +14,13 @@
 namespace roq {
 namespace cme {
 
-struct Authenticator final {
-  Authenticator(Config const &, std::string_view const &account);
+struct Account final {
+  Account(Config const &, std::string_view const &name);
 
-  Authenticator(Authenticator &&) = delete;
-  Authenticator(Authenticator const &) = delete;
+  Account(Account &&) = delete;
+  Account(Account const &) = delete;
 
-  std::string_view get_account() const { return account_; }
+  std::string_view get_name() const { return name_; }
   std::string_view get_login() const { return login_; }
   std::string_view get_password() const { return password_; }
 
@@ -29,7 +29,7 @@ struct Authenticator final {
   }
 
  private:
-  std::string const account_;
+  std::string const name_;
   std::string const login_;
   std::string const password_;
   tools::Crypto crypto_;

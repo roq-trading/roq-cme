@@ -35,6 +35,7 @@ auto create_udp_incremental(auto &gateway, auto &context, auto &stream_id, auto 
   }
   return result;
 }
+
 auto create_udp_instrument_definition(auto &gateway, auto &context, auto &stream_id, auto &shared, auto &channels) {
   std::vector<std::unique_ptr<UDPInstrumentDefinition>> result;
   if (std::empty(flags::Common::secdef_config_file())) {
@@ -63,18 +64,20 @@ auto create_udp_mbo_market_recovery(auto &gateway, auto &context, auto &stream_i
 }
 
 template <typename R>
-auto create_authenticator(auto const &config) {
-  R result;
+R create_accounts(auto const &config) {
+  using result_type = std::remove_cvref<R>::type;
+  result_type result;
   for (auto &[_, account] : config.accounts)
-    result.try_emplace(account.name, std::make_unique<Authenticator>(config, account.name));
+    result.try_emplace(account.name, std::make_unique<Account>(config, account.name));
   return result;
 }
 
 template <typename R>
-auto create_order_entry(auto &gateway, auto &context, auto &stream_id, auto &authenticator_by_name, auto &shared) {
-  R result;
-  for (auto &[account, authenticator] : authenticator_by_name)
-    result.try_emplace(account, std::make_unique<OrderEntry>(gateway, context, ++stream_id, *authenticator, shared));
+R create_order_entry(auto &gateway, auto &context, auto &stream_id, auto &accounts, auto &shared) {
+  using result_type = std::remove_cvref<R>::type;
+  result_type result;
+  for (auto &[name, account] : accounts)
+    result.try_emplace(name, std::make_unique<OrderEntry>(gateway, context, ++stream_id, *account, shared));
   return result;
 }
 }  // namespace
@@ -82,13 +85,13 @@ auto create_order_entry(auto &gateway, auto &context, auto &stream_id, auto &aut
 // === IMPLEMENTATION ===
 
 Gateway::Gateway(server::Dispatcher &dispatcher, Config const &config, io::Context &context)
-    : dispatcher_{dispatcher}, authenticator_{create_authenticator<decltype(authenticator_)>(config)},
-      context_{context}, shared_{dispatcher_}, channels_{create_channels()},
+    : dispatcher_{dispatcher}, accounts_{create_accounts<decltype(accounts_)>(config)}, context_{context},
+      shared_{dispatcher_}, channels_{create_channels()},
       udp_incremental_{create_udp_incremental(*this, context_, stream_id_, shared_, channels_)},
       udp_instrument_definition_{create_udp_instrument_definition(*this, context_, stream_id_, shared_, channels_)},
       udp_mbp_market_recovery_{create_udp_mbp_market_recovery(*this, context_, stream_id_, shared_, channels_)},
       udp_mbo_market_recovery_{create_udp_mbo_market_recovery(*this, context_, stream_id_, shared_, channels_)},
-      order_entry_{create_order_entry<decltype(order_entry_)>(*this, context_, stream_id_, authenticator_, shared_)} {
+      order_entry_{create_order_entry<decltype(order_entry_)>(*this, context_, stream_id_, accounts_, shared_)} {
 }
 
 void Gateway::operator()(Event<Start> const &event) {
@@ -194,16 +197,17 @@ void Gateway::operator()(Trace<oms::TradeUpdate> const &, uint16_t stream_id, bo
 
 template <typename... Args>
 void Gateway::dispatch(Args &&...args) {
+  auto helper = [&](auto &target) { target(std::forward<Args>(args)...); };
   for (auto &item : udp_incremental_)
-    (*item)(std::forward<Args>(args)...);
+    helper(*item);
   for (auto &item : udp_instrument_definition_)
-    (*item)(std::forward<Args>(args)...);
+    helper(*item);
   for (auto &item : udp_mbp_market_recovery_)
-    (*item)(std::forward<Args>(args)...);
+    helper(*item);
   for (auto &item : udp_mbo_market_recovery_)
-    (*item)(std::forward<Args>(args)...);
+    helper(*item);
   for (auto &[_, item] : order_entry_)
-    (*item)(std::forward<Args>(args)...);
+    helper(*item);
 }
 
 }  // namespace cme
