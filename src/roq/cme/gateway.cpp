@@ -192,9 +192,6 @@ void Gateway::operator()(Trace<StatisticsUpdate> const &event, bool is_last) {
   dispatcher_(event, is_last);
 }
 
-void Gateway::operator()(Trace<oms::TradeUpdate> const &, uint16_t stream_id, bool is_last, uint8_t user_id) {
-}
-
 template <typename... Args>
 void Gateway::dispatch(Args &&...args) {
   auto helper = [&](auto &target) { target(std::forward<Args>(args)...); };
