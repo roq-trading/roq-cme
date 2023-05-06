@@ -38,8 +38,6 @@ auto const SUPPORTS = Mask{
     SupportType::ORDER,
     SupportType::TRADE,
 };
-
-auto const LOGOUT_RESPONSE = "LOGOUT"sv;
 }  // namespace
 
 // === HELPERS ===
@@ -314,14 +312,14 @@ void OrderEntry::send_negotiate() {
   uuid_ = clock::get_realtime();
   auto canonical_message = tools::CanonicalMessage{
       .request_timestamp = uuid_,
-      .uuid = utils::safe_cast{uuid_.count()},
+      .uuid = static_cast<uint64_t>(uuid_.count()),  // note!
       .session = account_.get_login(),
       .firm_id = flags::iLink::ilink_firm(),
-      .trading_system_name = {},
-      .trading_system_version = {},
-      .trading_system_vendor = {},
-      .next_seq_no = {},
-      .keep_alive_interval = {},
+      .trading_system_name = {},     // note!
+      .trading_system_version = {},  // note!
+      .trading_system_vendor = {},   // note!
+      .next_seq_no = {},             // note!
+      .keep_alive_interval = {},     // note!
   };
   auto hmac_signature = account_.create_signature(canonical_message);
   auto negotiate = ilink::Negotiate{
@@ -339,7 +337,7 @@ void OrderEntry::send_negotiate() {
 void OrderEntry::send_establish() {
   auto canonical_message = tools::CanonicalMessage{
       .request_timestamp = uuid_,
-      .uuid = utils::safe_cast{uuid_.count()},
+      .uuid = static_cast<uint64_t>(uuid_.count()),  // note!
       .session = account_.get_login(),
       .firm_id = flags::iLink::ilink_firm(),
       .trading_system_name = ROQ_PACKAGE_NAME,
