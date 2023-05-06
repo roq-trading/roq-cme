@@ -84,7 +84,7 @@ R create_order_entry(auto &gateway, auto &context, auto &stream_id, auto &accoun
 
 // === IMPLEMENTATION ===
 
-Gateway::Gateway(server::Dispatcher &dispatcher, Config const &config, io::Context &context)
+Gateway::Gateway(server::Dispatcher &dispatcher, Settings const &, Config const &config, io::Context &context)
     : dispatcher_{dispatcher}, accounts_{create_accounts<decltype(accounts_)>(config)}, context_{context},
       shared_{dispatcher_}, channels_{create_channels()},
       udp_incremental_{create_udp_incremental(*this, context_, stream_id_, shared_, channels_)},

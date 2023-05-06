@@ -15,6 +15,7 @@
 #include "roq/cme/account.hpp"
 #include "roq/cme/channel.hpp"
 #include "roq/cme/config.hpp"
+#include "roq/cme/settings.hpp"
 #include "roq/cme/shared.hpp"
 
 #include "roq/cme/udp_incremental.hpp"
@@ -33,7 +34,7 @@ struct Gateway final : public server::Handler,
                        public UDPMBPMarketRecovery::Handler,
                        public UDPMBOMarketRecovery::Handler,
                        public OrderEntry::Handler {
-  Gateway(server::Dispatcher &, Config const &, io::Context &);
+  Gateway(server::Dispatcher &, Settings const &, Config const &, io::Context &);
 
   Gateway(Gateway &&) = delete;
   Gateway(Gateway const &) = delete;
