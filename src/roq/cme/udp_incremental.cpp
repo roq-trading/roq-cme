@@ -38,7 +38,7 @@ auto create_name(auto stream_id, auto &channel_name) {
   return fmt::format("{}:{}"sv, stream_id, channel_name);
 }
 
-auto create_receiver(auto &handler, auto &settings, auto &context, auto &shared, auto &channel_id, Priority priority) {
+auto create_receiver(auto &handler, auto &context, auto &shared, auto &channel_id, Priority priority) {
   log::info(R"(Create channel_id="{}, priority={}")"sv, channel_id, priority);
   auto [multicast_address, port] = shared.get_multicast_config(channel_id, mdp::ConnectionType::INCREMENTAL, priority);
   log::info("Create multicast receiver port={}"sv, port);
@@ -298,7 +298,7 @@ UDPIncremental::UDPIncremental(
     : handler_{handler}, priority_{priority}, channel_name_{channel.get_channel_name(NAME, priority_)},
       stream_id_{stream_id}, name_{create_name(stream_id_, channel_name_)},
       market_by_order_{flags::Common::enable_market_by_order()},
-      receiver_{create_receiver(*this, shared.settings, context, shared, channel.channel_id, priority_)},
+      receiver_{create_receiver(*this, context, shared, channel.channel_id, priority_)},
       counter_{
           .disconnect = create_metrics(shared.settings, name_, "disconnect"sv),
           .sequence_reset = create_metrics(shared.settings, name_, "sequence_reset"sv),

@@ -39,7 +39,7 @@ auto create_name(auto stream_id, auto &channel_name) {
   return fmt::format("{}:{}"sv, stream_id, channel_name);
 }
 
-auto create_receiver(auto &handler, auto &settings, auto &context, auto &shared, auto &channel_id, auto priority) {
+auto create_receiver(auto &handler, auto &context, auto &shared, auto &channel_id, auto priority) {
   log::info(R"(Create channel_id="{}, priority={}")"sv, channel_id, priority);
   auto [multicast_address, port] = shared.get_multicast_config(channel_id, mdp::ConnectionType::SNAPSHOT_MBO, priority);
   log::info("Create multicast receiver port={}"sv, port);
@@ -108,7 +108,7 @@ UDPMBOMarketRecovery::UDPMBOMarketRecovery(
     Handler &handler, io::Context &context, uint16_t stream_id, Shared &shared, Channel &channel)
     : handler_{handler}, channel_name_{channel.get_channel_name(NAME)}, stream_id_{stream_id},
       name_{create_name(stream_id_, channel_name_)},
-      receiver_{create_receiver(*this, shared.settings, context, shared, channel.channel_id, Priority::PRIMARY)},
+      receiver_{create_receiver(*this, context, shared, channel.channel_id, Priority::PRIMARY)},
       counter_{
           .disconnect = create_metrics(shared.settings, name_, "disconnect"sv),
       },
