@@ -21,7 +21,7 @@ auto const TYPE = server::Type::ORDER_MANAGEMENT;
 
 int Application::main(int, char **) {
   auto settings = Settings::create(TYPE);
-  Config config;
+  Config config{settings};
   auto context = server::create_io_context();
   server::Trading<Gateway>{settings, config, *context}.dispatch();
   return EXIT_SUCCESS;

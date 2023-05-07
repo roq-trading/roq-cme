@@ -107,8 +107,8 @@ void read_secdef(T &securities, D &dispatcher) {
 
 // === IMPLEMENTATION ===
 
-Shared::Shared(server::Dispatcher &dispatcher)
-    : dispatcher_{dispatcher}, mdp_config_{flags::Multicast::multicast_config_file()},
+Shared::Shared(server::Dispatcher &dispatcher, Settings const &settings)
+    : dispatcher_{dispatcher}, settings{settings}, mdp_config_{flags::Multicast::multicast_config_file()},
       ilink_config_{read_ilink_config<decltype(ilink_config_)>(flags::iLink::ilink_config_file())},
       buffer(BUFFER_SIZE) {
   read_secdef(securities, dispatcher);

@@ -47,19 +47,19 @@ auto create_name(auto stream_id, auto const &account) {
   return fmt::format("{}:{}:{}"_cf, stream_id, NAME, account);
 }
 
-auto create_connection_factory(auto &context) {
+auto create_connection_factory(auto &settings, auto &context) {
   auto uri = flags::iLink::test_uri();
   auto config = io::net::ConnectionFactory::Config{
       .interface = {},
       .uris = {&uri, 1},
-      .validate_certificate = server::Flags::net_tls_validate_certificate(),
+      .validate_certificate = settings.net.tls_validate_certificate,
   };
   return io::net::ConnectionFactory::create(context, config);
 }
 
-auto create_connection_manager(auto &handler, auto &connection_factory) {
+auto create_connection_manager(auto &handler, auto &settings, auto &connection_factory) {
   auto config = io::net::ConnectionManager::Config{
-      .connection_timeout = server::Flags::net_connection_timeout(),
+      .connection_timeout = settings.net.connection_timeout,
       .disconnect_on_idle_timeout = {},
       .always_reconnect = true,
   };
@@ -67,8 +67,8 @@ auto create_connection_manager(auto &handler, auto &connection_factory) {
 }
 
 struct create_metrics final : public core::metrics::Factory {
-  explicit create_metrics(auto const &group, auto const &function)
-      : core::metrics::Factory(server::Flags::name(), group, function) {}
+  explicit create_metrics(auto &settings, auto const &group, auto const &function)
+      : core::metrics::Factory(settings.app.name, group, function) {}
 };
 }  // namespace
 
@@ -76,22 +76,22 @@ struct create_metrics final : public core::metrics::Factory {
 
 OrderEntry::OrderEntry(Handler &handler, io::Context &context, uint16_t stream_id, Account &account, Shared &shared)
     : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_, account.get_name())},
-      connection_factory_{create_connection_factory(context)},
-      connection_manager_{create_connection_manager(*this, *connection_factory_)},
+      connection_factory_{create_connection_factory(shared.settings, context)},
+      connection_manager_{create_connection_manager(*this, shared.settings, *connection_factory_)},
       decode_buffer_{flags::iLink::decode_buffer_size()}, encode_buffer_2_(flags::iLink::encode_buffer_size()),
       counter_{
-          .disconnect = create_metrics(name_, "disconnect"sv),
+          .disconnect = create_metrics(shared.settings, name_, "disconnect"sv),
       },
       profile_{
-          .parse = create_metrics(name_, "parse"sv),
-          .position_report = create_metrics(name_, "position_report"sv),
-          .execution_report = create_metrics(name_, "execution_report"sv),
-          .order_cancel_reject = create_metrics(name_, "order_cancel_reject"sv),
-          .reject = create_metrics(name_, "reject"sv),
-          .order_mass_cancel_report = create_metrics(name_, "order_mass_cancel_report"sv),
+          .parse = create_metrics(shared.settings, name_, "parse"sv),
+          .position_report = create_metrics(shared.settings, name_, "position_report"sv),
+          .execution_report = create_metrics(shared.settings, name_, "execution_report"sv),
+          .order_cancel_reject = create_metrics(shared.settings, name_, "order_cancel_reject"sv),
+          .reject = create_metrics(shared.settings, name_, "reject"sv),
+          .order_mass_cancel_report = create_metrics(shared.settings, name_, "order_mass_cancel_report"sv),
       },
       latency_{
-          .ping = create_metrics(name_, "ping"sv),
+          .ping = create_metrics(shared.settings, name_, "ping"sv),
       },
       account_{account}, shared_{shared} {
 }

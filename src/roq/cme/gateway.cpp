@@ -84,9 +84,9 @@ R create_order_entry(auto &gateway, auto &context, auto &stream_id, auto &accoun
 
 // === IMPLEMENTATION ===
 
-Gateway::Gateway(server::Dispatcher &dispatcher, Settings const &, Config const &config, io::Context &context)
+Gateway::Gateway(server::Dispatcher &dispatcher, Settings const &settings, Config const &config, io::Context &context)
     : dispatcher_{dispatcher}, accounts_{create_accounts<decltype(accounts_)>(config)}, context_{context},
-      shared_{dispatcher_}, channels_{create_channels()},
+      shared_{dispatcher, settings}, channels_{create_channels()},
       udp_incremental_{create_udp_incremental(*this, context_, stream_id_, shared_, channels_)},
       udp_instrument_definition_{create_udp_instrument_definition(*this, context_, stream_id_, shared_, channels_)},
       udp_mbp_market_recovery_{create_udp_mbp_market_recovery(*this, context_, stream_id_, shared_, channels_)},

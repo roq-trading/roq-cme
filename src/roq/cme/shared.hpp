@@ -13,6 +13,8 @@
 #include "roq/api.hpp"
 #include "roq/server.hpp"
 
+#include "roq/cme/settings.hpp"
+
 #include "roq/cme/tools/security.hpp"
 
 #include "roq/cme/mdp/config.hpp"
@@ -24,6 +26,7 @@ namespace cme {
 
 struct Shared final {
   server::Dispatcher &dispatcher_;
+  Settings const &settings;
 
   mdp::Config mdp_config_;
   absl::flat_hash_map<uint32_t, ilink::ConfigReader::MarketSegment> ilink_config_;
@@ -53,7 +56,7 @@ struct Shared final {
   std::vector<Statistics> statistics;
 
  public:
-  explicit Shared(server::Dispatcher &);
+  Shared(server::Dispatcher &, Settings const &);
 
   Shared(Shared &&) = default;
   Shared(Shared const &) = delete;
