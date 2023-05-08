@@ -4,9 +4,6 @@
 
 #include <utility>
 
-#include "roq/cme/flags/common.hpp"
-#include "roq/cme/flags/multicast.hpp"
-
 using namespace std::literals;
 
 namespace roq {

@@ -6,10 +6,6 @@
 
 #include "roq/utils/safe_cast.hpp"
 
-#include "roq/cme/flags/common.hpp"
-#include "roq/cme/flags/ilink.hpp"
-#include "roq/cme/flags/multicast.hpp"
-
 #include "roq/cme/secdef/config_reader.hpp"
 
 using namespace std::literals;
