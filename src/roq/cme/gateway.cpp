@@ -15,11 +15,11 @@ namespace cme {
 // === HELPERS ===
 
 namespace {
-auto create_channels() {
+auto create_channels(auto &settings) {
   std::vector<Channel> result;
-  auto buffer_size = flags::Multicast::multicast_buffer_size();
-  auto buffer_depth = flags::Multicast::multicast_buffer_depth();
-  auto &channel_ids = flags::Multicast::multicast_channel_ids();
+  auto buffer_size = settings.multicast.buffer_size;
+  auto buffer_depth = settings.multicast.buffer_depth;
+  auto &channel_ids = settings.multicast.channel_ids;
   for (auto &channel_id : channel_ids)
     result.emplace_back(channel_id, buffer_size, buffer_depth);
   return result;
@@ -38,7 +38,7 @@ auto create_udp_incremental(auto &gateway, auto &context, auto &stream_id, auto 
 
 auto create_udp_instrument_definition(auto &gateway, auto &context, auto &stream_id, auto &shared, auto &channels) {
   std::vector<std::unique_ptr<UDPInstrumentDefinition>> result;
-  if (std::empty(flags::Common::secdef_config_file())) {
+  if (std::empty(shared.settings.common.secdef_config_file)) {
     for (auto &channel : channels)
       result.emplace_back(std::make_unique<UDPInstrumentDefinition>(gateway, context, ++stream_id, shared, channel));
   } else {
@@ -56,7 +56,7 @@ auto create_udp_mbp_market_recovery(auto &gateway, auto &context, auto &stream_i
 
 auto create_udp_mbo_market_recovery(auto &gateway, auto &context, auto &stream_id, auto &shared, auto &channels) {
   std::vector<std::unique_ptr<UDPMBOMarketRecovery>> result;
-  if (flags::Common::enable_market_by_order()) {
+  if (shared.settings.common.enable_market_by_order) {
     for (auto &channel : channels)
       result.emplace_back(std::make_unique<UDPMBOMarketRecovery>(gateway, context, ++stream_id, shared, channel));
   }
@@ -86,7 +86,7 @@ R create_order_entry(auto &gateway, auto &context, auto &stream_id, auto &accoun
 
 Gateway::Gateway(server::Dispatcher &dispatcher, Settings const &settings, Config const &config, io::Context &context)
     : dispatcher_{dispatcher}, accounts_{create_accounts<decltype(accounts_)>(config)}, context_{context},
-      shared_{dispatcher, settings}, channels_{create_channels()},
+      shared_{dispatcher, settings}, channels_{create_channels(settings)},
       udp_incremental_{create_udp_incremental(*this, context_, stream_id_, shared_, channels_)},
       udp_instrument_definition_{create_udp_instrument_definition(*this, context_, stream_id_, shared_, channels_)},
       udp_mbp_market_recovery_{create_udp_mbp_market_recovery(*this, context_, stream_id_, shared_, channels_)},

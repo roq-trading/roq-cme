@@ -1,0 +1,32 @@
+{
+  "name": "Test",
+  "type": "flags",
+  "prefix": "test_",
+  "values": [
+    {
+      "name": "mbp_to_mbo_clear_price_level",
+      "type": "bool",
+      "default": false,
+      "description": "use mbp to delete mbo price levels?"
+    },
+    {
+      "name": "reordering",
+      "type": "uint32_t",
+      "default": 0,
+      "description": "test"
+    },
+    {
+      "name": "drop",
+      "type": "uint32_t",
+      "default": 0,
+      "description": "test"
+    },
+    {
+      "name": "uri",
+      "type": "roq::io::web::URI",
+      "validator": "roq::core::flags::URI",
+      "default": "tcp://69.50.112.198:65301",
+      "description": "MSGW end-point (URI)"
+    }
+  ]
+}

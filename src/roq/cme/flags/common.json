@@ -9,12 +9,6 @@
       "description": "enable market by order updates?"
     },
     {
-      "name": "test_mbp_to_mbo_clear_price_level",
-      "type": "bool",
-      "default": false,
-      "description": "use mbp to delete mbo price levels?"
-    },
-    {
       "name": "filter_snapshot_from_incremental",
       "type": "uint32_t",
       "default": 1024,
@@ -27,16 +21,24 @@
       "description": "config file (path)"
     },
     {
-      "name": "test_reordering",
-      "type": "uint32_t",
-      "default": 0,
-      "description": "test"
+      "name": "mbp_allow_price_inversion",
+      "type": "bool",
+      "default": false,
+      "description": "allow price inversion?"
     },
     {
-      "name": "test_drop",
+      "name": "decode_buffer_size",
       "type": "uint32_t",
-      "default": 0,
-      "description": "test"
+      "validator": "roq::core::flags::NonZero<uint32_t>",
+      "default": 10485760,
+      "description": "decode buffer size"
+    },
+    {
+      "name": "encode_buffer_size",
+      "type": "uint32_t",
+      "validator": "roq::core::flags::NonZero<uint32_t>",
+      "default": 4096,
+      "description": "encode buffer size"
     }
   ]
 }

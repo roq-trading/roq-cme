@@ -1,37 +1,38 @@
 {
   "name": "Multicast",
   "type": "flags",
+  "prefix": "multicast_",
   "values": [
     {
-      "name": "multicast_config_file",
+      "name": "config_file",
       "type": "std::string",
       "validator": "roq::core::flags::Path",
       "description": "config file (path)"
     },
     {
-      "name": "multicast_channel_ids",
+      "name": "channel_ids",
       "type": "std::vector<std::string>",
       "description": "Comma-separated list of multicast channels, e.g. 310"
     },
     {
-      "name": "multicast_local_interface",
+      "name": "local_interface",
       "type": "std::string",
       "description": "Multicast local interface"
     },
     {
-      "name": "multicast_buffer_size",
+      "name": "buffer_size",
       "type": "uint32_t",
       "default": "2048",
       "description": "Buffer size (at least the maximum possible size of a datagram)"
     },
     {
-      "name": "multicast_buffer_depth",
+      "name": "buffer_depth",
       "type": "uint32_t",
       "default": "8",
       "description": "Multicast buffer depth (used for re-ordering)"
     },
     {
-      "name": "multicast_timeout",
+      "name": "timeout",
       "type": "std::chrono::nanoseconds",
       "validator": "roq::core::flags::TimePeriod",
       "default": "90s",

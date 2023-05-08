@@ -1,10 +1,10 @@
 !!! THIS FILE HAS BEEN AUTO-GENERATED !!!
 roq-cme-flags
 common.hpp
-config.hpp
 ilink.hpp
 multicast.hpp
+test.hpp
 common.cpp
-config.cpp
 ilink.cpp
 multicast.cpp
+test.cpp

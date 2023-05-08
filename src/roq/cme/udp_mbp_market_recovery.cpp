@@ -11,10 +11,6 @@
 
 #include "roq/io/network_address.hpp"
 
-#include "roq/cme/flags/common.hpp"
-#include "roq/cme/flags/config.hpp"
-#include "roq/cme/flags/multicast.hpp"
-
 #include "roq/cme/mdp/utils.hpp"
 
 using namespace std::literals;
@@ -49,8 +45,8 @@ auto create_receiver(auto &handler, auto &context, auto &shared, auto &channel_i
       io::SocketOption::REUSE_ADDRESS,
   };
   auto receiver = context.create_udp_receiver(handler, network_address, socket_options);
-  log::info(R"(Local interface is "{}")"sv, flags::Multicast::multicast_local_interface());
-  auto local_interface = io::NetworkAddress::create_blocking(flags::Multicast::multicast_local_interface());
+  log::info(R"(Local interface is "{}")"sv, shared.settings.multicast.local_interface);
+  auto local_interface = io::NetworkAddress::create_blocking(shared.settings.multicast.local_interface);
   log::info(R"(Add membership "{}")"sv, multicast_address);
   auto multicast_address_2 = io::NetworkAddress::create_blocking(multicast_address);
   (*receiver).add_membership(multicast_address_2, local_interface);
@@ -185,7 +181,7 @@ void UDPMBPMarketRecovery::operator()(Event<Stop> const &) {
 }
 
 void UDPMBPMarketRecovery::operator()(Event<Timer> const &event) {
-  if (last_update_time_.count() && (last_update_time_ + flags::Multicast::multicast_timeout()) < event.value.now) {
+  if (last_update_time_.count() && (last_update_time_ + shared_.settings.multicast.timeout) < event.value.now) {
     log::warn("*** DETECTED TIMEOUT ***"sv);
     last_update_time_ = {};
   }
@@ -558,7 +554,7 @@ void UDPMBPMarketRecovery::publish_stream_status(TraceInfo const &trace_info, Co
       .encoding = {Encoding::SBE},
       .priority = Priority::PRIMARY,
       .connection_status = connection_status_,
-      .interface = flags::Multicast::multicast_local_interface(),
+      .interface = shared_.settings.multicast.local_interface,
       .authority = {},
       .path = channel_name_,
       .proxy = {},

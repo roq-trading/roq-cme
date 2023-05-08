@@ -11,8 +11,6 @@
 
 #include "roq/core/metrics/factory.hpp"
 
-#include "roq/cme/flags/ilink.hpp"
-
 #include "roq/cme/ilink/session.hpp"
 
 #include "roq/cme/ilink/establish.hpp"
@@ -48,7 +46,7 @@ auto create_name(auto stream_id, auto const &account) {
 }
 
 auto create_connection_factory(auto &settings, auto &context) {
-  auto uri = flags::iLink::test_uri();
+  auto uri = settings.test.uri;
   auto config = io::net::ConnectionFactory::Config{
       .interface = {},
       .uris = {&uri, 1},
@@ -78,7 +76,8 @@ OrderEntry::OrderEntry(Handler &handler, io::Context &context, uint16_t stream_i
     : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_, account.get_name())},
       connection_factory_{create_connection_factory(shared.settings, context)},
       connection_manager_{create_connection_manager(*this, shared.settings, *connection_factory_)},
-      decode_buffer_{flags::iLink::decode_buffer_size()}, encode_buffer_2_(flags::iLink::encode_buffer_size()),
+      decode_buffer_{shared.settings.common.decode_buffer_size},
+      encode_buffer_2_(shared.settings.common.encode_buffer_size),
       counter_{
           .disconnect = create_metrics(shared.settings, name_, "disconnect"sv),
       },
@@ -314,7 +313,7 @@ void OrderEntry::send_negotiate() {
       .request_timestamp = uuid_,
       .uuid = static_cast<uint64_t>(uuid_.count()),  // note!
       .session = account_.get_login(),
-      .firm_id = flags::iLink::ilink_firm(),
+      .firm_id = shared_.settings.ilink.firm,
       .trading_system_name = {},     // note!
       .trading_system_version = {},  // note!
       .trading_system_vendor = {},   // note!
@@ -339,7 +338,7 @@ void OrderEntry::send_establish() {
       .request_timestamp = uuid_,
       .uuid = static_cast<uint64_t>(uuid_.count()),  // note!
       .session = account_.get_login(),
-      .firm_id = flags::iLink::ilink_firm(),
+      .firm_id = shared_.settings.ilink.firm,
       .trading_system_name = ROQ_PACKAGE_NAME,
       .trading_system_version = ROQ_BUILD_VERSION,
       .trading_system_vendor = "ROQ"sv,

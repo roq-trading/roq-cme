@@ -14,10 +14,6 @@
 
 #include "roq/io/network_address.hpp"
 
-#include "roq/cme/flags/common.hpp"
-#include "roq/cme/flags/config.hpp"
-#include "roq/cme/flags/multicast.hpp"
-
 #include "roq/cme/mdp/utils.hpp"
 
 using namespace std::literals;
@@ -47,8 +43,8 @@ auto create_receiver(auto &handler, auto &context, auto &shared, auto &channel_i
       io::SocketOption::REUSE_ADDRESS,
   };
   auto receiver = context.create_udp_receiver(handler, network_address, socket_options);
-  log::info(R"(Local interface is "{}")"sv, flags::Multicast::multicast_local_interface());
-  auto local_interface = io::NetworkAddress::create_blocking(flags::Multicast::multicast_local_interface());
+  log::info(R"(Local interface is "{}")"sv, shared.settings.multicast.local_interface);
+  auto local_interface = io::NetworkAddress::create_blocking(shared.settings.multicast.local_interface);
   log::info(R"(Add membership "{}")"sv, multicast_address);
   auto multicast_address_2 = io::NetworkAddress::create_blocking(multicast_address);
   (*receiver).add_membership(multicast_address_2, local_interface);
@@ -60,7 +56,7 @@ struct create_metrics final : public core::metrics::Factory {
       : core::metrics::Factory(settings.app.name, group, function) {}
 };
 
-auto get_supports() {
+auto get_supports(auto &settings) {
   auto result = Mask{
       SupportType::REFERENCE_DATA,
       SupportType::MARKET_STATUS,
@@ -69,7 +65,7 @@ auto get_supports() {
       SupportType::TRADE_SUMMARY,
       SupportType::STATISTICS,
   };
-  if (flags::Common::enable_market_by_order())
+  if (settings.common.enable_market_by_order)
     result |= SupportType::MARKET_BY_ORDER;
   return result;
 }
@@ -297,7 +293,7 @@ UDPIncremental::UDPIncremental(
     Handler &handler, io::Context &context, uint16_t stream_id, Shared &shared, Channel &channel, Priority priority)
     : handler_{handler}, priority_{priority}, channel_name_{channel.get_channel_name(NAME, priority_)},
       stream_id_{stream_id}, name_{create_name(stream_id_, channel_name_)},
-      market_by_order_{flags::Common::enable_market_by_order()},
+      market_by_order_{shared.settings.common.enable_market_by_order},
       receiver_{create_receiver(*this, context, shared, channel.channel_id, priority_)},
       counter_{
           .disconnect = create_metrics(shared.settings, name_, "disconnect"sv),
@@ -352,7 +348,7 @@ void UDPIncremental::operator()(Event<Stop> const &) {
 }
 
 void UDPIncremental::operator()(Event<Timer> const &event) {
-  if (last_update_time_.count() && (last_update_time_ + flags::Multicast::multicast_timeout()) < event.value.now) {
+  if (last_update_time_.count() && (last_update_time_ + shared_.settings.multicast.timeout) < event.value.now) {
     log::warn("*** DETECTED TIMEOUT ***"sv);
     last_update_time_ = {};
   }
@@ -360,7 +356,7 @@ void UDPIncremental::operator()(Event<Timer> const &event) {
 
 namespace {
 // this is general logic
-void drain(auto &receiver, auto &channel, auto stream_id, auto parse, auto reset) {
+void drain(auto &receiver, auto &channel, auto stream_id, auto &settings, auto parse, auto reset) {
   using value_type = typename decltype(channel.incremental.buffer)::value_type;
   for (auto stop = false; !stop;) {
     if (channel.incremental.buffer.next([&](auto buffer) -> std::pair<size_t, value_type> {
@@ -380,7 +376,7 @@ void drain(auto &receiver, auto &channel, auto stream_id, auto parse, auto reset
                 log::info<5>("frame={}, last_sequence_number={}"sv, frame, channel.sequence.last_sequence_number);
                 // check sequence number
                 sequence_number = frame.sequence_number;
-                if (sequence_number < flags::Common::filter_snapshot_from_incremental()) {
+                if (sequence_number < settings.common.filter_snapshot_from_incremental) {
                   drop = true;
                   return;
                 }
@@ -399,14 +395,14 @@ void drain(auto &receiver, auto &channel, auto stream_id, auto parse, auto reset
                       delta);
                 }
                 // TEST >>>
-                if (flags::Common::test_drop() && !hold && !drop) {
-                  if ((sequence_number % flags::Common::test_drop()) == 0) {
+                if (settings.test.drop && !hold && !drop) {
+                  if ((sequence_number % settings.test.drop) == 0) {
                     log::warn("DEBUG: *** SIMULATE DROP ***"sv);
                     drop = true;
                   }
                 }
-                if (flags::Common::test_reordering() && !hold && !drop) {
-                  if ((sequence_number % flags::Common::test_reordering()) == 0) {
+                if (settings.test.reordering && !hold && !drop) {
+                  if ((sequence_number % settings.test.reordering) == 0) {
                     log::warn("DEBUG: *** SIMULATE REORDERING ***"sv);
                     hold = true;
                     stop = true;
@@ -474,7 +470,7 @@ void UDPIncremental::operator()(io::net::udp::Receiver::Read const &) {
       log::info("{}"sv, debug::hex::Message{message});
     }
   };
-  drain(*receiver_, channel_, stream_id_, parse, [&]() { on_sequence_reset(); });
+  drain(*receiver_, channel_, stream_id_, shared_.settings, parse, [&]() { on_sequence_reset(); });
 }
 
 void UDPIncremental::on_sequence_reset() {
@@ -742,7 +738,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const
           emplace_back(item, *security, layer, mbp.bids, mbp.asks);
           if (market_by_order_) {
             if (action == UpdateAction::DELETE && side != Side::UNDEFINED &&
-                flags::Common::test_mbp_to_mbo_clear_price_level()) {
+                shared_.settings.test.mbp_to_mbo_clear_price_level) {
               auto update = MBOUpdate{
                   .price = price * (*security).display_factor,
                   .quantity = {},
@@ -1319,13 +1315,13 @@ void UDPIncremental::publish_stream_status(TraceInfo const &trace_info, Connecti
   auto stream_status = StreamStatus{
       .stream_id = stream_id_,
       .account = {},
-      .supports = get_supports(),
+      .supports = get_supports(shared_.settings),
       .transport = Transport::UDP,
       .protocol = Protocol::SBE,
       .encoding = {Encoding::SBE},
       .priority = priority_,
       .connection_status = connection_status_,
-      .interface = flags::Multicast::multicast_local_interface(),
+      .interface = shared_.settings.multicast.local_interface,
       .authority = {},
       .path = channel_name_,
       .proxy = {},
