@@ -9,12 +9,14 @@
 #include "roq/io/net/udp/receiver.hpp"
 #include "roq/io/sys/signal.hpp"
 
+#include "roq/cme/channel_tester/settings.hpp"
+
 namespace roq {
 namespace cme {
 namespace channel_tester {
 
 struct Controller final : public io::sys::Signal::Handler, public io::net::udp::Receiver::Handler {
-  Controller();
+  explicit Controller(Settings const &);
 
   Controller(Controller const &) = delete;
   Controller(Controller &&) = delete;
@@ -28,6 +30,7 @@ struct Controller final : public io::sys::Signal::Handler, public io::net::udp::
   void operator()(io::net::udp::Receiver::Error const &) override;
 
  private:
+  Settings const &settings_;
   std::unique_ptr<io::Context> const context_;
   std::unique_ptr<io::sys::Signal> const terminate_;
   std::unique_ptr<io::sys::Signal> const interrupt_;

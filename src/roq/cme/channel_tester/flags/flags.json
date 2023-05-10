@@ -1,0 +1,30 @@
+{
+  "name": "Flags",
+  "type": "flags",
+  "values": [
+    {
+      "name": "multicast_address",
+      "type": "std::string",
+      "validator": "roq::core::flags::NonEmpty",
+      "description": "multicast address"
+    },
+    {
+      "name": "multicast_port",
+      "type": "uint16_t",
+      "validator": "roq::core::flags::NonZero<uint16_t>",
+      "description": "multicast port"
+    },
+    {
+      "name": "local_interface",
+      "type": "std::string",
+      "validator": "roq::core::flags::NonEmpty",
+      "description": "local interface"
+    },
+    {
+      "name": "filter_snapshot_from_incremental",
+      "type": "uint32_t",
+      "default": 1024,
+      "description": "test"
+    }
+  ]
+}

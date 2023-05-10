@@ -12,8 +12,6 @@
 
 #include "roq/cme/mdp/parser.hpp"
 
-#include "roq/cme/channel_tester/flags/flags.hpp"
-
 using namespace std::literals;
 
 namespace roq {
@@ -29,14 +27,14 @@ auto const BUFFER_SIZE = size_t{4096};
 // === HELPERS ===
 
 namespace {
-auto create_receiver(auto &handler, auto &context) {
-  auto network_address = io::NetworkAddress{flags::Flags::multicast_port()};
+auto create_receiver(auto &handler, auto &settings, auto &context) {
+  auto network_address = io::NetworkAddress{settings.multicast_port};
   auto socket_options = Mask{
       io::SocketOption::REUSE_ADDRESS,
   };
   auto receiver = context.create_udp_receiver(handler, network_address, socket_options);
-  auto local_interface = io::NetworkAddress::create_blocking(flags::Flags::local_interface());
-  auto multicast_address = io::NetworkAddress::create_blocking(flags::Flags::multicast_address());
+  auto local_interface = io::NetworkAddress::create_blocking(settings.local_interface);
+  auto multicast_address = io::NetworkAddress::create_blocking(settings.multicast_address);
   (*receiver).add_membership(multicast_address, local_interface);
   return receiver;
 }
@@ -44,12 +42,12 @@ auto create_receiver(auto &handler, auto &context) {
 
 // === IMPLEMENTATION ===
 
-Controller::Controller()
-    : context_{io::engine::ContextFactory::create_libevent()},
+Controller::Controller(Settings const &settings)
+    : settings_{settings}, context_{io::engine::ContextFactory::create_libevent()},
       terminate_{(*context_).create_signal(*this, io::sys::Signal::Type::TERMINATE)},
       interrupt_{(*context_).create_signal(*this, io::sys::Signal::Type::INTERRUPT)},
       bus_error_{(*context_).create_signal(*this, io::sys::Signal::Type::BUS_ERROR)},
-      receiver_{create_receiver(*this, *context_)}, buffer_(BUFFER_SIZE) {
+      receiver_{create_receiver(*this, settings, *context_)}, buffer_(BUFFER_SIZE) {
 }
 
 void Controller::dispatch() {
@@ -73,7 +71,7 @@ void Controller::operator()(io::net::udp::Receiver::Read const &read) {
     if (mdp::Frame::parse(message, [&](auto &frame) {
           log::info<1>("frame={}"sv, frame);
           auto sequence_number = frame.sequence_number;
-          if (sequence_number < flags::Flags::filter_snapshot_from_incremental())
+          if (sequence_number < settings_.filter_snapshot_from_incremental)
             return;
           auto now = clock::get_realtime();
           if (last_sequence_number_) {

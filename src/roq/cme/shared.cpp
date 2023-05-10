@@ -43,8 +43,8 @@ R read_ilink_config(auto const &filename) {
 }
 
 template <typename T, typename D>
-void read_secdef(T &securities, D &dispatcher) {
-  auto config_file = flags::Common::secdef_config_file();
+void read_secdef(T &securities, D &dispatcher, auto &settings) {
+  auto config_file = settings.common.secdef_config_file;
   if (std::empty(config_file))
     return;
   log::info(R"(Reading instrument definitions from "{}"... (*** can be very slow ***))"sv, config_file);
@@ -104,10 +104,9 @@ void read_secdef(T &securities, D &dispatcher) {
 // === IMPLEMENTATION ===
 
 Shared::Shared(server::Dispatcher &dispatcher, Settings const &settings)
-    : dispatcher_{dispatcher}, settings{settings}, mdp_config_{flags::Multicast::multicast_config_file()},
-      ilink_config_{read_ilink_config<decltype(ilink_config_)>(flags::iLink::ilink_config_file())},
-      buffer(BUFFER_SIZE) {
-  read_secdef(securities, dispatcher);
+    : dispatcher_{dispatcher}, settings{settings}, mdp_config_{settings.multicast.config_file},
+      ilink_config_{read_ilink_config<decltype(ilink_config_)>(settings.ilink.config_file)}, buffer(BUFFER_SIZE) {
+  read_secdef(securities, dispatcher, settings);
 }
 
 std::pair<std::string, uint16_t> Shared::get_multicast_config(
