@@ -41,12 +41,14 @@ struct fmt::formatter<roq::cme::Settings> {
     return fmt::format_to(
         context.out(),
         R"({{)"
+        R"(exchange="{}", )"
         R"(common={}, )"
         R"(multicast={}, )"
         R"(ilink={}, )"
         R"(test={}, )"
         R"(server={})"
         R"(}})"_cf,
+        value.exchange,
         value.common,
         value.multicast,
         value.ilink,

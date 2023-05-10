@@ -4,13 +4,16 @@
 
 #include "roq/logging.hpp"
 
+#include "roq/cme/flags/flags.hpp"
+
 using namespace std::literals;
 
 namespace roq {
 namespace cme {
 
 Settings::Settings(server::Type type)
-    : server::Settings{server::create_settings(type, ROQ_PACKAGE_NAME, ROQ_BUILD_NUMBER)} {
+    : server::Settings{server::create_settings(type, ROQ_PACKAGE_NAME, ROQ_BUILD_NUMBER)},
+      exchange{flags::Flags::exchange()} {
   log::debug("settings={}"sv, *this);
 }
 

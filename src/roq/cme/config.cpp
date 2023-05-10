@@ -48,7 +48,8 @@ auto create_gateway_settings(auto &settings) -> GatewaySettings {
 
 // === IMPLEMENTATION ===
 
-Config::Config(Settings const &settings) : gateway_settings_{create_gateway_settings(settings)} {
+Config::Config(Settings const &settings)
+    : exchange_{settings.exchange}, gateway_settings_{create_gateway_settings(settings)} {
   server::config::Reader::parse_file(*this, settings);
   log::info<1>("config={}"sv, *this);
 }
@@ -79,7 +80,7 @@ std::string const &Config::get_secret(Account const &account) const {
 }
 
 void Config::dispatch(server::config::Handler &handler) const {
-  // handler(exchange_);
+  handler(exchange_);
   handler(symbols);
   for (auto &iter : accounts)
     handler(iter.second);
