@@ -23,16 +23,17 @@ requirements:
     - make
     - pkg-config
   host:
+    - abseil-cpp
+    - catch2  # [linux]
     - expat
+    - fmt
     - roq-cme-ilink
     - roq-cme-mdp
     - roq-core
-    - abseil-cpp
     - roq-oss-base64
     - roq-oss-benchmark
     - roq-oss-botan
     - roq-oss-brotli
-    - catch2  # [linux]
     - roq-oss-catch2  # [osx]
     - roq-oss-cppitertools
     - roq-oss-libsodium
