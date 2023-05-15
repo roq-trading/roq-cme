@@ -39,6 +39,7 @@ size_t parse_helper(auto &buffer, Callback callback) {
 }  // namespace
 
 size_t Parser::dispatch(Handler &handler, std::span<std::byte const> const &buffer, TraceInfo const &trace_info) {
+  log::info("DEBUG {}"sv, debug::hex::Message{buffer});
   return parse_helper(buffer, [&](auto &message_2) {
     // SBE is not const-safe
     std::span message{reinterpret_cast<char *>(const_cast<std::byte *>(std::data(message_2))), std::size(message_2)};
