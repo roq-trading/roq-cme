@@ -36,19 +36,6 @@ size_t parse_helper(auto &buffer, Callback callback) {
   callback(message);
   return length;
 }
-
-struct MessageSize final {
-  using value_type = uint16_t;
-  explicit MessageSize(auto &buffer) {
-    if (std::size(buffer) < sizeof(value_type))
-      throw RuntimeError{"Unexpected: buffer too small {}"sv, std::size(buffer)};
-    value_type tmp;
-    std::memcpy(&tmp, std::data(buffer), sizeof(value_type));
-    length = core::little_endian_to_host(tmp);
-    buffer = buffer.subspan(sizeof(value_type));
-  }
-  value_type length = {};
-};
 }  // namespace
 
 size_t Parser::dispatch(Handler &handler, std::span<std::byte const> const &buffer, TraceInfo const &trace_info) {
@@ -56,14 +43,13 @@ size_t Parser::dispatch(Handler &handler, std::span<std::byte const> const &buff
     // SBE is not const-safe
     std::span message{reinterpret_cast<char *>(const_cast<std::byte *>(std::data(message_2))), std::size(message_2)};
     while (!std::empty(message)) {
-      MessageSize message_size(message);
       cme_ilink::MessageHeader header{std::data(message), std::size(message)};
       message = message.subspan(cme_ilink::MessageHeader::encodedLength());
       auto block_length = header.blockLength();
       auto template_id = header.templateId();
       auto version = header.version();
       log::debug("block_length={}, template={}, version={}"sv, block_length, template_id, version);
-      auto length = message_size.length - (sizeof(MessageSize::value_type) + cme_ilink::MessageHeader::encodedLength());
+      auto length = std::size(message);
       log::debug("length={}"sv, length);
       assert(std::size(message) >= length);
       auto tmp = message.subspan(0, length);

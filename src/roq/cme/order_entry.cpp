@@ -320,7 +320,9 @@ void OrderEntry::send_negotiate() {
       .next_seq_no = {},             // note!
       .keep_alive_interval = {},     // note!
   };
+  log::info("DEBUG canonical_message={}"sv, canonical_message);
   auto hmac_signature = account_.create_signature(canonical_message);
+  log::info(R"(DEBUG hmac_signature="{}")"sv, hmac_signature);
   auto negotiate = ilink::Negotiate{
       .hmac_signature = hmac_signature,
       .access_key_id = account_.get_password(),
@@ -345,7 +347,9 @@ void OrderEntry::send_establish() {
       .next_seq_no = 1,
       .keep_alive_interval = 30s,
   };
+  log::info("DEBUG canonical_message={}"sv, canonical_message);
   auto hmac_signature = account_.create_signature(canonical_message);
+  log::info(R"(DEBUG hmac_signature="{}")"sv, hmac_signature);
   auto establish = ilink::Establish{
       .hmac_signature = hmac_signature,
       .access_key_id = account_.get_password(),
@@ -372,7 +376,7 @@ void OrderEntry::send(T const &value) {
     uint16_t message_length;
     uint8_t dummy_1 = 0xFE;
     uint8_t dummy_2 = 0xCA;
-  } sofh{
+  } sofh = {
       .message_length = core::host_to_little_endian(length),
   };
   static_assert(sizeof(SOFH) == 4);
@@ -380,7 +384,9 @@ void OrderEntry::send(T const &value) {
       {reinterpret_cast<std::byte const *>(&sofh), sizeof(sofh)},
       message,
   }};
+  log::info("DEBUG {}{}"sv, debug::hex::Message{data[0]}, debug::hex::Message{data[1]});
   std::span<std::span<std::byte const> const> tmp{data};  // XXX HANS fix this
+  log::info("DEBUG {}{}"sv, debug::hex::Message{tmp[0]}, debug::hex::Message{tmp[1]});
   (*connection_manager_).send(tmp);
 }
 

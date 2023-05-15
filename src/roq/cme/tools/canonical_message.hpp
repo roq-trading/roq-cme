@@ -2,6 +2,9 @@
 
 #pragma once
 
+#include <fmt/compile.h>
+#include <fmt/format.h>
+
 #include <chrono>
 #include <string_view>
 
@@ -24,3 +27,39 @@ struct CanonicalMessage final {
 }  // namespace tools
 }  // namespace cme
 }  // namespace roq
+
+template <>
+struct fmt::formatter<roq::cme::tools::CanonicalMessage> {
+  template <typename Context>
+  constexpr auto parse(Context &context) {
+    return std::begin(context);
+  }
+  template <typename Context>
+  auto format(roq::cme::tools::CanonicalMessage const &value, Context &context) const {
+    using namespace std::literals;
+    using namespace fmt::literals;
+    return fmt::format_to(
+        context.out(),
+        R"({{)"
+        R"(timestamp={}, )"
+        R"(uuid={}, )"
+        R"(session="{}", )"
+        R"(firm_id="{}", )"
+        R"(trading_system_name="{}", )"
+        R"(trading_system_version="{}", )"
+        R"(trading_system_vendor="{}", )"
+        R"(next_seq_no={}, )"
+        R"(keep_alive_interval={})"
+        R"(}})"_cf,
+        value.request_timestamp,
+        value.uuid,
+        value.session,
+        value.firm_id,
+        value.trading_system_name,
+        value.trading_system_version,
+        value.trading_system_vendor,
+        value.next_seq_no,
+        value.keep_alive_interval);
+  }
+};
+

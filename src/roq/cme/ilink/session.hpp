@@ -206,7 +206,7 @@ struct fmt::formatter<cme_ilink::Terminate507> {
     return fmt::format_to(
         context.out(),
         R"({{)"
-        R"(reason={}, )"
+        R"(reason="{}", )"
         R"(uuid={}, )"
         R"(request_timestamp={}, )"
         R"(error_codes={}, )"
