@@ -384,7 +384,6 @@ void OrderEntry::send(T const &value) {
       {reinterpret_cast<std::byte const *>(&sofh), sizeof(sofh)},
       message,
   }};
-  log::info("DEBUG {}{}"sv, debug::hex::Message{data[0]}, debug::hex::Message{data[1]});
   std::span<std::span<std::byte const> const> tmp{data};  // XXX HANS fix this
   log::info("DEBUG {}{}"sv, debug::hex::Message{tmp[0]}, debug::hex::Message{tmp[1]});
   (*connection_manager_).send(tmp);
