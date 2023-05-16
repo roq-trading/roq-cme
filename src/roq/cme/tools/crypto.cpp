@@ -2,6 +2,7 @@
 
 #include "roq/cme/tools/crypto.hpp"
 
+#include <fmt/chrono.h>
 #include <fmt/format.h>
 
 #include <cassert>
@@ -48,6 +49,9 @@ Crypto::Crypto(std::string_view const &secret) : mac_{create_hmac<decltype(mac_)
 std::span<std::byte const> Crypto::create_signature(
     std::span<std::byte> const &buffer, CanonicalMessage const &message) {
   core::text::Writer writer{buffer};
+  static_assert(std::is_same<decltype(message.request_timestamp)::rep, int64_t>::value);
+  log::debug("request_timestamp={}"sv, message.request_timestamp);
+  log::debug("uuid={}"sv, message.uuid);
   writer  //
       .write(message.request_timestamp.count())
       .write('\n')
@@ -71,6 +75,8 @@ std::span<std::byte const> Crypto::create_signature(
   }
   auto tmp = static_cast<std::string_view>(writer);
   log::info(R"(DEBUG message="{}")"sv, tmp);
+  std::span tmp2 = {reinterpret_cast<std::byte const *>(std::data(tmp)), std::size(tmp)};
+  log::info("DEBUG {}"sv, debug::hex::Message{tmp2});
   mac_.clear();
   mac_.update(tmp);
   auto result = mac_.final(digest_);
