@@ -17,6 +17,8 @@
 
 #include "roq/core/codec/base64.hpp"
 
+#include "roq/debug/hex/message.hpp"
+
 using namespace std::literals;
 
 using namespace fmt::literals;
@@ -33,6 +35,7 @@ R create_hmac(auto const &access_secret) {
   std::vector<std::byte> buffer;
   buffer.resize(core::codec::Base64::get_max_binary_length(std::size(access_secret)));
   auto key = core::codec::Base64::decode(buffer, access_secret, true, true);
+  log::info("DEBUG {}"sv, debug::hex::Message{key});
   return R{key};
 }
 }  // namespace
@@ -70,7 +73,9 @@ std::span<std::byte const> Crypto::create_signature(
   log::info(R"(DEBUG message="{}")"sv, tmp);
   mac_.clear();
   mac_.update(tmp);
-  return mac_.final(digest_);
+  auto result = mac_.final(digest_);
+  log::info("DEBUG {}"sv, debug::hex::Message{result});
+  return result;
 }
 
 }  // namespace tools
