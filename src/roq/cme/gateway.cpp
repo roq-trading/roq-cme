@@ -71,6 +71,8 @@ R create_accounts(auto const &config) {
 
 template <typename R>
 R create_order_entry(auto &gateway, auto &context, auto &stream_id, auto &accounts, auto &shared) {
+  if (std::empty(shared.settings.ilink.firm))
+    log::fatal("Unexpected: missing --ilink_firm"sv);
   using result_type = std::remove_cvref<R>::type;
   result_type result;
   for (auto &[name, account] : accounts)
