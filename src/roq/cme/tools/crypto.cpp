@@ -50,8 +50,8 @@ std::span<std::byte const> Crypto::create_signature(
     std::span<std::byte> const &buffer, CanonicalMessage const &message) {
   core::text::Writer writer{buffer};
   static_assert(std::is_same<decltype(message.request_timestamp)::rep, int64_t>::value);
-  log::debug("request_timestamp={}"sv, message.request_timestamp);
-  log::debug("uuid={}"sv, message.uuid);
+  log::info("DEBUG request_timestamp={}"sv, message.request_timestamp);
+  log::info("DEBUG uuid={}"sv, message.uuid);
   writer  //
       .write(message.request_timestamp.count())
       .write('\n')
