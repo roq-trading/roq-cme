@@ -67,6 +67,7 @@ std::span<std::byte const> Crypto::create_signature(
         .write(message.keep_alive_interval.count());
   }
   auto tmp = static_cast<std::string_view>(writer);
+  log::info(R"(DEBUG message="{}")"sv, tmp);
   mac_.clear();
   mac_.update(tmp);
   return mac_.final(digest_);
