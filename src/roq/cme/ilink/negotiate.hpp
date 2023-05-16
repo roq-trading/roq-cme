@@ -21,7 +21,7 @@ struct Negotiate final {
   std::span<std::byte const> hmac_signature;
   std::string_view access_key_id;
   uint64_t uuid = {};
-  std::chrono::nanoseconds request_timestamp = {};
+  std::chrono::microseconds request_timestamp = {};
   std::string_view session;
   std::string_view firm;
 };
