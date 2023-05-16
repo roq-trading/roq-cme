@@ -140,7 +140,7 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public ili
   bool ready_ = false;
   std::chrono::nanoseconds next_heartbeat_ = {};
   // EXPERIMENTAL
-  std::chrono::microseconds uuid_ = {};
+  std::chrono::milliseconds uuid_ = {};
 };
 
 }  // namespace cme

@@ -308,7 +308,7 @@ void OrderEntry::operator()(ConnectionStatus status) {
 //
 
 void OrderEntry::send_negotiate() {
-  uuid_ = clock::get_realtime<std::chrono::microseconds>();
+  uuid_ = clock::get_realtime<std::chrono::milliseconds>();
   log::info("DEBUG uuid={}"sv, uuid_);
   auto canonical_message = tools::CanonicalMessage{
       .request_timestamp = uuid_,
