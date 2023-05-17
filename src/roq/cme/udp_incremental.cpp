@@ -944,8 +944,8 @@ void UDPIncremental::dispatch_market_by_price(
           .stream_id = stream_id_,
           .exchange = security.exchange,
           .symbol = security.symbol,
-          .bids = bids,
-          .asks = asks,
+          .bids = {const_cast<MBPUpdate *>(std::data(bids)), std::size(bids)},  // FIXME
+          .asks = {const_cast<MBPUpdate *>(std::data(asks)), std::size(asks)},  // FIXME
           .update_type = update_type,
           .exchange_time_utc = exchange_time_utc,
           .exchange_sequence = exchange_sequence,
