@@ -62,4 +62,3 @@ struct fmt::formatter<roq::cme::tools::CanonicalMessage> {
         value.keep_alive_interval);
   }
 };
-

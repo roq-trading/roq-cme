@@ -129,4 +129,3 @@ TEST_CASE("multiple", "[ilink_simple]") {
   }
   CHECK(handler.counter == 2);
 }
-
