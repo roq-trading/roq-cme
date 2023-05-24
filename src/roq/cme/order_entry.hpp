@@ -4,8 +4,6 @@
 
 #include <string>
 
-#include "roq/core/buffer.hpp"
-
 #include "roq/core/metrics/counter.hpp"
 #include "roq/core/metrics/latency.hpp"
 #include "roq/core/metrics/profile.hpp"
@@ -110,7 +108,7 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public ili
   std::unique_ptr<io::net::ConnectionFactory> const connection_factory_;
   std::unique_ptr<io::net::ConnectionManager> const connection_manager_;
   // buffers
-  core::Buffer decode_buffer_;
+  std::vector<std::byte> decode_buffer_;
   std::string encode_buffer_;
   std::vector<std::byte> encode_buffer_2_;
   // metrics

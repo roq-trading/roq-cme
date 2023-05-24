@@ -76,7 +76,7 @@ OrderEntry::OrderEntry(Handler &handler, io::Context &context, uint16_t stream_i
     : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_, account.get_name())},
       connection_factory_{create_connection_factory(shared.settings, context)},
       connection_manager_{create_connection_manager(*this, shared.settings, *connection_factory_)},
-      decode_buffer_{shared.settings.common.decode_buffer_size},
+      decode_buffer_(shared.settings.common.decode_buffer_size),
       encode_buffer_2_(shared.settings.common.encode_buffer_size),
       counter_{
           .disconnect = create_metrics(shared.settings, name_, "disconnect"sv),
