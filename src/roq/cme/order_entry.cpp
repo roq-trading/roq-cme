@@ -372,7 +372,7 @@ template <typename T>
 void OrderEntry::send(T const &value) {
   auto message = value.encode(encode_buffer_2_);
   log::info("{}"sv, debug::hex::Message{message});
-  uint16_t length = utils::safe_cast{sizeof(message) + 4};
+  uint16_t length = utils::safe_cast{std::size(message) + 4};
   struct SOFH final {
     uint16_t message_length;
     uint8_t dummy_1 = 0xFE;
