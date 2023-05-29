@@ -16,7 +16,7 @@ namespace cme {
 namespace ilink {
 
 struct Negotiate final {
-  using time_type = std::chrono::nanoseconds;
+  using time_type = std::chrono::milliseconds;
 
   std::span<std::byte const> encode(std::span<std::byte> const &buffer) const;
 
