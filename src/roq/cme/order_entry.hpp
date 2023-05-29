@@ -138,7 +138,8 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public ili
   bool ready_ = false;
   std::chrono::nanoseconds next_heartbeat_ = {};
   // EXPERIMENTAL
-  std::chrono::milliseconds uuid_ = {};
+  using time_type = tools::CanonicalMessage::time_type;
+  time_type uuid_ = {};
 };
 
 }  // namespace cme

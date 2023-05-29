@@ -16,12 +16,14 @@ namespace cme {
 namespace ilink {
 
 struct Negotiate final {
+  using time_type = std::chrono::nanoseconds;
+
   std::span<std::byte const> encode(std::span<std::byte> const &buffer) const;
 
   std::span<std::byte const> hmac_signature;
   std::string_view access_key_id;
   uint64_t uuid = {};
-  std::chrono::milliseconds request_timestamp = {};
+  time_type request_timestamp = {};
   std::string_view session;
   std::string_view firm;
 };

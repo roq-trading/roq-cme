@@ -13,7 +13,9 @@ namespace cme {
 namespace tools {
 
 struct CanonicalMessage final {
-  std::chrono::milliseconds request_timestamp = {};
+  using time_type = std::chrono::nanoseconds;
+
+  time_type request_timestamp = {};
   uint64_t uuid = {};
   std::string_view session;
   std::string_view firm_id;
