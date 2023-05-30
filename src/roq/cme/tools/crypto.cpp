@@ -32,7 +32,8 @@ namespace tools {
 
 namespace {
 template <typename R>
-R create_hmac(auto const &access_secret) {
+R create_hmac(auto &access_secret) {
+  log::info("DEBUG {}"sv, access_secret);
   std::vector<std::byte> buffer;
   buffer.resize(core::codec::Base64::get_max_binary_length(std::size(access_secret)));
   auto key = core::codec::Base64::decode(buffer, access_secret, true, true);
@@ -75,7 +76,7 @@ std::span<std::byte const> Crypto::create_signature(
   }
   auto tmp = static_cast<std::string_view>(writer);
   log::info(R"(DEBUG message="{}")"sv, tmp);
-  std::span tmp2 = {reinterpret_cast<std::byte const *>(std::data(tmp)), std::size(tmp)};
+  std::span tmp2 = {reinterpret_cast<std::byte const *>(std::data(tmp)), std::size(tmp)};  // debug
   log::info("DEBUG {}"sv, debug::hex::Message{tmp2});
   mac_.clear();
   mac_.update(tmp);

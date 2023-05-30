@@ -312,7 +312,7 @@ void OrderEntry::send_negotiate() {
   log::info("DEBUG uuid={}"sv, uuid_);
   auto canonical_message = tools::CanonicalMessage{
       .request_timestamp = uuid_,
-      .uuid = static_cast<uint64_t>(uuid_.count()),  // note!
+      .uuid = static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::microseconds>(uuid_).count()),  // note!
       .session = account_.get_login(),
       .firm_id = shared_.settings.ilink.firm,
       .trading_system_name = {},     // note!
@@ -339,7 +339,7 @@ void OrderEntry::send_negotiate() {
 void OrderEntry::send_establish() {
   auto canonical_message = tools::CanonicalMessage{
       .request_timestamp = uuid_,
-      .uuid = static_cast<uint64_t>(uuid_.count()),  // note!
+      .uuid = static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::microseconds>(uuid_).count()),  // note!
       .session = account_.get_login(),
       .firm_id = shared_.settings.ilink.firm,
       .trading_system_name = ROQ_PACKAGE_NAME,
