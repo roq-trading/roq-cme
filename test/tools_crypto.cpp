@@ -33,7 +33,7 @@ TEST_CASE("negotiate", "[tools_crypto]") {
   auto now = 1685417517123456789ns;
   auto message = tools::CanonicalMessage{
       .request_timestamp = now,
-      .uuid = std::chrono::duration_cast<std::chrono::microseconds>(now).count(),
+      .uuid = {},  // std::chrono::duration_cast<std::chrono::microseconds>(now).count(),
       .session = "ABC"sv,
       .firm_id = "007"sv,
       .trading_system_name = {},
