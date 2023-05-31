@@ -21,8 +21,10 @@ std::span<std::byte const> Negotiate::encode(std::span<std::byte> const &buffer)
       .uUID(uuid)
       .requestTimestamp(request_timestamp.count())
       .putSession(session)
-      .putFirm(firm);
-  return std::span{std::data(buffer), value_type::sbeBlockAndHeaderLength()};
+      .putFirm(firm)
+      .skipCredentials();
+  auto length = cme_ilink::MessageHeader::encodedLength() + value_type::computeLength(0);
+  return {std::data(buffer), length};
 }
 
 }  // namespace ilink

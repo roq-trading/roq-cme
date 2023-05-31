@@ -22,8 +22,7 @@ using namespace std::literals;
 // === CONSTANTS ===
 
 namespace {
-auto const KEY = "sSzUA6j8tGDfmLoFrOPhWHY3VeXbC3NrApp94Ci4H4XvcjuCuvOXp8gH89XzMPDe"sv;
-auto const SECRET = "tHurnNFWLFkm97xVRqoESdujAiq1ilNjnY52tDej5RilUbTVZXT2YB5eo7txFLHk"sv;
+auto const SECRET = "6YPQyMHZH8_bVh_rJ6N250cNXy901j_zYnuVsKrFz00"sv;
 }  // namespace
 
 // === IMPLEMENTATION ===
@@ -31,9 +30,10 @@ auto const SECRET = "tHurnNFWLFkm97xVRqoESdujAiq1ilNjnY52tDej5RilUbTVZXT2YB5eo7t
 TEST_CASE("negotiate", "[tools_crypto]") {
   tools::Crypto crypto{SECRET};
   std::vector<std::byte> buffer(4096);
+  auto now = 1685417517123456789ns;
   auto message = tools::CanonicalMessage{
-      .request_timestamp = 1563720650008ms,
-      .uuid = 1563720660068,
+      .request_timestamp = now,
+      .uuid = std::chrono::duration_cast<std::chrono::microseconds>(now).count(),
       .session = "ABC"sv,
       .firm_id = "007"sv,
       .trading_system_name = {},
