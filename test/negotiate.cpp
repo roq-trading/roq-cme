@@ -12,6 +12,8 @@
 
 #include "roq/debug/hex/message.hpp"
 
+#include "roq/cme/ilink/negotiate.hpp"
+
 using namespace std::literals;
 
 using namespace Catch::literals;
@@ -20,57 +22,37 @@ using namespace cme_ilink;
 
 using namespace roq;
 
-/*
-namespace {
-template <typename T>
-auto encode(auto &buffer, auto &message_header, T &value) {
-  value.sbeRewind();  // note!
-  message_header.wrap(reinterpret_cast<char *>(std::data(buffer)), 0, 0, std::size(buffer))
-      .blockLength(Negotiate500::sbeBlockLength())
-      .templateId(Negotiate500::sbeTemplateId())
-      .schemaId(Negotiate500::sbeSchemaId())
-      .version(Negotiate500::sbeSchemaVersion());
-  value.wrapForEncode(reinterpret_cast<char *>(std::data(buffer)), message_header.encodedLength(), std::size(buffer));
-  value.sbeRewind();  // note!
-  auto length = value.computeLength();
-  return std::span{std::data(buffer), length};
-}
-}  // namespace
-*/
-
 TEST_CASE("simple", "[negotiate]") {
   std::vector<std::byte> buffer(4096);
-  // MessageHeader message_header;
-  Negotiate500 negotiate;
-  auto &ngo = negotiate.wrapAndApplyHeader(reinterpret_cast<char *>(std::data(buffer)), 0, std::size(buffer));
-  ngo  //
-      .putHMACSignature("abc"sv)
-      .putAccessKeyID("abc"sv)
-      .uUID(123)
-      .requestTimestamp(123)
-      .putSession("abc"sv)
-      .putFirm("abc"sv)
-      .skipCredentials();
-  auto length = MessageHeader::encodedLength() + Negotiate500::computeLength(0);
-  std::span message{std::data(buffer), length};
-  fmt::print(stderr, "{}\n"sv, debug::hex::Message{message});
-  fmt::print(
-      stderr,
-      "{} {} {}\n"sv,
-      std::size(message),
-      Negotiate500::sbeBlockAndHeaderLength(),
-      Negotiate500::sbeBlockLength());
+  auto hmac_signature =
+      "\x55\x51\x3a\xfc\xd2\x4b\xd0\x4c\xbe\x2f\x69\x44\xe0\x26\xf1\xf2"
+      "\xb3\xb9\x26\x5c\x02\x60\xac\xba\x7e\xa6\x69\x2d\x29\x51\x55\xf6"sv;
+  auto negotiate = cme::ilink::Negotiate{
+      .hmac_signature = {reinterpret_cast<std::byte const *>(std::data(hmac_signature)), std::size(hmac_signature)},
+      .access_key_id = "uaxIRXP9SuJZ02z7cVN1"sv,
+      .uuid = 1685510153123456789,
+      .request_timestamp = 1685510153123456789ns,
+      .session = "M9H"sv,
+      .firm = "ROQ"sv,
+  };
+  auto message = negotiate.encode(buffer);
+  auto message_2 = fmt::format("{}"sv, debug::hex::Message{message});
   auto expected =
       "\x4c\x00"  // block length
-      "\xf4\x01"  // template id (500)
-      "\x08\x00"  // schema id (8)
-      "\x07\x00"  // version (7)
-      "\x61\x62\x63\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
-      "\x00"
-      "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x7b\x00\x00"
-      "\x00"
-      "\x00\x00\x00\x00\x7b\x00\x00\x00\x00\x00\x00\x00\x61\x62\x63\x61\x62\x63\x00\x0"sv;
-  CHECK(true);
+      "\xf4\x01"  // template id
+      "\x08\x00"  // schema id
+      "\x07\x00"  // version
+      "\x55\x51\x3a\xfc\xd2\x4b\xd0\x4c\xbe\x2f\x69\x44\xe0\x26\xf1\xf2"
+      "\xb3\xb9\x26\x5c\x02\x60\xac\xba\x7e\xa6\x69\x2d\x29\x51\x55\xf6"  // hmac signature
+      "\x75\x61\x78\x49\x52\x58\x50\x39\x53\x75"
+      "\x4a\x5a\x30\x32\x7a\x37\x63\x56\x4e\x31"  // access key
+      "\x15\xe7\x3c\xd6\x8d\x22\x64\x17"          // uuid
+      "\x15\xe7\x3c\xd6\x8d\x22\x64\x17"          // request timestamp
+      "\x4d\x39\x48"                              // session
+      "\x52\x4f\x51\x00\x00"                      // firm
+      "\x00\x00"sv;                               // credentials
+  auto expected_2 = fmt::format("{}"sv, debug::hex::Message{expected});
+  CHECK(message_2 == expected_2);
 }
 
 TEST_CASE("decode", "[negotiate]") {
