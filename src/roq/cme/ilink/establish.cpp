@@ -10,8 +10,12 @@ namespace roq {
 namespace cme {
 namespace ilink {
 
+namespace {
+using header_type = cme_ilink::MessageHeader;
+using value_type = cme_ilink::Establish503;
+}  // namespace
+
 std::span<std::byte const> Establish::encode(std::span<std::byte> const &buffer) const {
-  using value_type = cme_ilink::Establish503;
   value_type value;
   std::string_view tmp{reinterpret_cast<char const *>(std::data(hmac_signature)), std::size(hmac_signature)};
   auto &result = value.wrapAndApplyHeader(reinterpret_cast<char *>(std::data(buffer)), 0, std::size(buffer));
@@ -27,8 +31,10 @@ std::span<std::byte const> Establish::encode(std::span<std::byte> const &buffer)
       .nextSeqNo(next_seq_no)
       .putSession(session)
       .putFirm(firm)
-      .keepAliveInterval(keep_alive_interval.count());
-  return std::span{std::data(buffer), value_type::sbeBlockAndHeaderLength()};
+      .keepAliveInterval(keep_alive_interval.count())
+      .skipCredentials();
+  auto length = header_type::encodedLength() + value_type::computeLength(0);
+  return {std::data(buffer), length};
 }
 
 }  // namespace ilink
