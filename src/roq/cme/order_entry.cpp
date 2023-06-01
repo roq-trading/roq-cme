@@ -346,7 +346,7 @@ void OrderEntry::send_establish() {
       .trading_system_version = ROQ_BUILD_VERSION,
       .trading_system_vendor = "ROQ"sv,
       .next_seq_no = 1,
-      .keep_alive_interval = 30ms,
+      .keep_alive_interval = 30s,
   };
   log::info("DEBUG canonical_message={}"sv, canonical_message);
   auto hmac_signature = account_.create_signature(canonical_message);
