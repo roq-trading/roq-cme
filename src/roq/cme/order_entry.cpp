@@ -337,8 +337,9 @@ void OrderEntry::send_negotiate() {
 }
 
 void OrderEntry::send_establish() {
+  auto request_timestamp = clock::get_realtime<decltype(tools::CanonicalMessage::request_timestamp)>();
   auto canonical_message = tools::CanonicalMessage{
-      .request_timestamp = uuid_,
+      .request_timestamp = request_timestamp,
       .uuid = static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::microseconds>(uuid_).count()),  // note!
       .session = account_.get_login(),
       .firm_id = shared_.settings.ilink.firm,
