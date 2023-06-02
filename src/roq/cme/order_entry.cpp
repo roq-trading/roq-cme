@@ -504,10 +504,18 @@ void OrderEntry::send_party_details_list_request() {
 
 void OrderEntry::send_party_details_definition_request() {
   auto now = clock::get_realtime();
-  std::array<ilink::PartyDetailsDefinitionRequest::PartyDetails, 1> party_details{{
+  std::array<ilink::PartyDetailsDefinitionRequest::PartyDetails, 3> party_details{{
       {
           .party_detail_id = "ROQ"sv,
           .party_detail_role = cme_ilink::PartyDetailRole::ExecutingFirm,
+      },
+      {
+          .party_detail_id = "HANS"sv,
+          .party_detail_role = cme_ilink::PartyDetailRole::CustomerAccount,
+      },
+      {
+          .party_detail_id = "CSET"sv,
+          .party_detail_role = cme_ilink::PartyDetailRole::Operator,
       },
   }};
   auto party_details_definition_request = ilink::PartyDetailsDefinitionRequest{
