@@ -149,9 +149,7 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public ili
   // state
   ConnectionStatus status_ = {};
   std::chrono::nanoseconds next_heartbeat_ = {};
-  // EXPERIMENTAL
-  using time_type = tools::CanonicalMessage::time_type;
-  time_type uuid_ = {};
+  uint64_t uuid_ = {};
 };
 
 }  // namespace cme

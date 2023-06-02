@@ -122,11 +122,9 @@ void OrderEntry::operator()(Event<Timer> const &event) {
   auto now = event.value.now;
   if (!(*connection_manager_).refresh(now))
     return;
-  if (now < next_heartbeat_)
+  if (!ready() || now < next_heartbeat_)
     return;
-  next_heartbeat_ = now + KEEP_ALIVE_INTERVAL;
-  // XXX only if no other message was sent in this period
-  send_sequence();
+  send_sequence();  // note! send() updates next_heartbeat
 }
 
 uint16_t OrderEntry::operator()(
@@ -197,6 +195,7 @@ void OrderEntry::operator()(Trace<cme_ilink::EstablishmentAck504> const &event) 
   auto &[trace_info, value] = event;
   log::info("DEBUG establishment_ack={}"sv, const_cast<value_type &>(value));
   (*this)(ConnectionStatus::READY);
+  send_order_mass_status_request();
 }
 
 void OrderEntry::operator()(Trace<cme_ilink::EstablishmentReject505> const &event) {
@@ -337,6 +336,7 @@ void OrderEntry::operator()(io::net::ConnectionManager::Connected const &) {
 void OrderEntry::operator()(io::net::ConnectionManager::Disconnected const &) {
   outbound_ = {};
   inbound_ = {};
+  next_heartbeat_ = {};
   (*this)(ConnectionStatus::DISCONNECTED);
   ++counter_.disconnect;
 }
@@ -396,15 +396,18 @@ void OrderEntry::send(T const &value) {
       {reinterpret_cast<std::byte const *>(&sofh), sizeof(sofh)},
       message,
   }};
+  log::info(R"(DEBUG message="{}{}")"sv, debug::hex::Message{data[0]}, debug::hex::Message{data[1]});
   log::info<5>(R"(Sending message="{}{}")"sv, debug::hex::Message{data[0]}, debug::hex::Message{data[1]});
   (*connection_manager_).send(data);
+  next_heartbeat_ = clock::get_system() + KEEP_ALIVE_INTERVAL;
 }
 
 void OrderEntry::send_negotiate() {
-  uuid_ = clock::get_realtime<decltype(uuid_)>();
+  auto now = clock::get_realtime();
+  uuid_ = static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::microseconds>(now).count());
   auto canonical_message = tools::CanonicalMessage{
-      .request_timestamp = uuid_,
-      .uuid = static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::microseconds>(uuid_).count()),  // note!
+      .request_timestamp = now,
+      .uuid = uuid_,
       .session = account_.get_login(),
       .firm_id = shared_.settings.ilink.firm,
       .trading_system_name = {},     // note!
@@ -427,10 +430,10 @@ void OrderEntry::send_negotiate() {
 }
 
 void OrderEntry::send_establish() {
-  auto request_timestamp = clock::get_realtime<decltype(tools::CanonicalMessage::request_timestamp)>();
+  auto now = clock::get_realtime();
   auto canonical_message = tools::CanonicalMessage{
-      .request_timestamp = request_timestamp,
-      .uuid = static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::microseconds>(uuid_).count()),  // note!
+      .request_timestamp = now,
+      .uuid = uuid_,
       .session = account_.get_login(),
       .firm_id = shared_.settings.ilink.firm,
       .trading_system_name = ROQ_PACKAGE_NAME,
@@ -459,7 +462,7 @@ void OrderEntry::send_establish() {
 
 void OrderEntry::send_sequence() {
   auto sequence = ilink::Sequence{
-      .uuid = static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::microseconds>(uuid_).count()),  // note!
+      .uuid = uuid_,
       .next_seq_no = outbound_.msg_seq_num + 1,
       .fault_tolerance_indicator = cme_ilink::FTI::Primary,
       .keep_alive_interval_lapsed = cme_ilink::KeepAliveLapsed::NotLapsed,
