@@ -503,6 +503,12 @@ void OrderEntry::send_party_details_list_request() {
 
 void OrderEntry::send_party_details_definition_request() {
   auto now = clock::get_realtime();
+  std::array<ilink::PartyDetailsDefinitionRequest::PartyDetails, 1> party_details{{
+      {
+          .party_detail_id = "ROQ"sv,
+          .party_detail_role = cme_ilink::PartyDetailRole::ExecutingFirm,
+      },
+  }};
   auto party_details_definition_request = ilink::PartyDetailsDefinitionRequest{
       .party_details_list_req_id = {},  // note!
       .sending_time_epoch = now,
@@ -520,6 +526,7 @@ void OrderEntry::send_party_details_definition_request() {
       .cust_order_handling_inst = cme_ilink::CustOrdHandlInst::AlgoEngine,
       .executor = {},
       .idm_short_code = {},
+      .no_party_details = party_details,
   };
   log::info("DEBUG party_details_definition_request={}"sv, party_details_definition_request);
   send(party_details_definition_request);

@@ -34,9 +34,14 @@ std::span<std::byte const> PartyDetailsDefinitionRequest::encode(std::span<std::
   result.custOrderHandlingInst(cust_order_handling_inst);
   result.executor(executor);
   result.iDMShortCode(idm_short_code);
-  result.noPartyDetailsCount(0);
+  auto &party_details = result.noPartyDetailsCount(std::size(no_party_details));
+  for (auto &item : no_party_details) {
+    party_details.putPartyDetailID(item.party_detail_id);
+    party_details.partyDetailRole(item.party_detail_role);
+    party_details.next();
+  }
   result.noTrdRegPublicationsCount(0);
-  auto length = header_type::encodedLength() + value_type::computeLength(0, 0);
+  auto length = header_type::encodedLength() + value_type::computeLength(std::size(no_party_details), 0);
   return {std::data(buffer), length};
 }
 

@@ -45,6 +45,11 @@ struct PartyDetailsDefinitionRequest final {
   uint64_t executor = {};
   uint64_t idm_short_code = {};
   // NoPartyDetails
+  struct PartyDetails final {
+    std::string_view party_detail_id;
+    cme_ilink::PartyDetailRole::Value party_detail_role;
+  };
+  std::span<PartyDetails> no_party_details;
   // NoTrdRegPublications
 };
 
