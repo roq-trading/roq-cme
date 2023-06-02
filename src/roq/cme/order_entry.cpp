@@ -180,14 +180,14 @@ void OrderEntry::operator()(metrics::Writer &writer) {
 void OrderEntry::operator()(Trace<cme_ilink::NegotiationResponse501> const &event) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &[trace_info, value] = event;
-  log::info("negotiation_response_501={}"sv, const_cast<value_type &>(value));
+  log::info("DEBUG negotiation_response={}"sv, const_cast<value_type &>(value));
   send_establish();
 }
 
 void OrderEntry::operator()(Trace<cme_ilink::NegotiationReject502> const &event) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &[trace_info, value] = event;
-  log::error("negotiation_reject_502={}"sv, const_cast<value_type &>(value));
+  log::error("negotiation_reject={}"sv, const_cast<value_type &>(value));
   // XXX now what?
   (*connection_manager_).close();
 }
@@ -195,14 +195,14 @@ void OrderEntry::operator()(Trace<cme_ilink::NegotiationReject502> const &event)
 void OrderEntry::operator()(Trace<cme_ilink::EstablishmentAck504> const &event) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &[trace_info, value] = event;
-  log::info("establishment_ack_504={}"sv, const_cast<value_type &>(value));
+  log::info("DEBUG establishment_ack={}"sv, const_cast<value_type &>(value));
   (*this)(ConnectionStatus::READY);
 }
 
 void OrderEntry::operator()(Trace<cme_ilink::EstablishmentReject505> const &event) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &[trace_info, value] = event;
-  log::error("establishment_reject_505={}"sv, const_cast<value_type &>(value));
+  log::error("establishment_reject={}"sv, const_cast<value_type &>(value));
   // XXX now what?
   (*connection_manager_).close();
 }
@@ -210,32 +210,32 @@ void OrderEntry::operator()(Trace<cme_ilink::EstablishmentReject505> const &even
 void OrderEntry::operator()(Trace<cme_ilink::Sequence506> const &event) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &[trace_info, value] = event;
-  log::info("sequence_506={}"sv, const_cast<value_type &>(value));
+  log::info("DEBUG sequence={}"sv, const_cast<value_type &>(value));
 }
 
 void OrderEntry::operator()(Trace<cme_ilink::Terminate507> const &event) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &[trace_info, value] = event;
-  log::info("terminate_507={}"sv, const_cast<value_type &>(value));
+  log::warn("terminate={}"sv, const_cast<value_type &>(value));
   (*connection_manager_).close();
 }
 
 void OrderEntry::operator()(Trace<cme_ilink::Retransmission509> const &event) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &[trace_info, value] = event;
-  log::info("retransmission_509={}"sv, const_cast<value_type &>(value));
+  log::warn("retransmission={}"sv, const_cast<value_type &>(value));
 }
 
 void OrderEntry::operator()(Trace<cme_ilink::RetransmitReject510> const &event) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &[trace_info, value] = event;
-  log::info("retransmit_reject_510={}"sv, const_cast<value_type &>(value));
+  log::warn("retransmit_reject={}"sv, const_cast<value_type &>(value));
 }
 
 void OrderEntry::operator()(Trace<cme_ilink::NotApplied513> const &event) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &[trace_info, value] = event;
-  log::info("not_applied_513={}"sv, const_cast<value_type &>(value));
+  log::warn("not_applied={}"sv, const_cast<value_type &>(value));
 }
 
 // business
@@ -243,68 +243,68 @@ void OrderEntry::operator()(Trace<cme_ilink::NotApplied513> const &event) {
 void OrderEntry::operator()(Trace<cme_ilink::BusinessReject521> const &event) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &[trace_info, value] = event;
-  log::error("business_reject_521={}"sv, const_cast<value_type &>(value));
+  log::error("business_reject={}"sv, const_cast<value_type &>(value));
 }
 
 // execution report
 void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportNew522> const &event) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &[trace_info, value] = event;
-  log::error("execution_report_new_522={}"sv, const_cast<value_type &>(value));
+  log::info("DEBUG execution_report_new={}"sv, const_cast<value_type &>(value));
 }
 
 void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportReject523> const &event) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &[trace_info, value] = event;
-  log::error("execution_report_reject_523={}"sv, const_cast<value_type &>(value));
+  log::info("DEBUG execution_report_reject={}"sv, const_cast<value_type &>(value));
 }
 
 void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportTradeOutright525> const &event) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &[trace_info, value] = event;
-  log::error("execution_report_trade_outright_525={}"sv, const_cast<value_type &>(value));
+  log::info("DEBUG execution_report_trade_outright={}"sv, const_cast<value_type &>(value));
 }
 
 void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportTradeSpread526> const &event) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &[trace_info, value] = event;
-  log::error("execution_report_trade_spread_526={}"sv, const_cast<value_type &>(value));
+  log::info("DEBUG execution_report_trade_spread={}"sv, const_cast<value_type &>(value));
 }
 
 void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportTradeSpreadLeg527> const &event) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &[trace_info, value] = event;
-  log::error("execution_report_trade_spread_leg_527={}"sv, const_cast<value_type &>(value));
+  log::info("DEBUG execution_report_trade_spread_leg={}"sv, const_cast<value_type &>(value));
 }
 
 void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportModify531> const &event) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &[trace_info, value] = event;
-  log::error("execution_report_modify_531={}"sv, const_cast<value_type &>(value));
+  log::info("DEBUG execution_report_modify={}"sv, const_cast<value_type &>(value));
 }
 
 void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportStatus532> const &event) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &[trace_info, value] = event;
-  log::error("execution_report_status_532={}"sv, const_cast<value_type &>(value));
+  log::info("DEBUG execution_report_status={}"sv, const_cast<value_type &>(value));
 }
 
 void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportCancel534> const &event) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &[trace_info, value] = event;
-  log::error("execution_report_cancel_534={}"sv, const_cast<value_type &>(value));
+  log::info("DEBUG execution_report_cancel={}"sv, const_cast<value_type &>(value));
 }
 
 void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportPendingCancel564> const &event) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &[trace_info, value] = event;
-  log::error("execution_report_pending_cancel_564={}"sv, const_cast<value_type &>(value));
+  log::info("DEBUG execution_report_pending_cancel={}"sv, const_cast<value_type &>(value));
 }
 
 void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportPendingReplace565> const &event) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &[trace_info, value] = event;
-  log::error("execution_report_pending_replace_565={}"sv, const_cast<value_type &>(value));
+  log::info("DEBUG execution_report_pending_replace={}"sv, const_cast<value_type &>(value));
 }
 
 // order
@@ -312,13 +312,13 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportPendingReplace565> c
 void OrderEntry::operator()(Trace<cme_ilink::OrderCancelReject535> const &event) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &[trace_info, value] = event;
-  log::error("order_cancel_reject_535={}"sv, const_cast<value_type &>(value));
+  log::info("order_cancel_reject={}"sv, const_cast<value_type &>(value));
 }
 
 void OrderEntry::operator()(Trace<cme_ilink::OrderCancelReplaceReject536> const &event) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &[trace_info, value] = event;
-  log::error("order_cancel_replace_reject_536={}"sv, const_cast<value_type &>(value));
+  log::info("DEBUG order_cancel_replace_reject={}"sv, const_cast<value_type &>(value));
 }
 
 // security definition
@@ -326,7 +326,7 @@ void OrderEntry::operator()(Trace<cme_ilink::OrderCancelReplaceReject536> const 
 void OrderEntry::operator()(Trace<cme_ilink::SecurityDefinitionResponse561> const &event) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &[trace_info, value] = event;
-  log::error("security_definition_response_561={}"sv, const_cast<value_type &>(value));
+  log::info("DEBUG security_definition_response={}"sv, const_cast<value_type &>(value));
 }
 
 void OrderEntry::operator()(io::net::ConnectionManager::Connected const &) {
