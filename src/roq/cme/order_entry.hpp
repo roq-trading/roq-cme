@@ -93,11 +93,17 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public ili
  private:
   void operator()(ConnectionStatus);
 
+  template <typename T>
+  void send(T const &);
+
   void send_negotiate();
   void send_establish();
 
-  template <typename T>
-  void send(T const &);
+  void send_security_definition_request();
+
+  void send_new_order_single(CreateOrder const &);
+  void send_order_cancel_request(CancelOrder const &);
+  void send_order_mass_action_request(CancelAllOrders const &);
 
  private:
   Handler &handler_;

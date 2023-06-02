@@ -233,7 +233,7 @@ struct fmt::formatter<cme_ilink::BooleanFlag::Value> {
     return std::begin(context);
   }
   template <typename Context>
-  auto format(value_type &value, Context &context) const {
+  auto format(value_type const &value, Context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), "{}"sv, magic_enum::enum_name(value));
   }
@@ -249,7 +249,7 @@ struct fmt::formatter<cme_ilink::BooleanNULL::Value> {
     return std::begin(context);
   }
   template <typename Context>
-  auto format(value_type &value, Context &context) const {
+  auto format(value_type const &value, Context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), "{}"sv, magic_enum::enum_name(value));
   }
@@ -265,7 +265,7 @@ struct fmt::formatter<cme_ilink::ExecMode::Value> {
     return std::begin(context);
   }
   template <typename Context>
-  auto format(value_type &value, Context &context) const {
+  auto format(value_type const &value, Context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), "{}"sv, magic_enum::enum_name(value));
   }
@@ -281,7 +281,7 @@ struct fmt::formatter<cme_ilink::ExecReason::Value> {
     return std::begin(context);
   }
   template <typename Context>
-  auto format(value_type &value, Context &context) const {
+  auto format(value_type const &value, Context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), "{}"sv, magic_enum::enum_name(value));
   }
@@ -297,7 +297,7 @@ struct fmt::formatter<cme_ilink::ExpCycle::Value> {
     return std::begin(context);
   }
   template <typename Context>
-  auto format(value_type &value, Context &context) const {
+  auto format(value_type const &value, Context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), "{}"sv, magic_enum::enum_name(value));
   }
@@ -313,7 +313,7 @@ struct fmt::formatter<cme_ilink::FTI::Value> {
     return std::begin(context);
   }
   template <typename Context>
-  auto format(value_type &value, Context &context) const {
+  auto format(value_type const &value, Context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), "{}"sv, magic_enum::enum_name(value));
   }
@@ -329,7 +329,7 @@ struct fmt::formatter<cme_ilink::KeepAliveLapsed::Value> {
     return std::begin(context);
   }
   template <typename Context>
-  auto format(value_type &value, Context &context) const {
+  auto format(value_type const &value, Context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), "{}"sv, magic_enum::enum_name(value));
   }
@@ -345,7 +345,7 @@ struct fmt::formatter<cme_ilink::ManualOrdInd::Value> {
     return std::begin(context);
   }
   template <typename Context>
-  auto format(value_type &value, Context &context) const {
+  auto format(value_type const &value, Context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), "{}"sv, magic_enum::enum_name(value));
   }
@@ -361,7 +361,7 @@ struct fmt::formatter<cme_ilink::ManualOrdIndReq::Value> {
     return std::begin(context);
   }
   template <typename Context>
-  auto format(value_type &value, Context &context) const {
+  auto format(value_type const &value, Context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), "{}"sv, magic_enum::enum_name(value));
   }
@@ -377,7 +377,7 @@ struct fmt::formatter<cme_ilink::OrdStatusTrd::Value> {
     return std::begin(context);
   }
   template <typename Context>
-  auto format(value_type &value, Context &context) const {
+  auto format(value_type const &value, Context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), "{}"sv, magic_enum::enum_name(value));
   }
@@ -393,7 +393,7 @@ struct fmt::formatter<cme_ilink::OrderStatus::Value> {
     return std::begin(context);
   }
   template <typename Context>
-  auto format(value_type &value, Context &context) const {
+  auto format(value_type const &value, Context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), "{}"sv, magic_enum::enum_name(value));
   }
@@ -409,7 +409,7 @@ struct fmt::formatter<cme_ilink::OrderType::Value> {
     return std::begin(context);
   }
   template <typename Context>
-  auto format(value_type &value, Context &context) const {
+  auto format(value_type const &value, Context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), "{}"sv, magic_enum::enum_name(value));
   }
@@ -425,7 +425,7 @@ struct fmt::formatter<cme_ilink::SecRspTyp::Value> {
     return std::begin(context);
   }
   template <typename Context>
-  auto format(value_type &value, Context &context) const {
+  auto format(value_type const &value, Context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), "{}"sv, magic_enum::enum_name(value));
   }
@@ -441,7 +441,7 @@ struct fmt::formatter<cme_ilink::ShortSaleType::Value> {
     return std::begin(context);
   }
   template <typename Context>
-  auto format(value_type &value, Context &context) const {
+  auto format(value_type const &value, Context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), "{}"sv, magic_enum::enum_name(value));
   }
@@ -457,7 +457,7 @@ struct fmt::formatter<cme_ilink::SideReq::Value> {
     return std::begin(context);
   }
   template <typename Context>
-  auto format(value_type &value, Context &context) const {
+  auto format(value_type const &value, Context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), "{}"sv, magic_enum::enum_name(value));
   }
@@ -473,7 +473,7 @@ struct fmt::formatter<cme_ilink::SplitMsg::Value> {
     return std::begin(context);
   }
   template <typename Context>
-  auto format(value_type &value, Context &context) const {
+  auto format(value_type const &value, Context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), "{}"sv, magic_enum::enum_name(value));
   }
@@ -489,7 +489,7 @@ struct fmt::formatter<cme_ilink::TimeInForce::Value> {
     return std::begin(context);
   }
   template <typename Context>
-  auto format(value_type &value, Context &context) const {
+  auto format(value_type const &value, Context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), "{}"sv, magic_enum::enum_name(value));
   }

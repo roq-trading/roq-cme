@@ -1,6 +1,15 @@
 set(TARGET_NAME "${PROJECT_NAME}-ilink")
 
-set(SOURCES config_reader.cpp establish.cpp negotiate.cpp parser.cpp)
+set(SOURCES
+    config_reader.cpp
+    establish.cpp
+    negotiate.cpp
+    new_order_single.cpp
+    order_cancel_request.cpp
+    order_mass_action_request.cpp
+    parser.cpp
+    party_details_list_request.cpp
+    security_definition_request.cpp)
 
 include(RoqAutogen)
 
