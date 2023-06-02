@@ -93,7 +93,8 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public ili
  private:
   void operator()(ConnectionStatus);
 
-  uint32_t next_seq_num();
+  uint32_t peek_next_seq_num();
+  uint32_t fetch_next_seq_num();
 
   template <typename T>
   void send(T const &);

@@ -196,7 +196,8 @@ void OrderEntry::operator()(Trace<cme_ilink::EstablishmentAck504> const &event) 
   log::info("DEBUG establishment_ack={}"sv, const_cast<value_type &>(value));
   (*this)(ConnectionStatus::READY);
   // EXPERIMENTAL
-  send_party_details_list_request();
+  // send_party_details_list_request();
+  send_party_details_definition_request();
   // send_order_mass_status_request();
 }
 
@@ -382,9 +383,14 @@ void OrderEntry::operator()(ConnectionStatus status) {
 
 //
 
-uint32_t OrderEntry::next_seq_num() {
-  outbound_.msg_seq_num = (outbound_.msg_seq_num + 1) % 1000000000;
-  return outbound_.msg_seq_num;
+uint32_t OrderEntry::peek_next_seq_num() {
+  return (outbound_.msg_seq_num + 1) % 1000000000;
+}
+
+uint32_t OrderEntry::fetch_next_seq_num() {
+  auto result = peek_next_seq_num();
+  outbound_.msg_seq_num = result;
+  return result;
 }
 
 template <typename T>
@@ -446,7 +452,7 @@ void OrderEntry::send_establish() {
       .trading_system_name = ROQ_PACKAGE_NAME,
       .trading_system_version = ROQ_BUILD_VERSION,
       .trading_system_vendor = "ROQ"sv,
-      .next_seq_no = outbound_.msg_seq_num + 1,
+      .next_seq_no = peek_next_seq_num(),
       .keep_alive_interval = KEEP_ALIVE_INTERVAL,
   };
   auto hmac_signature = account_.create_signature(canonical_message);
@@ -470,7 +476,7 @@ void OrderEntry::send_establish() {
 void OrderEntry::send_sequence() {
   auto sequence = ilink::Sequence{
       .uuid = uuid_,
-      .next_seq_no = outbound_.msg_seq_num + 1,
+      .next_seq_no = peek_next_seq_num(),
       .fault_tolerance_indicator = cme_ilink::FTI::Primary,
       .keep_alive_interval_lapsed = cme_ilink::KeepAliveLapsed::NotLapsed,
   };
@@ -489,14 +495,32 @@ void OrderEntry::send_party_details_list_request() {
   auto party_details_list_request = ilink::PartyDetailsListRequest{
       .party_details_list_req_id = 1,  // XXX
       .sending_time_epoch = now,
-      .seq_num = next_seq_num(),
+      .seq_num = fetch_next_seq_num(),
   };
   log::info("DEBUG party_details_list_request={}"sv, party_details_list_request);
   send(party_details_list_request);
 }
 
 void OrderEntry::send_party_details_definition_request() {
-  auto party_details_definition_request = ilink::PartyDetailsDefinitionRequest{};
+  auto now = clock::get_realtime();
+  auto party_details_definition_request = ilink::PartyDetailsDefinitionRequest{
+      .party_details_list_req_id = {},  // note!
+      .sending_time_epoch = now,
+      .list_update_action = cme_ilink::ListUpdAct::Add,
+      .seq_num = fetch_next_seq_num(),
+      .memo = {},
+      .avg_px_group_id = {},
+      .self_match_prevention_id = {},
+      .cmta_giveup_cd = cme_ilink::CmtaGiveUpCD::GiveUp,
+      .cust_order_capacity = cme_ilink::CustOrderCapacity::Membertradingfortheirownaccount,
+      .clearing_account_type = cme_ilink::ClearingAcctType::Firm,
+      .self_match_prevention_instruction = cme_ilink::SMPI::CancelNewest,
+      .avg_px_indicator = cme_ilink::AvgPxInd::NoAveragePricing,
+      .clearing_trade_price_type = cme_ilink::SLEDS::TradeClearingatExecutionPrice,
+      .cust_order_handling_inst = cme_ilink::CustOrdHandlInst::AlgoEngine,
+      .executor = {},
+      .idm_short_code = {},
+  };
   log::info("DEBUG party_details_definition_request={}"sv, party_details_definition_request);
   send(party_details_definition_request);
 }

@@ -18,9 +18,8 @@ using value_type = cme_ilink::PartyDetailsDefinitionRequest518;
 std::span<std::byte const> PartyDetailsDefinitionRequest::encode(std::span<std::byte> const &buffer) const {
   value_type value;
   auto &result = value.wrapAndApplyHeader(reinterpret_cast<char *>(std::data(buffer)), 0, std::size(buffer));
-
   result.partyDetailsListReqID(party_details_list_req_id);
-  result.sendingTimeEpoch(sending_time_epoch);
+  result.sendingTimeEpoch(sending_time_epoch.count());
   result.listUpdateAction(list_update_action);
   result.seqNum(seq_num);
   result.putMemo(memo);
