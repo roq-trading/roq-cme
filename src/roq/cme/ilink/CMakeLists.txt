@@ -5,6 +5,7 @@ set(SOURCES
     establish.cpp
     negotiate.cpp
     new_order_single.cpp
+    order_cancel_replace_request.cpp
     order_cancel_request.cpp
     order_mass_action_request.cpp
     order_mass_status_request.cpp

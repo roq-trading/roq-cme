@@ -113,6 +113,7 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public ili
 
   void send_new_order_single(CreateOrder const &);
   void send_order_cancel_request(CancelOrder const &);
+  void send_order_cancel_replace_request(ModifyOrder const &);
   void send_order_mass_action_request(CancelAllOrders const &);
 
  private:

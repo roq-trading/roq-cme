@@ -26,6 +26,7 @@
 #include "roq/cme/ilink/order_mass_status_request.hpp"
 
 #include "roq/cme/ilink/new_order_single.hpp"
+#include "roq/cme/ilink/order_cancel_replace_request.hpp"
 #include "roq/cme/ilink/order_cancel_request.hpp"
 #include "roq/cme/ilink/order_mass_action_request.hpp"
 
@@ -554,6 +555,12 @@ void OrderEntry::send_order_cancel_request(CancelOrder const &cancel_order) {
   auto order_cancel_request = ilink::OrderCancelRequest{};
   log::info("DEBUG order_cancel_request={}"sv, order_cancel_request);
   send(order_cancel_request);
+}
+
+void OrderEntry::send_order_cancel_replace_request(ModifyOrder const &modify_order) {
+  auto order_cancel_replace_request = ilink::OrderCancelReplaceRequest{};
+  log::info("DEBUG order_cancel_replace_request={}"sv, order_cancel_replace_request);
+  send(order_cancel_replace_request);
 }
 
 void OrderEntry::send_order_mass_action_request(CancelAllOrders const &cancel_all_orders) {
