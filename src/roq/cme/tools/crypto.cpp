@@ -33,11 +33,9 @@ namespace tools {
 namespace {
 template <typename R>
 R create_hmac(auto &access_secret) {
-  log::info(R"(DEBUG access_secret="{}")"sv, access_secret);
   std::vector<std::byte> buffer;
   buffer.resize(core::codec::Base64::get_max_binary_length(std::size(access_secret)));
   auto key = core::codec::Base64::decode(buffer, access_secret, true, true);
-  log::info(R"(DEBUG decoded_access_secreate="{}")"sv, debug::hex::Message{key});
   return R{key};
 }
 }  // namespace
@@ -51,8 +49,6 @@ std::span<std::byte const> Crypto::create_signature(
     std::span<std::byte> const &buffer, CanonicalMessage const &message) {
   core::text::Writer writer{buffer};
   static_assert(std::is_same<decltype(message.request_timestamp)::rep, int64_t>::value);
-  log::info("DEBUG request_timestamp={}"sv, message.request_timestamp);
-  log::info("DEBUG uuid={}"sv, message.uuid);
   writer  //
       .write(message.request_timestamp.count())
       .write('\n')
@@ -75,11 +71,9 @@ std::span<std::byte const> Crypto::create_signature(
         .write(message.keep_alive_interval.count());
   }
   auto tmp = static_cast<std::string_view>(writer);
-  log::info(R"(DEBUG canonical_message="{}")"sv, tmp);
   mac_.clear();
   mac_.update(tmp);
   auto result = mac_.final(digest_);
-  log::info("DEBUG digest={}"sv, debug::hex::Message{result});
   return result;
 }
 
