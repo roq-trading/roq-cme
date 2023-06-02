@@ -383,7 +383,6 @@ void OrderEntry::operator()(ConnectionStatus status) {
 template <typename T>
 void OrderEntry::send(T const &value) {
   auto message = value.encode(encode_buffer_2_);
-  log::info("{}"sv, debug::hex::Message{message});
   uint16_t length = utils::safe_cast{std::size(message) + 4};
   struct SOFH final {
     uint16_t message_length;
@@ -397,13 +396,12 @@ void OrderEntry::send(T const &value) {
       {reinterpret_cast<std::byte const *>(&sofh), sizeof(sofh)},
       message,
   }};
-  log::info("DEBUG {}{}"sv, debug::hex::Message{data[0]}, debug::hex::Message{data[1]});
+  log::info<5>(R"(Sending message="{}{}")"sv, debug::hex::Message{data[0]}, debug::hex::Message{data[1]});
   (*connection_manager_).send(data);
 }
 
 void OrderEntry::send_negotiate() {
   uuid_ = clock::get_realtime<decltype(uuid_)>();
-  log::info("DEBUG uuid={}"sv, uuid_);
   auto canonical_message = tools::CanonicalMessage{
       .request_timestamp = uuid_,
       .uuid = static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::microseconds>(uuid_).count()),  // note!
@@ -415,9 +413,7 @@ void OrderEntry::send_negotiate() {
       .next_seq_no = {},             // note!
       .keep_alive_interval = {},     // note!
   };
-  log::info("DEBUG canonical_message={}"sv, canonical_message);
   auto hmac_signature = account_.create_signature(canonical_message);
-  log::info(R"(DEBUG hmac_signature="{}")"sv, hmac_signature);
   auto negotiate = ilink::Negotiate{
       .hmac_signature = hmac_signature,
       .access_key_id = account_.get_password(),
@@ -426,7 +422,7 @@ void OrderEntry::send_negotiate() {
       .session = canonical_message.session,
       .firm = canonical_message.firm_id,
   };
-  log::info("negotiate={}"sv, negotiate);
+  log::info("DEBUG negotiate={}"sv, negotiate);
   send(negotiate);
 }
 
@@ -443,9 +439,7 @@ void OrderEntry::send_establish() {
       .next_seq_no = outbound_.msg_seq_num + 1,
       .keep_alive_interval = KEEP_ALIVE_INTERVAL,
   };
-  log::info("DEBUG canonical_message={}"sv, canonical_message);
   auto hmac_signature = account_.create_signature(canonical_message);
-  log::info(R"(DEBUG hmac_signature="{}")"sv, hmac_signature);
   auto establish = ilink::Establish{
       .hmac_signature = hmac_signature,
       .access_key_id = account_.get_password(),
@@ -459,7 +453,7 @@ void OrderEntry::send_establish() {
       .firm = canonical_message.firm_id,
       .keep_alive_interval = canonical_message.keep_alive_interval,
   };
-  log::info("establish={}"sv, establish);
+  log::info("DEBUG establish={}"sv, establish);
   send(establish);
 }
 
@@ -470,55 +464,55 @@ void OrderEntry::send_sequence() {
       .fault_tolerance_indicator = cme_ilink::FTI::Primary,
       .keep_alive_interval_lapsed = cme_ilink::KeepAliveLapsed::NotLapsed,
   };
-  log::info("sequence={}"sv, sequence);
+  log::info("DEBUG sequence={}"sv, sequence);
   send(sequence);
 }
 
 void OrderEntry::send_terminate() {
   auto terminate = ilink::Terminate{};
-  log::info("terminate={}"sv, terminate);
+  log::info("DEBUG terminate={}"sv, terminate);
   send(terminate);
 }
 
 void OrderEntry::send_party_details_list_request() {
   auto party_details_list_request = ilink::PartyDetailsListRequest{};
-  log::info("party_details_list_request={}"sv, party_details_list_request);
+  log::info("DEBUG party_details_list_request={}"sv, party_details_list_request);
   send(party_details_list_request);
 }
 
 void OrderEntry::send_party_details_definition_request() {
   auto party_details_definition_request = ilink::PartyDetailsDefinitionRequest{};
-  log::info("party_details_definition_request={}"sv, party_details_definition_request);
+  log::info("DEBUG party_details_definition_request={}"sv, party_details_definition_request);
   send(party_details_definition_request);
 }
 
 void OrderEntry::send_security_definition_request() {
   auto security_definition_request = ilink::SecurityDefinitionRequest{};
-  log::info("security_definition_request={}"sv, security_definition_request);
+  log::info("DEBUG security_definition_request={}"sv, security_definition_request);
   send(security_definition_request);
 }
 
 void OrderEntry::send_order_mass_status_request() {
   auto order_mass_status_request = ilink::OrderMassStatusRequest{};
-  log::info("order_mass_status_request={}"sv, order_mass_status_request);
+  log::info("DEBUG order_mass_status_request={}"sv, order_mass_status_request);
   send(order_mass_status_request);
 }
 
 void OrderEntry::send_new_order_single(CreateOrder const &create_order) {
   auto new_order_single = ilink::NewOrderSingle{};
-  log::info("new_order_single={}"sv, new_order_single);
+  log::info("DEBUG new_order_single={}"sv, new_order_single);
   send(new_order_single);
 }
 
 void OrderEntry::send_order_cancel_request(CancelOrder const &cancel_order) {
   auto order_cancel_request = ilink::OrderCancelRequest{};
-  log::info("order_cancel_request={}"sv, order_cancel_request);
+  log::info("DEBUG order_cancel_request={}"sv, order_cancel_request);
   send(order_cancel_request);
 }
 
 void OrderEntry::send_order_mass_action_request(CancelAllOrders const &cancel_all_orders) {
   auto order_mass_action_request = ilink::OrderMassActionRequest{};
-  log::info("order_mass_action_request={}"sv, order_mass_action_request);
+  log::info("DEBUG order_mass_action_request={}"sv, order_mass_action_request);
   send(order_mass_action_request);
 }
 
