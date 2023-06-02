@@ -119,8 +119,13 @@ void OrderEntry::operator()(Event<Stop> const &) {
 }
 
 void OrderEntry::operator()(Event<Timer> const &event) {
-  if (!(*connection_manager_).refresh(event.value.now))
+  auto now = event.value.now;
+  if (!(*connection_manager_).refresh(now))
     return;
+  if (now < next_heartbeat_)
+    return;
+  next_heartbeat_ = now + KEEP_ALIVE_INTERVAL;
+  send_sequence();
 }
 
 uint16_t OrderEntry::operator()(
@@ -205,13 +210,14 @@ void OrderEntry::operator()(Trace<cme_ilink::Sequence506> const &event) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &[trace_info, value] = event;
   log::info("sequence_506={}"sv, const_cast<value_type &>(value));
-  send_sequence();  // echo
+  send_sequence();
 }
 
 void OrderEntry::operator()(Trace<cme_ilink::Terminate507> const &event) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &[trace_info, value] = event;
   log::info("terminate_507={}"sv, const_cast<value_type &>(value));
+  (*connection_manager_).close();
 }
 
 void OrderEntry::operator()(Trace<cme_ilink::Retransmission509> const &event) {
@@ -329,6 +335,8 @@ void OrderEntry::operator()(io::net::ConnectionManager::Connected const &) {
 }
 
 void OrderEntry::operator()(io::net::ConnectionManager::Disconnected const &) {
+  outbound_ = {};
+  inbound_ = {};
   (*this)(ConnectionStatus::DISCONNECTED);
   ++counter_.disconnect;
 }
@@ -432,7 +440,7 @@ void OrderEntry::send_establish() {
       .trading_system_name = ROQ_PACKAGE_NAME,
       .trading_system_version = ROQ_BUILD_VERSION,
       .trading_system_vendor = "ROQ"sv,
-      .next_seq_no = 1,  // note! reset
+      .next_seq_no = outbound_.msg_seq_num + 1,
       .keep_alive_interval = KEEP_ALIVE_INTERVAL,
   };
   log::info("DEBUG canonical_message={}"sv, canonical_message);
@@ -458,7 +466,7 @@ void OrderEntry::send_establish() {
 void OrderEntry::send_sequence() {
   auto sequence = ilink::Sequence{
       .uuid = static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::microseconds>(uuid_).count()),  // note!
-      .next_seq_no = 1,
+      .next_seq_no = outbound_.msg_seq_num + 1,
       .fault_tolerance_indicator = cme_ilink::FTI::Primary,
       .keep_alive_interval_lapsed = cme_ilink::KeepAliveLapsed::NotLapsed,
   };

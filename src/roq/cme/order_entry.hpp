@@ -137,10 +137,10 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public ili
   } latency_;
   // state
   struct {
-    uint64_t msg_seq_num = {};
+    uint32_t msg_seq_num = {};
   } outbound_;
   struct {
-    uint64_t msg_seq_num = {};
+    uint32_t msg_seq_num = {};
   } inbound_;
   // account
   Account &account_;
@@ -148,7 +148,6 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public ili
   Shared &shared_;
   // state
   ConnectionStatus status_ = {};
-  bool ready_ = false;
   std::chrono::nanoseconds next_heartbeat_ = {};
   // EXPERIMENTAL
   using time_type = tools::CanonicalMessage::time_type;
