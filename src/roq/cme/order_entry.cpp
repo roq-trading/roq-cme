@@ -15,8 +15,14 @@
 
 #include "roq/cme/ilink/establish.hpp"
 #include "roq/cme/ilink/negotiate.hpp"
+#include "roq/cme/ilink/terminate.hpp"
+
+#include "roq/cme/ilink/party_details_definition_request.hpp"
+#include "roq/cme/ilink/party_details_list_request.hpp"
 
 #include "roq/cme/ilink/security_definition_request.hpp"
+
+#include "roq/cme/ilink/order_mass_status_request.hpp"
 
 #include "roq/cme/ilink/new_order_single.hpp"
 #include "roq/cme/ilink/order_cancel_request.hpp"
@@ -447,10 +453,34 @@ void OrderEntry::send_establish() {
   send(establish);
 }
 
+void OrderEntry::send_terminate() {
+  auto terminate = ilink::Terminate{};
+  log::info("terminate={}"sv, terminate);
+  send(terminate);
+}
+
+void OrderEntry::send_party_details_list_request() {
+  auto party_details_list_request = ilink::PartyDetailsListRequest{};
+  log::info("party_details_list_request={}"sv, party_details_list_request);
+  send(party_details_list_request);
+}
+
+void OrderEntry::send_party_details_definition_request() {
+  auto party_details_definition_request = ilink::PartyDetailsDefinitionRequest{};
+  log::info("party_details_definition_request={}"sv, party_details_definition_request);
+  send(party_details_definition_request);
+}
+
 void OrderEntry::send_security_definition_request() {
   auto security_definition_request = ilink::SecurityDefinitionRequest{};
   log::info("security_definition_request={}"sv, security_definition_request);
   send(security_definition_request);
+}
+
+void OrderEntry::send_order_mass_status_request() {
+  auto order_mass_status_request = ilink::OrderMassStatusRequest{};
+  log::info("order_mass_status_request={}"sv, order_mass_status_request);
+  send(order_mass_status_request);
 }
 
 void OrderEntry::send_new_order_single(CreateOrder const &create_order) {

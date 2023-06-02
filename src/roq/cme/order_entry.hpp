@@ -98,8 +98,14 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public ili
 
   void send_negotiate();
   void send_establish();
+  void send_terminate();
+
+  void send_party_details_list_request();
+  void send_party_details_definition_request();
 
   void send_security_definition_request();
+
+  void send_order_mass_status_request();
 
   void send_new_order_single(CreateOrder const &);
   void send_order_cancel_request(CancelOrder const &);

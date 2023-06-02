@@ -45,7 +45,7 @@ struct fmt::formatter<roq::cme::ilink::PartyDetailsListRequest> {
         R"({{)"
         R"(party_details_list_req_id={}, )"
         R"(sending_time_epoch={}, )"
-        R"(seq_num="{}")"
+        R"(seq_num={})"
         R"(}})"_cf,
         value.party_details_list_req_id,
         value.sending_time_epoch,

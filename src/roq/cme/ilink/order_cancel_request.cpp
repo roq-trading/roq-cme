@@ -31,7 +31,7 @@ std::span<std::byte const> OrderCancelRequest::encode(std::span<std::byte> const
   result.side(side);
   result.liquidityFlag(liquidity_flag ? cme_ilink::BooleanNULL::True : cme_ilink::BooleanNULL::False);
   result.putOrigOrderUser(orig_order_user);
-  auto length = header_type::encodedLength() + value_type::sbeBlockLength();
+  auto length = header_type::encodedLength() + value_type::computeLength();
   return {std::data(buffer), length};
 }
 

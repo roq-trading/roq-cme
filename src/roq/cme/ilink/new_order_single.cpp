@@ -44,7 +44,7 @@ std::span<std::byte const> NewOrderSingle::encode(std::span<std::byte> const &bu
   result.shortSaleType(short_sale_type);
   result.discretionPrice().mantissa(cme_ilink::PRICENULL9::mantissaNullValue());
   result.reservationPrice().mantissa(cme_ilink::PRICENULL9::mantissaNullValue());
-  auto length = header_type::encodedLength() + value_type::sbeBlockLength();
+  auto length = header_type::encodedLength() + value_type::computeLength();
   return {std::data(buffer), length};
 }
 

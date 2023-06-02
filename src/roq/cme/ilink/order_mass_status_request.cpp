@@ -1,8 +1,8 @@
 /* Copyright (c) 2017-2023, Hans Erik Thrane */
 
-#include "roq/cme/ilink/order_mass_action_request.hpp"
+#include "roq/cme/ilink/order_mass_status_request.hpp"
 
-#include <cme_ilink/OrderMassActionRequest529.h>
+#include <cme_ilink/OrderMassStatusRequest530.h>
 
 using namespace std::literals;
 
@@ -12,14 +12,14 @@ namespace ilink {
 
 namespace {
 using header_type = cme_ilink::MessageHeader;
-using value_type = cme_ilink::OrderMassActionRequest529;
+using value_type = cme_ilink::OrderMassStatusRequest530;
 }  // namespace
 
-std::span<std::byte const> OrderMassActionRequest::encode(std::span<std::byte> const &buffer) const {
+std::span<std::byte const> OrderMassStatusRequest::encode(std::span<std::byte> const &buffer) const {
   value_type value;
   auto &result = value.wrapAndApplyHeader(reinterpret_cast<char *>(std::data(buffer)), 0, std::size(buffer));
   result.partyDetailsListReqID(party_details_list_req_id);
-  result.orderRequestID(order_request_id);
+  result.massStatusReqID(mass_status_req_id);
   result.manualOrderIndicator(manual_order_indicator);
   result.seqNum(seq_num);
   result.putSenderID(sender_id);
@@ -27,14 +27,10 @@ std::span<std::byte const> OrderMassActionRequest::encode(std::span<std::byte> c
   result.putSecurityGroup(security_group);
   result.putLocation(location);
   result.securityID(security_id);
-  result.massActionScope(mass_action_scope);
-  result.marketSegmentID(market_segment_id);
-  result.massCancelRequestType(mass_cancel_request_type);
-  result.side(side);
-  result.ordType(ord_type);
+  result.massStatusReqType(mass_status_req_type);
+  result.ordStatusReqType(ord_status_req_type);
   result.timeInForce(time_in_force);
-  result.liquidityFlag(liquidity_flag ? cme_ilink::BooleanNULL::True : cme_ilink::BooleanNULL::False);
-  result.putOrigOrderUser(orig_order_user);
+  result.marketSegmentID(market_segment_id);
   auto length = header_type::encodedLength() + value_type::computeLength();
   return {std::data(buffer), length};
 }
