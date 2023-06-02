@@ -19,7 +19,7 @@ std::span<std::byte const> PartyDetailsListRequest::encode(std::span<std::byte> 
   value_type value;
   auto &result = value.wrapAndApplyHeader(reinterpret_cast<char *>(std::data(buffer)), 0, std::size(buffer));
   result.partyDetailsListReqID(party_details_list_req_id);
-  result.sendingTimeEpoch(sending_time_epoch);
+  result.sendingTimeEpoch(sending_time_epoch.count());
   result.seqNum(seq_num);
   result.noRequestingPartyIDsCount(0);
   result.noPartyIDsCount(0);

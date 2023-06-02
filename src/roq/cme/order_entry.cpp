@@ -195,7 +195,9 @@ void OrderEntry::operator()(Trace<cme_ilink::EstablishmentAck504> const &event) 
   auto &[trace_info, value] = event;
   log::info("DEBUG establishment_ack={}"sv, const_cast<value_type &>(value));
   (*this)(ConnectionStatus::READY);
-  send_order_mass_status_request();
+  // EXPERIMENTAL
+  send_party_details_list_request();
+  // send_order_mass_status_request();
 }
 
 void OrderEntry::operator()(Trace<cme_ilink::EstablishmentReject505> const &event) {
@@ -478,7 +480,12 @@ void OrderEntry::send_terminate() {
 }
 
 void OrderEntry::send_party_details_list_request() {
-  auto party_details_list_request = ilink::PartyDetailsListRequest{};
+  auto now = clock::get_realtime();
+  auto party_details_list_request = ilink::PartyDetailsListRequest{
+      .party_details_list_req_id = 1,  // XXX
+      .sending_time_epoch = now,
+      .seq_num = ++outbound_.msg_seq_num,
+  };
   log::info("DEBUG party_details_list_request={}"sv, party_details_list_request);
   send(party_details_list_request);
 }

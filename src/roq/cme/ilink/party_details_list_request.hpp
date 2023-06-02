@@ -20,7 +20,7 @@ struct PartyDetailsListRequest final {
   std::span<std::byte const> encode(std::span<std::byte> const &buffer) const;
 
   uint64_t party_details_list_req_id = {};
-  uint64_t sending_time_epoch = {};
+  std::chrono::nanoseconds sending_time_epoch = {};
   uint32_t seq_num = {};
   // NoRequestingPartyIDs
   // NoPartyIDs
