@@ -382,6 +382,11 @@ void OrderEntry::operator()(ConnectionStatus status) {
 
 //
 
+uint32_t OrderEntry::next_seq_num() {
+  outbound_.msg_seq_num = (outbound_.msg_seq_num + 1) % 1000000000;
+  return outbound_.msg_seq_num;
+}
+
 template <typename T>
 void OrderEntry::send(T const &value) {
   auto message = value.encode(encode_buffer_2_);
@@ -484,7 +489,7 @@ void OrderEntry::send_party_details_list_request() {
   auto party_details_list_request = ilink::PartyDetailsListRequest{
       .party_details_list_req_id = 1,  // XXX
       .sending_time_epoch = now,
-      .seq_num = ++outbound_.msg_seq_num,
+      .seq_num = next_seq_num(),
   };
   log::info("DEBUG party_details_list_request={}"sv, party_details_list_request);
   send(party_details_list_request);
