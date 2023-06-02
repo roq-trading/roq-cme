@@ -125,6 +125,7 @@ void OrderEntry::operator()(Event<Timer> const &event) {
   if (now < next_heartbeat_)
     return;
   next_heartbeat_ = now + KEEP_ALIVE_INTERVAL;
+  // XXX only if no other message was sent in this period
   send_sequence();
 }
 
@@ -210,7 +211,6 @@ void OrderEntry::operator()(Trace<cme_ilink::Sequence506> const &event) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &[trace_info, value] = event;
   log::info("sequence_506={}"sv, const_cast<value_type &>(value));
-  send_sequence();
 }
 
 void OrderEntry::operator()(Trace<cme_ilink::Terminate507> const &event) {
