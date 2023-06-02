@@ -98,6 +98,7 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public ili
 
   void send_negotiate();
   void send_establish();
+  void send_sequence();
   void send_terminate();
 
   void send_party_details_list_request();

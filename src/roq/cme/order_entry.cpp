@@ -15,6 +15,7 @@
 
 #include "roq/cme/ilink/establish.hpp"
 #include "roq/cme/ilink/negotiate.hpp"
+#include "roq/cme/ilink/sequence.hpp"
 #include "roq/cme/ilink/terminate.hpp"
 
 #include "roq/cme/ilink/party_details_definition_request.hpp"
@@ -204,6 +205,7 @@ void OrderEntry::operator()(Trace<cme_ilink::Sequence506> const &event) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &[trace_info, value] = event;
   log::info("sequence_506={}"sv, const_cast<value_type &>(value));
+  send_sequence();  // echo
 }
 
 void OrderEntry::operator()(Trace<cme_ilink::Terminate507> const &event) {
@@ -451,6 +453,17 @@ void OrderEntry::send_establish() {
   };
   log::info("establish={}"sv, establish);
   send(establish);
+}
+
+void OrderEntry::send_sequence() {
+  auto sequence = ilink::Sequence{
+      .uuid = static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::microseconds>(uuid_).count()),  // note!
+      .next_seq_no = 1,
+      .fault_tolerance_indicator = cme_ilink::FTI::Primary,
+      .keep_alive_interval_lapsed = cme_ilink::KeepAliveLapsed::NotLapsed,
+  };
+  log::info("sequence={}"sv, sequence);
+  send(sequence);
 }
 
 void OrderEntry::send_terminate() {

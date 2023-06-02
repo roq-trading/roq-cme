@@ -12,6 +12,7 @@ set(SOURCES
     party_details_definition_request.cpp
     party_details_list_request.cpp
     security_definition_request.cpp
+    sequence.cpp
     terminate.cpp)
 
 include(RoqAutogen)
