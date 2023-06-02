@@ -36,9 +36,9 @@ std::span<std::byte const> PartyDetailsDefinitionRequest::encode(std::span<std::
   result.iDMShortCode(idm_short_code);
   auto &party_details = result.noPartyDetailsCount(std::size(no_party_details));
   for (auto &item : no_party_details) {
+    party_details.next();
     party_details.putPartyDetailID(item.party_detail_id);
     party_details.partyDetailRole(item.party_detail_role);
-    party_details.next();
   }
   result.noTrdRegPublicationsCount(0);
   auto length = header_type::encodedLength() + value_type::computeLength(std::size(no_party_details), 0);

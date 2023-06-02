@@ -13,6 +13,7 @@ set(SOURCES
     mdp.cpp
     negotiate.cpp
     new_order_single.cpp
+    party_details_definition_request.cpp
     secdef.cpp
     snapshot_full_refresh.cpp
     tools_crypto.cpp
