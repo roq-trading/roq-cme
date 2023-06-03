@@ -84,7 +84,7 @@ void ConfigReader::dispatch(Handler &handler, std::string_view const &buffer) {
       auto &name = end_element.name;
       if (name.compare("marketsegment"sv) == 0) {
         assert(!std::empty(market_segment_id_));
-        auto market_segment_id = core::charconv::from_string<uint32_t>(market_segment_id_);
+        auto market_segment_id = core::charconv::from_string<uint8_t>(market_segment_id_);
         handler_(market_segment_id, market_segment_);
         market_segment_id_ = {};
         market_segment_ = {};

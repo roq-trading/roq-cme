@@ -29,7 +29,19 @@ struct Shared final {
   Settings const &settings;
 
   mdp::Config mdp_config_;
-  absl::flat_hash_map<uint32_t, ilink::ConfigReader::MarketSegment> ilink_config_;
+
+ private:
+  absl::flat_hash_map<uint8_t, ilink::ConfigReader::MarketSegment> ilink_config_;
+
+ public:
+  template <typename Callback>
+  bool get_market_segment(uint8_t market_segment_id, Callback callback) {
+    auto iter = ilink_config_.find(market_segment_id);
+    if (iter == std::end(ilink_config_))
+      return false;
+    callback((*iter).second);
+    return true;
+  }
 
   absl::node_hash_map<int32_t, tools::Security> securities;
   absl::flat_hash_map<std::string, absl::flat_hash_set<int32_t>> security_groups;

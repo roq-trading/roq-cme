@@ -28,7 +28,7 @@ TEST_CASE("simple", "[ilink_config_reader]") {
                  R"(</configuration>)"sv;
   struct MyHandler final : public ilink::ConfigReader::Handler {
     int counter = 0;
-    void operator()(uint32_t market_segment_id, ilink::ConfigReader::MarketSegment const &market_segment) override {
+    void operator()(uint8_t market_segment_id, ilink::ConfigReader::MarketSegment const &market_segment) override {
       switch (++counter) {
         case 1: {
           CHECK(market_segment_id == 70);

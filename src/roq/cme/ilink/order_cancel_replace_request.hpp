@@ -39,7 +39,7 @@ struct OrderCancelReplaceRequest final {
   uint64_t order_id = {};
   double stop_px = NaN;
   uint64_t order_request_id = {};
-  uint64_t sending_time_epoch = {};
+  std::chrono::nanoseconds sending_time_epoch = {};
   std::string_view location;
   uint32_t min_qty = {};
   uint32_t display_qty = {};

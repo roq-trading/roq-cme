@@ -24,7 +24,7 @@ struct ConfigReader final {
   };
 
   struct Handler {
-    virtual void operator()(uint32_t market_segment_id, MarketSegment const &) = 0;
+    virtual void operator()(uint8_t market_segment_id, MarketSegment const &) = 0;
   };
 
   static void read(Handler &, std::string_view const &filename);

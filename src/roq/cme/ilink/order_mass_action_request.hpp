@@ -30,7 +30,7 @@ struct OrderMassActionRequest final {
   cme_ilink::ManualOrdIndReq::Value manual_order_indicator = {};
   uint32_t seq_num = {};
   std::string_view sender_id;
-  uint64_t sending_time_epoch = {};
+  std::chrono::nanoseconds sending_time_epoch = {};
   std::string_view security_group;
   std::string_view location;
   int32_t security_id = {};

@@ -35,6 +35,7 @@
 namespace roq {
 namespace cme {
 namespace ilink {
+
 // types
 
 template <typename T>

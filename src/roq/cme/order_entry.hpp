@@ -28,7 +28,14 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public ili
     virtual void operator()(Trace<ExternalLatency> const &) = 0;
   };
 
-  OrderEntry(Handler &, io::Context &, uint16_t stream_id, Account &, Shared &);
+  OrderEntry(
+      Handler &,
+      io::Context &,
+      uint16_t stream_id,
+      Account &,
+      Shared &,
+      uint8_t market_segment_id,
+      io::web::URI const &);
 
   OrderEntry(OrderEntry const &) = delete;
   OrderEntry(OrderEntry &&) = delete;
@@ -111,9 +118,9 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public ili
 
   void send_order_mass_status_request();
 
-  void send_new_order_single(CreateOrder const &);
-  void send_order_cancel_request(CancelOrder const &);
-  void send_order_cancel_replace_request(ModifyOrder const &);
+  void send_new_order_single(CreateOrder const &, oms::Order const &, std::string_view const &request_id);
+  void send_order_cancel_replace_request(ModifyOrder const &, oms::Order const &);
+  void send_order_cancel_request(CancelOrder const &, oms::Order const &);
   void send_order_mass_action_request(CancelAllOrders const &);
 
  private:
@@ -121,6 +128,7 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public ili
   // config
   uint16_t const stream_id_;
   Source const name_;
+  uint8_t const market_segment_id_;
   // connection
   std::unique_ptr<io::net::ConnectionFactory> const connection_factory_;
   std::unique_ptr<io::net::ConnectionManager> const connection_manager_;

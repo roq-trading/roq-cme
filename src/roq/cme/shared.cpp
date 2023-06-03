@@ -30,7 +30,7 @@ R read_ilink_config(auto const &filename) {
       explicit Handler(R &result) : result_{result} {}
 
      protected:
-      void operator()(uint32_t market_segment_id, ilink::ConfigReader::MarketSegment const &market_segment) override {
+      void operator()(uint8_t market_segment_id, ilink::ConfigReader::MarketSegment const &market_segment) override {
         result_.try_emplace(market_segment_id, market_segment);
       }
 

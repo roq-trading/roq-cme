@@ -4,7 +4,7 @@
   "prefix": "ilink_",
   "values": [
     {
-      "name": "firm",
+      "name": "firm_id",
       "type": "std::string",
       "description": "firm id"
     },
@@ -15,7 +15,7 @@
       "description": "config file (path)"
     },
     {
-      "name": "market_segments",
+      "name": "market_segment_ids",
       "type": "std::vector<std::string>",
       "description": "Comma-separated list of market segments, e.g. 70"
     }

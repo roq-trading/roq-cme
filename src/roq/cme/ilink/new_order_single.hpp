@@ -36,7 +36,7 @@ struct NewOrderSingle final {
   std::string_view cl_ord_id;
   uint64_t party_details_list_req_id = {};
   uint64_t order_request_id = {};
-  uint64_t sending_time_epoch = {};
+  std::chrono::nanoseconds sending_time_epoch = {};
   double stop_px = NaN;
   std::string_view location;
   uint32_t min_qty = {};

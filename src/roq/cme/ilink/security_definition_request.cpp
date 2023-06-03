@@ -23,7 +23,7 @@ std::span<std::byte const> SecurityDefinitionRequest::encode(std::span<std::byte
   result.manualOrderIndicator(manual_order_indicator);
   result.seqNum(seq_num);
   result.putSenderID(sender_id);
-  result.sendingTimeEpoch(sending_time_epoch);
+  result.sendingTimeEpoch(sending_time_epoch.count());
   result.putSecuritySubType(security_sub_type);
   result.putLocation(location);
   // startDate

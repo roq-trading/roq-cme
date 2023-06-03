@@ -23,7 +23,7 @@ std::span<std::byte const> OrderMassActionRequest::encode(std::span<std::byte> c
   result.manualOrderIndicator(manual_order_indicator);
   result.seqNum(seq_num);
   result.putSenderID(sender_id);
-  // sending_time_epoch
+  result.sendingTimeEpoch(sending_time_epoch.count());
   result.putSecurityGroup(security_group);
   result.putLocation(location);
   result.securityID(security_id);

@@ -27,7 +27,7 @@ std::span<std::byte const> NewOrderSingle::encode(std::span<std::byte> const &bu
   result.putClOrdID(cl_ord_id);
   result.partyDetailsListReqID(party_details_list_req_id);
   result.orderRequestID(order_request_id);
-  result.sendingTimeEpoch(sending_time_epoch);
+  result.sendingTimeEpoch(sending_time_epoch.count());
   result.stopPx().mantissa(cme_ilink::PRICENULL9::mantissaNullValue());
   result.putLocation(location);
   result.minQty(min_qty);

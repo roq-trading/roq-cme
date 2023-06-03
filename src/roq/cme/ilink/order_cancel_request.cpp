@@ -25,7 +25,7 @@ std::span<std::byte const> OrderCancelRequest::encode(std::span<std::byte> const
   result.putSenderID(sender_id);
   result.putClOrdID(cl_ord_id);
   result.orderRequestID(order_request_id);
-  // sending_time_epoch
+  result.sendingTimeEpoch(sending_time_epoch.count());
   result.putLocation(location);
   result.securityID(security_id);
   result.side(side);

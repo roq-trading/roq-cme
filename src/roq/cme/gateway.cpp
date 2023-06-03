@@ -4,6 +4,8 @@
 
 #include <utility>
 
+#include "roq/core/charconv.hpp"
+
 using namespace std::literals;
 
 namespace roq {
@@ -71,12 +73,30 @@ R create_accounts(auto const &config) {
 
 template <typename R>
 R create_order_entry(auto &gateway, auto &context, auto &stream_id, auto &accounts, auto &shared) {
-  if (std::empty(shared.settings.ilink.firm))
-    log::fatal("Unexpected: missing --ilink_firm"sv);
   using result_type = std::remove_cvref<R>::type;
   result_type result;
-  for (auto &[name, account] : accounts)
-    result.try_emplace(name, std::make_unique<OrderEntry>(gateway, context, ++stream_id, *account, shared));
+  auto &market_segment_ids = shared.settings.ilink.market_segment_ids;
+  if (!std::empty(market_segment_ids)) {
+    auto &firm_id = shared.settings.ilink.firm_id;
+    if (std::empty(firm_id))
+      log::fatal("Unexpected: --ilink_firm_id is required"sv);
+    for (auto &item : market_segment_ids) {
+      auto market_segment_id = core::charconv::from_string<uint8_t>(item);
+      if (shared.get_market_segment(market_segment_id, [&](auto &market_segment) {
+            io::web::URI uri{market_segment.primary_host_ip};
+            log::info("DEBUG market_segment_id={}, uri={}"sv, market_segment_id, uri);
+            // XXX **not** by account
+            for (auto &[name, account] : accounts)
+              result.try_emplace(
+                  name,
+                  std::make_unique<OrderEntry>(
+                      gateway, context, ++stream_id, *account, shared, market_segment_id, uri));
+          })) {
+      } else {
+        log::fatal("Unexpected: can't find market_segment_id={}"sv, market_segment_id);
+      }
+    }
+  }
   return result;
 }
 }  // namespace

@@ -29,7 +29,7 @@ struct OrderCancelRequest final {
   std::string_view sender_id;
   std::string_view cl_ord_id;
   uint64_t order_request_id = {};
-  uint64_t sending_time_epoch = {};
+  std::chrono::nanoseconds sending_time_epoch = {};
   std::string_view location;
   int32_t security_id = {};
   cme_ilink::SideReq::Value side = {};

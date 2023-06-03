@@ -29,7 +29,7 @@ std::span<std::byte const> OrderCancelReplaceRequest::encode(std::span<std::byte
   result.orderID(value_type::orderIDNullValue());
   result.stopPx().mantissa(100);
   result.orderRequestID(order_request_id);
-  result.sendingTimeEpoch(sending_time_epoch);
+  result.sendingTimeEpoch(sending_time_epoch.count());
   result.putLocation(location);
   result.minQty(min_qty);
   result.displayQty(display_qty);
