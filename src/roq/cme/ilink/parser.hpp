@@ -30,6 +30,7 @@ struct Parser final {
     virtual void operator()(Trace<cme_ilink::RetransmitReject510> const &) = 0;
     virtual void operator()(Trace<cme_ilink::NotApplied513> const &) = 0;
     // business
+    virtual void operator()(Trace<cme_ilink::PartyDetailsDefinitionRequestAck519> const &) = 0;
     virtual void operator()(Trace<cme_ilink::BusinessReject521> const &) = 0;
     // execution report
     virtual void operator()(Trace<cme_ilink::ExecutionReportNew522> const &) = 0;

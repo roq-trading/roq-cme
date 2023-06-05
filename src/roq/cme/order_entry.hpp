@@ -74,6 +74,7 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public ili
   void operator()(Trace<cme_ilink::RetransmitReject510> const &) override;
   void operator()(Trace<cme_ilink::NotApplied513> const &) override;
   // business
+  void operator()(Trace<cme_ilink::PartyDetailsDefinitionRequestAck519> const &) override;
   void operator()(Trace<cme_ilink::BusinessReject521> const &) override;
   // execution report
   void operator()(Trace<cme_ilink::ExecutionReportNew522> const &) override;

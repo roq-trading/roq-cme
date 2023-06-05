@@ -316,6 +316,12 @@ void OrderEntry::operator()(Trace<cme_ilink::NotApplied513> const &event) {
 
 // business
 
+void OrderEntry::operator()(Trace<cme_ilink::PartyDetailsDefinitionRequestAck519> const &event) {
+  using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+  auto &[trace_info, value] = event;
+  log::info("DEBUG party_defailt_definition_request_ack={}"sv, const_cast<value_type &>(value));
+}
+
 void OrderEntry::operator()(Trace<cme_ilink::BusinessReject521> const &event) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &[trace_info, value] = event;

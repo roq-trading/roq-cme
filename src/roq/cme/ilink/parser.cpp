@@ -111,6 +111,12 @@ size_t Parser::dispatch(Handler &handler, std::span<std::byte const> const &buff
           break;
         }
           // business
+        case cme_ilink::PartyDetailsDefinitionRequestAck519::SBE_TEMPLATE_ID: {
+          cme_ilink::PartyDetailsDefinitionRequestAck519 value{std::data(tmp), std::size(tmp), block_length, version};
+          // log::info("DEBUG {}"sv, value);
+          create_trace_and_dispatch(handler, trace_info, value);
+          break;
+        }
         case cme_ilink::BusinessReject521::SBE_TEMPLATE_ID: {
           cme_ilink::BusinessReject521 value{std::data(tmp), std::size(tmp), block_length, version};
           // log::info("DEBUG {}"sv, value);
