@@ -728,6 +728,7 @@ void OrderEntry::send_new_order_single(
       .managed_order = {},
       .short_sale_type = cme_ilink::ShortSaleType::NULL_VALUE,
   };
+  log::error("DEBUG create_order={}"sv, create_order);
   log::info("DEBUG new_order_single={}"sv, new_order_single);
   send(new_order_single);
 }
