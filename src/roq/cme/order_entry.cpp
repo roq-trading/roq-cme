@@ -59,6 +59,7 @@ auto const KEEP_ALIVE_INTERVAL = 30s;
 auto const MANUAL_ORDER_INDICATOR = cme_ilink::ManualOrdIndReq::Automated;
 
 auto const SECURITY_ID = int32_t{338574};  // ZNU3
+auto const REQUEST_ID = "test"sv;
 }  // namespace
 
 // === HELPERS ===
@@ -285,11 +286,23 @@ void OrderEntry::operator()(Trace<cme_ilink::EstablishmentAck504> const &event) 
     send_party_details_definition_request();
     send_order_mass_action_request(CancelAllOrders{});
   }
-  if (true) {
+  if (false) {
     send_party_details_definition_request();
     auto order = oms::Order{};
     order.side = Side::BUY;
     send_order_cancel_request(CancelOrder{}, order);
+  }
+  if (true) {
+    send_party_details_definition_request();
+    auto create_order = CreateOrder{};
+    create_order.quantity = 1.0;
+    create_order.price = 100.0;
+    create_order.side = Side::BUY;
+    create_order.order_type = OrderType::LIMIT;
+    create_order.time_in_force = TimeInForce::GTC;
+    auto order = oms::Order{};
+    order.side = Side::BUY;
+    send_new_order_single(create_order, order, REQUEST_ID);
   }
 }
 
@@ -699,7 +712,7 @@ void OrderEntry::send_new_order_single(
       .sender_id = account_.get_name(),
       .cl_ord_id = request_id,
       .party_details_list_req_id = {},  // note!
-      .order_request_id = {},
+      .order_request_id = fetch_next_request_id(),
       .sending_time_epoch = now,
       .stop_px = create_order.stop_price,
       .location = shared_.settings.ilink.location,
@@ -731,7 +744,7 @@ void OrderEntry::send_order_cancel_replace_request(ModifyOrder const &modify_ord
       .side = side,
       .seq_num = fetch_next_seq_num(),
       .sender_id = account_.get_name(),
-      .cl_ord_id = "test"sv,            // XXX
+      .cl_ord_id = REQUEST_ID,
       .party_details_list_req_id = {},  // note!
       .order_id = {},
       .stop_px = NaN,
@@ -765,7 +778,7 @@ void OrderEntry::send_order_cancel_request(CancelOrder const &cancel_order, oms:
       .manual_order_indicator = MANUAL_ORDER_INDICATOR,
       .seq_num = fetch_next_seq_num(),
       .sender_id = account_.get_name(),
-      .cl_ord_id = "test"sv,  // XXX
+      .cl_ord_id = REQUEST_ID,
       .order_request_id = {},
       .sending_time_epoch = now,
       .location = shared_.settings.ilink.location,
