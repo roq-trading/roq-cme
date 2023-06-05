@@ -11,6 +11,17 @@ namespace cme {
 namespace ilink {
 
 namespace {
+void set_price(cme_ilink::PRICENULL9 &result, double value) {
+  if (std::isnan(value)) {
+    result.mantissa(result.mantissaNullValue());
+  } else {
+    auto mantissa = static_cast<int64_t>(value * std::pow(10.0, static_cast<double>(-result.exponent())) + 0.5);
+    result.mantissa(mantissa);
+  }
+}
+}  // namespace
+
+namespace {
 using header_type = cme_ilink::MessageHeader;
 using value_type = cme_ilink::NewOrderSingle514;
 }  // namespace
@@ -18,7 +29,7 @@ using value_type = cme_ilink::NewOrderSingle514;
 std::span<std::byte const> NewOrderSingle::encode(std::span<std::byte> const &buffer) const {
   value_type value;
   auto &result = value.wrapAndApplyHeader(reinterpret_cast<char *>(std::data(buffer)), 0, std::size(buffer));
-  result.price().mantissa(100);
+  set_price(result.price(), price);
   result.orderQty(order_qty);
   result.securityID(security_id);
   result.side(side);
@@ -28,10 +39,10 @@ std::span<std::byte const> NewOrderSingle::encode(std::span<std::byte> const &bu
   result.partyDetailsListReqID(party_details_list_req_id);
   result.orderRequestID(order_request_id);
   result.sendingTimeEpoch(sending_time_epoch.count());
-  result.stopPx().mantissa(cme_ilink::PRICENULL9::mantissaNullValue());
+  set_price(result.stopPx(), stop_px);
   result.putLocation(location);
-  result.minQty(min_qty);
-  result.displayQty(display_qty);
+  result.minQty(min_qty ? min_qty : value_type::minQtyNullValue());
+  result.displayQty(display_qty ? display_qty : value_type::displayQtyNullValue());
   result.expireDate(value_type::expireDateNullValue());
   result.ordType(ord_type);
   result.timeInForce(time_in_force);
@@ -42,8 +53,8 @@ std::span<std::byte const> NewOrderSingle::encode(std::span<std::byte> const &bu
   result.liquidityFlag(liquidity_flag ? cme_ilink::BooleanNULL::True : cme_ilink::BooleanNULL::False);
   result.managedOrder(managed_order ? cme_ilink::BooleanNULL::True : cme_ilink::BooleanNULL::False);
   result.shortSaleType(short_sale_type);
-  result.discretionPrice().mantissa(cme_ilink::PRICENULL9::mantissaNullValue());
-  result.reservationPrice().mantissa(cme_ilink::PRICENULL9::mantissaNullValue());
+  set_price(result.discretionPrice(), discretion_price);
+  set_price(result.reservationPrice(), reservation_price);
   auto length = header_type::encodedLength() + value_type::computeLength();
   return {std::data(buffer), length};
 }
