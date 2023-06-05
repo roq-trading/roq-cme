@@ -42,14 +42,15 @@ R read_ilink_config(auto const &filename) {
   return result;
 }
 
-template <typename T, typename D>
-void read_secdef(T &securities, D &dispatcher, auto &settings) {
+template <typename T, typename MS, typename D>
+void read_secdef(T &securities, MS &market_segments, D &dispatcher, auto &settings) {
   auto config_file = settings.common.secdef_config_file;
   if (std::empty(config_file))
     return;
   log::info(R"(Reading instrument definitions from "{}"... (*** can be very slow ***))"sv, config_file);
   struct Handler final : public secdef::ConfigReader::Handler {
-    Handler(T &securities, D &dispatcher) : securities_(securities), dispatcher_(dispatcher) {}
+    Handler(T &securities, MS &market_segments, D &dispatcher)
+        : securities_{securities}, market_segments_{market_segments}, dispatcher_{dispatcher} {}
     void operator()(secdef::ConfigReader::SecDef const &item) override {
       auto discard = dispatcher_.discard_symbol(item.symbol);
       // note! it's too much -- always discard
@@ -62,6 +63,7 @@ void read_secdef(T &securities, D &dispatcher, auto &settings) {
           .discard = discard,
       };
       securities_.try_emplace(item.security_id, std::move(security));
+      market_segments_[item.market_segment_id].try_emplace(item.symbol, item.security_id);
       double multiplier = item.multiplier == 0 ? NaN : utils::safe_cast<double>(item.multiplier);
       auto reference_data = ReferenceData{
           .stream_id = {},
@@ -95,8 +97,9 @@ void read_secdef(T &securities, D &dispatcher, auto &settings) {
 
    private:
     T &securities_;
+    MS &market_segments_;
     D &dispatcher_;
-  } handler{securities, dispatcher};
+  } handler{securities, market_segments, dispatcher};
   secdef::ConfigReader::read(handler, config_file);
 }
 }  // namespace
@@ -106,7 +109,7 @@ void read_secdef(T &securities, D &dispatcher, auto &settings) {
 Shared::Shared(server::Dispatcher &dispatcher, Settings const &settings)
     : dispatcher_{dispatcher}, settings{settings}, mdp_config_{settings.multicast.config_file},
       ilink_config_{read_ilink_config<decltype(ilink_config_)>(settings.ilink.config_file)}, buffer(BUFFER_SIZE) {
-  read_secdef(securities, dispatcher, settings);
+  read_secdef(securities, market_segments, dispatcher, settings);
 }
 
 std::pair<std::string, uint16_t> Shared::get_multicast_config(

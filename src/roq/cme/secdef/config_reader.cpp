@@ -47,6 +47,9 @@ void set(auto &result, auto &key, auto &value) {
     case 1140:  // max trade vol (uint32)
       result.max_trade_vol = core::from_chars<decltype(result.max_trade_vol)>(value);
       break;
+    case 1300:  // market segment id (uint8)
+      result.market_segment_id = core::from_chars<decltype(result.market_segment_id)>(value);
+      break;
     case 6937:  // asset
       result.asset = value;
       break;

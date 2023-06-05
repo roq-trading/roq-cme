@@ -70,6 +70,7 @@ void create_security(auto &shared, auto &value, Callback callback) {
   auto security_id = value.securityID();
   if (shared.has_security(security_id))
     return;
+  auto market_segment_id = value.marketSegmentID();
   auto security_exchange = mdp::get_string_view(value.securityExchange(), value.securityExchangeLength());
   auto symbol = mdp::get_string_view(value.symbol(), value.symbolLength());
   auto display_factor = mdp::get_double(value.displayFactor());
@@ -81,7 +82,8 @@ void create_security(auto &shared, auto &value, Callback callback) {
       .display_factor = display_factor,
       .discard = discard,
   };
-  shared.create_security(security_group, security_id, std::move(security), [&](auto &security) { callback(security); });
+  shared.create_security(
+      security_group, market_segment_id, security_id, std::move(security), [&](auto &security) { callback(security); });
 }
 
 // note! don't care about re-ordering or dropped messages

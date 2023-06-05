@@ -45,6 +45,7 @@ struct Shared final {
 
   absl::node_hash_map<int32_t, tools::Security> securities;
   absl::flat_hash_map<std::string, absl::flat_hash_set<int32_t>> security_groups;
+  absl::flat_hash_map<uint8_t, absl::flat_hash_map<std::string, int32_t>> market_segments;
 
  private:
   struct {
@@ -89,9 +90,15 @@ struct Shared final {
 
   template <typename Callback>
   void create_security(
-      std::string_view const &security_group, int32_t security_id, tools::Security &&security, Callback callback) {
-    if (!security.discard)
+      std::string_view const &security_group,
+      uint8_t market_segment_id,
+      int32_t security_id,
+      tools::Security &&security,
+      Callback callback) {
+    if (!security.discard) {
       security_groups[security_group].insert(security_id);
+      market_segments[market_segment_id].try_emplace(security.symbol, security_id);
+    }
     auto iter = securities.try_emplace(security_id, std::move(security)).first;
     callback((*iter).second);
   }
@@ -135,6 +142,21 @@ struct Shared final {
     auto &security_ids = (*iter).second;
     for (auto &security_id : security_ids)
       callback(security_id);
+    return true;
+  }
+
+  // symbol
+
+  template <typename Callback>
+  bool find_security_id(uint8_t market_segment_id, std::string_view const &symbol, Callback callback) {
+    auto iter_1 = market_segments.find(market_segment_id);
+    if (iter_1 == std::end(market_segments))
+      return false;
+    auto &symbols = (*iter_1).second;
+    auto iter_2 = symbols.find(symbol);
+    if (iter_2 == std::end(symbols))
+      return false;
+    callback((*iter_2).second);
     return true;
   }
 

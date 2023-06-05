@@ -27,6 +27,31 @@
       "validator": "roq::core::flags::URI",
       "default": "tcp://69.50.112.198:65301",
       "description": "MSGW end-point (URI)"
+    },
+    {
+      "name": "order_mass_status_request",
+      "type": "bool",
+      "default": false
+    },
+    {
+      "name": "order_mass_action_request",
+      "type": "bool",
+      "default": false
+    },
+    {
+      "name": "order_cancel_replace_request",
+      "type": "bool",
+      "default": false
+    },
+    {
+      "name": "order_cancel_request",
+      "type": "bool",
+      "default": false
+    },
+    {
+      "name": "new_order_single",
+      "type": "bool",
+      "default": false
     }
   ]
 }

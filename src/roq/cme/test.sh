@@ -5,7 +5,8 @@ NAME="cme"
 CONFIG_FILE="config/$NAME.toml"
 SECDEF_CONFIG_FILE="config/secdef.dat"
 MULTICAST_CONFIG_FILE="config/config.xml"
-ILINK_CONFIG_FILE="$CONDA/share/roq-cme/test/MSGW_Config.xml"
+ILINK_CONFIG_FILE="../../../share/test/MSGW_Config.xml"
+SECDEF_CONFIG_FILE="$HOME/secdef.dat"
 
 # debug?
 
@@ -40,4 +41,5 @@ $PREFIX "./roq-cme" \
   --ilink_firm_id "ROQ" \
   --ilink_market_segment_ids "84" \
   --ilink_config_file="$ILINK_CONFIG_FILE" \
+  --secdef_config_file="$SECDEF_CONFIG_FILE" \
   $@

@@ -58,7 +58,8 @@ auto const KEEP_ALIVE_INTERVAL = 30s;
 
 auto const MANUAL_ORDER_INDICATOR = cme_ilink::ManualOrdIndReq::Automated;
 
-auto const SECURITY_ID = int32_t{338574};  // ZNU3
+auto const SYMBOL = "ZNU3"sv;
+// auto const SECURITY_ID = int32_t{338574};  // ZNU3
 auto const REQUEST_ID = "test"sv;
 }  // namespace
 
@@ -278,30 +279,36 @@ void OrderEntry::operator()(Trace<cme_ilink::EstablishmentAck504> const &event) 
   (*this)(ConnectionStatus::READY);
   // EXPERIMENTAL
   // send_party_details_list_request();
-  if (false) {
+  if (shared_.settings.test.order_mass_status_request) {
     send_party_details_definition_request();
     send_order_mass_status_request();
   }
-  if (false) {
+  if (shared_.settings.test.order_mass_action_request) {
     send_party_details_definition_request();
     send_order_mass_action_request(CancelAllOrders{});
   }
-  if (false) {
+  if (shared_.settings.test.order_cancel_request) {
     send_party_details_definition_request();
+    auto cancel_order = CancelOrder{};
     auto order = oms::Order{};
+    order.symbol = SYMBOL;
     order.side = Side::BUY;
-    send_order_cancel_request(CancelOrder{}, order);
+    order.client_order_id = REQUEST_ID;
+    send_order_cancel_request(cancel_order, order);
   }
-  if (true) {
+  if (shared_.settings.test.new_order_single) {
     send_party_details_definition_request();
     auto create_order = CreateOrder{};
+    create_order.symbol = SYMBOL;
     create_order.quantity = 1.0;
     create_order.price = 100.0;
     create_order.side = Side::BUY;
     create_order.order_type = OrderType::LIMIT;
     create_order.time_in_force = TimeInForce::GTC;
     auto order = oms::Order{};
+    order.symbol = SYMBOL;
     order.side = Side::BUY;
+    order.client_order_id = REQUEST_ID;
     send_new_order_single(create_order, order, REQUEST_ID);
   }
 }
@@ -699,97 +706,129 @@ void OrderEntry::send_order_mass_status_request() {
 
 void OrderEntry::send_new_order_single(
     CreateOrder const &create_order, oms::Order const &order, std::string_view const &request_id) {
-  auto now = clock::get_realtime();
-  auto side = map(create_order.side);
-  auto ord_type = map(create_order.order_type);
-  auto time_in_force = map(create_order.time_in_force);
-  auto new_order_single = ilink::NewOrderSingle{
-      .price = create_order.price,
-      .order_qty = 1,  // utils::safe_cast(create_order.quantity),
-      .security_id = SECURITY_ID,
-      .side = side,
-      .seq_num = fetch_next_seq_num(),
-      .sender_id = account_.get_name(),
-      .cl_ord_id = request_id,
-      .party_details_list_req_id = {},  // note!
-      .order_request_id = fetch_next_request_id(),
-      .sending_time_epoch = now,
-      .stop_px = create_order.stop_price,
-      .location = shared_.settings.ilink.location,
-      .min_qty = {},
-      .display_qty = {},
-      .expire_date = {},
-      .ord_type = ord_type,
-      .time_in_force = time_in_force,
-      .manual_order_indicator = MANUAL_ORDER_INDICATOR,
-      .exec_inst = {},  // XXX
-      .execution_mode = cme_ilink::ExecMode::NULL_VALUE,
-      .liquidity_flag = {},
-      .managed_order = {},
-      .short_sale_type = cme_ilink::ShortSaleType::NULL_VALUE,
-  };
-  log::error("DEBUG create_order={}"sv, create_order);
-  log::info("DEBUG new_order_single={}"sv, new_order_single);
-  send(new_order_single);
+  if (shared_.find_security_id(market_segment_id_, order.symbol, [&](auto security_id) {
+        log::info("DEBUG found security_id={}"sv, security_id);
+        auto now = clock::get_realtime();
+        auto side = map(create_order.side);
+        auto ord_type = map(create_order.order_type);
+        auto time_in_force = map(create_order.time_in_force);
+        auto new_order_single = ilink::NewOrderSingle{
+            .price = create_order.price,
+            .order_qty = 1,  // utils::safe_cast(create_order.quantity),
+            .security_id = security_id,
+            .side = side,
+            .seq_num = fetch_next_seq_num(),
+            .sender_id = account_.get_name(),
+            .cl_ord_id = request_id,
+            .party_details_list_req_id = {},  // note!
+            .order_request_id = fetch_next_request_id(),
+            .sending_time_epoch = now,
+            .stop_px = create_order.stop_price,
+            .location = shared_.settings.ilink.location,
+            .min_qty = {},
+            .display_qty = {},
+            .expire_date = {},
+            .ord_type = ord_type,
+            .time_in_force = time_in_force,
+            .manual_order_indicator = MANUAL_ORDER_INDICATOR,
+            .exec_inst = {},  // XXX
+            .execution_mode = cme_ilink::ExecMode::NULL_VALUE,
+            .liquidity_flag = {},
+            .managed_order = {},
+            .short_sale_type = cme_ilink::ShortSaleType::NULL_VALUE,
+        };
+        log::info("DEBUG new_order_single={}"sv, new_order_single);
+        send(new_order_single);
+      })) {
+  } else {
+    throw oms::Rejected{
+        Origin::GATEWAY,
+        Error::INVALID_SYMBOL,
+        R"(No mapping for market_segment_id={} and symbol="{}")"sv,
+        market_segment_id_,
+        order.symbol};
+  }
 }
 
 void OrderEntry::send_order_cancel_replace_request(ModifyOrder const &modify_order, oms::Order const &order) {
-  auto now = clock::get_realtime();
-  auto side = map(order.side);
-  auto ord_type = map(order.order_type);
-  auto time_in_force = map(order.time_in_force);
-  auto order_cancel_replace_request = ilink::OrderCancelReplaceRequest{
-      .price = modify_order.price,
-      .order_qty = 1,  // utils::safe_cast(modify_order.quantity),
-      .security_id = SECURITY_ID,
-      .side = side,
-      .seq_num = fetch_next_seq_num(),
-      .sender_id = account_.get_name(),
-      .cl_ord_id = REQUEST_ID,
-      .party_details_list_req_id = {},  // note!
-      .order_id = {},
-      .stop_px = NaN,
-      .order_request_id = {},
-      .sending_time_epoch = now,
-      .location = shared_.settings.ilink.location,
-      .min_qty = {},
-      .display_qty = {},
-      .expire_date = {},
-      .ord_type = ord_type,
-      .time_in_force = time_in_force,
-      .manual_order_indicator = MANUAL_ORDER_INDICATOR,
-      .ofm_override = cme_ilink::OFMOverrideReq::NULL_VALUE,
-      .exec_inst = {},  // XXX
-      .execution_mode = cme_ilink::ExecMode::NULL_VALUE,
-      .liquidity_flag = {},
-      .managed_order = {},
-      .short_sale_type = cme_ilink::ShortSaleType::NULL_VALUE,
-      .discretion_price = NaN,
-  };
-  log::info("DEBUG order_cancel_replace_request={}"sv, order_cancel_replace_request);
-  send(order_cancel_replace_request);
+  if (shared_.find_security_id(market_segment_id_, order.symbol, [&](auto security_id) {
+        log::info("DEBUG found security_id={}"sv, security_id);
+        auto now = clock::get_realtime();
+        auto side = map(order.side);
+        auto ord_type = map(order.order_type);
+        auto time_in_force = map(order.time_in_force);
+        auto order_cancel_replace_request = ilink::OrderCancelReplaceRequest{
+            .price = modify_order.price,
+            .order_qty = 1,  // utils::safe_cast(modify_order.quantity),
+            .security_id = security_id,
+            .side = side,
+            .seq_num = fetch_next_seq_num(),
+            .sender_id = account_.get_name(),
+            .cl_ord_id = order.client_order_id,
+            .party_details_list_req_id = {},  // note!
+            .order_id = {},
+            .stop_px = NaN,
+            .order_request_id = {},
+            .sending_time_epoch = now,
+            .location = shared_.settings.ilink.location,
+            .min_qty = {},
+            .display_qty = {},
+            .expire_date = {},
+            .ord_type = ord_type,
+            .time_in_force = time_in_force,
+            .manual_order_indicator = MANUAL_ORDER_INDICATOR,
+            .ofm_override = cme_ilink::OFMOverrideReq::NULL_VALUE,
+            .exec_inst = {},  // XXX
+            .execution_mode = cme_ilink::ExecMode::NULL_VALUE,
+            .liquidity_flag = {},
+            .managed_order = {},
+            .short_sale_type = cme_ilink::ShortSaleType::NULL_VALUE,
+            .discretion_price = NaN,
+        };
+        log::info("DEBUG order_cancel_replace_request={}"sv, order_cancel_replace_request);
+        send(order_cancel_replace_request);
+      })) {
+  } else {
+    throw oms::Rejected{
+        Origin::GATEWAY,
+        Error::INVALID_SYMBOL,
+        R"(No mapping for market_segment_id={} and symbol="{}")"sv,
+        market_segment_id_,
+        order.symbol};
+  }
 }
 
 void OrderEntry::send_order_cancel_request(CancelOrder const &cancel_order, oms::Order const &order) {
-  auto now = clock::get_realtime();
-  auto side = map(order.side);
-  auto order_cancel_request = ilink::OrderCancelRequest{
-      .order_id = {},
-      .party_details_list_req_id = {},  // note!
-      .manual_order_indicator = MANUAL_ORDER_INDICATOR,
-      .seq_num = fetch_next_seq_num(),
-      .sender_id = account_.get_name(),
-      .cl_ord_id = REQUEST_ID,
-      .order_request_id = {},
-      .sending_time_epoch = now,
-      .location = shared_.settings.ilink.location,
-      .security_id = SECURITY_ID,
-      .side = side,
-      .liquidity_flag = {},
-      .orig_order_user = {},
-  };
-  log::info("DEBUG order_cancel_request={}"sv, order_cancel_request);
-  send(order_cancel_request);
+  if (shared_.find_security_id(market_segment_id_, order.symbol, [&](auto security_id) {
+        log::info("DEBUG found security_id={}"sv, security_id);
+        auto now = clock::get_realtime();
+        auto side = map(order.side);
+        auto order_cancel_request = ilink::OrderCancelRequest{
+            .order_id = {},
+            .party_details_list_req_id = {},  // note!
+            .manual_order_indicator = MANUAL_ORDER_INDICATOR,
+            .seq_num = fetch_next_seq_num(),
+            .sender_id = account_.get_name(),
+            .cl_ord_id = order.client_order_id,
+            .order_request_id = {},
+            .sending_time_epoch = now,
+            .location = shared_.settings.ilink.location,
+            .security_id = security_id,
+            .side = side,
+            .liquidity_flag = {},
+            .orig_order_user = {},
+        };
+        log::info("DEBUG order_cancel_request={}"sv, order_cancel_request);
+        send(order_cancel_request);
+      })) {
+  } else {
+    throw oms::Rejected{
+        Origin::GATEWAY,
+        Error::INVALID_SYMBOL,
+        R"(No mapping for market_segment_id={} and symbol="{}")"sv,
+        market_segment_id_,
+        order.symbol};
+  }
 }
 
 void OrderEntry::send_order_mass_action_request(CancelAllOrders const &cancel_all_orders) {

@@ -13,6 +13,7 @@ namespace secdef {
 struct ConfigReader final {
   struct SecDef final {
     uint32_t security_id = {};
+    uint8_t market_segment_id = {};
     // note! orderd to (mostly) align with ReferenceData
     std::string_view exchange;
     std::string_view symbol;
