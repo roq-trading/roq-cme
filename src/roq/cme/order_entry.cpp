@@ -467,6 +467,10 @@ uint32_t OrderEntry::fetch_next_seq_num() {
   return result;
 }
 
+uint64_t OrderEntry::fetch_next_request_id() {
+  return ++request_id_;
+}
+
 template <typename T>
 void OrderEntry::send(T const &value) {
   auto message = value.encode(encode_buffer_2_);
@@ -639,15 +643,15 @@ void OrderEntry::send_order_mass_status_request() {
   auto now = clock::get_realtime();
   auto order_mass_status_request = ilink::OrderMassStatusRequest{
       .party_details_list_req_id = {},  // note!
-      .mass_status_req_id = 1,          // XXX
-      .manual_order_indicator = cme_ilink::ManualOrdIndReq::NULL_VALUE,
+      .mass_status_req_id = fetch_next_request_id(),
+      .manual_order_indicator = cme_ilink::ManualOrdIndReq::Automated,  // XXX
       .seq_num = fetch_next_seq_num(),
-      .sender_id = {},  // XXX ???
+      .sender_id = account_.get_name(),
       .sending_time_epoch = now,
       .security_group = {},
-      .location = {},
+      .location = shared_.settings.ilink.location,
       .security_id = {},
-      .mass_status_req_type = cme_ilink::MassStatusReqTyp::NULL_VALUE,
+      .mass_status_req_type = cme_ilink::MassStatusReqTyp::MarketSegment,
       .ord_status_req_type = cme_ilink::MassStatusOrdTyp::NULL_VALUE,
       .time_in_force = cme_ilink::MassStatusTIF::NULL_VALUE,
       .market_segment_id = market_segment_id_,

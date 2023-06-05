@@ -103,6 +103,8 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public ili
   uint32_t peek_next_seq_num();
   uint32_t fetch_next_seq_num();
 
+  uint64_t fetch_next_request_id();
+
   template <typename T>
   void send(T const &);
 
@@ -162,6 +164,7 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public ili
   ConnectionStatus status_ = {};
   std::chrono::nanoseconds next_heartbeat_ = {};
   uint64_t uuid_ = {};
+  uint64_t request_id_ = {};
 };
 
 }  // namespace cme
