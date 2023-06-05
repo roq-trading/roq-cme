@@ -53,6 +53,8 @@ auto const SUPPORTS = Mask{
 
 auto const TRADING_SYSTEM_VENDOR = "ROQ GMBH"sv;
 auto const KEEP_ALIVE_INTERVAL = 30s;
+
+auto const MANUAL_ORDER_INDICATOR = cme_ilink::ManualOrdIndReq::Automated;
 }  // namespace
 
 // === HELPERS ===
@@ -273,6 +275,9 @@ void OrderEntry::operator()(Trace<cme_ilink::EstablishmentAck504> const &event) 
   // send_party_details_list_request();
   send_party_details_definition_request();
   send_order_mass_status_request();
+
+  send_party_details_definition_request();
+  send_order_mass_action_request(CancelAllOrders{});
 }
 
 void OrderEntry::operator()(Trace<cme_ilink::EstablishmentReject505> const &event) {
@@ -319,7 +324,7 @@ void OrderEntry::operator()(Trace<cme_ilink::NotApplied513> const &event) {
 void OrderEntry::operator()(Trace<cme_ilink::PartyDetailsDefinitionRequestAck519> const &event) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &[trace_info, value] = event;
-  log::info("DEBUG party_defailt_definition_request_ack={}"sv, const_cast<value_type &>(value));
+  log::info("DEBUG party_defails_definition_request_ack={}"sv, const_cast<value_type &>(value));
 }
 
 void OrderEntry::operator()(Trace<cme_ilink::BusinessReject521> const &event) {
@@ -629,12 +634,12 @@ void OrderEntry::send_security_definition_request() {
   auto security_definition_request = ilink::SecurityDefinitionRequest{
       .party_details_list_req_id = {},  // note!
       .security_req_id = {},
-      .manual_order_indicator = cme_ilink::ManualOrdIndReq::NULL_VALUE,
+      .manual_order_indicator = MANUAL_ORDER_INDICATOR,
       .seq_num = fetch_next_seq_num(),
-      .sender_id = {},
+      .sender_id = account_.get_name(),
       .sending_time_epoch = now,
       .security_sub_type = {},
-      .location = {},
+      .location = shared_.settings.ilink.location,
       .start_date = {},
       .end_date = {},
       .max_no_of_substitutions = {},
@@ -650,7 +655,7 @@ void OrderEntry::send_order_mass_status_request() {
   auto order_mass_status_request = ilink::OrderMassStatusRequest{
       .party_details_list_req_id = {},  // note!
       .mass_status_req_id = fetch_next_request_id(),
-      .manual_order_indicator = cme_ilink::ManualOrdIndReq::Automated,  // XXX
+      .manual_order_indicator = MANUAL_ORDER_INDICATOR,
       .seq_num = fetch_next_seq_num(),
       .sender_id = account_.get_name(),
       .sending_time_epoch = now,
@@ -678,19 +683,19 @@ void OrderEntry::send_new_order_single(
       .security_id = {},
       .side = side,
       .seq_num = fetch_next_seq_num(),
-      .sender_id = {},
+      .sender_id = account_.get_name(),
       .cl_ord_id = request_id,
       .party_details_list_req_id = {},  // note!
       .order_request_id = {},
       .sending_time_epoch = now,
       .stop_px = create_order.stop_price,
-      .location = {},
+      .location = shared_.settings.ilink.location,
       .min_qty = {},
       .display_qty = {},
       .expire_date = {},
       .ord_type = ord_type,
       .time_in_force = time_in_force,
-      .manual_order_indicator = cme_ilink::ManualOrdIndReq::Automated,
+      .manual_order_indicator = MANUAL_ORDER_INDICATOR,
       .exec_inst = {},  // XXX
       .execution_mode = cme_ilink::ExecMode::NULL_VALUE,
       .liquidity_flag = {},
@@ -712,20 +717,20 @@ void OrderEntry::send_order_cancel_replace_request(ModifyOrder const &modify_ord
       .security_id = {},
       .side = side,
       .seq_num = fetch_next_seq_num(),
-      .sender_id = {},
-      .cl_ord_id = {},                  // XXX
+      .sender_id = account_.get_name(),
+      .cl_ord_id = "test"sv,            // XXX
       .party_details_list_req_id = {},  // note!
       .order_id = {},
       .stop_px = NaN,
       .order_request_id = {},
       .sending_time_epoch = now,
-      .location = {},
+      .location = shared_.settings.ilink.location,
       .min_qty = {},
       .display_qty = {},
       .expire_date = {},
       .ord_type = ord_type,
       .time_in_force = time_in_force,
-      .manual_order_indicator = cme_ilink::ManualOrdIndReq::Automated,
+      .manual_order_indicator = MANUAL_ORDER_INDICATOR,
       .ofm_override = cme_ilink::OFMOverrideReq::NULL_VALUE,
       .exec_inst = {},  // XXX
       .execution_mode = cme_ilink::ExecMode::NULL_VALUE,
@@ -744,14 +749,14 @@ void OrderEntry::send_order_cancel_request(CancelOrder const &cancel_order, oms:
   auto order_cancel_request = ilink::OrderCancelRequest{
       .order_id = {},
       .party_details_list_req_id = {},  // note!
-      .manual_order_indicator = cme_ilink::ManualOrdIndReq::Automated,
+      .manual_order_indicator = MANUAL_ORDER_INDICATOR,
       .seq_num = fetch_next_seq_num(),
-      .sender_id = {},
-      .cl_ord_id = {},  // XXX
+      .sender_id = account_.get_name(),
+      .cl_ord_id = "test"sv,  // XXX
       .order_request_id = {},
       .sending_time_epoch = now,
-      .location = {},
-      .security_id = {},
+      .location = shared_.settings.ilink.location,
+      .security_id = {},  // XXX
       .side = side,
       .liquidity_flag = {},
       .orig_order_user = {},
@@ -764,13 +769,13 @@ void OrderEntry::send_order_mass_action_request(CancelAllOrders const &cancel_al
   auto now = clock::get_realtime();
   auto order_mass_action_request = ilink::OrderMassActionRequest{
       .party_details_list_req_id = {},  // note!
-      .order_request_id = 1,            // XXX
-      .manual_order_indicator = cme_ilink::ManualOrdIndReq::NULL_VALUE,
+      .order_request_id = fetch_next_request_id(),
+      .manual_order_indicator = MANUAL_ORDER_INDICATOR,
       .seq_num = fetch_next_seq_num(),
-      .sender_id = {},  // XXX ???
+      .sender_id = account_.get_name(),
       .sending_time_epoch = now,
       .security_group = {},
-      .location = {},
+      .location = shared_.settings.ilink.location,
       .security_id = {},
       .mass_action_scope = cme_ilink::MassActionScope::MarketSegmentID,
       .market_segment_id = market_segment_id_,
@@ -778,7 +783,7 @@ void OrderEntry::send_order_mass_action_request(CancelAllOrders const &cancel_al
       .side = cme_ilink::SideNULL::NULL_VALUE,
       .ord_type = cme_ilink::MassActionOrdTyp::NULL_VALUE,
       .time_in_force = cme_ilink::MassCancelTIF::NULL_VALUE,
-      .liquidity_flag = false,
+      .liquidity_flag = {},
       .orig_order_user = {},
   };
   log::info("DEBUG order_mass_action_request={}"sv, order_mass_action_request);

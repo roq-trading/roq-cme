@@ -20,6 +20,42 @@ namespace ilink {}  // namespace ilink
 // messages
 
 template <>
+struct fmt::formatter<cme_ilink::PartyDetailsDefinitionRequestAck519::NoPartyDetails> {
+  using value_type = cme_ilink::PartyDetailsDefinitionRequestAck519::NoPartyDetails;
+  template <typename Context>
+  constexpr auto parse(Context &context) {
+    return std::begin(context);
+  }
+  template <typename Context>
+  auto format(value_type &value, Context &context) const {
+    using namespace std::literals;
+    using namespace roq::cme::ilink;
+    return fmt::format_to(
+        context.out(),
+        R"({{)"
+        R"(}})"sv);
+  }
+};
+
+template <>
+struct fmt::formatter<cme_ilink::PartyDetailsDefinitionRequestAck519::NoTrdRegPublications> {
+  using value_type = cme_ilink::PartyDetailsDefinitionRequestAck519::NoTrdRegPublications;
+  template <typename Context>
+  constexpr auto parse(Context &context) {
+    return std::begin(context);
+  }
+  template <typename Context>
+  auto format(value_type &value, Context &context) const {
+    using namespace std::literals;
+    using namespace roq::cme::ilink;
+    return fmt::format_to(
+        context.out(),
+        R"({{)"
+        R"(}})"sv);
+  }
+};
+
+template <>
 struct fmt::formatter<cme_ilink::PartyDetailsDefinitionRequestAck519> {
   using value_type = cme_ilink::PartyDetailsDefinitionRequestAck519;
   template <typename Context>
@@ -81,8 +117,8 @@ struct fmt::formatter<cme_ilink::PartyDetailsDefinitionRequestAck519> {
         value.iDMShortCode(),
         value.possRetransFlag(),
         value.splitMsg());
-    // value.noPartyDetails(),
-    // value.noTrdRegPublications());
+    // roq::cme::ilink::Group{value.noPartyDetails()},
+    // roq::cme::ilink::Group{value.noTrdRegPublications()});
   }
 };
 
