@@ -43,6 +43,7 @@ TEST_CASE("simple", "[ilink_simple]") {
     void operator()(Trace<cme_ilink::RetransmitReject510> const &) { FAIL(); }
     void operator()(Trace<cme_ilink::NotApplied513> const &) { FAIL(); }
     // business
+    void operator()(Trace<cme_ilink::PartyDetailsDefinitionRequestAck519> const &) { FAIL(); }
     void operator()(Trace<cme_ilink::BusinessReject521> const &) { FAIL(); }
     // execution report
     void operator()(Trace<cme_ilink::ExecutionReportNew522> const &) { FAIL(); }
@@ -100,6 +101,7 @@ TEST_CASE("multiple", "[ilink_simple]") {
     void operator()(Trace<cme_ilink::RetransmitReject510> const &) { FAIL(); }
     void operator()(Trace<cme_ilink::NotApplied513> const &) { FAIL(); }
     // business
+    void operator()(Trace<cme_ilink::PartyDetailsDefinitionRequestAck519> const &) { ++counter; }
     void operator()(Trace<cme_ilink::BusinessReject521> const &) { ++counter; }
     // execution report
     void operator()(Trace<cme_ilink::ExecutionReportNew522> const &) { FAIL(); }
