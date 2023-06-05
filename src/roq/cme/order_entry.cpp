@@ -518,6 +518,7 @@ uint64_t OrderEntry::fetch_next_request_id() {
 template <typename T>
 void OrderEntry::send(T const &value) {
   auto message = value.encode(encode_buffer_2_);
+  log::info("DEBUG sbe length={}"sv, std::size(message));
   uint16_t length = utils::safe_cast{std::size(message) + 4};
   struct SOFH final {
     uint16_t message_length;
