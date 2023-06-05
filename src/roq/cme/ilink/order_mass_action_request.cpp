@@ -26,7 +26,7 @@ std::span<std::byte const> OrderMassActionRequest::encode(std::span<std::byte> c
   result.sendingTimeEpoch(sending_time_epoch.count());
   result.putSecurityGroup(security_group);
   result.putLocation(location);
-  result.securityID(security_id);
+  result.securityID(security_id ? security_id : value_type::securityIDNullValue());
   result.massActionScope(mass_action_scope);
   result.marketSegmentID(market_segment_id);
   result.massCancelRequestType(mass_cancel_request_type);

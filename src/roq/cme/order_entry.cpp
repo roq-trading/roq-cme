@@ -273,11 +273,14 @@ void OrderEntry::operator()(Trace<cme_ilink::EstablishmentAck504> const &event) 
   (*this)(ConnectionStatus::READY);
   // EXPERIMENTAL
   // send_party_details_list_request();
-  send_party_details_definition_request();
-  send_order_mass_status_request();
-
-  send_party_details_definition_request();
-  send_order_mass_action_request(CancelAllOrders{});
+  if (false) {
+    send_party_details_definition_request();
+    send_order_mass_status_request();
+  }
+  if (true) {
+    send_party_details_definition_request();
+    send_order_mass_action_request(CancelAllOrders{});
+  }
 }
 
 void OrderEntry::operator()(Trace<cme_ilink::EstablishmentReject505> const &event) {
