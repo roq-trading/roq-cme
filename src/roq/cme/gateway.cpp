@@ -83,7 +83,8 @@ R create_order_entry(auto &gateway, auto &context, auto &stream_id, auto &accoun
     for (auto &item : market_segment_ids) {
       auto market_segment_id = core::charconv::from_string<uint8_t>(item);
       if (shared.get_market_segment(market_segment_id, [&](auto &market_segment) {
-            io::web::URI uri{market_segment.primary_host_ip};
+            auto address = fmt::format("tcp://{}:{}"sv, market_segment.primary_host_ip, shared.settings.ilink.port);
+            io::web::URI uri{address};
             log::info("DEBUG market_segment_id={}, uri={}"sv, market_segment_id, uri);
             // XXX **not** by account
             for (auto &[name, account] : accounts)

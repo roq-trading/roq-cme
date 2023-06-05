@@ -9,6 +9,11 @@
       "description": "firm id"
     },
     {
+      "name": "port",
+      "type": "uint16_t",
+      "description": "port"
+    },
+    {
       "name": "config_file",
       "type": "std::string",
       "validator": "roq::core::flags::Path",

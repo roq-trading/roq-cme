@@ -5,6 +5,7 @@ NAME="cme"
 CONFIG_FILE="config/$NAME.toml"
 SECDEF_CONFIG_FILE="config/secdef.dat"
 MULTICAST_CONFIG_FILE="config/config.xml"
+ILINK_CONFIG_FILE="$CONDA/share/roq-cme/test/MSGW_Config.xml"
 
 # debug?
 
@@ -36,6 +37,7 @@ $PREFIX "./roq-cme" \
   --multicast_channel_ids "310" \
   --multicast_config_file "$MULTICAST_CONFIG_FILE" \
   --multicast_local_interface "1.2.3.4" \
-  --ilink_firm_id "ROQL" \
-  --ilink_market_segment_ids "44" \
+  --ilink_firm_id "ROQ" \
+  --ilink_market_segment_ids "84" \
+  --ilink_config_file="$ILINK_CONFIG_FILE" \
   $@
