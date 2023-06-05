@@ -47,8 +47,10 @@ std::span<std::byte const> NewOrderSingle::encode(std::span<std::byte> const &bu
   result.ordType(ord_type);
   result.timeInForce(time_in_force);
   result.manualOrderIndicator(manual_order_indicator);
-  result.execInst().rawValue(exec_inst.rawValue());
-  // exec_inst_2.aON(true);
+  // result.execInst().rawValue(exec_inst.rawValue());
+  auto &exec_inst_2 = result.execInst();
+  exec_inst_2.clear();
+  exec_inst_2.aON(true);
   result.executionMode(execution_mode);
   result.liquidityFlag(liquidity_flag ? cme_ilink::BooleanNULL::True : cme_ilink::BooleanNULL::False);
   result.managedOrder(managed_order ? cme_ilink::BooleanNULL::True : cme_ilink::BooleanNULL::False);
