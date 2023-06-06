@@ -33,7 +33,7 @@ std::span<std::byte const> OrderMassActionRequest::encode(std::span<std::byte> c
   result.side(side);
   result.ordType(ord_type);
   result.timeInForce(time_in_force);
-  result.liquidityFlag(liquidity_flag ? cme_ilink::BooleanNULL::True : cme_ilink::BooleanNULL::False);
+  result.liquidityFlag(liquidity_flag);
   result.putOrigOrderUser(orig_order_user);
   auto length = header_type::encodedLength() + value_type::computeLength();
   return {std::data(buffer), length};

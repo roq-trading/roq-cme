@@ -850,7 +850,7 @@ void OrderEntry::send_order_mass_action_request(CancelAllOrders const &cancel_al
       .side = cme_ilink::SideNULL::NULL_VALUE,
       .ord_type = cme_ilink::MassActionOrdTyp::NULL_VALUE,
       .time_in_force = cme_ilink::MassCancelTIF::NULL_VALUE,
-      .liquidity_flag = {},
+      .liquidity_flag = cme_ilink::BooleanNULL::NULL_VALUE,
       .orig_order_user = {},
   };
   log::info("DEBUG order_mass_action_request={}"sv, order_mass_action_request);

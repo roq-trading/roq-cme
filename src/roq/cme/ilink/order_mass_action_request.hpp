@@ -12,6 +12,7 @@
 
 #include "roq/cme/ilink/utils.hpp"
 
+#include "cme_ilink/BooleanNULL.h"
 #include "cme_ilink/ManualOrdIndReq.h"
 #include "cme_ilink/MassActionScope.h"
 #include "cme_ilink/MassCancelTIF.h"
@@ -37,10 +38,10 @@ struct OrderMassActionRequest final {
   cme_ilink::MassActionScope::Value mass_action_scope = {};
   uint8_t market_segment_id = {};
   cme_ilink::MassCxlReqTyp::Value mass_cancel_request_type = {};
-  cme_ilink::SideNULL::Value side = {};
-  cme_ilink::MassActionOrdTyp::Value ord_type = {};
-  cme_ilink::MassCancelTIF::Value time_in_force = {};
-  bool liquidity_flag = {};
+  cme_ilink::SideNULL::Value side = cme_ilink::SideNULL::NULL_VALUE;
+  cme_ilink::MassActionOrdTyp::Value ord_type = cme_ilink::MassActionOrdTyp::NULL_VALUE;
+  cme_ilink::MassCancelTIF::Value time_in_force = cme_ilink::MassCancelTIF::NULL_VALUE;
+  cme_ilink::BooleanNULL::Value liquidity_flag = cme_ilink::BooleanNULL::NULL_VALUE;
   std::string_view orig_order_user;
 };
 
