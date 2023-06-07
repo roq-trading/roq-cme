@@ -427,6 +427,14 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportPendingReplace565> c
   log::info("DEBUG execution_report_pending_replace={}"sv, const_cast<value_type &>(value));
 }
 
+// order mass action
+
+void OrderEntry::operator()(Trace<cme_ilink::OrderMassActionReport562> const &event) {
+  using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+  auto &[trace_info, value] = event;
+  log::info("DEBUG order_mass_action_report={}"sv, const_cast<value_type &>(value));
+}
+
 // order
 
 void OrderEntry::operator()(Trace<cme_ilink::OrderCancelReject535> const &event) {
@@ -848,7 +856,7 @@ void OrderEntry::send_order_mass_action_request(CancelAllOrders const &cancel_al
       .market_segment_id = market_segment_id_,
       .mass_cancel_request_type = cme_ilink::MassCxlReqTyp::Account,
       .side = cme_ilink::SideNULL::NULL_VALUE,
-      .ord_type = cme_ilink::MassActionOrdTyp::Limit,
+      .ord_type = cme_ilink::MassActionOrdTyp::Limit,  // note! null is not supported
       .time_in_force = cme_ilink::MassCancelTIF::NULL_VALUE,
       .liquidity_flag = cme_ilink::BooleanNULL::NULL_VALUE,
       .orig_order_user = {},

@@ -10,6 +10,7 @@
 #include "roq/cme/ilink/business.hpp"
 #include "roq/cme/ilink/execution_report.hpp"
 #include "roq/cme/ilink/order.hpp"
+#include "roq/cme/ilink/order_mass_action.hpp"
 #include "roq/cme/ilink/security_definition.hpp"
 #include "roq/cme/ilink/session.hpp"
 
@@ -46,6 +47,8 @@ struct Parser final {
     // order
     virtual void operator()(Trace<cme_ilink::OrderCancelReject535> const &) = 0;
     virtual void operator()(Trace<cme_ilink::OrderCancelReplaceReject536> const &) = 0;
+    // order mass action
+    virtual void operator()(Trace<cme_ilink::OrderMassActionReport562> const &) = 0;
     // security definition
     virtual void operator()(Trace<cme_ilink::SecurityDefinitionResponse561> const &) = 0;
   };

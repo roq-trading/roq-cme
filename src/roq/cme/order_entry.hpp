@@ -90,6 +90,8 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public ili
   // order
   void operator()(Trace<cme_ilink::OrderCancelReject535> const &) override;
   void operator()(Trace<cme_ilink::OrderCancelReplaceReject536> const &) override;
+  // order mass action
+  virtual void operator()(Trace<cme_ilink::OrderMassActionReport562> const &) override;
   // security definition
   void operator()(Trace<cme_ilink::SecurityDefinitionResponse561> const &) override;
 

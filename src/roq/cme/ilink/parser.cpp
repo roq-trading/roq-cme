@@ -197,6 +197,13 @@ size_t Parser::dispatch(Handler &handler, std::span<std::byte const> const &buff
           create_trace_and_dispatch(handler, trace_info, value);
           break;
         }
+          // order mass action
+        case cme_ilink::OrderMassActionReport562::SBE_TEMPLATE_ID: {
+          cme_ilink::OrderMassActionReport562 value{std::data(tmp), std::size(tmp), block_length, version};
+          // log::info("DEBUG {}"sv, value);
+          create_trace_and_dispatch(handler, trace_info, value);
+          break;
+        }
           // security definition
         case cme_ilink::SecurityDefinitionResponse561::SBE_TEMPLATE_ID: {
           cme_ilink::SecurityDefinitionResponse561 value{std::data(tmp), std::size(tmp), block_length, version};

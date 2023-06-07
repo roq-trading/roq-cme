@@ -39,8 +39,8 @@ struct OrderMassActionRequest final {
   uint8_t market_segment_id = {};
   cme_ilink::MassCxlReqTyp::Value mass_cancel_request_type = {};
   cme_ilink::SideNULL::Value side = cme_ilink::SideNULL::NULL_VALUE;
-  // cme_ilink::MassActionOrdTyp::Value ord_type = cme_ilink::MassActionOrdTyp::NULL_VALUE;
-  cme_ilink::MassActionOrdTyp::Value ord_type = cme_ilink::MassActionOrdTyp::Limit;
+  // note! null is not actually supported
+  cme_ilink::MassActionOrdTyp::Value ord_type = cme_ilink::MassActionOrdTyp::NULL_VALUE;
   cme_ilink::MassCancelTIF::Value time_in_force = cme_ilink::MassCancelTIF::NULL_VALUE;
   cme_ilink::BooleanNULL::Value liquidity_flag = cme_ilink::BooleanNULL::NULL_VALUE;
   std::string_view orig_order_user;
