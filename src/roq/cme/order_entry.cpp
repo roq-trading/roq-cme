@@ -848,7 +848,7 @@ void OrderEntry::send_order_mass_action_request(CancelAllOrders const &cancel_al
       .market_segment_id = market_segment_id_,
       .mass_cancel_request_type = cme_ilink::MassCxlReqTyp::Account,
       .side = cme_ilink::SideNULL::NULL_VALUE,
-      .ord_type = cme_ilink::MassActionOrdTyp::NULL_VALUE,
+      .ord_type = cme_ilink::MassActionOrdTyp::Limit,
       .time_in_force = cme_ilink::MassCancelTIF::NULL_VALUE,
       .liquidity_flag = cme_ilink::BooleanNULL::NULL_VALUE,
       .orig_order_user = {},
