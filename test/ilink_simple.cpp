@@ -59,6 +59,8 @@ TEST_CASE("simple", "[ilink_simple]") {
     // order
     void operator()(Trace<cme_ilink::OrderCancelReject535> const &) { FAIL(); }
     void operator()(Trace<cme_ilink::OrderCancelReplaceReject536> const &) { FAIL(); }
+    // order mass action
+    void operator()(Trace<cme_ilink::OrderMassActionReport562> const &) { FAIL(); }
     // security definition
     void operator()(Trace<cme_ilink::SecurityDefinitionResponse561> const &) { FAIL(); }
     int counter = 0;
@@ -117,6 +119,8 @@ TEST_CASE("multiple", "[ilink_simple]") {
     // order
     void operator()(Trace<cme_ilink::OrderCancelReject535> const &) { FAIL(); }
     void operator()(Trace<cme_ilink::OrderCancelReplaceReject536> const &) { FAIL(); }
+    // order mass action
+    void operator()(Trace<cme_ilink::OrderMassActionReport562> const &) { FAIL(); }
     // security definition
     void operator()(Trace<cme_ilink::SecurityDefinitionResponse561> const &) { FAIL(); }
     int counter = 0;
