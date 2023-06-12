@@ -125,3 +125,39 @@ TEST_CASE("simple", "[new_order_single]") {
 "\xff\xff\xff\xff\xff\xff\xff\x7f" // discretion price (null)
 "\xff\xff\xff\xff\xff\xff\xff\x7f"sv;  // reservation price (null)
 */
+
+/*
+"\x90\x00"
+"\xFE\xCA"
+"\x84\x00"
+"\x02\x02"
+"\x08\x00"
+"\x08\x00"
+"\x00\x1C\x97\x12\x99\xDC\x00\x00"          // OK price
+"\x01\x00\x00\x00"                          // OK order qty
+"\x63\x1F\x00\x00"                          // OK security id
+"\x02"                                      // OK side
+"\x84\x05\x02\x00"                          // OK seq num
+"\x48\x52\x49\x00\x00\x00\x00\x00\x00\x00"
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"  // OK sender id
+"\x30\x38\x35\x32\x32\x38\x32\x33\x38\x33"
+"\x31\x30\x30\x30\x31\x33\x4E\x4B\x00\x00"  // -- cl_ord_id
+"\x00\x00\x00\x00\x00\x00\x00\x00"          // OK party details list req id
+"\x8E\xCB\x4C\x95\xA1\xCA\x2E\x01"          // -- order request_id
+"\x6E\xDB\xEE\x89\x88\x01\x00\x00"          // OK sending time
+"\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x7F"          // OK stop px
+"\x55\x53\x2C\x49\x4C"                      // -- location
+"\xFF\xFF\xFF\xFF"                          // OK min qty
+"\xFF\xFF\xFF\xFF"                          // OK display qty
+"\xFF\xFF"                                  // OK expire date
+"\x32"                                      // OK ord type
+"\x00"                                      // OK time in force
+"\x00"                                      // OK manual order ind
+"\x00"                                      // OK exec inst
+"\x00"                                      // -- execution mode
+"\x00"                                      // OK liquidity flag
+"\x00"                                      // OK managed order
+"\x00"                                      // -- short sale
+"\xFF\xFF\xFF\xFF\xFF\xFF\xFF\x7F"          // OK discretion price
+"\x00\x00\x00\x00\x00\x00\x00\x00"sv;       // -- reservation price
+*/
