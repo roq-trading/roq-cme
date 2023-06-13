@@ -705,8 +705,7 @@ void OrderEntry::send_order_mass_status_request() {
       .location = shared_.settings.ilink.location,
       .security_id = {},
       .mass_status_req_type = cme_ilink::MassStatusReqTyp::MarketSegment,
-      .ord_status_req_type =
-          static_cast<cme_ilink::MassStatusOrdTyp::Value>(0),  // cme_ilink::MassStatusOrdTyp::NULL_VALUE,
+      .ord_status_req_type = cme_ilink::MassStatusOrdTyp::Account,
       .time_in_force = cme_ilink::MassStatusTIF::NULL_VALUE,
       .market_segment_id = market_segment_id_,
   };
@@ -722,6 +721,7 @@ void OrderEntry::send_new_order_single(
         auto side = map(create_order.side);
         auto ord_type = map(create_order.order_type);
         auto time_in_force = map(create_order.time_in_force);
+        // note! execution mode must be x0
         auto new_order_single = ilink::NewOrderSingle{
             .price = create_order.price,
             .order_qty = 1,  // utils::safe_cast(create_order.quantity),
