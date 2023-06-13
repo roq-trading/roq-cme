@@ -26,11 +26,11 @@ std::span<std::byte const> OrderMassStatusRequest::encode(std::span<std::byte> c
   result.sendingTimeEpoch(sending_time_epoch.count());
   result.putSecurityGroup(security_group);
   result.putLocation(location);
-  result.securityID(security_id);
+  result.securityID(security_id ? security_id : value_type::securityIDNullValue());
   result.massStatusReqType(mass_status_req_type);
   result.ordStatusReqType(ord_status_req_type);
   result.timeInForce(time_in_force);
-  result.marketSegmentID(market_segment_id);
+  result.marketSegmentID(market_segment_id ? market_segment_id : value_type::marketSegmentIDNullValue());
   auto length = header_type::encodedLength() + value_type::computeLength();
   return {std::data(buffer), length};
 }
