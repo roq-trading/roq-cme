@@ -22,9 +22,29 @@ set(SOURCES
     udp_mbp_market_recovery.cpp
     main.cpp)
 
-roq_gitignore(OUTPUT ".gitignore" SOURCES "${TARGET_NAME}")
+include(RoqAutogen)
+
+set(AUTOGEN_SCHEMAS order_entry_state.json)
+
+roq_autogen(
+  OUTPUT
+  AUTOGEN_HEADERS
+  NAMESPACE
+  "roq/cme"
+  OUTPUT_TYPE
+  "state"
+  FILE_TYPE
+  "hpp"
+  SOURCES
+  ${AUTOGEN_SCHEMAS})
+
+add_custom_target(autogen-headers ALL DEPENDS ${AUTOGEN_HEADERS})
+
+roq_gitignore(OUTPUT ".gitignore" SOURCES "${TARGET_NAME}" ${AUTOGEN_HEADERS})
 
 add_executable("${TARGET_NAME}" ${SOURCES})
+
+add_dependencies("${TARGET_NAME}" autogen-headers)
 
 target_link_libraries(
   "${TARGET_NAME}"

@@ -4,6 +4,8 @@
 
 #include <string>
 
+#include "roq/core/download.hpp"
+
 #include "roq/core/metrics/counter.hpp"
 #include "roq/core/metrics/latency.hpp"
 #include "roq/core/metrics/profile.hpp"
@@ -15,6 +17,7 @@
 #include "roq/server.hpp"
 
 #include "roq/cme/account.hpp"
+#include "roq/cme/order_entry_state.hpp"
 #include "roq/cme/shared.hpp"
 
 #include "roq/cme/ilink/parser.hpp"
@@ -103,6 +106,8 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public ili
  private:
   void operator()(ConnectionStatus);
 
+  uint32_t download(OrderEntryState state);
+
   uint32_t peek_next_seq_num();
   uint32_t fetch_next_seq_num();
 
@@ -165,6 +170,7 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public ili
   Shared &shared_;
   // state
   ConnectionStatus status_ = {};
+  core::Download<OrderEntryState> download_;
   std::chrono::nanoseconds next_heartbeat_ = {};
   uint64_t uuid_ = {};
   uint64_t request_id_ = {};

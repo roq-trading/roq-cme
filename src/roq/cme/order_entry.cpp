@@ -56,6 +56,8 @@ auto const SUPPORTS = Mask{
 auto const TRADING_SYSTEM_VENDOR = "ROQ GMBH"sv;
 auto const KEEP_ALIVE_INTERVAL = 30s;
 
+auto const REQUEST_TIMEOUT = 5s;
+
 auto const MANUAL_ORDER_INDICATOR = cme_ilink::ManualOrdIndReq::Automated;
 
 auto const SYMBOL = "ZNU3"sv;
@@ -186,7 +188,7 @@ OrderEntry::OrderEntry(
       latency_{
           .ping = create_metrics(shared.settings, name_, "ping"sv),
       },
-      account_{account}, shared_{shared} {
+      account_{account}, shared_{shared}, download_{REQUEST_TIMEOUT, [this](auto state) { return download(state); }} {
 }
 
 void OrderEntry::operator()(Event<Start> const &) {
@@ -276,7 +278,9 @@ void OrderEntry::operator()(Trace<cme_ilink::EstablishmentAck504> const &event) 
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &[trace_info, value] = event;
   log::info("DEBUG establishment_ack={}"sv, const_cast<value_type &>(value));
-  (*this)(ConnectionStatus::READY);
+  (*this)(ConnectionStatus::DOWNLOADING);
+  download_.begin();
+
   // EXPERIMENTAL
   // send_party_details_list_request();
   if (shared_.settings.test.order_mass_status_request) {
@@ -465,6 +469,7 @@ void OrderEntry::operator()(io::net::ConnectionManager::Connected const &) {
 void OrderEntry::operator()(io::net::ConnectionManager::Disconnected const &) {
   outbound_ = {};
   inbound_ = {};
+  download_.reset();
   next_heartbeat_ = {};
   (*this)(ConnectionStatus::DISCONNECTED);
   ++counter_.disconnect;
@@ -505,6 +510,24 @@ void OrderEntry::operator()(ConnectionStatus status) {
     log::info("stream_status={}"sv, stream_status);
     create_trace_and_dispatch(handler_, trace_info, stream_status);
   }
+}
+
+uint32_t OrderEntry::download(OrderEntryState state) {
+  switch (state) {
+    using enum OrderEntryState;
+    case UNDEFINED:
+      assert(false);
+      break;
+    case ORDERS:
+      send_party_details_definition_request();
+      send_order_mass_status_request();
+      return 1;
+    case DONE:
+      (*this)(ConnectionStatus::READY);
+      return {};
+  }
+  assert(false);
+  return {};
 }
 
 //
