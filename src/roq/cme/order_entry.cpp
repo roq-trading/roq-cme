@@ -741,7 +741,7 @@ void OrderEntry::send_new_order_single(
             .time_in_force = time_in_force,
             .manual_order_indicator = MANUAL_ORDER_INDICATOR,
             .exec_inst = {},  // XXX
-            .execution_mode = cme_ilink::ExecMode::NULL_VALUE,
+            .execution_mode = cme_ilink::ExecMode::Passive,
             .liquidity_flag = {},
             .managed_order = {},
             .short_sale_type = cme_ilink::ShortSaleType::LongSell,
