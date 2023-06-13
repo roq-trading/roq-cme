@@ -54,6 +54,7 @@ TEST_CASE("simple", "[party_details_definition_request]") {
   auto message = party_details_definition_request.encode(buffer);
   fmt::print("{}\n"sv, debug::hex::Message{message});
   auto tmp = std::string_view{reinterpret_cast<char const *>(std::data(message)), std::size(message)};
+  auto tmp_2 = fmt::format("{}"sv, debug::hex::Message{message});
   auto expected =
       "\x93\x00"                          // block length
       "\x06\x02"                          // template id
@@ -68,7 +69,7 @@ TEST_CASE("simple", "[party_details_definition_request]") {
       "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
       "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"                      // memo
       "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"  // avg px group id
-      "\x00\x00\x00\x00\x00\x00\x00\x00"                                                  // self match prevention id
+      "\xff\xff\xff\xff\xff\xff\xff\xff"                                                  // self match prevention id
       "\x47"                                                                              // cmta giveup cd G=giveup
       "\x01"                                                                              // cust order capacity
       "\x01"                                                                              // clearing account type
@@ -86,5 +87,6 @@ TEST_CASE("simple", "[party_details_definition_request]") {
       // no trd reg publications
       "\x02\x00"  // block length
       "\x00"sv;   // count
-  // CHECK(tmp == expected);
+  auto expected_2 = fmt::format("{}"sv, debug::hex::Message{expected});
+  CHECK(tmp_2 == expected_2);
 }
