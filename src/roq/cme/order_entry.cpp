@@ -505,7 +505,7 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportNew522> const &event
               .last_traded_quantity = {},
               .last_traded_price = {},
               .last_liquidity = {},
-              .update_type = UpdateType::SNAPSHOT,
+              .update_type = UpdateType::INCREMENTAL,
               .sending_time_utc = {},
           };
           Trace event_2{trace_info, order_update};
@@ -692,7 +692,7 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportCancel534> const &ev
               .last_traded_quantity = {},
               .last_traded_price = {},
               .last_liquidity = {},
-              .update_type = UpdateType::SNAPSHOT,
+              .update_type = UpdateType::INCREMENTAL,
               .sending_time_utc = {},
           };
           Trace event_2{trace_info, order_update};
