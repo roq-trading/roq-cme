@@ -133,6 +133,8 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public ili
   void send_order_cancel_request(CancelOrder const &, oms::Order const &);
   void send_order_mass_action_request(CancelAllOrders const &);
 
+  void operator()(Trace<oms::OrderUpdate> const &, std::string_view const &client_order_id);
+
  private:
   Handler &handler_;
   // config

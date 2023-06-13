@@ -80,6 +80,11 @@ struct Shared final {
   auto discard_symbol(std::string_view const &name) const { return dispatcher_.discard_symbol(name); }
 
   template <typename... Args>
+  auto update_order(Args &&...args) {
+    return dispatcher_.update_order(std::forward<Args>(args)...);
+  }
+
+  template <typename... Args>
   auto operator()(Args &&...args) {
     return dispatcher_(std::forward<Args>(args)...);
   }

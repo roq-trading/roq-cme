@@ -46,7 +46,7 @@ auto const NAME = "msgw"sv;
 
 auto const SUPPORTS = Mask{
     SupportType::CREATE_ORDER,
-    SupportType::MODIFY_ORDER,
+    // SupportType::MODIFY_ORDER,
     SupportType::CANCEL_ORDER,
     SupportType::ORDER_ACK,
     SupportType::ORDER,
@@ -95,6 +95,8 @@ struct create_metrics final : public core::metrics::Factory {
       : core::metrics::Factory(settings.app.name, group, function) {}
 };
 
+// side
+
 auto map(Side side) -> cme_ilink::SideReq::Value {
   switch (side) {
     using enum Side;
@@ -107,6 +109,22 @@ auto map(Side side) -> cme_ilink::SideReq::Value {
   }
   return cme_ilink::SideReq::NULL_VALUE;
 }
+
+auto map(cme_ilink::SideReq::Value value) -> Side {
+  switch (value) {
+    using enum cme_ilink::SideReq::Value;
+    case Buy:
+      return Side::BUY;
+    case Sell:
+      return Side::SELL;
+    case Undisclosed:
+    case NULL_VALUE:
+      break;
+  }
+  return {};
+}
+
+// order type
 
 // XXX need some more complexity here
 auto map(OrderType order_type) -> cme_ilink::OrderTypeReq::Value {
@@ -121,6 +139,25 @@ auto map(OrderType order_type) -> cme_ilink::OrderTypeReq::Value {
   }
   return cme_ilink::OrderTypeReq::NULL_VALUE;
 }
+
+auto map(cme_ilink::OrderType::Value value) -> OrderType {
+  switch (value) {
+    using enum cme_ilink::OrderType::Value;
+    case MarketWithProtection:
+      return OrderType::MARKET;
+    case Limit:
+      return OrderType::LIMIT;
+    case StopLimit:
+      return OrderType::LIMIT;
+    case MarketWithLeftoverAsLimit:
+      return OrderType::MARKET;  // ???
+    case NULL_VALUE:
+      break;
+  }
+  return {};
+}
+
+// time in force
 
 auto map(TimeInForce time_in_force) -> cme_ilink::TimeInForce::Value {
   switch (time_in_force) {
@@ -156,6 +193,59 @@ auto map(TimeInForce time_in_force) -> cme_ilink::TimeInForce::Value {
   }
   return cme_ilink::TimeInForce::NULL_VALUE;
 }
+
+auto map(cme_ilink::TimeInForce::Value value) -> TimeInForce {
+  switch (value) {
+    using enum cme_ilink::TimeInForce::Value;
+    case Day:
+      return TimeInForce::GFD;
+    case GoodTillCancel:
+      return TimeInForce::GTC;
+    case FillAndKill:
+      return TimeInForce::IOC;
+    case FillOrKill:
+      return TimeInForce::FOK;
+    case GoodTillDate:
+      return TimeInForce::GTD;
+    case GoodForSession:
+      break;  // ???
+    case NULL_VALUE:
+      break;
+  }
+  return {};
+}
+
+// order status
+
+auto map(cme_ilink::OrderStatus::Value value) -> OrderStatus {
+  switch (value) {
+    using enum cme_ilink::OrderStatus::Value;
+    case New:
+      return OrderStatus::WORKING;  // ???
+    case PartiallyFilled:
+      return OrderStatus::WORKING;
+    case Filled:
+      return OrderStatus::COMPLETED;
+    case Cancelled:
+      return OrderStatus::CANCELED;
+    case Replaced:
+      return OrderStatus::WORKING;
+    case PendingCancel:
+      return OrderStatus::WORKING;
+    case Rejected:
+      return OrderStatus::REJECTED;
+    case Expired:
+      return OrderStatus::EXPIRED;
+    case PendingReplace:
+      return OrderStatus::ACCEPTED;
+    case Undefined:
+      break;  // ???
+    case NULL_VALUE:
+      break;
+  }
+  return {};
+}
+
 }  // namespace
 
 // === IMPLEMENTATION ===
@@ -411,6 +501,98 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportStatus532> const &ev
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &[trace_info, value] = event;
   log::info("DEBUG execution_report_status={}"sv, const_cast<value_type &>(value));
+  // XXX massStatusReqID() ???
+  auto order_id = value.orderID();
+  if (order_id && order_id != value_type::orderIDNullValue()) {
+    auto security_id = value.securityID();
+    // null?
+    if (shared_.get_security(security_id, [&](auto &security) {
+          auto side = map(value.side());
+          auto order_type = map(value.ordType());
+          auto time_in_force = map(value.timeInForce());
+          auto create_time_utc = std::chrono::nanoseconds{value.transactTime()};  // XXX NULL ???
+          auto external_order_id = fmt::format("{}"sv, order_id);
+          auto client_order_id = value.getClOrdIDAsStringView();
+          auto order_status = map(value.ordStatus());
+          auto quantity = static_cast<double>(value.orderQty());
+          auto price = ilink::get_double(const_cast<value_type &>(value).price());
+          auto stop_price = ilink::get_double(const_cast<value_type &>(value).stopPx());
+          auto traded_quantity = static_cast<double>(value.cumQty());  // XXX NULL ???
+          auto order_update = oms::OrderUpdate{
+              .account = account_.get_name(),  // note! same as sender_id
+              .exchange = shared_.settings.exchange,
+              .symbol = security.symbol,
+              .side = side,
+              .position_effect = {},
+              .max_show_quantity = NaN,
+              .order_type = order_type,
+              .time_in_force = time_in_force,
+              .execution_instructions = {},
+              .create_time_utc = create_time_utc,
+              .update_time_utc = {},
+              .external_account = {},
+              .external_order_id = external_order_id,
+              .client_order_id = {},
+              .status = order_status,
+              .quantity = quantity,
+              .price = price,
+              .stop_price = stop_price,
+              .remaining_quantity = NaN,
+              .traded_quantity = traded_quantity,
+              .average_traded_price = {},
+              .last_traded_quantity = {},
+              .last_traded_price = {},
+              .last_liquidity = {},
+              .update_type = UpdateType::SNAPSHOT,
+              .sending_time_utc = {},
+          };
+          Trace event_2{trace_info, order_update};
+          (*this)(event_2, client_order_id);
+        })) {
+    } else {
+      log::warn("Unexpected: security_id={}"sv, security_id);
+    }
+  }
+  /*
+execution_report_status={seq_num=2,
+ uuid=1686639840327251,
+ text="NA",
+ exec_id="0",
+ sender_id="A1",
+ cl_ord_id="test",
+ party_details_list_req_id=0,
+ order_id=84959175681,
+ price=100,
+ stop_px=nan,
+ transact_time=1686639824876000000,
+ sending_time_epoch=1686639842403491563,
+ order_request_id=2,
+ ord_status_req_id=18446744073709551615,
+ mass_status_req_id=1,
+ cross_id=18446744073709551615,
+ host_cross_id=18446744073709551615,
+ location="UK",
+ security_id=338574,
+ order_qty=1,
+ min_qty=0,
+ display_qty=4294967295,
+ expire_date=65535,
+ ord_status=New,
+ exec_type=I,
+ ord_type=Limit,
+ side=Buy,
+ time_in_force=GoodTillCancel,
+ manual_order_indicator=Automated,
+ poss_retrans_flag=False,
+ last_rpt_requested=True,
+ cross_type=255,
+ exec_inst=0,
+ execution_mode=SBE_UNKNOWN,
+ liquidity_flag=,
+ managed_order=,
+ short_sale_type=,
+ discretion_price=nan}
+ */
   if (value.lastRptRequested() == cme_ilink::BooleanNULL::True)
     download_.check_relaxed(OrderEntryState::ORDERS);
 }
@@ -891,6 +1073,15 @@ void OrderEntry::send_order_mass_action_request(CancelAllOrders const &cancel_al
   };
   log::info("DEBUG order_mass_action_request={}"sv, order_mass_action_request);
   send(order_mass_action_request);
+}
+
+void OrderEntry::operator()(Trace<oms::OrderUpdate> const &event, std::string_view const &client_order_id) {
+  auto &[trace_info, order_update] = event;
+  if (shared_.update_order(
+          client_order_id, stream_id_, trace_info, order_update, [&]([[maybe_unused]] auto &order) {})) {
+  } else {
+    log::warn("*** EXTERNAL ORDER ***"sv);
+  }
 }
 
 }  // namespace cme
