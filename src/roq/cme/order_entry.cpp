@@ -957,6 +957,7 @@ void OrderEntry::send_new_order_single(
             .reservation_price = 0.0,
         };
         log::info("DEBUG new_order_single={}"sv, new_order_single);
+        send_party_details_definition_request();  // note!
         send(new_order_single);
       })) {
   } else {
@@ -1038,6 +1039,7 @@ void OrderEntry::send_order_cancel_request(CancelOrder const &cancel_order, oms:
             .orig_order_user = {},
         };
         log::info("DEBUG order_cancel_request={}"sv, order_cancel_request);
+        send_party_details_definition_request();  // note!
         send(order_cancel_request);
       })) {
   } else {
