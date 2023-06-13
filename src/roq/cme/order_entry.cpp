@@ -644,7 +644,7 @@ void OrderEntry::send_party_details_definition_request() {
           .party_detail_role = cme_ilink::PartyDetailRole::CustomerAccount,
       },
       {
-          .party_detail_id = "CSET"sv,  // XXX ???
+          .party_detail_id = account_.get_name(),
           .party_detail_role = cme_ilink::PartyDetailRole::Operator,
       },
   }};
