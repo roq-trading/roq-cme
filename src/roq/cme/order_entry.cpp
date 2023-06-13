@@ -787,7 +787,7 @@ void OrderEntry::operator()(Trace<cme_ilink::OrderMassActionReport562> const &ev
   auto &[trace_info, value] = event;
   log::info("DEBUG order_mass_action_report={}"sv, const_cast<value_type &>(value));
   const_cast<value_type &>(value).sbeRewind();  // note!
-  const_cast<value_type &>(value).noAffectedOrders().forEach([](auto &item) {
+  const_cast<value_type &>(value).noAffectedOrders().forEach([&](auto &item) {
     auto orig_cl_ord_id = item.getOrigCIOrdIDAsStringView();
     auto affected_order_id = item.affectedOrderID();
     auto cxl_quantity = item.cxlQuantity();
@@ -796,6 +796,37 @@ void OrderEntry::operator()(Trace<cme_ilink::OrderMassActionReport562> const &ev
         orig_cl_ord_id,
         affected_order_id,
         cxl_quantity);
+    auto external_order_id = fmt::format("{}"sv, affected_order_id);
+    auto order_update = oms::OrderUpdate{
+        .account = account_.get_name(),  // note! same as sender_id
+        .exchange = {},
+        .symbol = {},
+        .side = {},
+        .position_effect = {},
+        .max_show_quantity = NaN,
+        .order_type = {},
+        .time_in_force = {},
+        .execution_instructions = {},
+        .create_time_utc = {},
+        .update_time_utc = {},
+        .external_account = {},
+        .external_order_id = external_order_id,
+        .client_order_id = orig_cl_ord_id,
+        .status = OrderStatus::CANCELED,
+        .quantity = {},
+        .price = NaN,
+        .stop_price = NaN,
+        .remaining_quantity = NaN,
+        .traded_quantity = NaN,
+        .average_traded_price = NaN,
+        .last_traded_quantity = NaN,
+        .last_traded_price = NaN,
+        .last_liquidity = {},
+        .update_type = UpdateType::INCREMENTAL,
+        .sending_time_utc = {},
+    };
+    Trace event_2{trace_info, order_update};
+    (*this)(event_2, orig_cl_ord_id);
   });
 }
 
