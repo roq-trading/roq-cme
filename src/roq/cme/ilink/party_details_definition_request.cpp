@@ -24,7 +24,8 @@ std::span<std::byte const> PartyDetailsDefinitionRequest::encode(std::span<std::
   result.seqNum(seq_num);
   result.putMemo(memo);
   result.putAvgPxGroupID(avg_px_group_id);
-  result.selfMatchPreventionID(self_match_prevention_id);
+  result.selfMatchPreventionID(
+      self_match_prevention_id ? self_match_prevention_id : value_type::selfMatchPreventionIDNullValue());
   result.cmtaGiveupCD(cmta_giveup_cd);
   result.custOrderCapacity(cust_order_capacity);
   result.clearingAccountType(clearing_account_type);
