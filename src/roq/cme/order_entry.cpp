@@ -411,6 +411,8 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportStatus532> const &ev
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &[trace_info, value] = event;
   log::info("DEBUG execution_report_status={}"sv, const_cast<value_type &>(value));
+  if (value.lastRptRequested() == cme_ilink::BooleanNULL::True)
+    download_.check_relaxed(OrderEntryState::ORDERS);
 }
 
 void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportCancel534> const &event) {
