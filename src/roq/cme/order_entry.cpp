@@ -744,7 +744,7 @@ void OrderEntry::send_new_order_single(
             .execution_mode = cme_ilink::ExecMode::NULL_VALUE,
             .liquidity_flag = {},
             .managed_order = {},
-            .short_sale_type = cme_ilink::ShortSaleType::NULL_VALUE,
+            .short_sale_type = cme_ilink::ShortSaleType::LongSell,
             .discretion_price = NaN,
             .reservation_price = 0.0,
         };
