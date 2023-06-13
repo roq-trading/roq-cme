@@ -35,3 +35,6 @@ I0613 08:14:46.021252 32303 L0 dispatcher.cpp:975] DEBUG: *** EXTERNAL ORDER ***
 W0613 08:14:46.021267 32303 L0 order_entry.cpp:1083] *** EXTERNAL ORDER ***
 I0613 08:14:46.021277 32303 L0 download.hpp:153] Completed ORDERS
 I0613 08:14:46.021290 32303 L0 order_entry.cpp:694] stream_status={stream_id=5, account="A1", supports=CREATE_ORDER|CANCEL_ORDER|ORDER_ACK|ORDER|TRADE, transport=TCP, protocol=FIX, encoding=SBE, priority=PRIMARY, connection_status=READY, interface="", authority="", path="", proxy=""}
+
+
+execution_report_cancel={seq_num=10, uuid=1686662470992148, exec_id="84979:443636", sender_id="A1", cl_ord_id="8gAC6QMAAQAA5sP_9jZG", party_details_list_req_id=0, order_id=84959222356, price=100, stop_px=nan, transact_time=1686662476181510196, sending_time_epoch=1686662476182812697, order_request_id=0, cross_id=18446744073709551615, host_cross_id=18446744073709551615, location="UK", security_id=338574, order_qty=1, cum_qty=0, min_qty=4294967295, display_qty=4294967295, expire_date=0, delay_duration=65535, ord_status=4, exec_type=4, ord_type=Limit, side=Buy, time_in_force=GoodTillCancel, manual_order_indicator=Automated, poss_retrans_flag=False, split_msg=, exec_restatement_reason=, cross_type=255, exec_inst=0, execution_mode=SBE_UNKNOWN, liquidity_flag=, managed_order=, short_sale_type=, delay_to_time=18446744073709551615, discretion_price=nan}
