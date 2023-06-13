@@ -81,6 +81,8 @@ struct Gateway final : public server::Handler,
   template <typename... Args>
   void dispatch(Args &&...);
 
+  OrderEntry &get_order_entry(std::string_view const &account);
+
  private:
   server::Dispatcher &dispatcher_;
   // accounts

@@ -139,34 +139,34 @@ void Gateway::operator()(Event<Disconnected> const &event) {
 }
 
 uint16_t Gateway::operator()(
-    Event<CreateOrder> const &event, oms::Order const &, [[maybe_unused]] std::string_view const &request_id) {
+    Event<CreateOrder> const &event, oms::Order const &order, std::string_view const &request_id) {
   assert(!std::empty(event.value.account));
-  throw oms::NotSupported{"not supported"sv};
+  return get_order_entry(event.value.account)(event, order, request_id);
 }
 
 uint16_t Gateway::operator()(
     Event<ModifyOrder> const &event,
     oms::Order const &order,
-    [[maybe_unused]] std::string_view const &request_id,
-    [[maybe_unused]] std::string_view const &previous_request_id) {
+    std::string_view const &request_id,
+    std::string_view const &previous_request_id) {
   assert(!std::empty(event.value.account));
   assert(event.value.account == order.account);
-  throw oms::NotSupported{"not supported"sv};
+  return get_order_entry(event.value.account)(event, order, request_id, previous_request_id);
 }
 
 uint16_t Gateway::operator()(
     Event<CancelOrder> const &event,
     oms::Order const &order,
-    [[maybe_unused]] std::string_view const &request_id,
-    [[maybe_unused]] std::string_view const &previous_request_id) {
+    std::string_view const &request_id,
+    std::string_view const &previous_request_id) {
   assert(!std::empty(event.value.account));
   assert(event.value.account == order.account);
-  throw oms::NotSupported{"not supported"sv};
+  return get_order_entry(event.value.account)(event, order, request_id, previous_request_id);
 }
 
-uint16_t Gateway::operator()(Event<CancelAllOrders> const &event, [[maybe_unused]] std::string_view const &request_id) {
+uint16_t Gateway::operator()(Event<CancelAllOrders> const &event, std::string_view const &request_id) {
   assert(!std::empty(event.value.account));
-  throw oms::NotSupported{"not supported"sv};
+  return get_order_entry(event.value.account)(event, request_id);
 }
 
 void Gateway::operator()(metrics::Writer &writer) {
@@ -224,6 +224,13 @@ void Gateway::dispatch(Args &&...args) {
     helper(*item);
   for (auto &[_, item] : order_entry_)
     helper(*item);
+}
+
+OrderEntry &Gateway::get_order_entry(std::string_view const &account) {
+  auto iter = order_entry_.find(account);
+  if (iter == std::end(order_entry_)) [[unlikely]]
+    throw RuntimeError{R"(Unknown account="{}")"sv, account};
+  return *(*iter).second;
 }
 
 }  // namespace cme
