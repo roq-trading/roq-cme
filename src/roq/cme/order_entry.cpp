@@ -532,7 +532,7 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportStatus532> const &ev
               .update_time_utc = {},
               .external_account = {},
               .external_order_id = external_order_id,
-              .client_order_id = {},
+              .client_order_id = client_order_id,
               .status = order_status,
               .quantity = quantity,
               .price = price,
