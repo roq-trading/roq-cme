@@ -786,6 +786,17 @@ void OrderEntry::operator()(Trace<cme_ilink::OrderMassActionReport562> const &ev
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &[trace_info, value] = event;
   log::info("DEBUG order_mass_action_report={}"sv, const_cast<value_type &>(value));
+  const_cast<value_type &>(value).sbeRewind();  // note!
+  const_cast<value_type &>(value).noAffectedOrders().forEach([](auto &item) {
+    auto orig_cl_ord_id = item.getOrigCIOrdIDAsStringView();
+    auto affected_order_id = item.affectedOrderID();
+    auto cxl_quantity = item.cxlQuantity();
+    log::info(
+        R"(DEBUG orig_cl_ord_id="{}", affected_order_id={}, cxl_quantity={})"sv,
+        orig_cl_ord_id,
+        affected_order_id,
+        cxl_quantity);
+  });
 }
 
 // order
