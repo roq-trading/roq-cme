@@ -165,6 +165,7 @@ uint16_t Gateway::operator()(
 }
 
 uint16_t Gateway::operator()(Event<CancelAllOrders> const &event, std::string_view const &request_id) {
+  log::info("DEBUG event={}"sv, event);
   assert(!std::empty(event.value.account));
   return get_order_entry(event.value.account)(event, request_id);
 }

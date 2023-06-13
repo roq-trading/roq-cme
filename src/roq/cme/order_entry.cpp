@@ -924,12 +924,11 @@ void OrderEntry::send_new_order_single(
     CreateOrder const &create_order, oms::Order const &order, std::string_view const &request_id) {
   if (shared_.find_security_id(market_segment_id_, order.symbol, [&](auto security_id) {
         log::info("DEBUG found security_id={}"sv, security_id);
-        auto now = clock::get_realtime();
         auto side = map(create_order.side);
         auto ord_type = map(create_order.order_type);
         auto time_in_force = map(create_order.time_in_force);
-        // note!
-        send_party_details_definition_request();
+        send_party_details_definition_request();  // note!
+        auto now = clock::get_realtime();
         // note! execution mode must be x0
         auto new_order_single = ilink::NewOrderSingle{
             .price = create_order.price,
@@ -974,12 +973,11 @@ void OrderEntry::send_new_order_single(
 void OrderEntry::send_order_cancel_replace_request(ModifyOrder const &modify_order, oms::Order const &order) {
   if (shared_.find_security_id(market_segment_id_, order.symbol, [&](auto security_id) {
         log::info("DEBUG found security_id={}"sv, security_id);
-        auto now = clock::get_realtime();
         auto side = map(order.side);
         auto ord_type = map(order.order_type);
         auto time_in_force = map(order.time_in_force);
-        // note!
-        send_party_details_definition_request();
+        send_party_details_definition_request();  // note!
+        auto now = clock::get_realtime();
         auto order_cancel_replace_request = ilink::OrderCancelReplaceRequest{
             .price = modify_order.price,
             .order_qty = 1,  // utils::safe_cast(modify_order.quantity),
@@ -1024,10 +1022,9 @@ void OrderEntry::send_order_cancel_replace_request(ModifyOrder const &modify_ord
 void OrderEntry::send_order_cancel_request(CancelOrder const &cancel_order, oms::Order const &order) {
   if (shared_.find_security_id(market_segment_id_, order.symbol, [&](auto security_id) {
         log::info("DEBUG found security_id={}"sv, security_id);
-        auto now = clock::get_realtime();
         auto side = map(order.side);
-        // note!
-        send_party_details_definition_request();
+        send_party_details_definition_request();  // note!
+        auto now = clock::get_realtime();
         auto order_cancel_request = ilink::OrderCancelRequest{
             .order_id = {},
             .party_details_list_req_id = {},  // note!
@@ -1057,6 +1054,7 @@ void OrderEntry::send_order_cancel_request(CancelOrder const &cancel_order, oms:
 }
 
 void OrderEntry::send_order_mass_action_request(CancelAllOrders const &cancel_all_orders) {
+  send_party_details_definition_request();  // note!
   auto now = clock::get_realtime();
   auto order_mass_action_request = ilink::OrderMassActionRequest{
       .party_details_list_req_id = {},  // note!
