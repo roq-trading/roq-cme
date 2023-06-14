@@ -39,7 +39,7 @@ std::span<std::byte const> OrderCancelReplaceRequest::encode(std::span<std::byte
   result.putClOrdID(cl_ord_id);
   result.partyDetailsListReqID(party_details_list_req_id);
   result.orderID(value_type::orderIDNullValue());
-  result.stopPx().mantissa(100);
+  set_price(result.stopPx(), stop_px);
   result.orderRequestID(order_request_id);
   result.sendingTimeEpoch(sending_time_epoch.count());
   result.putLocation(location);
