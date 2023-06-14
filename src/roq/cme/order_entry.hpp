@@ -134,6 +134,7 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public ili
   void send_order_mass_action_request(CancelAllOrders const &);
 
   void operator()(Trace<oms::OrderUpdate> const &, std::string_view const &client_order_id);
+  void operator()(Trace<oms::Response> const &, std::string_view const &client_order_id);
 
  private:
   Handler &handler_;

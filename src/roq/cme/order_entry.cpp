@@ -850,12 +850,46 @@ void OrderEntry::operator()(Trace<cme_ilink::OrderCancelReject535> const &event)
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &[trace_info, value] = event;
   log::info("order_cancel_reject={}"sv, const_cast<value_type &>(value));
+  auto cl_ord_id = value.getClOrdIDAsStringView();
+  auto cxl_rej_reason = value.cxlRejReason();  // XXX we need a mapping
+  auto text = value.getTextAsStringView();
+  auto response = oms::Response{
+      .type = RequestType::CANCEL_ORDER,
+      .origin = Origin::EXCHANGE,
+      .status = RequestStatus::REJECTED,
+      .error = {},
+      .text = text,
+      .version = {},
+      .request_id = {},
+      .quantity = NaN,
+      .price = NaN,
+  };
+  Trace event_2{trace_info, response};
+  (*this)(event_2, cl_ord_id);
 }
 
+// note!
+//   maybe OrderRequestID can be used to correlate version?
 void OrderEntry::operator()(Trace<cme_ilink::OrderCancelReplaceReject536> const &event) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &[trace_info, value] = event;
   log::info("DEBUG order_cancel_replace_reject={}"sv, const_cast<value_type &>(value));
+  auto cl_ord_id = value.getClOrdIDAsStringView();
+  auto cxl_rej_reason = value.cxlRejReason();  // XXX we need a mapping
+  auto text = value.getTextAsStringView();
+  auto response = oms::Response{
+      .type = RequestType::MODIFY_ORDER,
+      .origin = Origin::EXCHANGE,
+      .status = RequestStatus::REJECTED,
+      .error = {},
+      .text = text,
+      .version = {},
+      .request_id = {},
+      .quantity = NaN,
+      .price = NaN,
+  };
+  Trace event_2{trace_info, response};
+  (*this)(event_2, cl_ord_id);
 }
 
 // security definition
@@ -1319,6 +1353,14 @@ void OrderEntry::operator()(Trace<oms::OrderUpdate> const &event, std::string_vi
   auto &[trace_info, order_update] = event;
   if (shared_.update_order(
           client_order_id, stream_id_, trace_info, order_update, [&]([[maybe_unused]] auto &order) {})) {
+  } else {
+    log::warn("*** EXTERNAL ORDER ***"sv);
+  }
+}
+
+void OrderEntry::operator()(Trace<oms::Response> const &event, std::string_view const &client_order_id) {
+  auto &[trace_info, response] = event;
+  if (shared_.update_order(client_order_id, stream_id_, trace_info, response, [&]([[maybe_unused]] auto &order) {})) {
   } else {
     log::warn("*** EXTERNAL ORDER ***"sv);
   }
