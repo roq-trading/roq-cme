@@ -120,13 +120,9 @@ auto get_security_id(auto &value) -> int32_t {
 
 auto get_transact_time(auto &value) -> std::chrono::nanoseconds {
   auto result = value.transactTime();
-  log::info("DEBUG transact_time={}"sv, result);
   if (result == value.transactTimeNullValue())
     return {};
-  auto result_2 = std::chrono::nanoseconds{result};
-  log::info("DEBUG transact_time={}"sv, result_2);
-  // return std::chrono::nanoseconds{result};
-  return result_2;
+  return std::chrono::nanoseconds{result};
 }
 
 // side
@@ -1182,7 +1178,7 @@ void OrderEntry::send_order_cancel_replace_request(ModifyOrder const &modify_ord
             .ord_type = ord_type,
             .time_in_force = time_in_force,
             .manual_order_indicator = MANUAL_ORDER_INDICATOR,
-            .ofm_override = cme_ilink::OFMOverrideReq::NULL_VALUE,
+            .ofm_override = cme_ilink::OFMOverrideReq::Disabled,
             .exec_inst = {},                                               // XXX
             .execution_mode = static_cast<cme_ilink::ExecMode::Value>(0),  // note!
             .liquidity_flag = {},
