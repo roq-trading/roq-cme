@@ -614,8 +614,19 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportNew522> const &event
     if (shared_.get_security(security_id, [&](auto &security) {
           auto external_order_id = fmt::format("{}"sv, order_id);
           auto order_update = order_update_from_execution_report(value, security, external_order_id);
-          Trace event_2{trace_info, order_update};
-          (*this)(event_2, order_update.client_order_id);
+          auto response = oms::Response{
+              .type = RequestType::CREATE_ORDER,
+              .origin = Origin::EXCHANGE,
+              .status = RequestStatus::ACCEPTED,
+              .error = {},
+              .text = {},
+              .version = utils::safe_cast{value.orderRequestID()},
+              .request_id = {},
+              .quantity = order_update.quantity,
+              .price = order_update.price,
+          };
+          Trace event_2{trace_info, response};
+          (*this)(event_2, order_update.client_order_id, order_update);
         })) {
     } else {
       log::warn("Unexpected: security_id={}"sv, security_id);
@@ -637,7 +648,7 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportReject523> const &ev
       .status = RequestStatus::REJECTED,
       .error = {},
       .text = text,
-      .version = {},
+      .version = utils::safe_cast{value.orderRequestID()},
       .request_id = {},
       .quantity = NaN,
       .price = NaN,
@@ -695,7 +706,7 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportModify531> const &ev
               .status = RequestStatus::ACCEPTED,
               .error = {},
               .text = {},
-              .version = {},
+              .version = utils::safe_cast{value.orderRequestID()},
               .request_id = {},
               .quantity = order_update.quantity,
               .price = order_update.price,
@@ -743,8 +754,19 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportCancel534> const &ev
     if (shared_.get_security(security_id, [&](auto &security) {
           auto external_order_id = fmt::format("{}"sv, order_id);
           auto order_update = order_update_from_execution_report(value, security, external_order_id);
-          Trace event_2{trace_info, order_update};
-          (*this)(event_2, order_update.client_order_id);
+          auto response = oms::Response{
+              .type = RequestType::CANCEL_ORDER,
+              .origin = Origin::EXCHANGE,
+              .status = RequestStatus::ACCEPTED,
+              .error = {},
+              .text = {},
+              .version = utils::safe_cast{value.orderRequestID()},
+              .request_id = {},
+              .quantity = order_update.quantity,
+              .price = order_update.price,
+          };
+          Trace event_2{trace_info, response};
+          (*this)(event_2, order_update.client_order_id, order_update);
         })) {
     } else {
       log::warn("Unexpected: security_id={}"sv, security_id);
@@ -832,7 +854,7 @@ void OrderEntry::operator()(Trace<cme_ilink::OrderCancelReject535> const &event)
       .status = RequestStatus::REJECTED,
       .error = {},
       .text = text,
-      .version = {},
+      .version = utils::safe_cast{value.orderRequestID()},
       .request_id = {},
       .quantity = NaN,
       .price = NaN,
@@ -855,7 +877,7 @@ void OrderEntry::operator()(Trace<cme_ilink::OrderCancelReplaceReject536> const 
       .status = RequestStatus::REJECTED,
       .error = {},
       .text = text,
-      .version = {},
+      .version = utils::safe_cast{value.orderRequestID()},
       .request_id = {},
       .quantity = NaN,
       .price = NaN,
@@ -1173,7 +1195,7 @@ void OrderEntry::send_new_order_single(
             .sender_id = account_.get_name(),
             .cl_ord_id = request_id,
             .party_details_list_req_id = party_details_list_req_id_,
-            .order_request_id = fetch_next_request_id(),
+            .order_request_id = 1,
             .sending_time_epoch = now,
             .stop_px = create_order.stop_price,
             .location = shared_.settings.ilink.location,
@@ -1227,7 +1249,7 @@ void OrderEntry::send_order_cancel_replace_request(ModifyOrder const &modify_ord
             .party_details_list_req_id = party_details_list_req_id_,
             .order_id = {},
             .stop_px = NaN,
-            .order_request_id = {},
+            .order_request_id = order.max_request_version + 1,
             .sending_time_epoch = now,
             .location = shared_.settings.ilink.location,
             .min_qty = {},
@@ -1271,7 +1293,7 @@ void OrderEntry::send_order_cancel_request(CancelOrder const &, oms::Order const
             .seq_num = fetch_next_seq_num(),
             .sender_id = account_.get_name(),
             .cl_ord_id = order.client_order_id,
-            .order_request_id = {},
+            .order_request_id = order.max_request_version + 1,
             .sending_time_epoch = now,
             .location = shared_.settings.ilink.location,
             .security_id = security_id,
