@@ -1146,8 +1146,10 @@ void OrderEntry::send_new_order_single(
   if (shared_.find_security_id(market_segment_id_, order.symbol, [&](auto security_id) {
         log::info("DEBUG found security_id={}"sv, security_id);
         if (shared_.get_security(security_id, [&](auto &security) {
-              if (create_order.exchange != security.exchange)
+              if (create_order.exchange != security.exchange) {
+                log::warn(R"(Unexpected: exchange="{}", expected="{}")"sv, create_order.exchange, security.exchange);
                 throw roq::oms::Rejected{Origin::GATEWAY, Error::INVALID_EXCHANGE, "create"sv};
+              }
               auto order_qty = get_quantity(create_order.quantity);
               auto side = map(create_order.side);
               auto ord_type = map(create_order.order_type);
