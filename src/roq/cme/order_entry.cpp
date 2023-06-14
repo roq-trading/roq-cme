@@ -1126,9 +1126,9 @@ void OrderEntry::send_new_order_single(
             .execution_mode = static_cast<cme_ilink::ExecMode::Value>(0),  // note!
             .liquidity_flag = {},
             .managed_order = {},
-            .short_sale_type = cme_ilink::ShortSaleType::LongSell,
+            .short_sale_type = cme_ilink::ShortSaleType::LongSell,  // ???
             .discretion_price = NaN,
-            .reservation_price = 0.0,
+            .reservation_price = NaN,
         };
         log::info("DEBUG new_order_single={}"sv, new_order_single);
         send(new_order_single);
