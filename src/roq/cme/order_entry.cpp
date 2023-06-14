@@ -1229,6 +1229,8 @@ void OrderEntry::send_new_order_single(
 // note!
 //   undoc: execution mode must be x0 (NULL results in reject reason 109)
 void OrderEntry::send_order_cancel_replace_request(ModifyOrder const &modify_order, oms::Order const &order) {
+  log::info("DEBUG modify_order={}"sv, modify_order);
+  log::info("DEBUG order={}"sv, order);
   if (shared_.find_security_id(market_segment_id_, order.symbol, [&](auto security_id) {
         log::info("DEBUG found security_id={}"sv, security_id);
         auto order_qty = get_quantity(modify_order.quantity);
@@ -1249,7 +1251,7 @@ void OrderEntry::send_order_cancel_replace_request(ModifyOrder const &modify_ord
             .party_details_list_req_id = party_details_list_req_id_,
             .order_id = {},
             .stop_px = NaN,
-            .order_request_id = order.max_request_version + 1,
+            .order_request_id = modify_order.version,
             .sending_time_epoch = now,
             .location = shared_.settings.ilink.location,
             .min_qty = {},
@@ -1279,7 +1281,9 @@ void OrderEntry::send_order_cancel_replace_request(ModifyOrder const &modify_ord
   }
 }
 
-void OrderEntry::send_order_cancel_request(CancelOrder const &, oms::Order const &order) {
+void OrderEntry::send_order_cancel_request(CancelOrder const &cancel_order, oms::Order const &order) {
+  log::info("DEBUG cancel_order={}"sv, cancel_order);
+  log::info("DEBUG order={}"sv, order);
   if (shared_.find_security_id(market_segment_id_, order.symbol, [&](auto security_id) {
         log::info("DEBUG found security_id={}"sv, security_id);
         auto side = map(order.side);
@@ -1293,7 +1297,7 @@ void OrderEntry::send_order_cancel_request(CancelOrder const &, oms::Order const
             .seq_num = fetch_next_seq_num(),
             .sender_id = account_.get_name(),
             .cl_ord_id = order.client_order_id,
-            .order_request_id = order.max_request_version + 1,
+            .order_request_id = cancel_order.version,
             .sending_time_epoch = now,
             .location = shared_.settings.ilink.location,
             .security_id = security_id,
