@@ -123,7 +123,10 @@ auto get_transact_time(auto &value) -> std::chrono::nanoseconds {
   log::info("DEBUG transact_time={}"sv, result);
   if (result == value.transactTimeNullValue())
     return {};
-  return std::chrono::nanoseconds{result};
+  auto result_2 = std::chrono::nanoseconds{result};
+  log::info("DEBUG transact_time={}"sv, result_2);
+  // return std::chrono::nanoseconds{result};
+  return result_2;
 }
 
 // side
@@ -482,6 +485,7 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportNew522> const &event
           auto order_type = map(value.ordType());
           auto time_in_force = map(value.timeInForce());
           auto create_time_utc = get_transact_time(value);
+          auto update_time_utc = create_time_utc;
           auto external_order_id = fmt::format("{}"sv, order_id);
           auto client_order_id = value.getClOrdIDAsStringView();
           auto order_status = OrderStatus::WORKING;  // note! constant
@@ -499,7 +503,7 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportNew522> const &event
               .time_in_force = time_in_force,
               .execution_instructions = {},
               .create_time_utc = create_time_utc,
-              .update_time_utc = {},
+              .update_time_utc = update_time_utc,
               .external_account = {},
               .external_order_id = external_order_id,
               .client_order_id = client_order_id,
