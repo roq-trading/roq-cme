@@ -120,6 +120,7 @@ auto get_security_id(auto &value) -> int32_t {
 
 auto get_transact_time(auto &value) -> std::chrono::nanoseconds {
   auto result = value.transactTime();
+  log::info("DEBUG transact_time={}"sv, result);
   if (result == value.transactTimeNullValue())
     return {};
   return std::chrono::nanoseconds{result};
@@ -1093,11 +1094,12 @@ void OrderEntry::send_order_mass_status_request() {
 }
 
 // note!
-//   undoc: execution mode must be x0
+//   undoc: execution mode must be x0 (NULL results in reject reason 109)
 void OrderEntry::send_new_order_single(
     CreateOrder const &create_order, oms::Order const &order, std::string_view const &request_id) {
   if (shared_.find_security_id(market_segment_id_, order.symbol, [&](auto security_id) {
         log::info("DEBUG found security_id={}"sv, security_id);
+        auto order_qty = get_quantity(create_order.quantity);
         auto side = map(create_order.side);
         auto ord_type = map(create_order.order_type);
         auto time_in_force = map(create_order.time_in_force);
@@ -1106,7 +1108,7 @@ void OrderEntry::send_new_order_single(
         auto now = clock::get_realtime();
         auto new_order_single = ilink::NewOrderSingle{
             .price = create_order.price,
-            .order_qty = get_quantity(create_order.quantity),
+            .order_qty = order_qty,
             .security_id = security_id,
             .side = side,
             .seq_num = fetch_next_seq_num(),
@@ -1144,9 +1146,12 @@ void OrderEntry::send_new_order_single(
   }
 }
 
+// note!
+//   undoc: execution mode must be x0 (NULL results in reject reason 109)
 void OrderEntry::send_order_cancel_replace_request(ModifyOrder const &modify_order, oms::Order const &order) {
   if (shared_.find_security_id(market_segment_id_, order.symbol, [&](auto security_id) {
         log::info("DEBUG found security_id={}"sv, security_id);
+        auto order_qty = get_quantity(modify_order.quantity);
         auto side = map(order.side);
         auto ord_type = map(order.order_type);
         auto time_in_force = map(order.time_in_force);
@@ -1155,7 +1160,7 @@ void OrderEntry::send_order_cancel_replace_request(ModifyOrder const &modify_ord
         auto now = clock::get_realtime();
         auto order_cancel_replace_request = ilink::OrderCancelReplaceRequest{
             .price = modify_order.price,
-            .order_qty = get_quantity(modify_order.quantity),
+            .order_qty = order_qty,
             .security_id = security_id,
             .side = side,
             .seq_num = fetch_next_seq_num(),
@@ -1174,8 +1179,8 @@ void OrderEntry::send_order_cancel_replace_request(ModifyOrder const &modify_ord
             .time_in_force = time_in_force,
             .manual_order_indicator = MANUAL_ORDER_INDICATOR,
             .ofm_override = cme_ilink::OFMOverrideReq::NULL_VALUE,
-            .exec_inst = {},  // XXX
-            .execution_mode = cme_ilink::ExecMode::NULL_VALUE,
+            .exec_inst = {},                                               // XXX
+            .execution_mode = static_cast<cme_ilink::ExecMode::Value>(0),  // note!
             .liquidity_flag = {},
             .managed_order = {},
             .short_sale_type = cme_ilink::ShortSaleType::NULL_VALUE,
@@ -1230,7 +1235,7 @@ void OrderEntry::send_order_cancel_request(CancelOrder const &cancel_order, oms:
 }
 
 // note!
-//   undoc: ord type can not be NULL
+//   undoc: ord type must be x0 (NULL results in reject reason 109)
 void OrderEntry::send_order_mass_action_request(CancelAllOrders const &cancel_all_orders) {
   if (!party_details_list_req_id_)
     send_party_details_definition_request();
@@ -1249,7 +1254,6 @@ void OrderEntry::send_order_mass_action_request(CancelAllOrders const &cancel_al
       .market_segment_id = market_segment_id_,
       .mass_cancel_request_type = cme_ilink::MassCxlReqTyp::Account,
       .side = cme_ilink::SideNULL::NULL_VALUE,
-      // .ord_type = cme_ilink::MassActionOrdTyp::Limit,  // note! null is not supported
       .ord_type = static_cast<cme_ilink::MassActionOrdTyp::Value>(0),  // note!
       .time_in_force = cme_ilink::MassCancelTIF::NULL_VALUE,
       .liquidity_flag = cme_ilink::BooleanNULL::NULL_VALUE,
