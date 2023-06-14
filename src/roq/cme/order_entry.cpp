@@ -1145,42 +1145,49 @@ void OrderEntry::send_new_order_single(
     CreateOrder const &create_order, oms::Order const &order, std::string_view const &request_id) {
   if (shared_.find_security_id(market_segment_id_, order.symbol, [&](auto security_id) {
         log::info("DEBUG found security_id={}"sv, security_id);
-        auto order_qty = get_quantity(create_order.quantity);
-        auto side = map(create_order.side);
-        auto ord_type = map(create_order.order_type);
-        auto time_in_force = map(create_order.time_in_force);
-        if (!party_details_list_req_id_)
-          send_party_details_definition_request();
-        auto now = clock::get_realtime();
-        auto new_order_single = ilink::NewOrderSingle{
-            .price = create_order.price,
-            .order_qty = order_qty,
-            .security_id = security_id,
-            .side = side,
-            .seq_num = fetch_next_seq_num(),
-            .sender_id = account_.get_name(),
-            .cl_ord_id = request_id,
-            .party_details_list_req_id = party_details_list_req_id_,
-            .order_request_id = fetch_next_request_id(),
-            .sending_time_epoch = now,
-            .stop_px = create_order.stop_price,
-            .location = shared_.settings.ilink.location,
-            .min_qty = {},
-            .display_qty = {},
-            .expire_date = {},
-            .ord_type = ord_type,
-            .time_in_force = time_in_force,
-            .manual_order_indicator = MANUAL_ORDER_INDICATOR,
-            .exec_inst = {},                                               // XXX
-            .execution_mode = static_cast<cme_ilink::ExecMode::Value>(0),  // note!
-            .liquidity_flag = {},
-            .managed_order = {},
-            .short_sale_type = cme_ilink::ShortSaleType::NULL_VALUE,
-            .discretion_price = NaN,
-            .reservation_price = NaN,
-        };
-        log::info("DEBUG new_order_single={}"sv, new_order_single);
-        send(new_order_single);
+        if (shared_.get_security(security_id, [&](auto &security) {
+              if (create_order.exchange != security.exchange)
+                throw roq::oms::Rejected{Origin::GATEWAY, Error::INVALID_EXCHANGE, "create"sv};
+              auto order_qty = get_quantity(create_order.quantity);
+              auto side = map(create_order.side);
+              auto ord_type = map(create_order.order_type);
+              auto time_in_force = map(create_order.time_in_force);
+              if (!party_details_list_req_id_)
+                send_party_details_definition_request();
+              auto now = clock::get_realtime();
+              auto new_order_single = ilink::NewOrderSingle{
+                  .price = create_order.price,
+                  .order_qty = order_qty,
+                  .security_id = security_id,
+                  .side = side,
+                  .seq_num = fetch_next_seq_num(),
+                  .sender_id = account_.get_name(),
+                  .cl_ord_id = request_id,
+                  .party_details_list_req_id = party_details_list_req_id_,
+                  .order_request_id = fetch_next_request_id(),
+                  .sending_time_epoch = now,
+                  .stop_px = create_order.stop_price,
+                  .location = shared_.settings.ilink.location,
+                  .min_qty = {},
+                  .display_qty = {},
+                  .expire_date = {},
+                  .ord_type = ord_type,
+                  .time_in_force = time_in_force,
+                  .manual_order_indicator = MANUAL_ORDER_INDICATOR,
+                  .exec_inst = {},                                               // XXX
+                  .execution_mode = static_cast<cme_ilink::ExecMode::Value>(0),  // note!
+                  .liquidity_flag = {},
+                  .managed_order = {},
+                  .short_sale_type = cme_ilink::ShortSaleType::NULL_VALUE,
+                  .discretion_price = NaN,
+                  .reservation_price = NaN,
+              };
+              log::info("DEBUG new_order_single={}"sv, new_order_single);
+              send(new_order_single);
+            })) {
+        } else {
+          log::fatal("Internal error: security_id={}"sv, security_id);
+        }
       })) {
   } else {
     throw oms::Rejected{
