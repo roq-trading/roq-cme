@@ -95,6 +95,36 @@ struct create_metrics final : public core::metrics::Factory {
       : core::metrics::Factory(settings.app.name, group, function) {}
 };
 
+auto get_quantity(double value) -> uint32_t {
+  int32_t result = utils::safe_cast{value};
+  if (result >= 0)
+    return static_cast<uint32_t>(value);
+  throw RuntimeError{"Unexpected: value={} < 0"sv, value};
+}
+
+//
+
+auto get_order_id(auto &value) -> uint64_t {
+  auto result = value.orderID();
+  if (result == value.orderIDNullValue())
+    return {};
+  return result;
+}
+
+auto get_security_id(auto &value) -> int32_t {
+  auto result = value.securityID();
+  if (result == value.securityIDNullValue())
+    return {};
+  return result;
+}
+
+auto get_transact_time(auto &value) -> std::chrono::nanoseconds {
+  auto result = value.transactTime();
+  if (result == value.transactTimeNullValue())
+    return {};
+  return std::chrono::nanoseconds{result};
+}
+
 // side
 
 auto map(Side side) -> cme_ilink::SideReq::Value {
@@ -383,41 +413,6 @@ void OrderEntry::operator()(Trace<cme_ilink::EstablishmentAck504> const &event) 
   log::info("DEBUG establishment_ack={}"sv, const_cast<value_type &>(value));
   (*this)(ConnectionStatus::DOWNLOADING);
   download_.begin();
-
-  // EXPERIMENTAL
-  // send_party_details_list_request();
-  if (shared_.settings.test.order_mass_status_request) {
-    send_party_details_definition_request();
-    send_order_mass_status_request();
-  }
-  if (shared_.settings.test.order_mass_action_request) {
-    send_party_details_definition_request();
-    send_order_mass_action_request(CancelAllOrders{});
-  }
-  if (shared_.settings.test.order_cancel_request) {
-    send_party_details_definition_request();
-    auto cancel_order = CancelOrder{};
-    auto order = oms::Order{};
-    order.symbol = SYMBOL;
-    order.side = Side::BUY;
-    order.client_order_id = REQUEST_ID;
-    send_order_cancel_request(cancel_order, order);
-  }
-  if (shared_.settings.test.new_order_single) {
-    send_party_details_definition_request();
-    auto create_order = CreateOrder{};
-    create_order.symbol = SYMBOL;
-    create_order.quantity = 1.0;
-    create_order.price = 100.0;
-    create_order.side = Side::BUY;
-    create_order.order_type = OrderType::LIMIT;
-    create_order.time_in_force = TimeInForce::GTC;
-    auto order = oms::Order{};
-    order.symbol = SYMBOL;
-    order.side = Side::BUY;
-    order.client_order_id = REQUEST_ID;
-    send_new_order_single(create_order, order, REQUEST_ID);
-  }
 }
 
 void OrderEntry::operator()(Trace<cme_ilink::EstablishmentReject505> const &event) {
@@ -478,15 +473,14 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportNew522> const &event
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &[trace_info, value] = event;
   log::info("DEBUG execution_report_new={}"sv, const_cast<value_type &>(value));
-  auto order_id = value.orderID();
-  if (order_id && order_id != value_type::orderIDNullValue()) {
-    auto security_id = value.securityID();
-    // null?
+  auto order_id = get_order_id(value);
+  if (order_id) {
+    auto security_id = get_security_id(value);
     if (shared_.get_security(security_id, [&](auto &security) {
           auto side = map(value.side());
           auto order_type = map(value.ordType());
           auto time_in_force = map(value.timeInForce());
-          auto create_time_utc = std::chrono::nanoseconds{value.transactTime()};  // XXX NULL ???
+          auto create_time_utc = get_transact_time(value);
           auto external_order_id = fmt::format("{}"sv, order_id);
           auto client_order_id = value.getClOrdIDAsStringView();
           auto order_status = OrderStatus::WORKING;  // note! constant
@@ -513,10 +507,10 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportNew522> const &event
               .price = price,
               .stop_price = stop_price,
               .remaining_quantity = NaN,
-              .traded_quantity = 0.0,
-              .average_traded_price = {},
-              .last_traded_quantity = {},
-              .last_traded_price = {},
+              .traded_quantity = NaN,
+              .average_traded_price = NaN,
+              .last_traded_quantity = NaN,
+              .last_traded_price = NaN,
               .last_liquidity = {},
               .update_type = UpdateType::INCREMENTAL,
               .sending_time_utc = {},
@@ -527,6 +521,8 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportNew522> const &event
     } else {
       log::warn("Unexpected: security_id={}"sv, security_id);
     }
+  } else {
+    log::warn("Unexpected: order_id={}"sv, order_id);
   }
 }
 
@@ -540,15 +536,14 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportTradeOutright525> co
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &[trace_info, value] = event;
   log::info("DEBUG execution_report_trade_outright={}"sv, const_cast<value_type &>(value));
-  auto order_id = value.orderID();
-  if (order_id && order_id != value_type::orderIDNullValue()) {
-    auto security_id = value.securityID();
-    // null?
+  auto order_id = get_order_id(value);
+  if (order_id) {
+    auto security_id = get_security_id(value);
     if (shared_.get_security(security_id, [&](auto &security) {
           auto side = map(value.side());
           auto order_type = map(value.ordType());
           auto time_in_force = map(value.timeInForce());
-          auto create_time_utc = std::chrono::nanoseconds{value.transactTime()};  // XXX NULL ???
+          auto update_time_utc = get_transact_time(value);
           auto external_order_id = fmt::format("{}"sv, order_id);
           auto client_order_id = value.getClOrdIDAsStringView();
           auto order_status = map(value.ordStatus());
@@ -566,8 +561,8 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportTradeOutright525> co
               .order_type = order_type,
               .time_in_force = time_in_force,
               .execution_instructions = {},
-              .create_time_utc = create_time_utc,
-              .update_time_utc = {},
+              .create_time_utc = {},
+              .update_time_utc = update_time_utc,
               .external_account = {},
               .external_order_id = external_order_id,
               .client_order_id = client_order_id,
@@ -577,9 +572,9 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportTradeOutright525> co
               .stop_price = stop_price,
               .remaining_quantity = NaN,
               .traded_quantity = traded_quantity,
-              .average_traded_price = {},
-              .last_traded_quantity = {},
-              .last_traded_price = {},
+              .average_traded_price = NaN,
+              .last_traded_quantity = NaN,
+              .last_traded_price = NaN,
               .last_liquidity = {},
               .update_type = UpdateType::INCREMENTAL,
               .sending_time_utc = {},
@@ -590,6 +585,8 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportTradeOutright525> co
     } else {
       log::warn("Unexpected: security_id={}"sv, security_id);
     }
+  } else {
+    log::warn("Unexpected: order_id={}"sv, order_id);
   }
 }
 
@@ -616,22 +613,22 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportStatus532> const &ev
   auto &[trace_info, value] = event;
   log::info("DEBUG execution_report_status={}"sv, const_cast<value_type &>(value));
   // XXX massStatusReqID() ???
-  auto order_id = value.orderID();
-  if (order_id && order_id != value_type::orderIDNullValue()) {
-    auto security_id = value.securityID();
-    // null?
+  auto order_id = get_order_id(value);
+  if (order_id) {
+    auto security_id = get_security_id(value);
     if (shared_.get_security(security_id, [&](auto &security) {
           auto side = map(value.side());
           auto order_type = map(value.ordType());
           auto time_in_force = map(value.timeInForce());
-          auto create_time_utc = std::chrono::nanoseconds{value.transactTime()};  // XXX NULL ???
+          auto update_time_utc = get_transact_time(value);
           auto external_order_id = fmt::format("{}"sv, order_id);
           auto client_order_id = value.getClOrdIDAsStringView();
           auto order_status = map(value.ordStatus());
           auto quantity = static_cast<double>(value.orderQty());
           auto price = ilink::get_double(const_cast<value_type &>(value).price());
           auto stop_price = ilink::get_double(const_cast<value_type &>(value).stopPx());
-          auto traded_quantity = static_cast<double>(value.cumQty());  // XXX NULL ???
+          auto remaining_quantity = static_cast<double>(value.leavesQty());  // XXX NULL ???
+          auto traded_quantity = static_cast<double>(value.cumQty());        // XXX NULL ???
           auto order_update = oms::OrderUpdate{
               .account = account_.get_name(),  // note! same as sender_id
               .exchange = shared_.settings.exchange,
@@ -642,8 +639,8 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportStatus532> const &ev
               .order_type = order_type,
               .time_in_force = time_in_force,
               .execution_instructions = {},
-              .create_time_utc = create_time_utc,
-              .update_time_utc = {},
+              .create_time_utc = {},
+              .update_time_utc = update_time_utc,
               .external_account = {},
               .external_order_id = external_order_id,
               .client_order_id = client_order_id,
@@ -651,11 +648,11 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportStatus532> const &ev
               .quantity = quantity,
               .price = price,
               .stop_price = stop_price,
-              .remaining_quantity = NaN,
+              .remaining_quantity = remaining_quantity,
               .traded_quantity = traded_quantity,
-              .average_traded_price = {},
-              .last_traded_quantity = {},
-              .last_traded_price = {},
+              .average_traded_price = NaN,
+              .last_traded_quantity = NaN,
+              .last_traded_price = NaN,
               .last_liquidity = {},
               .update_type = UpdateType::SNAPSHOT,
               .sending_time_utc = {},
@@ -667,46 +664,6 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportStatus532> const &ev
       log::warn("Unexpected: security_id={}"sv, security_id);
     }
   }
-  /*
-execution_report_status={seq_num=2,
- uuid=1686639840327251,
- text="NA",
- exec_id="0",
- sender_id="A1",
- cl_ord_id="test",
- party_details_list_req_id=0,
- order_id=84959175681,
- price=100,
- stop_px=nan,
- transact_time=1686639824876000000,
- sending_time_epoch=1686639842403491563,
- order_request_id=2,
- ord_status_req_id=18446744073709551615,
- mass_status_req_id=1,
- cross_id=18446744073709551615,
- host_cross_id=18446744073709551615,
- location="UK",
- security_id=338574,
- order_qty=1,
- min_qty=0,
- display_qty=4294967295,
- expire_date=65535,
- ord_status=New,
- exec_type=I,
- ord_type=Limit,
- side=Buy,
- time_in_force=GoodTillCancel,
- manual_order_indicator=Automated,
- poss_retrans_flag=False,
- last_rpt_requested=True,
- cross_type=255,
- exec_inst=0,
- execution_mode=SBE_UNKNOWN,
- liquidity_flag=,
- managed_order=,
- short_sale_type=,
- discretion_price=nan}
- */
   if (value.lastRptRequested() == cme_ilink::BooleanNULL::True)
     download_.check_relaxed(OrderEntryState::ORDERS);
 }
@@ -715,15 +672,14 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportCancel534> const &ev
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &[trace_info, value] = event;
   log::info("DEBUG execution_report_cancel={}"sv, const_cast<value_type &>(value));
-  auto order_id = value.orderID();
-  if (order_id && order_id != value_type::orderIDNullValue()) {
-    auto security_id = value.securityID();
-    // null?
+  auto order_id = get_order_id(value);
+  if (order_id) {
+    auto security_id = get_security_id(value);
     if (shared_.get_security(security_id, [&](auto &security) {
           auto side = map(value.side());
           auto order_type = map(value.ordType());
           auto time_in_force = map(value.timeInForce());
-          auto create_time_utc = std::chrono::nanoseconds{value.transactTime()};  // XXX NULL ???
+          auto update_time_utc = get_transact_time(value);
           auto external_order_id = fmt::format("{}"sv, order_id);
           auto client_order_id = value.getClOrdIDAsStringView();
           auto order_status = OrderStatus::CANCELED;  // note! constant
@@ -741,8 +697,8 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportCancel534> const &ev
               .order_type = order_type,
               .time_in_force = time_in_force,
               .execution_instructions = {},
-              .create_time_utc = create_time_utc,
-              .update_time_utc = {},
+              .create_time_utc = {},
+              .update_time_utc = update_time_utc,
               .external_account = {},
               .external_order_id = external_order_id,
               .client_order_id = client_order_id,
@@ -765,6 +721,8 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportCancel534> const &ev
     } else {
       log::warn("Unexpected: security_id={}"sv, security_id);
     }
+  } else {
+    log::warn("Unexpected: order_id={}"sv, order_id);
   }
 }
 
@@ -786,6 +744,8 @@ void OrderEntry::operator()(Trace<cme_ilink::OrderMassActionReport562> const &ev
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &[trace_info, value] = event;
   log::info("DEBUG order_mass_action_report={}"sv, const_cast<value_type &>(value));
+  auto account = value.getSenderIDAsStringView();
+  auto update_time_utc = get_transact_time(value);
   const_cast<value_type &>(value).sbeRewind();  // note!
   const_cast<value_type &>(value).noAffectedOrders().forEach([&](auto &item) {
     auto orig_cl_ord_id = item.getOrigCIOrdIDAsStringView();
@@ -808,7 +768,7 @@ void OrderEntry::operator()(Trace<cme_ilink::OrderMassActionReport562> const &ev
         .time_in_force = {},
         .execution_instructions = {},
         .create_time_utc = {},
-        .update_time_utc = {},
+        .update_time_utc = update_time_utc,
         .external_account = {},
         .external_order_id = external_order_id,
         .client_order_id = orig_cl_ord_id,
@@ -910,7 +870,8 @@ uint32_t OrderEntry::download(OrderEntryState state) {
       assert(false);
       break;
     case ORDERS:
-      send_party_details_definition_request();
+      if (!party_details_list_req_id_)
+        send_party_details_definition_request();
       send_order_mass_status_request();
       return 1;
     case DONE:
@@ -968,11 +929,12 @@ void OrderEntry::send_negotiate() {
       .uuid = uuid_,
       .session = account_.get_login(),
       .firm_id = shared_.settings.ilink.firm_id,
-      .trading_system_name = {},     // note!
-      .trading_system_version = {},  // note!
-      .trading_system_vendor = {},   // note!
-      .next_seq_no = {},             // note!
-      .keep_alive_interval = {},     // note!
+      // note! following must be empty for the negotiate request
+      .trading_system_name = {},
+      .trading_system_version = {},
+      .trading_system_vendor = {},
+      .next_seq_no = {},
+      .keep_alive_interval = {},
   };
   auto hmac_signature = account_.create_signature(canonical_message);
   auto negotiate = ilink::Negotiate{
@@ -1035,6 +997,7 @@ void OrderEntry::send_terminate() {
   send(terminate);
 }
 
+// XXX requires access to a service gateway
 void OrderEntry::send_party_details_list_request() {
   auto now = clock::get_realtime();
   auto party_details_list_request = ilink::PartyDetailsListRequest{
@@ -1085,10 +1048,11 @@ void OrderEntry::send_party_details_definition_request() {
   send(party_details_definition_request);
 }
 
+// XXX ???
 void OrderEntry::send_security_definition_request() {
   auto now = clock::get_realtime();
   auto security_definition_request = ilink::SecurityDefinitionRequest{
-      .party_details_list_req_id = {},  // note!
+      .party_details_list_req_id = party_details_list_req_id_,
       .security_req_id = {},
       .manual_order_indicator = MANUAL_ORDER_INDICATOR,
       .seq_num = fetch_next_seq_num(),
@@ -1109,7 +1073,7 @@ void OrderEntry::send_security_definition_request() {
 void OrderEntry::send_order_mass_status_request() {
   auto now = clock::get_realtime();
   auto order_mass_status_request = ilink::OrderMassStatusRequest{
-      .party_details_list_req_id = {},  // note!
+      .party_details_list_req_id = party_details_list_req_id_,
       .mass_status_req_id = fetch_next_request_id(),
       .manual_order_indicator = MANUAL_ORDER_INDICATOR,
       .seq_num = fetch_next_seq_num(),
@@ -1127,6 +1091,8 @@ void OrderEntry::send_order_mass_status_request() {
   send(order_mass_status_request);
 }
 
+// note!
+//   undoc: execution mode must be x0
 void OrderEntry::send_new_order_single(
     CreateOrder const &create_order, oms::Order const &order, std::string_view const &request_id) {
   if (shared_.find_security_id(market_segment_id_, order.symbol, [&](auto security_id) {
@@ -1134,18 +1100,18 @@ void OrderEntry::send_new_order_single(
         auto side = map(create_order.side);
         auto ord_type = map(create_order.order_type);
         auto time_in_force = map(create_order.time_in_force);
-        send_party_details_definition_request();  // note!
+        if (!party_details_list_req_id_)
+          send_party_details_definition_request();
         auto now = clock::get_realtime();
-        // note! execution mode must be x0
         auto new_order_single = ilink::NewOrderSingle{
             .price = create_order.price,
-            .order_qty = 1,  // utils::safe_cast(create_order.quantity),
+            .order_qty = get_quantity(create_order.quantity),
             .security_id = security_id,
             .side = side,
             .seq_num = fetch_next_seq_num(),
             .sender_id = account_.get_name(),
             .cl_ord_id = request_id,
-            .party_details_list_req_id = {},  // note!
+            .party_details_list_req_id = party_details_list_req_id_,
             .order_request_id = fetch_next_request_id(),
             .sending_time_epoch = now,
             .stop_px = create_order.stop_price,
@@ -1157,7 +1123,7 @@ void OrderEntry::send_new_order_single(
             .time_in_force = time_in_force,
             .manual_order_indicator = MANUAL_ORDER_INDICATOR,
             .exec_inst = {},                                               // XXX
-            .execution_mode = static_cast<cme_ilink::ExecMode::Value>(0),  // cme_ilink::ExecMode::Passive,
+            .execution_mode = static_cast<cme_ilink::ExecMode::Value>(0),  // note!
             .liquidity_flag = {},
             .managed_order = {},
             .short_sale_type = cme_ilink::ShortSaleType::LongSell,
@@ -1183,17 +1149,18 @@ void OrderEntry::send_order_cancel_replace_request(ModifyOrder const &modify_ord
         auto side = map(order.side);
         auto ord_type = map(order.order_type);
         auto time_in_force = map(order.time_in_force);
-        send_party_details_definition_request();  // note!
+        if (!party_details_list_req_id_)
+          send_party_details_definition_request();
         auto now = clock::get_realtime();
         auto order_cancel_replace_request = ilink::OrderCancelReplaceRequest{
             .price = modify_order.price,
-            .order_qty = 1,  // utils::safe_cast(modify_order.quantity),
+            .order_qty = get_quantity(modify_order.quantity),
             .security_id = security_id,
             .side = side,
             .seq_num = fetch_next_seq_num(),
             .sender_id = account_.get_name(),
             .cl_ord_id = order.client_order_id,
-            .party_details_list_req_id = {},  // note!
+            .party_details_list_req_id = party_details_list_req_id_,
             .order_id = {},
             .stop_px = NaN,
             .order_request_id = {},
@@ -1230,11 +1197,12 @@ void OrderEntry::send_order_cancel_request(CancelOrder const &cancel_order, oms:
   if (shared_.find_security_id(market_segment_id_, order.symbol, [&](auto security_id) {
         log::info("DEBUG found security_id={}"sv, security_id);
         auto side = map(order.side);
-        send_party_details_definition_request();  // note!
+        if (!party_details_list_req_id_)
+          send_party_details_definition_request();
         auto now = clock::get_realtime();
         auto order_cancel_request = ilink::OrderCancelRequest{
             .order_id = {},
-            .party_details_list_req_id = {},  // note!
+            .party_details_list_req_id = party_details_list_req_id_,
             .manual_order_indicator = MANUAL_ORDER_INDICATOR,
             .seq_num = fetch_next_seq_num(),
             .sender_id = account_.get_name(),
@@ -1261,10 +1229,11 @@ void OrderEntry::send_order_cancel_request(CancelOrder const &cancel_order, oms:
 }
 
 void OrderEntry::send_order_mass_action_request(CancelAllOrders const &cancel_all_orders) {
-  send_party_details_definition_request();  // note!
+  if (!party_details_list_req_id_)
+    send_party_details_definition_request();
   auto now = clock::get_realtime();
   auto order_mass_action_request = ilink::OrderMassActionRequest{
-      .party_details_list_req_id = {},  // note!
+      .party_details_list_req_id = party_details_list_req_id_,
       .order_request_id = fetch_next_request_id(),
       .manual_order_indicator = MANUAL_ORDER_INDICATOR,
       .seq_num = fetch_next_seq_num(),

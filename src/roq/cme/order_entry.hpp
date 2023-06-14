@@ -141,6 +141,7 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public ili
   uint16_t const stream_id_;
   Source const name_;
   uint8_t const market_segment_id_;
+  uint64_t const party_details_list_req_id_ = {};  // XXX const until we get access to a service GW
   // connection
   std::unique_ptr<io::net::ConnectionFactory> const connection_factory_;
   std::unique_ptr<io::net::ConnectionManager> const connection_manager_;
