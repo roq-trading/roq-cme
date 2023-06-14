@@ -620,7 +620,8 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportStatus532> const &ev
           auto side = map(value.side());
           auto order_type = map(value.ordType());
           auto time_in_force = map(value.timeInForce());
-          auto update_time_utc = get_transact_time(value);
+          auto create_time_utc = get_transact_time(value);
+          auto update_time_utc = create_time_utc;
           auto external_order_id = fmt::format("{}"sv, order_id);
           auto client_order_id = value.getClOrdIDAsStringView();
           auto order_status = map(value.ordStatus());
@@ -639,7 +640,7 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportStatus532> const &ev
               .order_type = order_type,
               .time_in_force = time_in_force,
               .execution_instructions = {},
-              .create_time_utc = {},
+              .create_time_utc = create_time_utc,
               .update_time_utc = update_time_utc,
               .external_account = {},
               .external_order_id = external_order_id,
@@ -1126,7 +1127,7 @@ void OrderEntry::send_new_order_single(
             .execution_mode = static_cast<cme_ilink::ExecMode::Value>(0),  // note!
             .liquidity_flag = {},
             .managed_order = {},
-            .short_sale_type = cme_ilink::ShortSaleType::NULL_VALUE,  // ???
+            .short_sale_type = cme_ilink::ShortSaleType::NULL_VALUE,
             .discretion_price = NaN,
             .reservation_price = NaN,
         };
@@ -1228,6 +1229,8 @@ void OrderEntry::send_order_cancel_request(CancelOrder const &cancel_order, oms:
   }
 }
 
+// note!
+//   undoc: ord type can not be NULL
 void OrderEntry::send_order_mass_action_request(CancelAllOrders const &cancel_all_orders) {
   if (!party_details_list_req_id_)
     send_party_details_definition_request();
@@ -1246,7 +1249,8 @@ void OrderEntry::send_order_mass_action_request(CancelAllOrders const &cancel_al
       .market_segment_id = market_segment_id_,
       .mass_cancel_request_type = cme_ilink::MassCxlReqTyp::Account,
       .side = cme_ilink::SideNULL::NULL_VALUE,
-      .ord_type = cme_ilink::MassActionOrdTyp::Limit,  // note! null is not supported
+      // .ord_type = cme_ilink::MassActionOrdTyp::Limit,  // note! null is not supported
+      .ord_type = static_cast<cme_ilink::MassActionOrdTyp::Value>(0),  // note!
       .time_in_force = cme_ilink::MassCancelTIF::NULL_VALUE,
       .liquidity_flag = cme_ilink::BooleanNULL::NULL_VALUE,
       .orig_order_user = {},
