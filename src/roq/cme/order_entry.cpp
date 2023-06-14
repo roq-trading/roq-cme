@@ -689,8 +689,19 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportModify531> const &ev
     if (shared_.get_security(security_id, [&](auto &security) {
           auto external_order_id = fmt::format("{}"sv, order_id);
           auto order_update = order_update_from_execution_report(value, security, external_order_id);
-          Trace event_2{trace_info, order_update};
-          (*this)(event_2, order_update.client_order_id);
+          auto response = oms::Response{
+              .type = RequestType::MODIFY_ORDER,
+              .origin = Origin::EXCHANGE,
+              .status = RequestStatus::ACCEPTED,
+              .error = {},
+              .text = {},
+              .version = {},
+              .request_id = {},
+              .quantity = order_update.quantity,
+              .price = order_update.price,
+          };
+          Trace event_2{trace_info, response};
+          (*this)(event_2, order_update.client_order_id, order_update);
         })) {
     } else {
       log::warn("Unexpected: security_id={}"sv, security_id);
@@ -1310,18 +1321,33 @@ void OrderEntry::send_order_mass_action_request(CancelAllOrders const &) {
   send(order_mass_action_request);
 }
 
-void OrderEntry::operator()(Trace<oms::OrderUpdate> const &event, std::string_view const &client_order_id) {
+template <typename... Args>
+void OrderEntry::operator()(
+    Trace<oms::OrderUpdate> const &event, std::string_view const &client_order_id, Args &&...args) {
   auto &[trace_info, order_update] = event;
   if (shared_.update_order(
-          client_order_id, stream_id_, trace_info, order_update, [&]([[maybe_unused]] auto &order) {})) {
+          client_order_id,
+          stream_id_,
+          trace_info,
+          order_update,
+          std::forward<Args>(args)...,
+          [&]([[maybe_unused]] auto &order) {})) {
   } else {
     log::warn("*** EXTERNAL ORDER ***"sv);
   }
 }
 
-void OrderEntry::operator()(Trace<oms::Response> const &event, std::string_view const &client_order_id) {
+template <typename... Args>
+void OrderEntry::operator()(
+    Trace<oms::Response> const &event, std::string_view const &client_order_id, Args &&...args) {
   auto &[trace_info, response] = event;
-  if (shared_.update_order(client_order_id, stream_id_, trace_info, response, [&]([[maybe_unused]] auto &order) {})) {
+  if (shared_.update_order(
+          client_order_id,
+          stream_id_,
+          trace_info,
+          response,
+          std::forward<Args>(args)...,
+          [&]([[maybe_unused]] auto &order) {})) {
   } else {
     log::warn("*** EXTERNAL ORDER ***"sv);
   }
