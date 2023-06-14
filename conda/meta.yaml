@@ -13,9 +13,6 @@ build:
     - ROQ_BUILD_TYPE
   run_exports:
     - {{ pin_subpackage('roq-cme', max_pin='x.x.x') }}
-    strong:                                                                                                                  
-      - libgcc-ng >=13  # [linux]                                                                                         
-      - libstdcxx-ng >=13  # [linux]
 
 requirements:
   build:
