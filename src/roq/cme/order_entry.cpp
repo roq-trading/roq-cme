@@ -102,29 +102,6 @@ auto get_quantity(double value) -> uint32_t {
   throw RuntimeError{"Unexpected: value={} < 0"sv, value};
 }
 
-//
-
-auto get_order_id(auto &value) -> uint64_t {
-  auto result = value.orderID();
-  if (result == value.orderIDNullValue())
-    return {};
-  return result;
-}
-
-auto get_security_id(auto &value) -> int32_t {
-  auto result = value.securityID();
-  if (result == value.securityIDNullValue())
-    return {};
-  return result;
-}
-
-auto get_transact_time(auto &value) -> std::chrono::nanoseconds {
-  auto result = value.transactTime();
-  if (result == value.transactTimeNullValue())
-    return {};
-  return std::chrono::nanoseconds{result};
-}
-
 // side
 
 auto map(Side side) -> cme_ilink::SideReq::Value {
@@ -289,6 +266,163 @@ auto map(cme_ilink::OrdStatusTrd::Value value) -> OrderStatus {
   return {};
 }
 
+// get
+
+auto get_order_id(auto &value) -> uint64_t {
+  auto result = value.orderID();
+  if (result == value.orderIDNullValue())
+    return {};
+  return result;
+}
+
+auto get_security_id(auto &value) -> int32_t {
+  auto result = value.securityID();
+  if (result == value.securityIDNullValue())
+    return {};
+  return result;
+}
+
+auto get_transact_time(auto &value) -> std::chrono::nanoseconds {
+  auto result = value.transactTime();
+  if (result == value.transactTimeNullValue())
+    return {};
+  return std::chrono::nanoseconds{result};
+}
+
+auto get_ord_status(auto &value) -> OrderStatus {
+  auto ord_status = value.ordStatus();
+  if constexpr (std::is_same<decltype(ord_status), char const *>::value) {
+    return map(static_cast<cme_ilink::OrderStatus::Value>(ord_status[0]));
+  } else if constexpr (std::is_same<decltype(ord_status), cme_ilink::OrdStatusTrd::Value>::value) {
+    return map(ord_status);
+  } else {
+    return map(ord_status);
+  }
+}
+
+template <typename T>
+auto get_leaves_qty(T &value) -> double {
+  constexpr bool has_leaves_qty = requires(T const &t) { t.leavesQty(); };
+  if constexpr (has_leaves_qty) {
+    auto result = value.leavesQty();
+    if (result == value.leavesQtyNullValue())
+      return NaN;
+    return result;
+  }
+  return NaN;
+}
+
+template <typename T>
+auto get_cum_qty(T &value) -> double {
+  constexpr bool has_cum_qty = requires(T const &t) { t.cumQty(); };
+  if constexpr (has_cum_qty) {
+    auto result = value.cumQty();
+    if (result == value.cumQtyNullValue())
+      return NaN;
+    return result;
+  }
+  return NaN;
+}
+
+template <typename T>
+auto get_last_qty(T &value) -> double {
+  constexpr bool has_last_qty = requires(T const &t) { t.lastQty(); };
+  constexpr bool has_last_qty_null_value = requires(T const &t) { t.lastQtyNullValue(); };
+  if constexpr (has_last_qty) {
+    auto result = value.lastQty();
+    if constexpr (has_last_qty_null_value) {
+      if (result == value.lastQtyNullValue())
+        return NaN;
+    }
+    return result;
+  }
+  return NaN;
+}
+
+template <typename T>
+auto get_last_px(T &value) -> double {
+  constexpr bool has_last_px = requires(T const &t) { t.lastPx(); };
+  if constexpr (has_last_px) {
+    return ilink::get_double(const_cast<T &>(value).lastPx());
+  }
+  return NaN;
+}
+
+template <typename T>
+auto get_aggressor_indicator(T &value) -> Liquidity {
+  constexpr bool has_aggressor_indicator = requires(T const &t) { t.aggressorIndicator(); };
+  if constexpr (has_aggressor_indicator) {
+    auto tmp = value.aggressorIndicator();
+    switch (tmp) {
+      using enum cme_ilink::BooleanFlag::Value;
+      case False:
+        return Liquidity::TAKER;
+      case True:
+        return Liquidity::MAKER;
+      case NULL_VALUE:
+        return {};
+    }
+  }
+  return {};
+}
+
+// execution report -> order update
+
+template <typename T>
+auto order_update_from_execution_report(T &value, auto &security, auto &external_order_id) -> oms::OrderUpdate {
+  using value_type = std::remove_cvref<T>::type;
+  auto account = value.getSenderIDAsStringView();
+  auto side = map(value.side());
+  auto order_type = map(value.ordType());
+  auto time_in_force = map(value.timeInForce());
+  auto create_time_utc = get_transact_time(value);
+  auto update_time_utc = create_time_utc;
+  auto client_order_id = value.getClOrdIDAsStringView();
+  auto order_status = get_ord_status(value);
+  auto quantity = static_cast<double>(value.orderQty());
+  auto price = ilink::get_double(const_cast<value_type &>(value).price());
+  auto stop_price = ilink::get_double(const_cast<value_type &>(value).stopPx());
+  auto remaining_quantity = get_leaves_qty(value);
+  auto traded_quantity = get_cum_qty(value);
+  auto last_traded_quantity = get_last_qty(value);
+  auto last_traded_price = get_last_px(value);
+  auto liquidity = get_aggressor_indicator(value);
+  auto update_type = [&]() {
+    if constexpr (std::is_same<value_type, cme_ilink::ExecutionReportStatus532>::value) {
+      return UpdateType::SNAPSHOT;
+    } else {
+      return UpdateType::INCREMENTAL;
+    }
+  }();
+  return {
+      .account = account,
+      .exchange = security.exchange,
+      .symbol = security.symbol,
+      .side = side,
+      .position_effect = {},
+      .max_show_quantity = NaN,
+      .order_type = order_type,
+      .time_in_force = time_in_force,
+      .execution_instructions = {},
+      .create_time_utc = create_time_utc,
+      .update_time_utc = update_time_utc,
+      .external_account = {},
+      .external_order_id = external_order_id,
+      .client_order_id = client_order_id,
+      .status = order_status,
+      .quantity = quantity,
+      .price = price,
+      .stop_price = stop_price,
+      .remaining_quantity = remaining_quantity,
+      .traded_quantity = traded_quantity,
+      .average_traded_price = NaN,
+      .last_traded_quantity = last_traded_quantity,
+      .last_traded_price = last_traded_price,
+      .last_liquidity = liquidity,
+      .update_type = update_type,
+      .sending_time_utc = {},
+  };
+}
 }  // namespace
 
 // === IMPLEMENTATION ===
@@ -477,47 +611,10 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportNew522> const &event
   if (order_id) {
     auto security_id = get_security_id(value);
     if (shared_.get_security(security_id, [&](auto &security) {
-          auto side = map(value.side());
-          auto order_type = map(value.ordType());
-          auto time_in_force = map(value.timeInForce());
-          auto create_time_utc = get_transact_time(value);
-          auto update_time_utc = create_time_utc;
           auto external_order_id = fmt::format("{}"sv, order_id);
-          auto client_order_id = value.getClOrdIDAsStringView();
-          auto order_status = OrderStatus::WORKING;  // note! constant
-          auto quantity = static_cast<double>(value.orderQty());
-          auto price = ilink::get_double(const_cast<value_type &>(value).price());
-          auto stop_price = ilink::get_double(const_cast<value_type &>(value).stopPx());
-          auto order_update = oms::OrderUpdate{
-              .account = account_.get_name(),  // note! same as sender_id
-              .exchange = shared_.settings.exchange,
-              .symbol = security.symbol,
-              .side = side,
-              .position_effect = {},
-              .max_show_quantity = NaN,
-              .order_type = order_type,
-              .time_in_force = time_in_force,
-              .execution_instructions = {},
-              .create_time_utc = create_time_utc,
-              .update_time_utc = update_time_utc,
-              .external_account = {},
-              .external_order_id = external_order_id,
-              .client_order_id = client_order_id,
-              .status = order_status,
-              .quantity = quantity,
-              .price = price,
-              .stop_price = stop_price,
-              .remaining_quantity = NaN,
-              .traded_quantity = NaN,
-              .average_traded_price = NaN,
-              .last_traded_quantity = NaN,
-              .last_traded_price = NaN,
-              .last_liquidity = {},
-              .update_type = UpdateType::INCREMENTAL,
-              .sending_time_utc = {},
-          };
+          auto order_update = order_update_from_execution_report(value, security, external_order_id);
           Trace event_2{trace_info, order_update};
-          (*this)(event_2, client_order_id);
+          (*this)(event_2, order_update.client_order_id);
         })) {
     } else {
       log::warn("Unexpected: security_id={}"sv, security_id);
@@ -556,47 +653,10 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportTradeOutright525> co
   if (order_id) {
     auto security_id = get_security_id(value);
     if (shared_.get_security(security_id, [&](auto &security) {
-          auto side = map(value.side());
-          auto order_type = map(value.ordType());
-          auto time_in_force = map(value.timeInForce());
-          auto update_time_utc = get_transact_time(value);
           auto external_order_id = fmt::format("{}"sv, order_id);
-          auto client_order_id = value.getClOrdIDAsStringView();
-          auto order_status = map(value.ordStatus());
-          auto quantity = static_cast<double>(value.orderQty());
-          auto price = ilink::get_double(const_cast<value_type &>(value).price());
-          auto stop_price = ilink::get_double(const_cast<value_type &>(value).stopPx());
-          auto traded_quantity = static_cast<double>(value.cumQty());  // XXX NULL ???
-          auto order_update = oms::OrderUpdate{
-              .account = account_.get_name(),  // note! same as sender_id
-              .exchange = shared_.settings.exchange,
-              .symbol = security.symbol,
-              .side = side,
-              .position_effect = {},
-              .max_show_quantity = NaN,
-              .order_type = order_type,
-              .time_in_force = time_in_force,
-              .execution_instructions = {},
-              .create_time_utc = {},
-              .update_time_utc = update_time_utc,
-              .external_account = {},
-              .external_order_id = external_order_id,
-              .client_order_id = client_order_id,
-              .status = order_status,
-              .quantity = quantity,
-              .price = price,
-              .stop_price = stop_price,
-              .remaining_quantity = NaN,
-              .traded_quantity = traded_quantity,
-              .average_traded_price = NaN,
-              .last_traded_quantity = NaN,
-              .last_traded_price = NaN,
-              .last_liquidity = {},
-              .update_type = UpdateType::INCREMENTAL,
-              .sending_time_utc = {},
-          };
+          auto order_update = order_update_from_execution_report(value, security, external_order_id);
           Trace event_2{trace_info, order_update};
-          (*this)(event_2, client_order_id);
+          (*this)(event_2, order_update.client_order_id);
         })) {
     } else {
       log::warn("Unexpected: security_id={}"sv, security_id);
@@ -626,47 +686,10 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportModify531> const &ev
   if (order_id) {
     auto security_id = get_security_id(value);
     if (shared_.get_security(security_id, [&](auto &security) {
-          auto side = map(value.side());
-          auto order_type = map(value.ordType());
-          auto time_in_force = map(value.timeInForce());
-          auto create_time_utc = get_transact_time(value);
-          auto update_time_utc = create_time_utc;
           auto external_order_id = fmt::format("{}"sv, order_id);
-          auto client_order_id = value.getClOrdIDAsStringView();
-          auto order_status = OrderStatus::WORKING;  // note! constant
-          auto quantity = static_cast<double>(value.orderQty());
-          auto price = ilink::get_double(const_cast<value_type &>(value).price());
-          auto stop_price = ilink::get_double(const_cast<value_type &>(value).stopPx());
-          auto order_update = oms::OrderUpdate{
-              .account = account_.get_name(),  // note! same as sender_id
-              .exchange = shared_.settings.exchange,
-              .symbol = security.symbol,
-              .side = side,
-              .position_effect = {},
-              .max_show_quantity = NaN,
-              .order_type = order_type,
-              .time_in_force = time_in_force,
-              .execution_instructions = {},
-              .create_time_utc = create_time_utc,
-              .update_time_utc = update_time_utc,
-              .external_account = {},
-              .external_order_id = external_order_id,
-              .client_order_id = client_order_id,
-              .status = order_status,
-              .quantity = quantity,
-              .price = price,
-              .stop_price = stop_price,
-              .remaining_quantity = NaN,
-              .traded_quantity = NaN,
-              .average_traded_price = NaN,
-              .last_traded_quantity = NaN,
-              .last_traded_price = NaN,
-              .last_liquidity = {},
-              .update_type = UpdateType::INCREMENTAL,
-              .sending_time_utc = {},
-          };
+          auto order_update = order_update_from_execution_report(value, security, external_order_id);
           Trace event_2{trace_info, order_update};
-          (*this)(event_2, client_order_id);
+          (*this)(event_2, order_update.client_order_id);
         })) {
     } else {
       log::warn("Unexpected: security_id={}"sv, security_id);
@@ -685,49 +708,10 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportStatus532> const &ev
   if (order_id) {
     auto security_id = get_security_id(value);
     if (shared_.get_security(security_id, [&](auto &security) {
-          auto side = map(value.side());
-          auto order_type = map(value.ordType());
-          auto time_in_force = map(value.timeInForce());
-          auto create_time_utc = get_transact_time(value);
-          auto update_time_utc = create_time_utc;
           auto external_order_id = fmt::format("{}"sv, order_id);
-          auto client_order_id = value.getClOrdIDAsStringView();
-          auto order_status = map(value.ordStatus());
-          auto quantity = static_cast<double>(value.orderQty());
-          auto price = ilink::get_double(const_cast<value_type &>(value).price());
-          auto stop_price = ilink::get_double(const_cast<value_type &>(value).stopPx());
-          auto remaining_quantity = static_cast<double>(value.leavesQty());  // XXX NULL ???
-          auto traded_quantity = static_cast<double>(value.cumQty());        // XXX NULL ???
-          auto order_update = oms::OrderUpdate{
-              .account = account_.get_name(),  // note! same as sender_id
-              .exchange = shared_.settings.exchange,
-              .symbol = security.symbol,
-              .side = side,
-              .position_effect = {},
-              .max_show_quantity = NaN,
-              .order_type = order_type,
-              .time_in_force = time_in_force,
-              .execution_instructions = {},
-              .create_time_utc = create_time_utc,
-              .update_time_utc = update_time_utc,
-              .external_account = {},
-              .external_order_id = external_order_id,
-              .client_order_id = client_order_id,
-              .status = order_status,
-              .quantity = quantity,
-              .price = price,
-              .stop_price = stop_price,
-              .remaining_quantity = remaining_quantity,
-              .traded_quantity = traded_quantity,
-              .average_traded_price = NaN,
-              .last_traded_quantity = NaN,
-              .last_traded_price = NaN,
-              .last_liquidity = {},
-              .update_type = UpdateType::SNAPSHOT,
-              .sending_time_utc = {},
-          };
+          auto order_update = order_update_from_execution_report(value, security, external_order_id);
           Trace event_2{trace_info, order_update};
-          (*this)(event_2, client_order_id);
+          (*this)(event_2, order_update.client_order_id);
         })) {
     } else {
       log::warn("Unexpected: security_id={}"sv, security_id);
@@ -745,47 +729,10 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportCancel534> const &ev
   if (order_id) {
     auto security_id = get_security_id(value);
     if (shared_.get_security(security_id, [&](auto &security) {
-          auto side = map(value.side());
-          auto order_type = map(value.ordType());
-          auto time_in_force = map(value.timeInForce());
-          auto update_time_utc = get_transact_time(value);
           auto external_order_id = fmt::format("{}"sv, order_id);
-          auto client_order_id = value.getClOrdIDAsStringView();
-          auto order_status = OrderStatus::CANCELED;  // note! constant
-          auto quantity = static_cast<double>(value.orderQty());
-          auto price = ilink::get_double(const_cast<value_type &>(value).price());
-          auto stop_price = ilink::get_double(const_cast<value_type &>(value).stopPx());
-          auto traded_quantity = static_cast<double>(value.cumQty());  // XXX NULL ???
-          auto order_update = oms::OrderUpdate{
-              .account = account_.get_name(),  // note! same as sender_id
-              .exchange = shared_.settings.exchange,
-              .symbol = security.symbol,
-              .side = side,
-              .position_effect = {},
-              .max_show_quantity = NaN,
-              .order_type = order_type,
-              .time_in_force = time_in_force,
-              .execution_instructions = {},
-              .create_time_utc = {},
-              .update_time_utc = update_time_utc,
-              .external_account = {},
-              .external_order_id = external_order_id,
-              .client_order_id = client_order_id,
-              .status = order_status,
-              .quantity = quantity,
-              .price = price,
-              .stop_price = stop_price,
-              .remaining_quantity = NaN,
-              .traded_quantity = traded_quantity,
-              .average_traded_price = {},
-              .last_traded_quantity = {},
-              .last_traded_price = {},
-              .last_liquidity = {},
-              .update_type = UpdateType::INCREMENTAL,
-              .sending_time_utc = {},
-          };
+          auto order_update = order_update_from_execution_report(value, security, external_order_id);
           Trace event_2{trace_info, order_update};
-          (*this)(event_2, client_order_id);
+          (*this)(event_2, order_update.client_order_id);
         })) {
     } else {
       log::warn("Unexpected: security_id={}"sv, security_id);
@@ -813,6 +760,7 @@ void OrderEntry::operator()(Trace<cme_ilink::OrderMassActionReport562> const &ev
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &[trace_info, value] = event;
   log::info("DEBUG order_mass_action_report={}"sv, const_cast<value_type &>(value));
+  auto account = value.getSenderIDAsStringView();
   auto update_time_utc = get_transact_time(value);
   const_cast<value_type &>(value).sbeRewind();  // note!
   const_cast<value_type &>(value).noAffectedOrders().forEach([&](auto &item) {
@@ -826,7 +774,7 @@ void OrderEntry::operator()(Trace<cme_ilink::OrderMassActionReport562> const &ev
         cxl_quantity);
     auto external_order_id = fmt::format("{}"sv, affected_order_id);
     auto order_update = oms::OrderUpdate{
-        .account = account_.get_name(),  // note! same as sender_id
+        .account = account,
         .exchange = {},
         .symbol = {},
         .side = {},
