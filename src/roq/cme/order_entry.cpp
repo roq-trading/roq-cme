@@ -531,6 +531,21 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportReject523> const &ev
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &[trace_info, value] = event;
   log::info("DEBUG execution_report_reject={}"sv, const_cast<value_type &>(value));
+  auto cl_ord_id = value.getClOrdIDAsStringView();
+  auto text = value.getTextAsStringView();
+  auto response = oms::Response{
+      .type = RequestType::CREATE_ORDER,
+      .origin = Origin::EXCHANGE,
+      .status = RequestStatus::REJECTED,
+      .error = {},
+      .text = text,
+      .version = {},
+      .request_id = {},
+      .quantity = NaN,
+      .price = NaN,
+  };
+  Trace event_2{trace_info, response};
+  (*this)(event_2, cl_ord_id);
 }
 
 void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportTradeOutright525> const &event) {
@@ -798,7 +813,6 @@ void OrderEntry::operator()(Trace<cme_ilink::OrderMassActionReport562> const &ev
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &[trace_info, value] = event;
   log::info("DEBUG order_mass_action_report={}"sv, const_cast<value_type &>(value));
-  auto account = value.getSenderIDAsStringView();
   auto update_time_utc = get_transact_time(value);
   const_cast<value_type &>(value).sbeRewind();  // note!
   const_cast<value_type &>(value).noAffectedOrders().forEach([&](auto &item) {
@@ -851,7 +865,6 @@ void OrderEntry::operator()(Trace<cme_ilink::OrderCancelReject535> const &event)
   auto &[trace_info, value] = event;
   log::info("order_cancel_reject={}"sv, const_cast<value_type &>(value));
   auto cl_ord_id = value.getClOrdIDAsStringView();
-  auto cxl_rej_reason = value.cxlRejReason();  // XXX we need a mapping
   auto text = value.getTextAsStringView();
   auto response = oms::Response{
       .type = RequestType::CANCEL_ORDER,
@@ -875,7 +888,6 @@ void OrderEntry::operator()(Trace<cme_ilink::OrderCancelReplaceReject536> const 
   auto &[trace_info, value] = event;
   log::info("DEBUG order_cancel_replace_reject={}"sv, const_cast<value_type &>(value));
   auto cl_ord_id = value.getClOrdIDAsStringView();
-  auto cxl_rej_reason = value.cxlRejReason();  // XXX we need a mapping
   auto text = value.getTextAsStringView();
   auto response = oms::Response{
       .type = RequestType::MODIFY_ORDER,
@@ -1285,7 +1297,7 @@ void OrderEntry::send_order_cancel_replace_request(ModifyOrder const &modify_ord
   }
 }
 
-void OrderEntry::send_order_cancel_request(CancelOrder const &cancel_order, oms::Order const &order) {
+void OrderEntry::send_order_cancel_request(CancelOrder const &, oms::Order const &order) {
   if (shared_.find_security_id(market_segment_id_, order.symbol, [&](auto security_id) {
         log::info("DEBUG found security_id={}"sv, security_id);
         auto side = map(order.side);
@@ -1322,7 +1334,7 @@ void OrderEntry::send_order_cancel_request(CancelOrder const &cancel_order, oms:
 
 // note!
 //   undoc: ord type must be x0 (NULL results in reject reason 109)
-void OrderEntry::send_order_mass_action_request(CancelAllOrders const &cancel_all_orders) {
+void OrderEntry::send_order_mass_action_request(CancelAllOrders const &) {
   if (!party_details_list_req_id_)
     send_party_details_definition_request();
   auto now = clock::get_realtime();
