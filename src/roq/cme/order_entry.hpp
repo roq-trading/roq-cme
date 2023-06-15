@@ -103,6 +103,8 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public ili
   void operator()(io::net::ConnectionManager::Disconnected const &) override;
   void operator()(io::net::ConnectionManager::Read const &) override;
 
+  size_t parse(std::span<std::byte const> const &);
+
  private:
   void operator()(ConnectionStatus);
 
@@ -161,8 +163,38 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public ili
     core::metrics::Counter disconnect;
   } counter_;
   struct {
-    core::metrics::Profile parse, position_report, execution_report, order_cancel_reject, reject,
-        order_mass_cancel_report;
+    core::metrics::Profile parse,
+        // session
+        negotiation_response,   //
+        negotiation_reject,     //
+        establishment_ack,      //
+        establishment_reject,   //
+        sequence,               //
+        terminate,              //
+        retransmission,         //
+        retransmission_reject,  //
+        not_applied,            //
+        // business
+        party_details_definition_request_ack,  //
+        business_reject,                       //
+        // execution report
+        execution_report_new,               //
+        execution_report_reject,            //
+        execution_report_trade_outright,    //
+        execution_report_trade_spread,      //
+        execution_report_trade_spread_leg,  //
+        execution_report_modify,            //
+        execution_report_status,            //
+        execution_report_cancel,            //
+        execution_report_pending_cancel,    //
+        execution_report_pending_replace,   //
+        // order
+        order_cancel_reject,          //
+        order_cancel_replace_reject,  //
+        // order mass action
+        order_mass_action_report,  //
+        // security definition
+        security_definition_response;  //
   } profile_;
   struct {
     core::metrics::Latency ping;

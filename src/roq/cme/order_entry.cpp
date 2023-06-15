@@ -57,6 +57,7 @@ auto const TRADING_SYSTEM_VENDOR = "ROQ GMBH"sv;
 auto const KEEP_ALIVE_INTERVAL = 30s;
 
 auto const REQUEST_TIMEOUT = 5s;
+auto const MAX_SEQ_NUM = uint64_t{1000000000};
 
 auto const MANUAL_ORDER_INDICATOR = cme_ilink::ManualOrdIndReq::Automated;  // XXX flag?
 
@@ -480,11 +481,36 @@ OrderEntry::OrderEntry(
       },
       profile_{
           .parse = create_metrics(shared.settings, name_, "parse"sv),
-          .position_report = create_metrics(shared.settings, name_, "position_report"sv),
-          .execution_report = create_metrics(shared.settings, name_, "execution_report"sv),
+          .negotiation_response = create_metrics(shared.settings, name_, "negotiation_response"sv),
+          .negotiation_reject = create_metrics(shared.settings, name_, "negotiation_reject"sv),
+          .establishment_ack = create_metrics(shared.settings, name_, "establishment_ack"sv),
+          .establishment_reject = create_metrics(shared.settings, name_, "establishment_reject"sv),
+          .sequence = create_metrics(shared.settings, name_, "sequence"sv),
+          .terminate = create_metrics(shared.settings, name_, "terminate"sv),
+          .retransmission = create_metrics(shared.settings, name_, "retransmission"sv),
+          .retransmission_reject = create_metrics(shared.settings, name_, "retransmission_reject"sv),
+          .not_applied = create_metrics(shared.settings, name_, "not_applied"sv),
+          .party_details_definition_request_ack =
+              create_metrics(shared.settings, name_, "party_details_definition_request_ack"sv),
+          .business_reject = create_metrics(shared.settings, name_, "business_reject"sv),
+          .execution_report_new = create_metrics(shared.settings, name_, "execution_report_new"sv),
+          .execution_report_reject = create_metrics(shared.settings, name_, "execution_report_reject"sv),
+          .execution_report_trade_outright =
+              create_metrics(shared.settings, name_, "execution_report_trade_outright"sv),
+          .execution_report_trade_spread = create_metrics(shared.settings, name_, "execution_report_trade_spread"sv),
+          .execution_report_trade_spread_leg =
+              create_metrics(shared.settings, name_, "execution_report_trade_spread_leg"sv),
+          .execution_report_modify = create_metrics(shared.settings, name_, "execution_report_modify"sv),
+          .execution_report_status = create_metrics(shared.settings, name_, "execution_report_status"sv),
+          .execution_report_cancel = create_metrics(shared.settings, name_, "execution_report_cancel"sv),
+          .execution_report_pending_cancel =
+              create_metrics(shared.settings, name_, "execution_report_pending_cancel"sv),
+          .execution_report_pending_replace =
+              create_metrics(shared.settings, name_, "execution_report_pending_replace"sv),
           .order_cancel_reject = create_metrics(shared.settings, name_, "order_cancel_reject"sv),
-          .reject = create_metrics(shared.settings, name_, "reject"sv),
-          .order_mass_cancel_report = create_metrics(shared.settings, name_, "order_mass_cancel_report"sv),
+          .order_cancel_replace_reject = create_metrics(shared.settings, name_, "order_cancel_replace_reject"sv),
+          .order_mass_action_report = create_metrics(shared.settings, name_, "order_mass_action_report"sv),
+          .security_definition_response = create_metrics(shared.settings, name_, "security_definition_response"sv),
       },
       latency_{
           .ping = create_metrics(shared.settings, name_, "ping"sv),
@@ -551,94 +577,204 @@ void OrderEntry::operator()(metrics::Writer &writer) {
   writer  //
       .write(counter_.disconnect, metrics::COUNTER)
       .write(profile_.parse, metrics::PROFILE)
-      .write(profile_.execution_report, metrics::PROFILE)
+      .write(profile_.negotiation_response, metrics::PROFILE)
+      .write(profile_.negotiation_reject, metrics::PROFILE)
+      .write(profile_.establishment_ack, metrics::PROFILE)
+      .write(profile_.establishment_reject, metrics::PROFILE)
+      .write(profile_.sequence, metrics::PROFILE)
+      .write(profile_.terminate, metrics::PROFILE)
+      .write(profile_.retransmission, metrics::PROFILE)
+      .write(profile_.retransmission_reject, metrics::PROFILE)
+      .write(profile_.not_applied, metrics::PROFILE)
+      .write(profile_.party_details_definition_request_ack, metrics::PROFILE)
+      .write(profile_.business_reject, metrics::PROFILE)
+      .write(profile_.execution_report_new, metrics::PROFILE)
+      .write(profile_.execution_report_reject, metrics::PROFILE)
+      .write(profile_.execution_report_trade_outright, metrics::PROFILE)
+      .write(profile_.execution_report_trade_spread, metrics::PROFILE)
+      .write(profile_.execution_report_trade_spread_leg, metrics::PROFILE)
+      .write(profile_.execution_report_modify, metrics::PROFILE)
+      .write(profile_.execution_report_status, metrics::PROFILE)
+      .write(profile_.execution_report_cancel, metrics::PROFILE)
+      .write(profile_.execution_report_pending_cancel, metrics::PROFILE)
+      .write(profile_.execution_report_pending_replace, metrics::PROFILE)
       .write(profile_.order_cancel_reject, metrics::PROFILE)
-      .write(profile_.reject, metrics::PROFILE)
-      .write(profile_.order_mass_cancel_report, metrics::PROFILE)
+      .write(profile_.order_cancel_replace_reject, metrics::PROFILE)
+      .write(profile_.order_mass_action_report, metrics::PROFILE)
+      .write(profile_.security_definition_response, metrics::PROFILE)
       .write(latency_.ping, metrics::LATENCY);
 }
 
 // session
 
 void OrderEntry::operator()(Trace<cme_ilink::NegotiationResponse501> const &event) {
-  using value_type = std::remove_cvref<decltype(event)>::type::value_type;
-  auto &[trace_info, value] = event;
-  log::info("DEBUG negotiation_response={}"sv, const_cast<value_type &>(value));
-  send_establish();
+  profile_.negotiation_response([&]() {
+    using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+    auto &[trace_info, value] = event;
+    log::info("DEBUG negotiation_response={}"sv, const_cast<value_type &>(value));
+    send_establish();
+  });
 }
 
 void OrderEntry::operator()(Trace<cme_ilink::NegotiationReject502> const &event) {
-  using value_type = std::remove_cvref<decltype(event)>::type::value_type;
-  auto &[trace_info, value] = event;
-  log::error("negotiation_reject={}"sv, const_cast<value_type &>(value));
-  // XXX now what?
-  (*connection_manager_).close();
+  profile_.negotiation_reject([&]() {
+    using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+    auto &[trace_info, value] = event;
+    log::error("negotiation_reject={}"sv, const_cast<value_type &>(value));
+    // XXX now what?
+    (*connection_manager_).close();
+  });
 }
 
 void OrderEntry::operator()(Trace<cme_ilink::EstablishmentAck504> const &event) {
-  using value_type = std::remove_cvref<decltype(event)>::type::value_type;
-  auto &[trace_info, value] = event;
-  log::info("DEBUG establishment_ack={}"sv, const_cast<value_type &>(value));
-  (*this)(ConnectionStatus::DOWNLOADING);
-  download_.begin();
+  profile_.establishment_ack([&]() {
+    using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+    auto &[trace_info, value] = event;
+    log::info("DEBUG establishment_ack={}"sv, const_cast<value_type &>(value));
+    (*this)(ConnectionStatus::DOWNLOADING);
+    download_.begin();
+  });
 }
 
 void OrderEntry::operator()(Trace<cme_ilink::EstablishmentReject505> const &event) {
-  using value_type = std::remove_cvref<decltype(event)>::type::value_type;
-  auto &[trace_info, value] = event;
-  log::error("establishment_reject={}"sv, const_cast<value_type &>(value));
-  // XXX now what?
-  (*connection_manager_).close();
+  profile_.establishment_reject([&]() {
+    using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+    auto &[trace_info, value] = event;
+    log::error("establishment_reject={}"sv, const_cast<value_type &>(value));
+    // XXX now what?
+    (*connection_manager_).close();
+  });
 }
 
 void OrderEntry::operator()(Trace<cme_ilink::Sequence506> const &event) {
-  using value_type = std::remove_cvref<decltype(event)>::type::value_type;
-  auto &[trace_info, value] = event;
-  log::info("DEBUG sequence={}"sv, const_cast<value_type &>(value));
+  profile_.sequence([&]() {
+    using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+    auto &[trace_info, value] = event;
+    log::info("DEBUG sequence={}"sv, const_cast<value_type &>(value));
+  });
 }
 
 void OrderEntry::operator()(Trace<cme_ilink::Terminate507> const &event) {
-  using value_type = std::remove_cvref<decltype(event)>::type::value_type;
-  auto &[trace_info, value] = event;
-  log::warn("terminate={}"sv, const_cast<value_type &>(value));
-  (*connection_manager_).close();
+  profile_.terminate([&]() {
+    using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+    auto &[trace_info, value] = event;
+    log::warn("terminate={}"sv, const_cast<value_type &>(value));
+    (*connection_manager_).close();
+  });
 }
 
 void OrderEntry::operator()(Trace<cme_ilink::Retransmission509> const &event) {
-  using value_type = std::remove_cvref<decltype(event)>::type::value_type;
-  auto &[trace_info, value] = event;
-  log::warn("retransmission={}"sv, const_cast<value_type &>(value));
+  profile_.retransmission([&]() {
+    using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+    auto &[trace_info, value] = event;
+    log::warn("UNSUPPORTED retransmission={}"sv, const_cast<value_type &>(value));
+  });
 }
 
 void OrderEntry::operator()(Trace<cme_ilink::RetransmitReject510> const &event) {
-  using value_type = std::remove_cvref<decltype(event)>::type::value_type;
-  auto &[trace_info, value] = event;
-  log::warn("retransmit_reject={}"sv, const_cast<value_type &>(value));
+  profile_.retransmission_reject([&]() {
+    using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+    auto &[trace_info, value] = event;
+    log::warn("UNSUPPORTED retransmit_reject={}"sv, const_cast<value_type &>(value));
+  });
 }
 
 void OrderEntry::operator()(Trace<cme_ilink::NotApplied513> const &event) {
-  using value_type = std::remove_cvref<decltype(event)>::type::value_type;
-  auto &[trace_info, value] = event;
-  log::warn("not_applied={}"sv, const_cast<value_type &>(value));
+  profile_.not_applied([&]() {
+    using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+    auto &[trace_info, value] = event;
+    log::warn("UNSUPPORTED not_applied={}"sv, const_cast<value_type &>(value));
+  });
 }
 
 // business
 
 void OrderEntry::operator()(Trace<cme_ilink::PartyDetailsDefinitionRequestAck519> const &event) {
-  using value_type = std::remove_cvref<decltype(event)>::type::value_type;
-  auto &[trace_info, value] = event;
-  log::info("DEBUG party_defails_definition_request_ack={}"sv, const_cast<value_type &>(value));
+  profile_.party_details_definition_request_ack([&]() {
+    using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+    using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+    auto &[trace_info, value] = event;
+    log::info("DEBUG party_defails_definition_request_ack={}"sv, const_cast<value_type &>(value));
+  });
 }
 
 void OrderEntry::operator()(Trace<cme_ilink::BusinessReject521> const &event) {
-  using value_type = std::remove_cvref<decltype(event)>::type::value_type;
-  auto &[trace_info, value] = event;
-  log::error("business_reject={}"sv, const_cast<value_type &>(value));
-  auto ref_msg_type = value.getRefMsgTypeAsStringView();
-  if (ref_msg_type == "D"sv || ref_msg_type == "G"sv || ref_msg_type == "F"sv) {
-    auto [type, user_id, order_id, version] = decode_order_request_id(get_business_reject_ref_id(value));
-    log::info("DEBUG type={}, user_id={}, order_id={}, version={}"sv, type, user_id, order_id, version);
+  profile_.business_reject([&]() {
+    using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+    auto &[trace_info, value] = event;
+    log::error("business_reject={}"sv, const_cast<value_type &>(value));
+    auto ref_msg_type = value.getRefMsgTypeAsStringView();
+    if (ref_msg_type == "D"sv || ref_msg_type == "G"sv || ref_msg_type == "F"sv) {
+      auto [type, user_id, order_id, version] = decode_order_request_id(get_business_reject_ref_id(value));
+      log::info("DEBUG type={}, user_id={}, order_id={}, version={}"sv, type, user_id, order_id, version);
+      auto text = value.getTextAsStringView();
+      auto response = oms::Response{
+          .type = type,
+          .origin = Origin::EXCHANGE,
+          .status = RequestStatus::REJECTED,
+          .error = {},
+          .text = text,
+          .version = version,
+          .request_id = {},
+          .quantity = NaN,
+          .price = NaN,
+      };
+      Trace event_2{trace_info, response};
+      (*this)(event_2, user_id, order_id);
+    }
+  });
+}
+
+// execution report
+void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportNew522> const &event) {
+  profile_.execution_report_new([&]() {
+    using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+    auto &[trace_info, value] = event;
+    log::info("DEBUG execution_report_new={}"sv, const_cast<value_type &>(value));
+    auto order_id = get_order_id(value);
+    if (order_id) {
+      auto security_id = get_security_id(value);
+      if (shared_.get_security(security_id, [&](auto &security) {
+            auto [type, user_id, order_id, version] = decode_order_request_id(value.orderRequestID());
+            log::info("DEBUG type={}, user_id={}, order_id={}, version={}"sv, type, user_id, order_id, version);
+            if (type != RequestType::CREATE_ORDER) [[unlikely]]
+              log::warn("Unexpected: type={}"sv, type);
+            auto external_order_id = fmt::format("{}"sv, order_id);
+            auto order_update = order_update_from_execution_report(value, security, external_order_id);
+            auto response = oms::Response{
+                .type = type,
+                .origin = Origin::EXCHANGE,
+                .status = RequestStatus::ACCEPTED,
+                .error = {},
+                .text = {},
+                .version = version,
+                .request_id = {},
+                .quantity = order_update.quantity,
+                .price = order_update.price,
+            };
+            Trace event_2{trace_info, response};
+            (*this)(event_2, order_update.client_order_id, order_update);
+          })) {
+      } else {
+        log::warn("Unexpected: security_id={}"sv, security_id);
+      }
+    } else {
+      log::warn("Unexpected: order_id={}"sv, order_id);
+    }
+  });
+}
+
+void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportReject523> const &event) {
+  profile_.execution_report_reject([&]() {
+    using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+    auto &[trace_info, value] = event;
+    log::info("DEBUG execution_report_reject={}"sv, const_cast<value_type &>(value));
+    auto cl_ord_id = value.getClOrdIDAsStringView();
     auto text = value.getTextAsStringView();
+    auto [type, user_id, order_id, version] = decode_order_request_id(value.orderRequestID());
+    log::info("DEBUG type={}, user_id={}, order_id={}, version={}"sv, type, user_id, order_id, version);
+    if (type != RequestType::CREATE_ORDER) [[unlikely]]
+      log::warn("Unexpected: type={}"sv, type);
     auto response = oms::Response{
         .type = type,
         .origin = Origin::EXCHANGE,
@@ -651,340 +787,302 @@ void OrderEntry::operator()(Trace<cme_ilink::BusinessReject521> const &event) {
         .price = NaN,
     };
     Trace event_2{trace_info, response};
-    (*this)(event_2, user_id, order_id);
-  }
-}
-
-// execution report
-void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportNew522> const &event) {
-  using value_type = std::remove_cvref<decltype(event)>::type::value_type;
-  auto &[trace_info, value] = event;
-  log::info("DEBUG execution_report_new={}"sv, const_cast<value_type &>(value));
-  auto order_id = get_order_id(value);
-  if (order_id) {
-    auto security_id = get_security_id(value);
-    if (shared_.get_security(security_id, [&](auto &security) {
-          auto [type, user_id, order_id, version] = decode_order_request_id(value.orderRequestID());
-          log::info("DEBUG type={}, user_id={}, order_id={}, version={}"sv, type, user_id, order_id, version);
-          if (type != RequestType::CREATE_ORDER) [[unlikely]]
-            log::warn("Unexpected: type={}"sv, type);
-          auto external_order_id = fmt::format("{}"sv, order_id);
-          auto order_update = order_update_from_execution_report(value, security, external_order_id);
-          auto response = oms::Response{
-              .type = type,
-              .origin = Origin::EXCHANGE,
-              .status = RequestStatus::ACCEPTED,
-              .error = {},
-              .text = {},
-              .version = version,
-              .request_id = {},
-              .quantity = order_update.quantity,
-              .price = order_update.price,
-          };
-          Trace event_2{trace_info, response};
-          (*this)(event_2, order_update.client_order_id, order_update);
-        })) {
-    } else {
-      log::warn("Unexpected: security_id={}"sv, security_id);
-    }
-  } else {
-    log::warn("Unexpected: order_id={}"sv, order_id);
-  }
-}
-
-void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportReject523> const &event) {
-  using value_type = std::remove_cvref<decltype(event)>::type::value_type;
-  auto &[trace_info, value] = event;
-  log::info("DEBUG execution_report_reject={}"sv, const_cast<value_type &>(value));
-  auto cl_ord_id = value.getClOrdIDAsStringView();
-  auto text = value.getTextAsStringView();
-  auto [type, user_id, order_id, version] = decode_order_request_id(value.orderRequestID());
-  log::info("DEBUG type={}, user_id={}, order_id={}, version={}"sv, type, user_id, order_id, version);
-  if (type != RequestType::CREATE_ORDER) [[unlikely]]
-    log::warn("Unexpected: type={}"sv, type);
-  auto response = oms::Response{
-      .type = type,
-      .origin = Origin::EXCHANGE,
-      .status = RequestStatus::REJECTED,
-      .error = {},
-      .text = text,
-      .version = version,
-      .request_id = {},
-      .quantity = NaN,
-      .price = NaN,
-  };
-  Trace event_2{trace_info, response};
-  (*this)(event_2, cl_ord_id);
+    (*this)(event_2, cl_ord_id);
+  });
 }
 
 void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportTradeOutright525> const &event) {
-  using value_type = std::remove_cvref<decltype(event)>::type::value_type;
-  auto &[trace_info, value] = event;
-  log::info("DEBUG execution_report_trade_outright={}"sv, const_cast<value_type &>(value));
-  auto order_id = get_order_id(value);
-  if (order_id) {
-    auto security_id = get_security_id(value);
-    if (shared_.get_security(security_id, [&](auto &security) {
-          auto external_order_id = fmt::format("{}"sv, order_id);
-          auto order_update = order_update_from_execution_report(value, security, external_order_id);
-          Trace event_2{trace_info, order_update};
-          (*this)(event_2, order_update.client_order_id);
-        })) {
+  profile_.execution_report_trade_outright([&]() {
+    using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+    auto &[trace_info, value] = event;
+    log::info("DEBUG execution_report_trade_outright={}"sv, const_cast<value_type &>(value));
+    auto order_id = get_order_id(value);
+    if (order_id) {
+      auto security_id = get_security_id(value);
+      if (shared_.get_security(security_id, [&](auto &security) {
+            auto external_order_id = fmt::format("{}"sv, order_id);
+            auto order_update = order_update_from_execution_report(value, security, external_order_id);
+            Trace event_2{trace_info, order_update};
+            (*this)(event_2, order_update.client_order_id);
+          })) {
+      } else {
+        log::warn("Unexpected: security_id={}"sv, security_id);
+      }
     } else {
-      log::warn("Unexpected: security_id={}"sv, security_id);
+      log::warn("Unexpected: order_id={}"sv, order_id);
     }
-  } else {
-    log::warn("Unexpected: order_id={}"sv, order_id);
-  }
+  });
 }
 
 void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportTradeSpread526> const &event) {
-  using value_type = std::remove_cvref<decltype(event)>::type::value_type;
-  auto &[trace_info, value] = event;
-  log::info("DEBUG execution_report_trade_spread={}"sv, const_cast<value_type &>(value));
+  profile_.execution_report_trade_spread([&]() {
+    using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+    auto &[trace_info, value] = event;
+    log::warn("UNSUPPORTED execution_report_trade_spread={}"sv, const_cast<value_type &>(value));
+  });
 }
 
 void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportTradeSpreadLeg527> const &event) {
-  using value_type = std::remove_cvref<decltype(event)>::type::value_type;
-  auto &[trace_info, value] = event;
-  log::info("DEBUG execution_report_trade_spread_leg={}"sv, const_cast<value_type &>(value));
+  profile_.execution_report_trade_spread_leg([&]() {
+    using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+    auto &[trace_info, value] = event;
+    log::warn("UNSUPPORTED execution_report_trade_spread_leg={}"sv, const_cast<value_type &>(value));
+  });
 }
 
 void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportModify531> const &event) {
-  using value_type = std::remove_cvref<decltype(event)>::type::value_type;
-  auto &[trace_info, value] = event;
-  log::info("DEBUG execution_report_modify={}"sv, const_cast<value_type &>(value));
-  auto order_id = get_order_id(value);
-  if (order_id) {
-    auto security_id = get_security_id(value);
-    if (shared_.get_security(security_id, [&](auto &security) {
-          auto [type, user_id, order_id, version] = decode_order_request_id(value.orderRequestID());
-          log::info("DEBUG type={}, user_id={}, order_id={}, version={}"sv, type, user_id, order_id, version);
-          if (type != RequestType::MODIFY_ORDER) [[unlikely]]
-            log::warn("Unexpected: type={}"sv, type);
-          auto external_order_id = fmt::format("{}"sv, order_id);
-          auto order_update = order_update_from_execution_report(value, security, external_order_id);
-          auto response = oms::Response{
-              .type = type,
-              .origin = Origin::EXCHANGE,
-              .status = RequestStatus::ACCEPTED,
-              .error = {},
-              .text = {},
-              .version = version,
-              .request_id = {},
-              .quantity = order_update.quantity,
-              .price = order_update.price,
-          };
-          Trace event_2{trace_info, response};
-          (*this)(event_2, order_update.client_order_id, order_update);
-        })) {
+  profile_.execution_report_modify([&]() {
+    using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+    auto &[trace_info, value] = event;
+    log::info("DEBUG execution_report_modify={}"sv, const_cast<value_type &>(value));
+    auto order_id = get_order_id(value);
+    if (order_id) {
+      auto security_id = get_security_id(value);
+      if (shared_.get_security(security_id, [&](auto &security) {
+            auto [type, user_id, order_id, version] = decode_order_request_id(value.orderRequestID());
+            log::info("DEBUG type={}, user_id={}, order_id={}, version={}"sv, type, user_id, order_id, version);
+            if (type != RequestType::MODIFY_ORDER) [[unlikely]]
+              log::warn("Unexpected: type={}"sv, type);
+            auto external_order_id = fmt::format("{}"sv, order_id);
+            auto order_update = order_update_from_execution_report(value, security, external_order_id);
+            auto response = oms::Response{
+                .type = type,
+                .origin = Origin::EXCHANGE,
+                .status = RequestStatus::ACCEPTED,
+                .error = {},
+                .text = {},
+                .version = version,
+                .request_id = {},
+                .quantity = order_update.quantity,
+                .price = order_update.price,
+            };
+            Trace event_2{trace_info, response};
+            (*this)(event_2, order_update.client_order_id, order_update);
+          })) {
+      } else {
+        log::warn("Unexpected: security_id={}"sv, security_id);
+      }
     } else {
-      log::warn("Unexpected: security_id={}"sv, security_id);
+      log::warn("Unexpected: order_id={}"sv, order_id);
     }
-  } else {
-    log::warn("Unexpected: order_id={}"sv, order_id);
-  }
+  });
 }
 
 void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportStatus532> const &event) {
-  using value_type = std::remove_cvref<decltype(event)>::type::value_type;
-  auto &[trace_info, value] = event;
-  log::info("DEBUG execution_report_status={}"sv, const_cast<value_type &>(value));
-  auto order_id = get_order_id(value);
-  if (order_id) {
-    auto security_id = get_security_id(value);
-    if (shared_.get_security(security_id, [&](auto &security) {
-          auto external_order_id = fmt::format("{}"sv, order_id);
-          auto order_update = order_update_from_execution_report(value, security, external_order_id);
-          Trace event_2{trace_info, order_update};
-          (*this)(event_2, order_update.client_order_id);
-        })) {
+  profile_.execution_report_status([&]() {
+    using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+    auto &[trace_info, value] = event;
+    log::info("DEBUG execution_report_status={}"sv, const_cast<value_type &>(value));
+    auto order_id = get_order_id(value);
+    if (order_id) {
+      auto security_id = get_security_id(value);
+      if (shared_.get_security(security_id, [&](auto &security) {
+            auto external_order_id = fmt::format("{}"sv, order_id);
+            auto order_update = order_update_from_execution_report(value, security, external_order_id);
+            Trace event_2{trace_info, order_update};
+            (*this)(event_2, order_update.client_order_id);
+          })) {
+      } else {
+        log::warn("Unexpected: security_id={}"sv, security_id);
+      }
     } else {
-      log::warn("Unexpected: security_id={}"sv, security_id);
+      log::info(R"(No working orders (text="{}"))"sv, value.getTextAsStringView());
     }
-  } else {
-    log::info(R"(No working orders (text="{}"))"sv, value.getTextAsStringView());
-  }
-  if (value.lastRptRequested() == cme_ilink::BooleanNULL::True)
-    download_.check_relaxed(OrderEntryState::ORDERS);
+    if (value.lastRptRequested() == cme_ilink::BooleanNULL::True)
+      download_.check_relaxed(OrderEntryState::ORDERS);
+  });
 }
 
 void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportCancel534> const &event) {
-  using value_type = std::remove_cvref<decltype(event)>::type::value_type;
-  auto &[trace_info, value] = event;
-  log::info("DEBUG execution_report_cancel={}"sv, const_cast<value_type &>(value));
-  auto order_id = get_order_id(value);
-  if (order_id) {
-    auto security_id = get_security_id(value);
-    if (shared_.get_security(security_id, [&](auto &security) {
-          auto [type, user_id, order_id, version] = decode_order_request_id(value.orderRequestID());
-          log::info("DEBUG type={}, user_id={}, order_id={}, version={}"sv, type, user_id, order_id, version);
-          if (type != RequestType::CANCEL_ORDER) [[unlikely]]
-            log::warn("Unexpected: type={}"sv, type);
-          auto external_order_id = fmt::format("{}"sv, order_id);
-          auto order_update = order_update_from_execution_report(value, security, external_order_id);
-          auto response = oms::Response{
-              .type = RequestType::CANCEL_ORDER,
-              .origin = Origin::EXCHANGE,
-              .status = RequestStatus::ACCEPTED,
-              .error = {},
-              .text = {},
-              .version = version,
-              .request_id = {},
-              .quantity = order_update.quantity,
-              .price = order_update.price,
-          };
-          Trace event_2{trace_info, response};
-          (*this)(event_2, order_update.client_order_id, order_update);
-        })) {
+  profile_.execution_report_cancel([&]() {
+    using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+    auto &[trace_info, value] = event;
+    log::info("DEBUG execution_report_cancel={}"sv, const_cast<value_type &>(value));
+    auto order_id = get_order_id(value);
+    if (order_id) {
+      auto security_id = get_security_id(value);
+      if (shared_.get_security(security_id, [&](auto &security) {
+            auto [type, user_id, order_id, version] = decode_order_request_id(value.orderRequestID());
+            log::info("DEBUG type={}, user_id={}, order_id={}, version={}"sv, type, user_id, order_id, version);
+            if (type != RequestType::CANCEL_ORDER) [[unlikely]]
+              log::warn("Unexpected: type={}"sv, type);
+            auto external_order_id = fmt::format("{}"sv, order_id);
+            auto order_update = order_update_from_execution_report(value, security, external_order_id);
+            auto response = oms::Response{
+                .type = RequestType::CANCEL_ORDER,
+                .origin = Origin::EXCHANGE,
+                .status = RequestStatus::ACCEPTED,
+                .error = {},
+                .text = {},
+                .version = version,
+                .request_id = {},
+                .quantity = order_update.quantity,
+                .price = order_update.price,
+            };
+            Trace event_2{trace_info, response};
+            (*this)(event_2, order_update.client_order_id, order_update);
+          })) {
+      } else {
+        log::warn("Unexpected: security_id={}"sv, security_id);
+      }
     } else {
-      log::warn("Unexpected: security_id={}"sv, security_id);
+      log::warn("Unexpected: order_id={}"sv, order_id);
     }
-  } else {
-    log::warn("Unexpected: order_id={}"sv, order_id);
-  }
+  });
 }
 
 void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportPendingCancel564> const &event) {
-  using value_type = std::remove_cvref<decltype(event)>::type::value_type;
-  auto &[trace_info, value] = event;
-  log::info("DEBUG execution_report_pending_cancel={}"sv, const_cast<value_type &>(value));
+  profile_.execution_report_pending_cancel([&]() {
+    using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+    auto &[trace_info, value] = event;
+    log::warn("UNSUPPORTED execution_report_pending_cancel={}"sv, const_cast<value_type &>(value));
+  });
 }
 
 void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportPendingReplace565> const &event) {
-  using value_type = std::remove_cvref<decltype(event)>::type::value_type;
-  auto &[trace_info, value] = event;
-  log::info("DEBUG execution_report_pending_replace={}"sv, const_cast<value_type &>(value));
+  profile_.execution_report_pending_replace([&]() {
+    using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+    auto &[trace_info, value] = event;
+    log::warn("UNSUPPORTED execution_report_pending_replace={}"sv, const_cast<value_type &>(value));
+  });
 }
 
 // order mass action
 
 void OrderEntry::operator()(Trace<cme_ilink::OrderMassActionReport562> const &event) {
-  using value_type = std::remove_cvref<decltype(event)>::type::value_type;
-  auto &[trace_info, value] = event;
-  log::info("DEBUG order_mass_action_report={}"sv, const_cast<value_type &>(value));
-  switch (value.massActionResponse()) {
-    using enum cme_ilink::MassActionResponse::Value;
-    case Rejected: {
-      auto mass_action_reject_reason = value.massActionRejectReason();
-      log::info("*** CANCEL ALL ORDERS FAILED, REASON={} ***"sv, mass_action_reject_reason);
-      break;
+  profile_.order_mass_action_report([&]() {
+    using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+    auto &[trace_info, value] = event;
+    log::info("DEBUG order_mass_action_report={}"sv, const_cast<value_type &>(value));
+    switch (value.massActionResponse()) {
+      using enum cme_ilink::MassActionResponse::Value;
+      case Rejected: {
+        auto mass_action_reject_reason = value.massActionRejectReason();
+        log::info("*** CANCEL ALL ORDERS FAILED, REASON={} ***"sv, mass_action_reject_reason);
+        break;
+      }
+      case Accepted: {
+        auto account = value.getSenderIDAsStringView();
+        auto update_time_utc = get_transact_time(value);
+        size_t count = 0;
+        const_cast<value_type &>(value).sbeRewind();  // note!
+        const_cast<value_type &>(value).noAffectedOrders().forEach([&](auto &item) {
+          ++count;
+          auto orig_cl_ord_id = item.getOrigCIOrdIDAsStringView();
+          auto affected_order_id = item.affectedOrderID();
+          auto cxl_quantity = item.cxlQuantity();
+          log::info(
+              R"(DEBUG orig_cl_ord_id="{}", affected_order_id={}, cxl_quantity={})"sv,
+              orig_cl_ord_id,
+              affected_order_id,
+              cxl_quantity);
+          auto external_order_id = fmt::format("{}"sv, affected_order_id);
+          auto order_update = oms::OrderUpdate{
+              .account = account,
+              .exchange = {},
+              .symbol = {},
+              .side = {},
+              .position_effect = {},
+              .max_show_quantity = NaN,
+              .order_type = {},
+              .time_in_force = {},
+              .execution_instructions = {},
+              .create_time_utc = {},
+              .update_time_utc = update_time_utc,
+              .external_account = {},
+              .external_order_id = external_order_id,
+              .client_order_id = orig_cl_ord_id,
+              .status = OrderStatus::CANCELED,
+              .quantity = {},
+              .price = NaN,
+              .stop_price = NaN,
+              .remaining_quantity = NaN,
+              .traded_quantity = NaN,
+              .average_traded_price = NaN,
+              .last_traded_quantity = NaN,
+              .last_traded_price = NaN,
+              .last_liquidity = {},
+              .update_type = UpdateType::INCREMENTAL,
+              .sending_time_utc = {},
+          };
+          Trace event_2{trace_info, order_update};
+          (*this)(event_2, orig_cl_ord_id);
+        });
+        log::info("*** CANCEL ALL ORDERS SUCCEEDED, TOTAL_AFFECTED_ORDERS={} ***"sv, count);
+        break;
+      }
+      case NULL_VALUE:
+        break;
     }
-    case Accepted: {
-      auto account = value.getSenderIDAsStringView();
-      auto update_time_utc = get_transact_time(value);
-      size_t count = 0;
-      const_cast<value_type &>(value).sbeRewind();  // note!
-      const_cast<value_type &>(value).noAffectedOrders().forEach([&](auto &item) {
-        ++count;
-        auto orig_cl_ord_id = item.getOrigCIOrdIDAsStringView();
-        auto affected_order_id = item.affectedOrderID();
-        auto cxl_quantity = item.cxlQuantity();
-        log::info(
-            R"(DEBUG orig_cl_ord_id="{}", affected_order_id={}, cxl_quantity={})"sv,
-            orig_cl_ord_id,
-            affected_order_id,
-            cxl_quantity);
-        auto external_order_id = fmt::format("{}"sv, affected_order_id);
-        auto order_update = oms::OrderUpdate{
-            .account = account,
-            .exchange = {},
-            .symbol = {},
-            .side = {},
-            .position_effect = {},
-            .max_show_quantity = NaN,
-            .order_type = {},
-            .time_in_force = {},
-            .execution_instructions = {},
-            .create_time_utc = {},
-            .update_time_utc = update_time_utc,
-            .external_account = {},
-            .external_order_id = external_order_id,
-            .client_order_id = orig_cl_ord_id,
-            .status = OrderStatus::CANCELED,
-            .quantity = {},
-            .price = NaN,
-            .stop_price = NaN,
-            .remaining_quantity = NaN,
-            .traded_quantity = NaN,
-            .average_traded_price = NaN,
-            .last_traded_quantity = NaN,
-            .last_traded_price = NaN,
-            .last_liquidity = {},
-            .update_type = UpdateType::INCREMENTAL,
-            .sending_time_utc = {},
-        };
-        Trace event_2{trace_info, order_update};
-        (*this)(event_2, orig_cl_ord_id);
-      });
-      log::info("*** CANCEL ALL ORDERS SUCCEEDED, TOTAL_AFFECTED_ORDERS={} ***"sv, count);
-      break;
-    }
-    case NULL_VALUE:
-      break;
-  }
+  });
 }
 
 // order
 
 void OrderEntry::operator()(Trace<cme_ilink::OrderCancelReject535> const &event) {
-  using value_type = std::remove_cvref<decltype(event)>::type::value_type;
-  auto &[trace_info, value] = event;
-  log::info("order_cancel_reject={}"sv, const_cast<value_type &>(value));
-  auto cl_ord_id = value.getClOrdIDAsStringView();
-  auto text = value.getTextAsStringView();
-  auto [type, user_id, order_id, version] = decode_order_request_id(value.orderRequestID());
-  log::info("DEBUG type={}, user_id={}, order_id={}, version={}"sv, type, user_id, order_id, version);
-  if (type != RequestType::CANCEL_ORDER) [[unlikely]]
-    log::warn("Unexpected: type={}"sv, type);
-  auto response = oms::Response{
-      .type = type,
-      .origin = Origin::EXCHANGE,
-      .status = RequestStatus::REJECTED,
-      .error = {},
-      .text = text,
-      .version = version,
-      .request_id = {},
-      .quantity = NaN,
-      .price = NaN,
-  };
-  Trace event_2{trace_info, response};
-  (*this)(event_2, cl_ord_id);
+  profile_.order_cancel_reject([&]() {
+    using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+    auto &[trace_info, value] = event;
+    log::info("order_cancel_reject={}"sv, const_cast<value_type &>(value));
+    auto cl_ord_id = value.getClOrdIDAsStringView();
+    auto text = value.getTextAsStringView();
+    auto [type, user_id, order_id, version] = decode_order_request_id(value.orderRequestID());
+    log::info("DEBUG type={}, user_id={}, order_id={}, version={}"sv, type, user_id, order_id, version);
+    if (type != RequestType::CANCEL_ORDER) [[unlikely]]
+      log::warn("Unexpected: type={}"sv, type);
+    auto response = oms::Response{
+        .type = type,
+        .origin = Origin::EXCHANGE,
+        .status = RequestStatus::REJECTED,
+        .error = {},
+        .text = text,
+        .version = version,
+        .request_id = {},
+        .quantity = NaN,
+        .price = NaN,
+    };
+    Trace event_2{trace_info, response};
+    (*this)(event_2, cl_ord_id);
+  });
 }
 
 // note!
 //   maybe OrderRequestID can be used to correlate version?
 void OrderEntry::operator()(Trace<cme_ilink::OrderCancelReplaceReject536> const &event) {
-  using value_type = std::remove_cvref<decltype(event)>::type::value_type;
-  auto &[trace_info, value] = event;
-  log::info("DEBUG order_cancel_replace_reject={}"sv, const_cast<value_type &>(value));
-  auto cl_ord_id = value.getClOrdIDAsStringView();
-  auto text = value.getTextAsStringView();
-  auto [type, user_id, order_id, version] = decode_order_request_id(value.orderRequestID());
-  log::info("DEBUG type={}, user_id={}, order_id={}, version={}"sv, type, user_id, order_id, version);
-  if (type != RequestType::MODIFY_ORDER) [[unlikely]]
-    log::warn("Unexpected: type={}"sv, type);
-  auto response = oms::Response{
-      .type = type,
-      .origin = Origin::EXCHANGE,
-      .status = RequestStatus::REJECTED,
-      .error = {},
-      .text = text,
-      .version = version,
-      .request_id = {},
-      .quantity = NaN,
-      .price = NaN,
-  };
-  Trace event_2{trace_info, response};
-  (*this)(event_2, cl_ord_id);
+  profile_.order_cancel_replace_reject([&]() {
+    using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+    auto &[trace_info, value] = event;
+    log::info("DEBUG order_cancel_replace_reject={}"sv, const_cast<value_type &>(value));
+    auto cl_ord_id = value.getClOrdIDAsStringView();
+    auto text = value.getTextAsStringView();
+    auto [type, user_id, order_id, version] = decode_order_request_id(value.orderRequestID());
+    log::info("DEBUG type={}, user_id={}, order_id={}, version={}"sv, type, user_id, order_id, version);
+    if (type != RequestType::MODIFY_ORDER) [[unlikely]]
+      log::warn("Unexpected: type={}"sv, type);
+    auto response = oms::Response{
+        .type = type,
+        .origin = Origin::EXCHANGE,
+        .status = RequestStatus::REJECTED,
+        .error = {},
+        .text = text,
+        .version = version,
+        .request_id = {},
+        .quantity = NaN,
+        .price = NaN,
+    };
+    Trace event_2{trace_info, response};
+    (*this)(event_2, cl_ord_id);
+  });
 }
 
 // security definition
 
 void OrderEntry::operator()(Trace<cme_ilink::SecurityDefinitionResponse561> const &event) {
-  using value_type = std::remove_cvref<decltype(event)>::type::value_type;
-  auto &[trace_info, value] = event;
-  log::info("DEBUG security_definition_response={}"sv, const_cast<value_type &>(value));
+  profile_.security_definition_response([&]() {
+    using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+    auto &[trace_info, value] = event;
+    log::info("DEBUG security_definition_response={}"sv, const_cast<value_type &>(value));
+  });
 }
 
 void OrderEntry::operator()(io::net::ConnectionManager::Connected const &) {
@@ -1005,15 +1103,20 @@ void OrderEntry::operator()(io::net::ConnectionManager::Read const &) {
   auto buffer = (*connection_manager_).buffer();
   size_t total_bytes = 0;
   while (!std::empty(buffer)) {
-    TraceInfo trace_info;
-    auto bytes = ilink::Parser::dispatch(*this, buffer, trace_info);
-    if (bytes == 0)
-      break;
+    auto bytes = parse(buffer);
     assert(bytes <= std::size(buffer));
     total_bytes += bytes;
     buffer = buffer.subspan(bytes);
   }
   (*connection_manager_).drain(total_bytes);
+}
+size_t OrderEntry::parse(std::span<std::byte const> const &buffer) {
+  size_t result = 0;
+  profile_.parse([&]() {
+    TraceInfo trace_info;
+    result = ilink::Parser::dispatch(*this, buffer, trace_info);
+  });
+  return result;
 }
 
 void OrderEntry::operator()(ConnectionStatus status) {
@@ -1060,7 +1163,7 @@ uint32_t OrderEntry::download(OrderEntryState state) {
 //
 
 uint32_t OrderEntry::peek_next_seq_num() {
-  return (outbound_.msg_seq_num + 1) % 1000000000;
+  return (outbound_.msg_seq_num + 1) % MAX_SEQ_NUM;
 }
 
 uint32_t OrderEntry::fetch_next_seq_num() {
