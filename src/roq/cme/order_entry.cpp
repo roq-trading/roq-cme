@@ -726,7 +726,6 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportStatus532> const &ev
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &[trace_info, value] = event;
   log::info("DEBUG execution_report_status={}"sv, const_cast<value_type &>(value));
-  // XXX massStatusReqID() ???
   auto order_id = get_order_id(value);
   if (order_id) {
     auto security_id = get_security_id(value);
@@ -739,6 +738,8 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportStatus532> const &ev
     } else {
       log::warn("Unexpected: security_id={}"sv, security_id);
     }
+  } else {
+    log::info(R"(No working orders (text="{}")"sv, value.getTextAsStringView());
   }
   if (value.lastRptRequested() == cme_ilink::BooleanNULL::True)
     download_.check_relaxed(OrderEntryState::ORDERS);
@@ -794,50 +795,66 @@ void OrderEntry::operator()(Trace<cme_ilink::OrderMassActionReport562> const &ev
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &[trace_info, value] = event;
   log::info("DEBUG order_mass_action_report={}"sv, const_cast<value_type &>(value));
-  auto account = value.getSenderIDAsStringView();
-  auto update_time_utc = get_transact_time(value);
-  const_cast<value_type &>(value).sbeRewind();  // note!
-  const_cast<value_type &>(value).noAffectedOrders().forEach([&](auto &item) {
-    auto orig_cl_ord_id = item.getOrigCIOrdIDAsStringView();
-    auto affected_order_id = item.affectedOrderID();
-    auto cxl_quantity = item.cxlQuantity();
-    log::info(
-        R"(DEBUG orig_cl_ord_id="{}", affected_order_id={}, cxl_quantity={})"sv,
-        orig_cl_ord_id,
-        affected_order_id,
-        cxl_quantity);
-    auto external_order_id = fmt::format("{}"sv, affected_order_id);
-    auto order_update = oms::OrderUpdate{
-        .account = account,
-        .exchange = {},
-        .symbol = {},
-        .side = {},
-        .position_effect = {},
-        .max_show_quantity = NaN,
-        .order_type = {},
-        .time_in_force = {},
-        .execution_instructions = {},
-        .create_time_utc = {},
-        .update_time_utc = update_time_utc,
-        .external_account = {},
-        .external_order_id = external_order_id,
-        .client_order_id = orig_cl_ord_id,
-        .status = OrderStatus::CANCELED,
-        .quantity = {},
-        .price = NaN,
-        .stop_price = NaN,
-        .remaining_quantity = NaN,
-        .traded_quantity = NaN,
-        .average_traded_price = NaN,
-        .last_traded_quantity = NaN,
-        .last_traded_price = NaN,
-        .last_liquidity = {},
-        .update_type = UpdateType::INCREMENTAL,
-        .sending_time_utc = {},
-    };
-    Trace event_2{trace_info, order_update};
-    (*this)(event_2, orig_cl_ord_id);
-  });
+  switch (value.massActionResponse()) {
+    using enum cme_ilink::MassActionResponse::Value;
+    case Rejected: {
+      auto mass_action_reject_reason = value.massActionRejectReason();
+      log::info("*** CANCEL ALL ORDERS FAILED, REASON={} ***"sv, mass_action_reject_reason);
+      break;
+    }
+    case Accepted: {
+      auto account = value.getSenderIDAsStringView();
+      auto update_time_utc = get_transact_time(value);
+      size_t count = 0;
+      const_cast<value_type &>(value).sbeRewind();  // note!
+      const_cast<value_type &>(value).noAffectedOrders().forEach([&](auto &item) {
+        ++count;
+        auto orig_cl_ord_id = item.getOrigCIOrdIDAsStringView();
+        auto affected_order_id = item.affectedOrderID();
+        auto cxl_quantity = item.cxlQuantity();
+        log::info(
+            R"(DEBUG orig_cl_ord_id="{}", affected_order_id={}, cxl_quantity={})"sv,
+            orig_cl_ord_id,
+            affected_order_id,
+            cxl_quantity);
+        auto external_order_id = fmt::format("{}"sv, affected_order_id);
+        auto order_update = oms::OrderUpdate{
+            .account = account,
+            .exchange = {},
+            .symbol = {},
+            .side = {},
+            .position_effect = {},
+            .max_show_quantity = NaN,
+            .order_type = {},
+            .time_in_force = {},
+            .execution_instructions = {},
+            .create_time_utc = {},
+            .update_time_utc = update_time_utc,
+            .external_account = {},
+            .external_order_id = external_order_id,
+            .client_order_id = orig_cl_ord_id,
+            .status = OrderStatus::CANCELED,
+            .quantity = {},
+            .price = NaN,
+            .stop_price = NaN,
+            .remaining_quantity = NaN,
+            .traded_quantity = NaN,
+            .average_traded_price = NaN,
+            .last_traded_quantity = NaN,
+            .last_traded_price = NaN,
+            .last_liquidity = {},
+            .update_type = UpdateType::INCREMENTAL,
+            .sending_time_utc = {},
+        };
+        Trace event_2{trace_info, order_update};
+        (*this)(event_2, orig_cl_ord_id);
+      });
+      log::info("*** CANCEL ALL ORDERS SUCCEEDED, TOTAL_AFFECTED_ORDERS={} ***"sv, count);
+      break;
+    }
+    case NULL_VALUE:
+      break;
+  }
 }
 
 // order
@@ -983,7 +1000,6 @@ uint64_t OrderEntry::fetch_next_request_id() {
 template <typename T>
 void OrderEntry::send(T const &value) {
   auto message = value.encode(encode_buffer_2_);
-  log::info("DEBUG sbe length={}"sv, std::size(message));
   uint16_t length = utils::safe_cast{std::size(message) + 4};
   struct SOFH final {
     uint16_t message_length;
