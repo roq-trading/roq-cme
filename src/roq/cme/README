@@ -19,6 +19,19 @@ execution_report_status={seq_num=4, uuid=1686661217079166, text="NA", exec_id="0
 
 execution_report_reject={seq_num=4, uuid=1686746245915825, text="Orders may not be entered while the market is closed", exec_id="84979:701408", sender_id="A1", cl_ord_id="OQAC6wMAAQAAdUJly0pG", party_details_list_req_id=0, order_id=84959406525, price=100, stop_px=nan, transact_time=1686746253981241624, sending_time_epoch=1686746253982878130, order_request_id=1, cross_id=18446744073709551615, host_cross_id=18446744073709551615, location="UK", security_id=338574, order_qty=1, min_qty=4294967295, display_qty=4294967295, ord_rej_reason=1003, expire_date=0, delay_duration=65535, ord_status=8, exec_type=8, ord_type=Limit, side=Buy, time_in_force=GoodTillCancel, manual_order_indicator=Automated, poss_retrans_flag=False, split_msg=, cross_type=255, exec_inst=0, execution_mode=SBE_UNKNOWN, liquidity_flag=, managed_order=, short_sale_type=, delay_to_time=18446744073709551615, discretion_price=nan}
 
+// modify
+
+- success
+
+execution_report_modify={seq_num=22, uuid=1686804812879128, exec_id="84980:134662", sender_id="A1", cl_ord_id="BwAC6wMAAQAAuvOBfVhG", party_details_list_req_id=0, order_id=84959605087, price=10, stop_px=nan, transact_time=1686805199680504867, sending_time_epoch=1686805199681129909, order_request_id=3, cross_id=18446744073709551615, host_cross_id=18446744073709551615, location="UK", security_id=338574, order_qty=1, cum_qty=0, leaves_qty=1, min_qty=4294967295, display_qty=4294967295, expire_date=0, delay_duration=65535, ord_status=5, exec_type=5, ord_type=Limit, side=Buy, time_in_force=GoodTillCancel, manual_order_indicator=Automated, poss_retrans_flag=False, split_msg=, cross_type=255, exec_inst=0, execution_mode=SBE_UNKNOWN, liquidity_flag=, managed_order=, short_sale_type=, delay_to_time=18446744073709551615, discretion_price=nan}
+
+-- failure
+
+business_reject={seq_num=24, uuid=1686804812879128, text="Business Reject: Required Field Missing 'Quantity less than 1: '0' tag: 38'", sender_id=A1, party_details_list_req_id=0, sending_time_epoch=1686805220181160974, business_reject_ref_id=4, location=UK, ref_seq_num=24, ref_tag_id=65535, business_reject_reason=5, ref_msg_type=G, poss_retrans_flag=False, manual_order_indicator=Automated, split_msg=}
+
+ref_msg_type is modify order
+business_reject_ref_id is the order_req_id => version
+
 
 
 

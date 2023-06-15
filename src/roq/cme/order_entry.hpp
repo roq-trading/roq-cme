@@ -139,6 +139,9 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public ili
   template <typename... Args>
   void operator()(Trace<oms::Response> const &, std::string_view const &client_order_id, Args &&...);
 
+  template <typename... Args>
+  void operator()(Trace<oms::Response> const &, uint8_t user_id, uint32_t order_id, Args &&...);
+
  private:
   Handler &handler_;
   // config

@@ -60,10 +60,7 @@ auto const REQUEST_TIMEOUT = 5s;
 
 auto const MANUAL_ORDER_INDICATOR = cme_ilink::ManualOrdIndReq::Automated;  // XXX flag?
 
-// auto const SYMBOL = "ZNU3"sv;
-// auto const SECURITY_ID = int32_t{338574};  // ZNU3
-// auto const REQUEST_ID = "test"sv;
-auto EXCHANGE = "cme"sv;
+auto EXCHANGE = "cme"sv;  // XXX must be dynamic (e.g. XCBT)
 }  // namespace
 
 // === HELPERS ===
@@ -102,6 +99,35 @@ auto get_quantity(double value) -> uint32_t {
     return static_cast<uint32_t>(value);
   throw RuntimeError{"Unexpected: value={} < 0"sv, value};
 }
+
+// order_request_id
+
+constexpr auto encode_order_request_id(RequestType type, uint8_t user_id, uint32_t order_id, uint32_t version)
+    -> uint64_t {
+  return (static_cast<uint64_t>(static_cast<uint8_t>(type)) << 56) | (static_cast<uint64_t>(user_id) << 48) |
+         (static_cast<uint64_t>(order_id) << 24) | static_cast<uint64_t>(version);
+}
+
+constexpr auto decode_order_request_id(uint64_t value) -> std::tuple<RequestType, uint8_t, uint32_t, uint32_t> {
+  auto request_type = static_cast<RequestType>(static_cast<uint8_t>((value >> 56) & ((uint64_t{1} << 8) - 1)));
+  auto user_id = static_cast<uint8_t>((value >> 48) & ((uint64_t{1} << 8) - 1));
+  auto order_id = static_cast<uint32_t>((value >> 24) & ((uint64_t{1} << 24) - 1));
+  auto version = static_cast<uint32_t>(value & ((uint64_t{1} << 24) - 1));
+  return {request_type, user_id, order_id, version};
+}
+
+static_assert(encode_order_request_id(RequestType::CREATE_ORDER, 1, 1, 1) == 0x0101000001000001);
+static_assert(
+    encode_order_request_id(RequestType::CANCEL_ORDER, SOURCE_SELF, MAX_ORDER_ID, MAX_REQUEST_VERSION) ==
+    0x03ffffffffffffff);
+
+static_assert(
+    decode_order_request_id(0x0101000001000001) ==
+    std::tuple<RequestType, uint8_t, uint32_t, uint32_t>{RequestType::CREATE_ORDER, 1, 1, 1});
+static_assert(
+    decode_order_request_id(0x03ffffffffffffff) ==
+    std::tuple<RequestType, uint8_t, uint32_t, uint32_t>{
+        RequestType::CANCEL_ORDER, SOURCE_SELF, MAX_ORDER_ID, MAX_REQUEST_VERSION});
 
 // side
 
@@ -268,6 +294,13 @@ auto map(cme_ilink::OrdStatusTrd::Value value) -> OrderStatus {
 }
 
 // get
+
+auto get_business_reject_ref_id(auto &value) -> uint64_t {
+  auto result = value.businessRejectRefID();
+  if (result == value.businessRejectRefIDNullValue())
+    return {};
+  return result;
+}
 
 auto get_order_id(auto &value) -> uint64_t {
   auto result = value.orderID();
@@ -601,6 +634,25 @@ void OrderEntry::operator()(Trace<cme_ilink::BusinessReject521> const &event) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &[trace_info, value] = event;
   log::error("business_reject={}"sv, const_cast<value_type &>(value));
+  auto ref_msg_type = value.getRefMsgTypeAsStringView();
+  if (ref_msg_type == "D"sv || ref_msg_type == "G"sv || ref_msg_type == "F"sv) {
+    auto [type, user_id, order_id, version] = decode_order_request_id(get_business_reject_ref_id(value));
+    log::info("DEBUG type={}, user_id={}, order_id={}, version={}"sv, type, user_id, order_id, version);
+    auto text = value.getTextAsStringView();
+    auto response = oms::Response{
+        .type = type,
+        .origin = Origin::EXCHANGE,
+        .status = RequestStatus::REJECTED,
+        .error = {},
+        .text = text,
+        .version = version,
+        .request_id = {},
+        .quantity = NaN,
+        .price = NaN,
+    };
+    Trace event_2{trace_info, response};
+    (*this)(event_2, user_id, order_id);
+  }
 }
 
 // execution report
@@ -612,15 +664,19 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportNew522> const &event
   if (order_id) {
     auto security_id = get_security_id(value);
     if (shared_.get_security(security_id, [&](auto &security) {
+          auto [type, user_id, order_id, version] = decode_order_request_id(value.orderRequestID());
+          log::info("DEBUG type={}, user_id={}, order_id={}, version={}"sv, type, user_id, order_id, version);
+          if (type != RequestType::CREATE_ORDER) [[unlikely]]
+            log::warn("Unexpected: type={}"sv, type);
           auto external_order_id = fmt::format("{}"sv, order_id);
           auto order_update = order_update_from_execution_report(value, security, external_order_id);
           auto response = oms::Response{
-              .type = RequestType::CREATE_ORDER,
+              .type = type,
               .origin = Origin::EXCHANGE,
               .status = RequestStatus::ACCEPTED,
               .error = {},
               .text = {},
-              .version = utils::safe_cast{value.orderRequestID()},
+              .version = version,
               .request_id = {},
               .quantity = order_update.quantity,
               .price = order_update.price,
@@ -642,13 +698,17 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportReject523> const &ev
   log::info("DEBUG execution_report_reject={}"sv, const_cast<value_type &>(value));
   auto cl_ord_id = value.getClOrdIDAsStringView();
   auto text = value.getTextAsStringView();
+  auto [type, user_id, order_id, version] = decode_order_request_id(value.orderRequestID());
+  log::info("DEBUG type={}, user_id={}, order_id={}, version={}"sv, type, user_id, order_id, version);
+  if (type != RequestType::CREATE_ORDER) [[unlikely]]
+    log::warn("Unexpected: type={}"sv, type);
   auto response = oms::Response{
-      .type = RequestType::CREATE_ORDER,
+      .type = type,
       .origin = Origin::EXCHANGE,
       .status = RequestStatus::REJECTED,
       .error = {},
       .text = text,
-      .version = utils::safe_cast{value.orderRequestID()},
+      .version = version,
       .request_id = {},
       .quantity = NaN,
       .price = NaN,
@@ -698,15 +758,19 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportModify531> const &ev
   if (order_id) {
     auto security_id = get_security_id(value);
     if (shared_.get_security(security_id, [&](auto &security) {
+          auto [type, user_id, order_id, version] = decode_order_request_id(value.orderRequestID());
+          log::info("DEBUG type={}, user_id={}, order_id={}, version={}"sv, type, user_id, order_id, version);
+          if (type != RequestType::MODIFY_ORDER) [[unlikely]]
+            log::warn("Unexpected: type={}"sv, type);
           auto external_order_id = fmt::format("{}"sv, order_id);
           auto order_update = order_update_from_execution_report(value, security, external_order_id);
           auto response = oms::Response{
-              .type = RequestType::MODIFY_ORDER,
+              .type = type,
               .origin = Origin::EXCHANGE,
               .status = RequestStatus::ACCEPTED,
               .error = {},
               .text = {},
-              .version = utils::safe_cast{value.orderRequestID()},
+              .version = version,
               .request_id = {},
               .quantity = order_update.quantity,
               .price = order_update.price,
@@ -739,7 +803,7 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportStatus532> const &ev
       log::warn("Unexpected: security_id={}"sv, security_id);
     }
   } else {
-    log::info(R"(No working orders (text="{}")"sv, value.getTextAsStringView());
+    log::info(R"(No working orders (text="{}"))"sv, value.getTextAsStringView());
   }
   if (value.lastRptRequested() == cme_ilink::BooleanNULL::True)
     download_.check_relaxed(OrderEntryState::ORDERS);
@@ -753,6 +817,10 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportCancel534> const &ev
   if (order_id) {
     auto security_id = get_security_id(value);
     if (shared_.get_security(security_id, [&](auto &security) {
+          auto [type, user_id, order_id, version] = decode_order_request_id(value.orderRequestID());
+          log::info("DEBUG type={}, user_id={}, order_id={}, version={}"sv, type, user_id, order_id, version);
+          if (type != RequestType::CANCEL_ORDER) [[unlikely]]
+            log::warn("Unexpected: type={}"sv, type);
           auto external_order_id = fmt::format("{}"sv, order_id);
           auto order_update = order_update_from_execution_report(value, security, external_order_id);
           auto response = oms::Response{
@@ -761,7 +829,7 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportCancel534> const &ev
               .status = RequestStatus::ACCEPTED,
               .error = {},
               .text = {},
-              .version = utils::safe_cast{value.orderRequestID()},
+              .version = version,
               .request_id = {},
               .quantity = order_update.quantity,
               .price = order_update.price,
@@ -865,13 +933,17 @@ void OrderEntry::operator()(Trace<cme_ilink::OrderCancelReject535> const &event)
   log::info("order_cancel_reject={}"sv, const_cast<value_type &>(value));
   auto cl_ord_id = value.getClOrdIDAsStringView();
   auto text = value.getTextAsStringView();
+  auto [type, user_id, order_id, version] = decode_order_request_id(value.orderRequestID());
+  log::info("DEBUG type={}, user_id={}, order_id={}, version={}"sv, type, user_id, order_id, version);
+  if (type != RequestType::CANCEL_ORDER) [[unlikely]]
+    log::warn("Unexpected: type={}"sv, type);
   auto response = oms::Response{
-      .type = RequestType::CANCEL_ORDER,
+      .type = type,
       .origin = Origin::EXCHANGE,
       .status = RequestStatus::REJECTED,
       .error = {},
       .text = text,
-      .version = utils::safe_cast{value.orderRequestID()},
+      .version = version,
       .request_id = {},
       .quantity = NaN,
       .price = NaN,
@@ -888,13 +960,17 @@ void OrderEntry::operator()(Trace<cme_ilink::OrderCancelReplaceReject536> const 
   log::info("DEBUG order_cancel_replace_reject={}"sv, const_cast<value_type &>(value));
   auto cl_ord_id = value.getClOrdIDAsStringView();
   auto text = value.getTextAsStringView();
+  auto [type, user_id, order_id, version] = decode_order_request_id(value.orderRequestID());
+  log::info("DEBUG type={}, user_id={}, order_id={}, version={}"sv, type, user_id, order_id, version);
+  if (type != RequestType::MODIFY_ORDER) [[unlikely]]
+    log::warn("Unexpected: type={}"sv, type);
   auto response = oms::Response{
-      .type = RequestType::MODIFY_ORDER,
+      .type = type,
       .origin = Origin::EXCHANGE,
       .status = RequestStatus::REJECTED,
       .error = {},
       .text = text,
-      .version = utils::safe_cast{value.orderRequestID()},
+      .version = version,
       .request_id = {},
       .quantity = NaN,
       .price = NaN,
@@ -1197,6 +1273,7 @@ void OrderEntry::send_new_order_single(
         log::info("DEBUG found security_id={}"sv, security_id);
         auto order_qty = get_quantity(create_order.quantity);
         auto side = map(create_order.side);
+        auto order_request_id = encode_order_request_id(RequestType::CREATE_ORDER, order.user_id, order.order_id, 1);
         auto ord_type = map(create_order.order_type);
         auto time_in_force = map(create_order.time_in_force);
         if (!party_details_list_req_id_)
@@ -1211,7 +1288,7 @@ void OrderEntry::send_new_order_single(
             .sender_id = account_.get_name(),
             .cl_ord_id = request_id,
             .party_details_list_req_id = party_details_list_req_id_,
-            .order_request_id = 1,
+            .order_request_id = order_request_id,
             .sending_time_epoch = now,
             .stop_px = create_order.stop_price,
             .location = shared_.settings.ilink.location,
@@ -1251,6 +1328,8 @@ void OrderEntry::send_order_cancel_replace_request(ModifyOrder const &modify_ord
         log::info("DEBUG found security_id={}"sv, security_id);
         auto order_qty = get_quantity(modify_order.quantity);
         auto side = map(order.side);
+        auto order_request_id =
+            encode_order_request_id(RequestType::MODIFY_ORDER, order.user_id, order.order_id, modify_order.version);
         auto ord_type = map(order.order_type);
         auto time_in_force = map(order.time_in_force);
         if (!party_details_list_req_id_)
@@ -1267,7 +1346,7 @@ void OrderEntry::send_order_cancel_replace_request(ModifyOrder const &modify_ord
             .party_details_list_req_id = party_details_list_req_id_,
             .order_id = {},
             .stop_px = NaN,
-            .order_request_id = modify_order.version,
+            .order_request_id = order_request_id,
             .sending_time_epoch = now,
             .location = shared_.settings.ilink.location,
             .min_qty = {},
@@ -1302,6 +1381,8 @@ void OrderEntry::send_order_cancel_request(CancelOrder const &cancel_order, oms:
   log::info("DEBUG order={}"sv, order);
   if (shared_.find_security_id(market_segment_id_, order.symbol, [&](auto security_id) {
         log::info("DEBUG found security_id={}"sv, security_id);
+        auto order_request_id =
+            encode_order_request_id(RequestType::CANCEL_ORDER, order.user_id, order.order_id, cancel_order.version);
         auto side = map(order.side);
         if (!party_details_list_req_id_)
           send_party_details_definition_request();
@@ -1313,7 +1394,7 @@ void OrderEntry::send_order_cancel_request(CancelOrder const &cancel_order, oms:
             .seq_num = fetch_next_seq_num(),
             .sender_id = account_.get_name(),
             .cl_ord_id = order.client_order_id,
-            .order_request_id = cancel_order.version,
+            .order_request_id = order_request_id,
             .sending_time_epoch = now,
             .location = shared_.settings.ilink.location,
             .security_id = security_id,
@@ -1342,7 +1423,7 @@ void OrderEntry::send_order_mass_action_request(CancelAllOrders const &) {
   auto now = clock::get_realtime();
   auto order_mass_action_request = ilink::OrderMassActionRequest{
       .party_details_list_req_id = party_details_list_req_id_,
-      .order_request_id = fetch_next_request_id(),
+      .order_request_id = fetch_next_request_id(),  // XXX for what ???
       .manual_order_indicator = MANUAL_ORDER_INDICATOR,
       .seq_num = fetch_next_seq_num(),
       .sender_id = account_.get_name(),
@@ -1392,6 +1473,22 @@ void OrderEntry::operator()(
           [&]([[maybe_unused]] auto &order) {})) {
   } else {
     log::warn("*** EXTERNAL ORDER ***"sv);
+  }
+}
+
+template <typename... Args>
+void OrderEntry::operator()(Trace<oms::Response> const &event, uint8_t user_id, uint32_t order_id, Args &&...args) {
+  auto &[trace_info, response] = event;
+  if (shared_.update_order(
+          user_id,
+          order_id,
+          stream_id_,
+          trace_info,
+          response,
+          std::forward<Args>(args)...,
+          []([[maybe_unused]] auto &order) {})) {
+  } else {
+    log::warn("Did not find order: user_id={}, order_id={}"sv, user_id, order_id);
   }
 }
 
