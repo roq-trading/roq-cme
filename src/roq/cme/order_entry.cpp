@@ -206,9 +206,9 @@ auto map(TimeInForce time_in_force) -> cme_ilink::TimeInForce::Value {
     case OPG:
       break;
     case IOC:
-      break;  // ???
+      return cme_ilink::TimeInForce::FillAndKill;
     case FOK:
-      return cme_ilink::TimeInForce::FillOrKill;  // ???
+      return cme_ilink::TimeInForce::FillOrKill;  // btec and ebs
     case GTX:
       break;
     case GTD:
@@ -248,6 +248,37 @@ auto map(cme_ilink::TimeInForce::Value value) -> TimeInForce {
       break;
   }
   return {};
+}
+
+// execution instructions
+
+auto map(Mask<ExecutionInstruction> execution_instructions) -> uint8_t {
+  uint8_t result = {};
+  auto error = false;
+  using value_type = std::remove_cvref<decltype(execution_instructions)>::type;
+  using iterator = value_type::iterator;
+  using sentinel = value_type::sentinel;
+  std::ranges::for_each(iterator{execution_instructions}, sentinel{}, [&](auto item) {
+    switch (item) {
+      using enum ExecutionInstruction;
+      case UNDEFINED:
+        break;
+      case PARTICIPATE_DO_NOT_INITIATE:
+        error = true;
+        break;
+      case CANCEL_IF_NOT_BEST:
+        result = cme_ilink::ExecInst::oB(result, true);
+        break;
+      case DO_NOT_INCREASE:
+      case DO_NOT_REDUCE:
+        error = true;
+        break;
+    }
+  });
+  if (error) [[unlikely]] {
+    throw oms::Rejected{Origin::GATEWAY, Error::INVALID_EXECUTION_INSTRUCTION, "unsupported"sv};
+  }
+  return result;
 }
 
 // order status
@@ -1379,6 +1410,7 @@ void OrderEntry::send_new_order_single(
         auto order_request_id = encode_order_request_id(RequestType::CREATE_ORDER, order.user_id, order.order_id, 1);
         auto ord_type = map(create_order.order_type);
         auto time_in_force = map(create_order.time_in_force);
+        auto exec_inst = map(create_order.execution_instructions);
         if (!party_details_list_req_id_)
           send_party_details_definition_request();
         auto now = clock::get_realtime();
@@ -1401,7 +1433,7 @@ void OrderEntry::send_new_order_single(
             .ord_type = ord_type,
             .time_in_force = time_in_force,
             .manual_order_indicator = MANUAL_ORDER_INDICATOR,
-            .exec_inst = {},                                               // XXX
+            .exec_inst = exec_inst,
             .execution_mode = static_cast<cme_ilink::ExecMode::Value>(0),  // note!
             .liquidity_flag = {},
             .managed_order = {},
