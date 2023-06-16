@@ -87,3 +87,63 @@ I0615 09:31:03.927257 22794 L0 order_entry.cpp:728] DEBUG party_defails_definiti
 
 
 E0615 09:31:03.927284 22794 L0 order_entry.cpp:736] business_reject={seq_num=6, uuid=1686821418080204, text="Business Reject: Required Field Missing 'Unsupported value for tag EXEC_INST(18): 'Z''", sender_id=A1, party_details_list_req_id=0, sending_time_epoch=1686821463881574593, business_reject_ref_id=72620560802119681, location=UK, ref_seq_num=6, ref_tag_id=65535, business_reject_reason=5, ref_msg_type=D, poss_retrans_flag=False, manual_order_indicator=Automated, split_msg=}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+I0616 07:37:54.611369 3535 L0 order_entry.cpp:1522] DEBUG cancel_order={account="A1", order_id=1001, request_template="", routing_id="", version=2, conditional_on_version=0}
+I0616 07:37:54.611417 3535 L0 order_entry.cpp:1523] DEBUG order={user_id=2, account="A1", order_id=1001, exchange="XCBT", symbol="ZNU3", side=BUY, position_effect=UNDEFINED, max_show_quantity=nan, order_type=LIMIT, time_in_force=GTC, execution_instructions=, create_time_utc=1686821426178000000ns, update_time_utc=1686821426178000000ns, external_account="", external_order_id="84959639741", client_order_id="SQAC6QMAAQAAswACTFxG", status=WORKING, quantity=3, price=100, stop_price=nan, remaining_quantity=3, traded_quantity=0, average_traded_price=nan, last_traded_price=nan, last_traded_quantity=nan, last_liquidity=UNDEFINED, routing_id="", max_request_version=2, max_response_version=1, max_accepted_version=1, price_decimals=UNDEFINED, quantity_decimals=UNDEFINED, update_type=SNAPSHOT}
+I0616 07:37:54.611478 3535 L0 order_entry.cpp:1525] DEBUG found security_id=338574
+I0616 07:37:54.611500 3535 L0 order_entry.cpp:1353] DEBUG party_details_definition_request={party_details_list_req_id=0, sending_time_epoch=1686901074611491385ns, list_update_action=65, seq_num=7, memo="", avg_px_group_id="", self_match_prevention_id=0, cmta_giveup_cd=71, cust_order_capacity=1, clearing_account_type=1, self_match_prevention_instruction=78, avg_px_indicator=0, clearing_trade_price_type=0, cust_order_handling_inst=72, executor=0, idm_short_code=0}
+I0616 07:37:54.611642 3535 L0 order_entry.cpp:1224] DEBUG message="\xe7\x00\xfe\xca\x93\x00\x06\x02\x08\x00\x08\x00\x00\x00\x00\x00\x00\x00\x00\x00\x39\x52\x71\xfb\x96\x13\x69\x17\x41\x07\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\xff\xff\xff\xff\xff\xff\xff\x47\x01\x01\x4e\x00\x00\x48\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x16\x00\x03\x52\x4f\x51\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x41\x31\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x18\x00\x41\x31\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x76\x00\x02\x00\x00"
+I0616 07:37:54.611686 3535 L0 order_entry.cpp:1547] DEBUG order_cancel_request={order_id=0, party_details_list_req_id=0, manual_order_indicator=Automated, seq_num=8, sender_id="A1", cl_ord_id="SQAC6QMAAQAAswACTFxG", order_request_id=216735748861198338, sending_time_epoch=1686901074611677622ns, location=UK, security_id=338574, side=Buy, liquidity_flag=false, orig_order_user=""}
+I0616 07:37:54.611731 3535 L0 order_entry.cpp:1224] DEBUG message="\x6c\x00\xfe\xca\x60\x00\x04\x02\x08\x00\x08\x00\xff\xff\xff\xff\xff\xff\xff\xff\x00\x00\x00\x00\x00\x00\x00\x00\x00\x08\x00\x00\x00\x41\x31\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x53\x51\x41\x43\x36\x51\x4d\x41\x41\x51\x41\x41\x73\x77\x41\x43\x54\x46\x78\x47\x02\x00\x00\xe9\x03\x00\x02\x03\xb6\x29\x74\xfb\x96\x13\x69\x17\x55\x4b\x00\x00\x00\x8e\x2a\x05\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+I0616 07:37:54.701257 3535 L0 order_entry.cpp:726] DEBUG party_defails_definition_request_ack={seq_num=7, uuid=1686900989752740, memo="", avg_px_group_id="", party_details_list_req_id=0, sending_time_epoch=1686901075497375582, self_match_prevention_id=18446744073709551615, party_details_request_status=0, cust_order_capacity=255, clearing_account_type=255, self_match_prevention_instruction=48, avg_px_indicator=0, clearing_trade_price_type=0, cmta_giveup_cd=48, cust_order_handling_inst=72, no_party_updates=1, list_update_action=65, party_detail_definition_status=0, executor=18446744073709551615, idm_short_code=18446744073709551615, poss_retrans_flag=False, split_msg=, }
+I0616 07:37:54.701403 3535 L0 order_entry.cpp:929] DEBUG execution_report_cancel={seq_num=8, uuid=1686900989752740, exec_id="84980:435689", sender_id="A1", cl_ord_id="SQAC6QMAAQAAswACTFxG", party_details_list_req_id=0, order_id=84959639741, price=100, stop_px=nan, transact_time=1686901075496587371, sending_time_epoch=1686901075497377109, order_request_id=216735748861198338, cross_id=18446744073709551615, host_cross_id=18446744073709551615, location="UK", security_id=338574, order_qty=3, cum_qty=0, min_qty=4294967295, display_qty=4294967295, expire_date=0, delay_duration=65535, ord_status=4, exec_type=4, ord_type=Limit, side=Buy, time_in_force=GoodTillCancel, manual_order_indicator=Automated, poss_retrans_flag=False, split_msg=, exec_restatement_reason=, cross_type=255, exec_inst=0, execution_mode=SBE_UNKNOWN, liquidity_flag=, managed_order=, short_sale_type=, delay_to_time=18446744073709551615, discretion_price=nan}
+I0616 07:37:54.701471 3535 L0 order_entry.cpp:935] DEBUG type=CANCEL_ORDER, user_id=2, order_id=1001, version=2
+W0616 07:37:54.701502 3535 L0 order_state.cpp:942] Unexpected: value="1001", expected="84959639741"
+W0616 07:37:54.701806 3535 L0 exception_handler.cpp:34] Exception: {type="N3roq12RuntimeErrorE", what="Wrong exchange order id", file="order_state.cpp", line=943}
+W0616 07:37:54.701860 3535 L0 order_state.cpp:759] Not possible to match request: response={type=CANCEL_ORDER, origin=EXCHANGE, status=ACCEPTED, error=UNDEFINED, text="", version=2, request_id="", quantity=3, price=100}
+W0616 07:37:58.656610 3535 L0 udp_incremental.cpp:352] *** DETECTED TIMEOUT ***
+W0616 07:37:58.656744 3535 L0 udp_incremental.cpp:352] *** DETECTED TIMEOUT ***
+W0616 07:37:58.656768 3535 L0 udp_mbp_market_recovery.cpp:185] *** DETECTED TIMEOUT ***
+W0616 07:37:58.656790 3535 L0 udp_mbo_market_recovery.cpp:132] *** DETECTED TIMEOUT ***
+W0616 07:38:02.614347 3534 L0 connection.cpp:142] Disconnected
+I0616 07:38:02.614404 3534 L0 session.cpp:65] Removing user id=2, name="trader"
+W0616 07:38:02.614622 3535 L0 gateway.cpp:138] Disconnected: source="trader", order_cancel_policy=BY_ACCOUNT
+W0616 07:38:02.614641 3535 L0 gateway.cpp:147] *** CANCEL ALL ACCOUNT ORDERS ***
+W0616 07:38:02.614748 3535 L0 gateway.cpp:150] - account="A1"
+I0616 07:38:02.614782 3535 L0 order_entry.cpp:1353] DEBUG party_details_definition_request={party_details_list_req_id=0, sending_time_epoch=1686901082614766656ns, list_update_action=65, seq_num=9, memo="", avg_px_group_id="", self_match_prevention_id=0, cmta_giveup_cd=71, cust_order_capacity=1, clearing_account_type=1, self_match_prevention_instruction=78, avg_px_indicator=0, clearing_trade_price_type=0, cust_order_handling_inst=72, executor=0, idm_short_code=0}
+I0616 07:38:02.614900 3535 L0 order_entry.cpp:1224] DEBUG message="\xe7\x00\xfe\xca\x93\x00\x06\x02\x08\x00\x08\x00\x00\x00\x00\x00\x00\x00\x00\x00\x40\x9c\x79\xd8\x98\x13\x69\x17\x41\x09\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\xff\xff\xff\xff\xff\xff\xff\x47\x01\x01\x4e\x00\x00\x48\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x16\x00\x03\x52\x4f\x51\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x41\x31\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x18\x00\x41\x31\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x76\x00\x02\x00\x00"
+I0616 07:38:02.614972 3535 L0 order_entry.cpp:1585] DEBUG order_mass_action_request={party_details_list_req_id=0, order_request_id=2, manual_order_indicator=Automated, seq_num=10, sender_id=A1, time_epoch=1686901082614962190ns, security_group="", location="UK", security_id=0, mass_action_scope=9, market_segment_id=84, mass_cancel_request_type=101, side=255, ord_type=0, time_in_force=255, liquidity_flag=, orig_order_user=""}
+I0616 07:38:02.615021 3535 L0 order_entry.cpp:1224] DEBUG message="\x5b\x00\xfe\xca\x4f\x00\x11\x02\x08\x00\x08\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00\x00\x0a\x00\x00\x00\x41\x31\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x0e\x98\x7c\xd8\x98\x13\x69\x17\x00\x00\x00\x00\x00\x00\x55\x4b\x00\x00\x00\xff\xff\xff\x7f\x09\x54\x65\xff\x00\xff\xff\x00\x00\x00\x00\x00\x00\x00\x00"
+I0616 07:38:02.667687 3534 L0 controller.cpp:237] Detected zombie client session
+I0616 07:38:02.707107 3535 L0 order_entry.cpp:726] DEBUG party_defails_definition_request_ack={seq_num=9, uuid=1686900989752740, memo="", avg_px_group_id="", party_details_list_req_id=0, sending_time_epoch=1686901083503236767, self_match_prevention_id=18446744073709551615, party_details_request_status=0, cust_order_capacity=255, clearing_account_type=255, self_match_prevention_instruction=48, avg_px_indicator=255, clearing_trade_price_type=255, cmta_giveup_cd=48, cust_order_handling_inst=48, no_party_updates=1, list_update_action=65, party_detail_definition_status=0, executor=18446744073709551615, idm_short_code=18446744073709551615, poss_retrans_flag=False, split_msg=, }
+I0616 07:38:02.707189 3535 L0 order_entry.cpp:985] DEBUG order_mass_action_report={seq_num=10, uuid=1686900989752740, sender_id="A1", party_details_list_req_id=0, transact_time=1686901083500000000, sending_time_epoch=1686901083503269293, order_request_id=2, mass_action_report_id=849801001, mass_action_type=3, security_group="", location="UK", security_id=2147483647, delay_duration=65535, mass_action_response=1, manual_order_indicator=Automated, mass_action_scope=9, total_affected_orders=1, last_fragment=True, mass_action_reject_reason=255, market_segment_id=84, mass_cancel_request_type=101, side=255, ord_type=48, time_in_force=255, split_msg=, liquidity_flag=, poss_retrans_flag=False, delay_to_time=18446744073709551615, orig_order_user="", cancel_text="", }
+I0616 07:38:02.707211 3535 L0 order_entry.cpp:1003] DEBUG orig_cl_ord_id="TwAC6gMAAQAA4cwz1G5G", affected_order_id=84959812055, cxl_quantity=2
+W0616 07:38:02.707233 3535 L0 order_state.cpp:942] Unexpected: value="84959812055", expected="1002"
+W0616 07:38:02.707393 3535 L0 exception_handler.cpp:34] Exception: {type="N3roq12RuntimeErrorE", what="Wrong exchange order id", file="order_state.cpp", line=943}

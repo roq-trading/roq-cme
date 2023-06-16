@@ -265,7 +265,8 @@ auto map(Mask<ExecutionInstruction> execution_instructions) -> uint8_t {
         error = true;
         break;
       case CANCEL_IF_NOT_BEST:
-        result = cme_ilink::ExecInst::oB(result, true);
+        // result = cme_ilink::ExecInst::oB(result, true); // note! not for futures and options!
+        error = true;
         break;
       case DO_NOT_INCREASE:
       case DO_NOT_REDUCE:
@@ -762,13 +763,13 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportNew522> const &event
     log::info("DEBUG execution_report_new={}"sv, const_cast<value_type &>(value));
     auto order_id = get_order_id(value);
     if (order_id) {
+      auto external_order_id = fmt::format("{}"sv, order_id);
       auto security_id = get_security_id(value);
       if (shared_.get_security(security_id, [&](auto &security) {
             auto [type, user_id, order_id, version] = decode_order_request_id(value.orderRequestID());
             log::info("DEBUG type={}, user_id={}, order_id={}, version={}"sv, type, user_id, order_id, version);
             if (type != RequestType::CREATE_ORDER) [[unlikely]]
               log::warn("Unexpected: type={}"sv, type);
-            auto external_order_id = fmt::format("{}"sv, order_id);
             auto order_update = order_update_from_execution_report(value, security, external_order_id);
             auto response = oms::Response{
                 .type = type,
@@ -827,9 +828,9 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportTradeOutright525> co
     log::info("DEBUG execution_report_trade_outright={}"sv, const_cast<value_type &>(value));
     auto order_id = get_order_id(value);
     if (order_id) {
+      auto external_order_id = fmt::format("{}"sv, order_id);
       auto security_id = get_security_id(value);
       if (shared_.get_security(security_id, [&](auto &security) {
-            auto external_order_id = fmt::format("{}"sv, order_id);
             auto order_update = order_update_from_execution_report(value, security, external_order_id);
             Trace event_2{trace_info, order_update};
             (*this)(event_2, order_update.client_order_id);
@@ -866,13 +867,13 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportModify531> const &ev
     log::info("DEBUG execution_report_modify={}"sv, const_cast<value_type &>(value));
     auto order_id = get_order_id(value);
     if (order_id) {
+      auto external_order_id = fmt::format("{}"sv, order_id);
       auto security_id = get_security_id(value);
       if (shared_.get_security(security_id, [&](auto &security) {
             auto [type, user_id, order_id, version] = decode_order_request_id(value.orderRequestID());
             log::info("DEBUG type={}, user_id={}, order_id={}, version={}"sv, type, user_id, order_id, version);
             if (type != RequestType::MODIFY_ORDER) [[unlikely]]
               log::warn("Unexpected: type={}"sv, type);
-            auto external_order_id = fmt::format("{}"sv, order_id);
             auto order_update = order_update_from_execution_report(value, security, external_order_id);
             auto response = oms::Response{
                 .type = type,
@@ -904,9 +905,9 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportStatus532> const &ev
     log::info("DEBUG execution_report_status={}"sv, const_cast<value_type &>(value));
     auto order_id = get_order_id(value);
     if (order_id) {
+      auto external_order_id = fmt::format("{}"sv, order_id);
       auto security_id = get_security_id(value);
       if (shared_.get_security(security_id, [&](auto &security) {
-            auto external_order_id = fmt::format("{}"sv, order_id);
             auto order_update = order_update_from_execution_report(value, security, external_order_id);
             Trace event_2{trace_info, order_update};
             (*this)(event_2, order_update.client_order_id);
@@ -929,13 +930,13 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportCancel534> const &ev
     log::info("DEBUG execution_report_cancel={}"sv, const_cast<value_type &>(value));
     auto order_id = get_order_id(value);
     if (order_id) {
+      auto external_order_id = fmt::format("{}"sv, order_id);
       auto security_id = get_security_id(value);
       if (shared_.get_security(security_id, [&](auto &security) {
             auto [type, user_id, order_id, version] = decode_order_request_id(value.orderRequestID());
             log::info("DEBUG type={}, user_id={}, order_id={}, version={}"sv, type, user_id, order_id, version);
             if (type != RequestType::CANCEL_ORDER) [[unlikely]]
               log::warn("Unexpected: type={}"sv, type);
-            auto external_order_id = fmt::format("{}"sv, order_id);
             auto order_update = order_update_from_execution_report(value, security, external_order_id);
             auto response = oms::Response{
                 .type = RequestType::CANCEL_ORDER,
