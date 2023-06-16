@@ -46,7 +46,7 @@ auto const NAME = "msgw"sv;
 
 auto const SUPPORTS = Mask{
     SupportType::CREATE_ORDER,
-    // SupportType::MODIFY_ORDER,
+    SupportType::MODIFY_ORDER,
     SupportType::CANCEL_ORDER,
     SupportType::ORDER_ACK,
     SupportType::ORDER,
@@ -60,8 +60,6 @@ auto const REQUEST_TIMEOUT = 5s;
 auto const MAX_SEQ_NUM = uint64_t{1000000000};
 
 auto const MANUAL_ORDER_INDICATOR = cme_ilink::ManualOrdIndReq::Automated;  // XXX flag?
-
-auto EXCHANGE = "cme"sv;  // XXX must be dynamic (e.g. XCBT)
 }  // namespace
 
 // === HELPERS ===
@@ -462,7 +460,7 @@ auto order_update_from_execution_report(T &value, auto &security, auto &external
   }();
   return {
       .account = account,
-      .exchange = EXCHANGE,  // XXX security.exchange,
+      .exchange = security.exchange,
       .symbol = security.symbol,
       .side = side,
       .position_effect = {},
@@ -1405,44 +1403,53 @@ void OrderEntry::send_new_order_single(
     CreateOrder const &create_order, oms::Order const &order, std::string_view const &request_id) {
   if (shared_.find_security_id(market_segment_id_, order.symbol, [&](auto security_id) {
         log::info("DEBUG found security_id={}"sv, security_id);
-        auto order_qty = get_quantity(create_order.quantity);
-        auto side = map(create_order.side);
-        auto order_request_id = encode_order_request_id(RequestType::CREATE_ORDER, order.user_id, order.order_id, 1);
-        auto ord_type = map(create_order.order_type);
-        auto time_in_force = map(create_order.time_in_force);
-        auto exec_inst = map(create_order.execution_instructions);
-        if (!party_details_list_req_id_)
-          send_party_details_definition_request();
-        auto now = clock::get_realtime();
-        auto new_order_single = ilink::NewOrderSingle{
-            .price = create_order.price,
-            .order_qty = order_qty,
-            .security_id = security_id,
-            .side = side,
-            .seq_num = fetch_next_seq_num(),
-            .sender_id = account_.get_name(),
-            .cl_ord_id = request_id,
-            .party_details_list_req_id = party_details_list_req_id_,
-            .order_request_id = order_request_id,
-            .sending_time_epoch = now,
-            .stop_px = create_order.stop_price,
-            .location = shared_.settings.ilink.location,
-            .min_qty = {},
-            .display_qty = {},
-            .expire_date = {},
-            .ord_type = ord_type,
-            .time_in_force = time_in_force,
-            .manual_order_indicator = MANUAL_ORDER_INDICATOR,
-            .exec_inst = exec_inst,
-            .execution_mode = static_cast<cme_ilink::ExecMode::Value>(0),  // note!
-            .liquidity_flag = {},
-            .managed_order = {},
-            .short_sale_type = cme_ilink::ShortSaleType::NULL_VALUE,
-            .discretion_price = NaN,
-            .reservation_price = NaN,
-        };
-        log::info("DEBUG new_order_single={}"sv, new_order_single);
-        send(new_order_single);
+        if (shared_.get_security(security_id, [&](auto &security) {
+              if (create_order.exchange != security.exchange) [[unlikely]] {
+                throw oms::Rejected{Origin::GATEWAY, Error::INVALID_EXCHANGE, "Expected: {}"sv, security.exchange};
+              }
+              auto order_qty = get_quantity(create_order.quantity);
+              auto side = map(create_order.side);
+              auto order_request_id =
+                  encode_order_request_id(RequestType::CREATE_ORDER, order.user_id, order.order_id, 1);
+              auto ord_type = map(create_order.order_type);
+              auto time_in_force = map(create_order.time_in_force);
+              auto exec_inst = map(create_order.execution_instructions);
+              if (!party_details_list_req_id_)
+                send_party_details_definition_request();
+              auto now = clock::get_realtime();
+              auto new_order_single = ilink::NewOrderSingle{
+                  .price = create_order.price,
+                  .order_qty = order_qty,
+                  .security_id = security_id,
+                  .side = side,
+                  .seq_num = fetch_next_seq_num(),
+                  .sender_id = account_.get_name(),
+                  .cl_ord_id = request_id,
+                  .party_details_list_req_id = party_details_list_req_id_,
+                  .order_request_id = order_request_id,
+                  .sending_time_epoch = now,
+                  .stop_px = create_order.stop_price,
+                  .location = shared_.settings.ilink.location,
+                  .min_qty = {},
+                  .display_qty = {},
+                  .expire_date = {},
+                  .ord_type = ord_type,
+                  .time_in_force = time_in_force,
+                  .manual_order_indicator = MANUAL_ORDER_INDICATOR,
+                  .exec_inst = exec_inst,
+                  .execution_mode = static_cast<cme_ilink::ExecMode::Value>(0),  // note!
+                  .liquidity_flag = {},
+                  .managed_order = {},
+                  .short_sale_type = cme_ilink::ShortSaleType::NULL_VALUE,
+                  .discretion_price = NaN,
+                  .reservation_price = NaN,
+              };
+              log::info("DEBUG new_order_single={}"sv, new_order_single);
+              send(new_order_single);
+            })) {
+        } else {
+          log::fatal("Unexpected: didn't find security for security_id={}"sv, security_id);
+        }
       })) {
   } else {
     throw oms::Rejected{

@@ -18,7 +18,7 @@ namespace cme {
 struct Settings final : public server::Settings {
   explicit Settings(server::Type);
 
-  std::string_view exchange;
+  std::span<std::string const> exchange;
 
   flags::Common__flags common;
   flags::Multicast__flags multicast;
@@ -37,18 +37,19 @@ struct fmt::formatter<roq::cme::Settings> {
   }
   template <typename Context>
   auto format(roq::cme::Settings const &value, Context &context) const {
+    using namespace std::literals;
     using namespace fmt::literals;
     return fmt::format_to(
         context.out(),
         R"({{)"
-        R"(exchange="{}", )"
+        R"(exchange=[{}], )"
         R"(common={}, )"
         R"(multicast={}, )"
         R"(ilink={}, )"
         R"(test={}, )"
         R"(server={})"
         R"(}})"_cf,
-        value.exchange,
+        fmt::join(value.exchange, ", "sv),
         value.common,
         value.multicast,
         value.ilink,

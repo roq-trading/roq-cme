@@ -29,6 +29,7 @@ fi
 
 $PREFIX "./roq-cme" \
   --name "$NAME" \
+  --exchange "XCBT,XNYM" \
   --config_file "$CONFIG_FILE" \
   --cache_dir "$HOME/var/lib/roq/cache" \
   --event_log_dir "$HOME/var/lib/roq/data" \
