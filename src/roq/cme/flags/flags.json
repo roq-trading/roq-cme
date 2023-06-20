@@ -5,7 +5,10 @@
     {
       "name": "exchange",
       "type": "std::vector<std::string>",
-      "default": ["XCBT","XNYM"],
+      "default": [
+        "XCBT",
+        "XNYM"
+      ],
       "description": "exchange identifier (list)"
     }
   ]
