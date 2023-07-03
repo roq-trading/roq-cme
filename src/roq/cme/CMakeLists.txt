@@ -54,6 +54,7 @@ target_link_libraries(
           "${PROJECT_NAME}-ilink"
           "${PROJECT_NAME}-secdef"
           roq-server::roq-server
+          roq-server::roq-server-flags
           roq-web::roq-web
           roq-io::roq-io
           roq-core::roq-core
