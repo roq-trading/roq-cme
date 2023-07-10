@@ -72,16 +72,16 @@ struct fmt::formatter<roq::cme::ilink::OrderMassStatusRequest> {
         R"(}})"_cf,
         value.party_details_list_req_id,
         value.mass_status_req_id,
-        value.manual_order_indicator,
+        magic_enum::enum_name(value.manual_order_indicator),
         value.seq_num,
         value.sender_id,
         value.sending_time_epoch,
         value.security_group,
         value.location,
         value.security_id,
-        value.mass_status_req_type,
-        value.ord_status_req_type,
-        value.time_in_force,
+        magic_enum::enum_name(value.mass_status_req_type),
+        magic_enum::enum_name(value.ord_status_req_type),
+        magic_enum::enum_name(value.time_in_force),
         value.market_segment_id);
   }
 };
