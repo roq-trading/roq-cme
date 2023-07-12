@@ -1,15 +1,15 @@
-set(TARGET_NAME "${PROJECT_NAME}-channel-tester")
+set(TARGET_NAME ${PROJECT_NAME}-channel-tester)
 
 add_subdirectory(flags)
 
 set(SOURCES application.cpp controller.cpp main.cpp)
 
-add_executable("${TARGET_NAME}" ${SOURCES})
+add_executable(${TARGET_NAME} ${SOURCES})
 
 target_link_libraries(
-  "${TARGET_NAME}"
-  PRIVATE "${PROJECT_NAME}-channel-tester-flags"
-          "${PROJECT_NAME}-mdp"
+  ${TARGET_NAME}
+  PRIVATE ${PROJECT_NAME}-channel-tester-flags
+          ${PROJECT_NAME}-mdp
           roq-io::roq-io
           roq-core::roq-core
           roq-logging::roq-logging
@@ -20,10 +20,10 @@ target_link_libraries(
           absl::flags
           ${RT_LIBRARIES})
 
-set_target_properties("${TARGET_NAME}" PROPERTIES LINK_FLAGS_RELEASE -s)
+set_target_properties(${TARGET_NAME} PROPERTIES LINK_FLAGS_RELEASE -s)
 
 target_compile_definitions(
-  "${TARGET_NAME}"
+  ${TARGET_NAME}
   PRIVATE ROQ_PACKAGE_NAME="${TARGET_NAME}" ROQ_HOST="${ROQ_HOST}"
           ROQ_BUILD_VERSION="${GIT_REPO_VERSION}" ROQ_GIT_DESCRIBE_HASH="${GIT_DESCRIBE_HASH}"
           ROQ_BUILD_NUMBER="${ROQ_BUILD_NUMBER}" ROQ_BUILD_TYPE="${ROQ_BUILD_TYPE}")

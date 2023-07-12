@@ -1,11 +1,11 @@
-set(TARGET_NAME "${PROJECT_NAME}")
+set(TARGET_NAME ${PROJECT_NAME})
 
-add_subdirectory("flags")
-add_subdirectory("tools")
-add_subdirectory("mdp")
-add_subdirectory("ilink")
-add_subdirectory("secdef")
-add_subdirectory("channel_tester")
+add_subdirectory(flags)
+add_subdirectory(tools)
+add_subdirectory(mdp)
+add_subdirectory(ilink)
+add_subdirectory(secdef)
+add_subdirectory(channel_tester)
 
 set(SOURCES
     account.cpp
@@ -40,19 +40,19 @@ roq_autogen(
 
 add_custom_target(autogen-headers ALL DEPENDS ${AUTOGEN_HEADERS})
 
-roq_gitignore(OUTPUT ".gitignore" SOURCES "${TARGET_NAME}" ${AUTOGEN_HEADERS})
+roq_gitignore(OUTPUT .gitignore SOURCES ${TARGET_NAME} ${AUTOGEN_HEADERS})
 
-add_executable("${TARGET_NAME}" ${SOURCES})
+add_executable(${TARGET_NAME} ${SOURCES})
 
-add_dependencies("${TARGET_NAME}" autogen-headers)
+add_dependencies(${TARGET_NAME} autogen-headers)
 
 target_link_libraries(
-  "${TARGET_NAME}"
-  PRIVATE "${PROJECT_NAME}-flags"
-  PRIVATE "${PROJECT_NAME}-tools"
-          "${PROJECT_NAME}-mdp"
-          "${PROJECT_NAME}-ilink"
-          "${PROJECT_NAME}-secdef"
+  ${TARGET_NAME}
+  PRIVATE ${PROJECT_NAME}-flags
+  PRIVATE ${PROJECT_NAME}-tools
+          ${PROJECT_NAME}-mdp
+          ${PROJECT_NAME}-ilink
+          ${PROJECT_NAME}-secdef
           roq-server::roq-server
           roq-server::roq-server-flags
           roq-web::roq-web
@@ -70,10 +70,10 @@ target_link_libraries(
           ${UUID_LIBRARIES}
           ${RT_LIBRARIES})
 
-set_target_properties("${TARGET_NAME}" PROPERTIES LINK_FLAGS_RELEASE -s)
+set_target_properties(${TARGET_NAME} PROPERTIES LINK_FLAGS_RELEASE -s)
 
 target_compile_definitions(
-  "${TARGET_NAME}"
+  ${TARGET_NAME}
   PRIVATE ROQ_PACKAGE_NAME="${TARGET_NAME}" ROQ_HOST="${ROQ_HOST}"
           ROQ_BUILD_VERSION="${GIT_REPO_VERSION}" ROQ_GIT_DESCRIBE_HASH="${GIT_DESCRIBE_HASH}"
           ROQ_BUILD_NUMBER="${ROQ_BUILD_NUMBER}" ROQ_BUILD_TYPE="${ROQ_BUILD_TYPE}")
