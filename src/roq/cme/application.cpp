@@ -19,7 +19,7 @@ auto const TYPE = server::Type::ORDER_MANAGEMENT;
 
 // === IMPLEMENTATION ===
 
-int Application::main(int, char **) {
+int Application::main(args::Parser const &) {
   Settings settings{TYPE};
   Config config{settings};
   auto context = server::create_io_context(settings);

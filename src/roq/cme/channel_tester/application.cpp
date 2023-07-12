@@ -2,9 +2,6 @@
 
 #include "roq/cme/channel_tester/application.hpp"
 
-#include <string>
-#include <vector>
-
 #include "roq/logging.hpp"
 
 #include "roq/cme/channel_tester/controller.hpp"
@@ -18,7 +15,7 @@ namespace channel_tester {
 
 // === IMPLEMENTATION ===
 
-int Application::main([[maybe_unused]] int argc, [[maybe_unused]] char **argv) {
+int Application::main(args::Parser const &) {
   Settings settings;
   Controller{settings}.dispatch();
   return EXIT_SUCCESS;

@@ -30,6 +30,7 @@ requirements:
     - roq-cme-ilink
     - roq-cme-mdp
     - roq-core
+    - roq-flags
     - roq-oss-base64
     - roq-oss-benchmark
     - roq-oss-botan

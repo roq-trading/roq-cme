@@ -12,7 +12,7 @@ struct Application final : public roq::Tool {
   using roq::Tool::Tool;
 
  protected:
-  int main(int argc, char **argv) override;
+  int main(args::Parser const &) override;
 };
 
 }  // namespace channel_tester

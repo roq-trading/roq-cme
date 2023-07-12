@@ -2,7 +2,7 @@
 
 #include "roq/cme/channel_tester/application.hpp"
 
-#include "roq/logging/flags/parser.hpp"
+#include "roq/flags/args.hpp"
 #include "roq/logging/flags/settings.hpp"
 
 using namespace std::literals;
@@ -24,7 +24,7 @@ roq::Tool::Info const INFO{
 // === IMPLEMENTATION ===
 
 int main(int argc, char **argv) {
-  roq::logging::flags::Parser parser{argc, argv, INFO.description, INFO.build_version};
-  auto settings = roq::logging::flags::create_settings();
-  return roq::cme::channel_tester::Application{parser, settings, INFO}.run();
+  roq::flags::Args args{argc, argv, INFO.description, INFO.build_version};
+  roq::logging::flags::Settings settings{args};
+  return roq::cme::channel_tester::Application{args, settings, INFO}.run();
 }

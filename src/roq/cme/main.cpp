@@ -2,7 +2,7 @@
 
 #include "roq/cme/application.hpp"
 
-#include "roq/logging/flags/parser.hpp"
+#include "roq/flags/args.hpp"
 #include "roq/logging/flags/settings.hpp"
 
 using namespace std::literals;
@@ -24,7 +24,7 @@ auto const INFO = roq::Service::Info{
 // === IMPLEMENTATION ===
 
 int main(int argc, char **argv) {
-  roq::logging::flags::Parser parser{argc, argv, INFO.description, INFO.build_version};
-  auto settings = roq::logging::flags::create_settings();
-  return roq::cme::Application{parser, settings, INFO}.run();
+  roq::flags::Args args{argc, argv, INFO.description, INFO.build_version};
+  roq::logging::flags::Settings settings{args};
+  return roq::cme::Application{args, settings, INFO}.run();
 }
