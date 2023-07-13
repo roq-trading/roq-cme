@@ -7,28 +7,33 @@
       "name": "config_file",
       "type": "std::string",
       "validator": "roq::core::flags::Path",
+      "required": true,
       "description": "config file (path)"
     },
     {
       "name": "channel_ids",
       "type": "std::vector<std::string>",
+      "required": true,
       "description": "Comma-separated list of multicast channels, e.g. 310"
     },
     {
       "name": "local_interface",
       "type": "std::string",
+      "required": true,
       "description": "Multicast local interface"
     },
     {
       "name": "buffer_size",
       "type": "uint32_t",
       "default": "2048",
+      "required": true,
       "description": "Buffer size (at least the maximum possible size of a datagram)"
     },
     {
       "name": "buffer_depth",
       "type": "uint32_t",
       "default": "8",
+      "required": true,
       "description": "Multicast buffer depth (used for re-ordering)"
     },
     {
