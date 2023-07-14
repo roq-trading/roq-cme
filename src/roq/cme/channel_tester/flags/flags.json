@@ -5,19 +5,19 @@
     {
       "name": "multicast_address",
       "type": "std::string",
-      "validator": "roq::core::flags::NonEmpty",
+      "validator": "roq::flags::validators::NonEmpty",
       "description": "multicast address"
     },
     {
       "name": "multicast_port",
       "type": "uint16_t",
-      "validator": "roq::core::flags::NonZero<uint16_t>",
+      "validator": "roq::flags::validators::NonZero<uint16_t>",
       "description": "multicast port"
     },
     {
       "name": "local_interface",
       "type": "std::string",
-      "validator": "roq::core::flags::NonEmpty",
+      "validator": "roq::flags::validators::NonEmpty",
       "description": "local interface"
     },
     {

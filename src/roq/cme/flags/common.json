@@ -17,7 +17,7 @@
     {
       "name": "secdef_config_file",
       "type": "std::string",
-      "validator": "roq::core::flags::Path",
+      "validator": "roq::flags::validators::Path",
       "description": "config file (path)"
     },
     {
@@ -29,14 +29,14 @@
     {
       "name": "decode_buffer_size",
       "type": "uint32_t",
-      "validator": "roq::core::flags::NonZero<uint32_t>",
+      "validator": "roq::flags::validators::NonZero<uint32_t>",
       "default": 10485760,
       "description": "decode buffer size"
     },
     {
       "name": "encode_buffer_size",
       "type": "uint32_t",
-      "validator": "roq::core::flags::NonZero<uint32_t>",
+      "validator": "roq::flags::validators::NonZero<uint32_t>",
       "default": 4096,
       "description": "encode buffer size"
     }

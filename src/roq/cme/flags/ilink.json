@@ -21,7 +21,7 @@
     {
       "name": "config_file",
       "type": "std::string",
-      "validator": "roq::core::flags::Path",
+      "validator": "roq::flags::validators::Path",
       "description": "config file (path)"
     },
     {
