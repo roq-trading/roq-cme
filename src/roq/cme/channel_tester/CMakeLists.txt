@@ -2,7 +2,7 @@ set(TARGET_NAME ${PROJECT_NAME}-channel-tester)
 
 add_subdirectory(flags)
 
-set(SOURCES application.cpp controller.cpp main.cpp)
+set(SOURCES application.cpp controller.cpp settings.cpp main.cpp)
 
 add_executable(${TARGET_NAME} ${SOURCES})
 

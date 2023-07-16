@@ -2,13 +2,17 @@
 
 #pragma once
 
+#include "roq/flags/args.hpp"
+
 #include "roq/cme/channel_tester/flags/flags.hpp"
 
 namespace roq {
 namespace cme {
 namespace channel_tester {
 
-using Settings = flags::Flags__flags;
+struct Settings final : public flags::Flags {
+  explicit Settings(args::Parser const &);
+};
 
 }  // namespace channel_tester
 }  // namespace cme
