@@ -62,7 +62,6 @@ target_link_libraries(
           roq-logging::roq-logging-flags
           roq-flags::roq-flags
           roq-api::roq-api
-          absl::flags
           absl::flat_hash_map
           absl::flat_hash_set
           aklomp::base64

@@ -17,7 +17,6 @@ target_link_libraries(
           roq-flags::roq-flags
           roq-api::roq-api
           fmt::fmt
-          absl::flags
           ${RT_LIBRARIES})
 
 set_target_properties(${TARGET_NAME} PROPERTIES LINK_FLAGS_RELEASE -s)
