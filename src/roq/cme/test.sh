@@ -2,7 +2,10 @@
 
 NAME="cme"
 
-CONFIG_FILE="config/$NAME.toml"
+CONFIG="${CONFIG:-$NAME}"
+
+CONFIG_FILE="$ROQ_CONFIG_PATH/roq-cme/$CONFIG.toml"
+
 SECDEF_CONFIG_FILE="config/secdef.dat"
 MULTICAST_CONFIG_FILE="config/config.xml"
 ILINK_CONFIG_FILE="../../../share/test/MSGW_Config.xml"
