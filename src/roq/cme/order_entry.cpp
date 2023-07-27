@@ -842,10 +842,17 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportTradeOutright525> co
             (*this)(callback, event_2, order_update.client_order_id);
             // XXX TODO make generic
             auto &fills = shared_.get_fills();
+            std::vector<std::string> external_trade_ids;  // alloc
+            auto exec_id = value.getExecIDAsStringView();
+            const_cast<value_type &>(value).sbeRewind();  // note!
             const_cast<value_type &>(value).noFills().forEach([&](auto &item) {
+              auto fill_exec_id = item.getFillExecIDAsStringView();
+              auto tmp = fmt::format("{}{}"sv, exec_id, fill_exec_id);  // alloc
+              external_trade_ids.emplace_back(std::move(tmp));
+              auto &external_trade_id = external_trade_ids.back();
               auto price = ilink::get_double(item.fillPx());
               auto fill = Fill{
-                  .external_trade_id = item.getFillExecIDAsStringView(),
+                  .external_trade_id = external_trade_id,
                   .quantity = static_cast<double>(item.fillQty()),
                   .price = price,
                   .liquidity = {},
