@@ -421,9 +421,9 @@ auto get_aggressor_indicator(T &value) -> Liquidity {
     switch (tmp) {
       using enum cme_ilink::BooleanFlag::Value;
       case False:
-        return Liquidity::TAKER;
-      case True:
         return Liquidity::MAKER;
+      case True:
+        return Liquidity::TAKER;
       case NULL_VALUE:
         return {};
     }
@@ -844,6 +844,7 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportTradeOutright525> co
             auto &fills = shared_.get_fills();
             std::vector<std::string> external_trade_ids;  // alloc
             auto exec_id = value.getExecIDAsStringView();
+            auto liquidity = get_aggressor_indicator(value);
             const_cast<value_type &>(value).sbeRewind();  // note!
             const_cast<value_type &>(value).noFills().forEach([&](auto &item) {
               auto fill_exec_id = item.getFillExecIDAsStringView();
@@ -855,7 +856,7 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportTradeOutright525> co
                   .external_trade_id = external_trade_id,
                   .quantity = static_cast<double>(item.fillQty()),
                   .price = price,
-                  .liquidity = {},
+                  .liquidity = liquidity,
               };
               fills.emplace_back(std::move(fill));
             });
