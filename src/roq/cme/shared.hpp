@@ -67,6 +67,7 @@ struct Shared final {
   } mbo;
   std::vector<Trade> trades;
   std::vector<Statistics> statistics;
+  std::vector<Fill> fills;
 
  public:
   Shared(server::Dispatcher &, Settings const &);
@@ -179,6 +180,11 @@ struct Shared final {
   auto &get_statistics() {
     statistics.clear();
     return statistics;
+  }
+
+  auto &get_fills() {
+    fills.clear();
+    return fills;
   }
 
   // buffer

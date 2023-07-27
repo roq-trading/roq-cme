@@ -832,8 +832,50 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportTradeOutright525> co
       auto security_id = get_security_id(value);
       if (shared_.get_security(security_id, [&](auto &security) {
             auto order_update = order_update_from_execution_report(value, security, external_order_id);
+            auto order_id = ORDER_ID_NONE;
+            auto user_id = SOURCE_NONE;
+            auto callback = [&](auto &order) {
+              order_id = order.order_id;
+              user_id = order.user_id;
+            };
             Trace event_2{trace_info, order_update};
-            (*this)(event_2, order_update.client_order_id);
+            (*this)(callback, event_2, order_update.client_order_id);
+            // XXX TODO make generic
+            auto &fills = shared_.get_fills();
+            const_cast<value_type &>(value).noFills().forEach([&](auto &item) {
+              auto price = ilink::get_double(item.fillPx());
+              auto fill = Fill{
+                  .external_trade_id = item.getFillExecIDAsStringView(),
+                  .quantity = static_cast<double>(item.fillQty()),
+                  .price = price,
+                  .liquidity = {},
+              };
+              fills.emplace_back(std::move(fill));
+            });
+            if (!std::empty(fills)) {
+              auto side = map(value.side());
+              auto create_time_utc = get_transact_time(value);
+              auto update_time_utc = create_time_utc;
+              auto trade_update = TradeUpdate{
+                  .stream_id = stream_id_,
+                  .account = account_.get_name(),
+                  .order_id = order_id,
+                  .exchange = security.exchange,
+                  .symbol = security.symbol,
+                  .side = side,
+                  .position_effect = {},
+                  .create_time_utc = create_time_utc,
+                  .update_time_utc = update_time_utc,
+                  .external_account = {},
+                  .external_order_id = external_order_id,
+                  .fills = fills,
+                  .routing_id = {},
+                  .update_type = UpdateType::INCREMENTAL,
+                  .sending_time_utc = {},
+                  .user = {},
+              };
+              create_trace_and_dispatch(shared_, trace_info, trade_update, true, user_id, order_update.client_order_id);
+            }
           })) {
       } else {
         log::warn("Unexpected: security_id={}"sv, security_id);
@@ -909,8 +951,9 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportStatus532> const &ev
       auto security_id = get_security_id(value);
       if (shared_.get_security(security_id, [&](auto &security) {
             auto order_update = order_update_from_execution_report(value, security, external_order_id);
+            auto callback = []([[maybe_unused]] auto &order) {};
             Trace event_2{trace_info, order_update};
-            (*this)(event_2, order_update.client_order_id);
+            (*this)(callback, event_2, order_update.client_order_id);
           })) {
       } else {
         log::warn("Unexpected: security_id={}"sv, security_id);
@@ -1035,8 +1078,9 @@ void OrderEntry::operator()(Trace<cme_ilink::OrderMassActionReport562> const &ev
               .update_type = UpdateType::INCREMENTAL,
               .sending_time_utc = {},
           };
+          auto callback = []([[maybe_unused]] auto &order) {};
           Trace event_2{trace_info, order_update};
-          (*this)(event_2, orig_cl_ord_id);
+          (*this)(callback, event_2, orig_cl_ord_id);
         });
         log::info("*** CANCEL ALL ORDERS SUCCEEDED, TOTAL_AFFECTED_ORDERS={} ***"sv, count);
         break;
@@ -1587,17 +1631,14 @@ void OrderEntry::send_order_mass_action_request(CancelAllOrders const &) {
   send(order_mass_action_request);
 }
 
-template <typename... Args>
+template <typename Callback, typename... Args>
 void OrderEntry::operator()(
-    Trace<oms::OrderUpdate> const &event, std::string_view const &client_order_id, Args &&...args) {
+    Callback callback, Trace<oms::OrderUpdate> const &event, std::string_view const &client_order_id, Args &&...args) {
   auto &[trace_info, order_update] = event;
   if (shared_.update_order(
-          client_order_id,
-          stream_id_,
-          trace_info,
-          order_update,
-          std::forward<Args>(args)...,
-          [&]([[maybe_unused]] auto &order) {})) {
+          client_order_id, stream_id_, trace_info, order_update, std::forward<Args>(args)..., [&](auto &order) {
+            callback(order);
+          })) {
   } else {
     log::warn("*** EXTERNAL ORDER ***"sv);
   }
