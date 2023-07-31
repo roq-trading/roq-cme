@@ -56,24 +56,21 @@ struct Security final {
     if (mbo.no_chunks) {
       if (current_chunk == (mbo.last_chunk + uint32_t{1})) {
         if (current_chunk == no_chunks) {
-          log::info("DEBUG"sv);
           callback(mbo.orders, true);
           reset();
           return true;
         } else {
-          log::info("DEBUG"sv);
           mbo.last_chunk = current_chunk;
           callback(mbo.orders, false);
         }
       } else {
-        log::info("DEBUG"sv);
         reset();
       }
     } else if (current_chunk == uint32_t{1}) {
-      log::info("DEBUG"sv);
       mbo.no_chunks = no_chunks;
       mbo.last_chunk = current_chunk;
-      callback(mbo.orders, false);
+      auto last = current_chunk == no_chunks;
+      callback(mbo.orders, last);
     }
     return false;
   }
