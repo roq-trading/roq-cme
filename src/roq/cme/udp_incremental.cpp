@@ -1136,8 +1136,8 @@ void UDPIncremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame co
         std::size(orders_),
         total_number_of_orders_);
   } else if (fragmented) {
-    log::warn(
-        "Message was fragmented and now fully assembled: sequence={}, len(orders)={}, expected={}"sv,
+    log::info<5>(
+        "DEBUG Message was fragmented and now fully assembled: sequence={}, len(orders)={}, expected={}"sv,
         exchange_sequence,
         std::size(orders_),
         total_number_of_orders_);

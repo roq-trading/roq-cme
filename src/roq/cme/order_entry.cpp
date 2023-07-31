@@ -680,7 +680,7 @@ void OrderEntry::operator()(Trace<cme_ilink::Sequence506> const &event) {
   profile_.sequence([&]() {
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
     auto &[trace_info, value] = event;
-    log::info("DEBUG sequence={}"sv, const_cast<value_type &>(value));
+    // log::info("DEBUG sequence={}"sv, const_cast<value_type &>(value));
   });
 }
 
@@ -1274,7 +1274,7 @@ void OrderEntry::send(T const &value) {
       {reinterpret_cast<std::byte const *>(&sofh), sizeof(sofh)},
       message,
   }};
-  log::info(R"(DEBUG message="{}{}")"sv, debug::hex::Message{data[0]}, debug::hex::Message{data[1]});
+  // log::info(R"(DEBUG message="{}{}")"sv, debug::hex::Message{data[0]}, debug::hex::Message{data[1]});
   log::info<5>(R"(Sending message="{}{}")"sv, debug::hex::Message{data[0]}, debug::hex::Message{data[1]});
   (*connection_manager_).send(data);
   next_heartbeat_ = clock::get_system() + KEEP_ALIVE_INTERVAL;
@@ -1346,7 +1346,7 @@ void OrderEntry::send_sequence() {
       .fault_tolerance_indicator = cme_ilink::FTI::Primary,
       .keep_alive_interval_lapsed = cme_ilink::KeepAliveLapsed::NotLapsed,
   };
-  log::info("DEBUG sequence={}"sv, sequence);
+  // log::info("DEBUG sequence={}"sv, sequence);
   send(sequence);
 }
 
