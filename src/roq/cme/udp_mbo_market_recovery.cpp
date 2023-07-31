@@ -367,7 +367,7 @@ void UDPMBOMarketRecovery::operator()(
                 auto force = channel_.sequence.first_sequence_number <= security.mbo.resubscribe &&
                              last_msg_seq_num_processed <= channel_.sequence.last_sequence_number;
                 log::warn(
-                    "DEBUG force={}, first={}, resubscribe={}, exchange={}, last={}"sv,
+                    "DEBUG force={}, first_sequence={}, resubscribe={}, exchange_sequence={}, last_sequence={}"sv,
                     force,
                     channel_.sequence.first_sequence_number,
                     security.mbo.resubscribe,
