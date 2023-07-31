@@ -530,13 +530,13 @@ void UDPMBPMarketRecovery::dispatch_market_by_price(
         security_id,
         exchange_sequence);
     // note! last_msg_seq_num_processed sometimes point to a completely unrelated security
-    auto force = channel_.sequence.first_sequence_number <= security.mbo.resubscribe &&
+    auto force = channel_.sequence.first_sequence_number <= security.mbp.resubscribe &&
                  exchange_sequence <= channel_.sequence.last_sequence_number;
     log::warn(
         "DEBUG force={}, first_sequence={}, resubscribe={}, exchange_sequence={}, last_sequence={}"sv,
         force,
         channel_.sequence.first_sequence_number,
-        security.mbo.resubscribe,
+        security.mbp.resubscribe,
         exchange_sequence,
         channel_.sequence.last_sequence_number);
     sequencer(bids, asks, exchange_sequence, force, publish_snapshot, request_snapshot);
