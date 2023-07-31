@@ -300,6 +300,7 @@ void UDPMBOMarketRecovery::operator()(
           last_msg_seq_num_processed,
           current_chunk,
           no_chunks);
+      /*
       if (current_chunk == no_chunks)
         log::info(
             R"(DEBUG SNAPSHOT exchange="{}", symbol="{}", security_id={}, exchange_sequence={})"sv,
@@ -307,6 +308,7 @@ void UDPMBOMarketRecovery::operator()(
             security.symbol,
             security_id,
             last_msg_seq_num_processed);
+      */
       if (security.update_mbo_snapshot(current_chunk, no_chunks, [&](auto &orders, bool last) {
             if (current_chunk == 1 && !std::empty(orders)) {
               log::warn("MBO UNEXPECTED"sv);
