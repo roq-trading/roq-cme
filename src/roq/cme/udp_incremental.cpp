@@ -961,9 +961,10 @@ void UDPIncremental::dispatch_market_by_price(
     };
     auto publish_snapshot = [&](auto &bids, auto &asks, [[maybe_unused]] auto exchange_sequence) {
       log::info(
-          R"(PUBLISH MBP SNAPSHOT exchange="{}", symbol="{}", exchange_sequence={})"sv,
+          R"(PUBLISH MBP SNAPSHOT exchange="{}", symbol="{}", security_id={}, exchange_sequence={})"sv,
           security.exchange,
           security.symbol,
+          security_id,
           exchange_sequence);
       auto market_by_price_update = create_update(bids, asks, UpdateType::SNAPSHOT);
       create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true);
@@ -971,9 +972,10 @@ void UDPIncremental::dispatch_market_by_price(
     };
     auto request_snapshot = [&]([[maybe_unused]] auto retries) {
       log::info(
-          R"(REQUEST MBP SNAPSHOT exchange="{}", symbol="{}", exchange_sequence={})"sv,
+          R"(REQUEST MBP SNAPSHOT exchange="{}", symbol="{}", security_id={}, exchange_sequence={})"sv,
           security.exchange,
           security.symbol,
+          security_id,
           exchange_sequence);
       security.mbp.resubscribe = exchange_sequence;
     };
@@ -1001,7 +1003,7 @@ void UDPIncremental::dispatch_market_by_price(
 
 void UDPIncremental::dispatch_market_by_order(
     auto &trace_info,
-    [[maybe_unused]] auto security_id,
+    auto security_id,
     auto &security,
     auto exchange_sequence,
     auto exchange_time_utc,
@@ -1032,9 +1034,10 @@ void UDPIncremental::dispatch_market_by_order(
     };
     auto publish_snapshot = [&](auto &orders, [[maybe_unused]] auto exchange_sequence) {
       log::info(
-          R"(PUBLISH MBO SNAPSHOT exchange={}, symbol="{}", exchange_sequence={})"sv,
+          R"(PUBLISH MBO SNAPSHOT exchange={}, symbol="{}", security_id={}, exchange_sequence={})"sv,
           security.exchange,
           security.symbol,
+          security_id,
           exchange_sequence);
       auto market_by_order_update = create_update(orders, UpdateType::SNAPSHOT);
       create_trace_and_dispatch(handler_, trace_info, market_by_order_update, true);
@@ -1042,18 +1045,20 @@ void UDPIncremental::dispatch_market_by_order(
     };
     auto request_snapshot = [&]([[maybe_unused]] auto retries) {
       log::info(
-          R"(REQUEST MBO SNAPSHOT exchange="{}", symbol="{}", exchange_sequence={}, retries={})"sv,
+          R"(REQUEST MBO SNAPSHOT exchange="{}", symbol="{}", security_id={}, exchange_sequence={}, retries={})"sv,
           security.exchange,
           security.symbol,
+          security_id,
           exchange_sequence,
           retries);
       security.mbo.resubscribe = exchange_sequence;
     };
     log::info<5>(
-        R"(DEBUG UPDATE exchange="{}", symbol="{}", orders=[{}], exchange_sequence={}, last_exchange_sequence={})"sv,
+        R"(DEBUG UPDATE exchange="{}", symbol="{}", orders=[{}], security_id={}, exchange_sequence={}, last_exchange_sequence={})"sv,
         security.exchange,
         security.symbol,
         fmt::join(orders, ", "sv),
+        security_id,
         exchange_sequence,
         last_exchange_sequence);
     sequencer(
@@ -1066,11 +1071,11 @@ void UDPIncremental::dispatch_market_by_order(
         request_snapshot);
   } catch (BadState &) {
     log::warn(
-        R"(RESUBSCRIBE MBO exchange="{}", symbol="{}",  exchange_sequence={}, security_id={})"sv,
+        R"(RESUBSCRIBE MBO exchange="{}", symbol="{}",  security_id={}, exchange_sequence={})"sv,
         security.exchange,
         security.symbol,
-        exchange_sequence,
-        security_id);
+        security_id,
+        exchange_sequence);
     // XXX HANS publish stale
     sequencer.clear();
     security.mbo.resubscribe = exchange_sequence;

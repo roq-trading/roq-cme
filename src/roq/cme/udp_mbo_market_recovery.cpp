@@ -292,14 +292,13 @@ void UDPMBOMarketRecovery::operator()(
         return;
       auto current_chunk = value.currentChunk();
       auto no_chunks = value.noChunks();
-      /*
       if (current_chunk == no_chunks)
         log::info(
-            R"(DEBUG SNAPSHOT exchange="{}", symbol="{}", exchange_sequence={})"sv,
+            R"(DEBUG SNAPSHOT exchange="{}", symbol="{}", security_id={}, exchange_sequence={})"sv,
             security.exchange,
             security.symbol,
+            security_id,
             last_msg_seq_num_processed);
-      */
       if (security.update_mbo_snapshot(current_chunk, no_chunks, [&](auto &orders, bool last) {
             if (current_chunk == 1 && !std::empty(orders)) {
               log::warn("MBO UNEXPECTED"sv);
@@ -312,9 +311,10 @@ void UDPMBOMarketRecovery::operator()(
               try {
                 auto publish_snapshot = [&](auto &orders, auto exchange_sequence) {
                   log::info(
-                      R"(PUBLISH SNAPSHOT exchange="{}", symbol="{}", exchange_sequence={}, last_sequence={})"sv,
+                      R"(PUBLISH SNAPSHOT exchange="{}", symbol="{}", security_id={}, exchange_sequence={}, last_sequence={})"sv,
                       security.exchange,
                       security.symbol,
+                      security_id,
                       last_msg_seq_num_processed,
                       sequencer.last_sequence());
                   auto market_by_order_update = MarketByOrderUpdate{
@@ -339,17 +339,19 @@ void UDPMBOMarketRecovery::operator()(
                 };
                 auto request_snapshot = [&]([[maybe_unused]] auto retries) {
                   log::info(
-                      R"(REQUEST SNAPSHOT exchange="{}", symbol="{}", exchange_sequence={}, retries={})"sv,
+                      R"(REQUEST SNAPSHOT exchange="{}", symbol="{}", security_id={}, exchange_sequence={}, retries={})"sv,
                       security.exchange,
                       security.symbol,
+                      security_id,
                       last_msg_seq_num_processed,
                       retries);
                   security.mbo.resubscribe = last_msg_seq_num_processed;
                 };
                 log::info(
-                    R"(DEBUG UPDATE MBO SNAPSHOT exchange="{}", symbol="{}", exchange_sequence={})"sv,
+                    R"(DEBUG UPDATE MBO SNAPSHOT exchange="{}", symbol="{}", security_id={}, exchange_sequence={})"sv,
                     security.exchange,
                     security.symbol,
+                    security_id,
                     last_msg_seq_num_processed);
                 // note! last_msg_seq_num_processed sometimes point to a completely unrelated security
                 auto force = channel_.sequence.first_sequence_number <= security.mbo.resubscribe &&
@@ -364,9 +366,10 @@ void UDPMBOMarketRecovery::operator()(
                 sequencer(orders, last_msg_seq_num_processed, force, publish_snapshot, request_snapshot);
               } catch (BadState &) {
                 log::warn(
-                    R"(RESUBSCRIBE MBO exchange="{}", symbol="{}", exchange_sequence={}, security_id={})"sv,
+                    R"(RESUBSCRIBE MBO exchange="{}", symbol="{}", security_id={}, exchange_sequence={}, security_id={})"sv,
                     security.exchange,
                     security.symbol,
+                    security_id,
                     last_msg_seq_num_processed,
                     security_id);
                 // XXX HANS publish stale
