@@ -292,6 +292,14 @@ void UDPMBOMarketRecovery::operator()(
         return;
       auto current_chunk = value.currentChunk();
       auto no_chunks = value.noChunks();
+      log::info(
+          R"(DEBUG SNAPSHOT exchange="{}", symbol="{}", security_id={}, exchange_sequence={}, current_chunk={}, no_chunks={})"sv,
+          security.exchange,
+          security.symbol,
+          security_id,
+          last_msg_seq_num_processed,
+          current_chunk,
+          no_chunks);
       if (current_chunk == no_chunks)
         log::info(
             R"(DEBUG SNAPSHOT exchange="{}", symbol="{}", security_id={}, exchange_sequence={})"sv,
