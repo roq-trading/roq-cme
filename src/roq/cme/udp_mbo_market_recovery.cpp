@@ -180,11 +180,9 @@ void UDPMBOMarketRecovery::operator()(Trace<cme_mdp::ChannelReset4> const &event
 }
 
 void UDPMBOMarketRecovery::operator()(Trace<cme_mdp::SecurityStatus30> const &event, mdp::Frame const &frame) {
-#ifndef NDEBUG
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("security_status_30={}, frame={}"sv, value, frame);
-#endif
 }
 
 void UDPMBOMarketRecovery::operator()(
