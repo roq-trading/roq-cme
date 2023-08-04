@@ -101,13 +101,14 @@ auto get_quantity(double value) -> uint32_t {
 
 // order_request_id
 
-constexpr auto encode_order_request_id(RequestType type, uint8_t user_id, uint32_t order_id, uint32_t version)
+constexpr auto encode_order_request_id(RequestType type, uint8_t user_id, uint64_t order_id, uint32_t version)
     -> uint64_t {
+  // XXX TODO uint32_t -> uint64_t order_id
   return (static_cast<uint64_t>(static_cast<uint8_t>(type)) << 56) | (static_cast<uint64_t>(user_id) << 48) |
          (static_cast<uint64_t>(order_id) << 24) | static_cast<uint64_t>(version);
 }
 
-constexpr auto decode_order_request_id(uint64_t value) -> std::tuple<RequestType, uint8_t, uint32_t, uint32_t> {
+constexpr auto decode_order_request_id(uint64_t value) -> std::tuple<RequestType, uint8_t, uint64_t, uint32_t> {
   auto request_type = static_cast<RequestType>(static_cast<uint8_t>((value >> 56) & ((uint64_t{1} << 8) - 1)));
   auto user_id = static_cast<uint8_t>((value >> 48) & ((uint64_t{1} << 8) - 1));
   auto order_id = static_cast<uint32_t>((value >> 24) & ((uint64_t{1} << 24) - 1));
@@ -122,10 +123,10 @@ static_assert(
 
 static_assert(
     decode_order_request_id(0x0101000001000001) ==
-    std::tuple<RequestType, uint8_t, uint32_t, uint32_t>{RequestType::CREATE_ORDER, 1, 1, 1});
+    std::tuple<RequestType, uint8_t, uint64_t, uint32_t>{RequestType::CREATE_ORDER, 1, 1, 1});
 static_assert(
     decode_order_request_id(0x03ffffffffffffff) ==
-    std::tuple<RequestType, uint8_t, uint32_t, uint32_t>{
+    std::tuple<RequestType, uint8_t, uint64_t, uint32_t>{
         RequestType::CANCEL_ORDER, SOURCE_SELF, MAX_ORDER_ID, MAX_REQUEST_VERSION});
 
 // side
@@ -1669,7 +1670,7 @@ void OrderEntry::operator()(
 }
 
 template <typename... Args>
-void OrderEntry::operator()(Trace<oms::Response> const &event, uint8_t user_id, uint32_t order_id, Args &&...args) {
+void OrderEntry::operator()(Trace<oms::Response> const &event, uint8_t user_id, uint64_t order_id, Args &&...args) {
   auto &[trace_info, response] = event;
   if (shared_.update_order(
           user_id,
