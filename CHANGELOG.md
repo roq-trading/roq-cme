@@ -4,6 +4,10 @@ All notable changes will be documented in this file.
 
 ## Head
 
+### Changed
+
+* `OrderRequestID` has no space for version after `order_id` increased to 48 bits
+
 ## 0.9.6 &ndash; 2023-07-22
 
 ## 0.9.5 &ndash; 2023-06-12
