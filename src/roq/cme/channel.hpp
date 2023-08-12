@@ -24,8 +24,7 @@ struct Channel final {
   struct ReorderBuffer final {
     std::pair<bool, uint32_t> last_sequence = {};
     core::udp::Buffer<uint32_t> buffer;
-  };
-  ReorderBuffer incremental;
+  } incremental;
 
   // sequencing
 
