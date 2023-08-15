@@ -26,4 +26,5 @@ cd /MSGW/Cert/Configuration
 mget *.xml
 cd /SBEFix/CertAutoCertPlus/Configuration
 get config.xml
+bye
 EOM
