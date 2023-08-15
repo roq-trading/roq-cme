@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<configuration environment="Production" updated="Thu Feb 23 18:00:05 2023 CST">
+<configuration environment="Production" updated="Mon Aug 14 18:00:05 2023 CDT">
   <marketsegment id="70" label="CME Commodity Futures">
     <protocol>TCP/IP</protocol>
     <primary-host-ip>205.209.201.117</primary-host-ip>
@@ -51,8 +51,8 @@
     <backup-host-ip>164.74.5.37</backup-host-ip>
     <dr-primary-host-ip>164.74.45.30</dr-primary-host-ip>
     <dr-backup-host-ip>164.74.45.31</dr-backup-host-ip>
-    <ToCMESchemaVersion>7</ToCMESchemaVersion>
-    <FromCMESchemaVersion>7</FromCMESchemaVersion>
+    <ToCMESchemaVersion>7,8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
   </marketsegment>
   <marketsegment id="64" label="CME E-mini S&amp;P 500 Futures">
     <protocol>TCP/IP</protocol>
@@ -96,8 +96,8 @@
     <backup-host-ip>164.74.2.1</backup-host-ip>
     <dr-primary-host-ip>205.209.207.19</dr-primary-host-ip>
     <dr-backup-host-ip>205.209.207.20</dr-backup-host-ip>
-    <ToCMESchemaVersion>5</ToCMESchemaVersion>
-    <FromCMESchemaVersion>5</FromCMESchemaVersion>
+    <ToCMESchemaVersion>5,8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
   </marketsegment>
   <marketsegment id="44" label="BrokerTec EGB and UK Gilts">
     <protocol>TCP/IP</protocol>
@@ -123,8 +123,8 @@
     <backup-host-ip>164.74.2.17</backup-host-ip>
     <dr-primary-host-ip>205.209.207.21</dr-primary-host-ip>
     <dr-backup-host-ip>205.209.207.22</dr-backup-host-ip>
-    <ToCMESchemaVersion>5</ToCMESchemaVersion>
-    <FromCMESchemaVersion>5</FromCMESchemaVersion>
+    <ToCMESchemaVersion>5,8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
   </marketsegment>
   <marketsegment id="46" label="BrokerTec EU Repo">
     <protocol>TCP/IP</protocol>
@@ -141,8 +141,8 @@
     <backup-host-ip>164.74.1.1</backup-host-ip>
     <dr-primary-host-ip>164.74.41.65</dr-primary-host-ip>
     <dr-backup-host-ip>164.74.41.1</dr-backup-host-ip>
-    <ToCMESchemaVersion>7</ToCMESchemaVersion>
-    <FromCMESchemaVersion>7</FromCMESchemaVersion>
+    <ToCMESchemaVersion>7,8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
   </marketsegment>
   <marketsegment id="38" label="EBS LON FX Spot and NDFs">
     <protocol>TCP/IP</protocol>
@@ -150,8 +150,8 @@
     <backup-host-ip>164.74.43.1</backup-host-ip>
     <dr-primary-host-ip>164.74.3.16</dr-primary-host-ip>
     <dr-backup-host-ip>164.74.3.17</dr-backup-host-ip>
-    <ToCMESchemaVersion>7</ToCMESchemaVersion>
-    <FromCMESchemaVersion>7</FromCMESchemaVersion>
+    <ToCMESchemaVersion>7,8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
   </marketsegment>
   <marketsegment id="88" label="CME Globex FX Futures">
     <protocol>TCP/IP</protocol>
@@ -222,8 +222,8 @@
     <backup-host-ip>164.74.4.82</backup-host-ip>
     <dr-primary-host-ip>205.209.209.44</dr-primary-host-ip>
     <dr-backup-host-ip>205.209.209.45</dr-backup-host-ip>
-    <ToCMESchemaVersion>5</ToCMESchemaVersion>
-    <FromCMESchemaVersion>5</FromCMESchemaVersion>
+    <ToCMESchemaVersion>5,8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
   </marketsegment>
   <marketsegment id="16" label="BTEC EU Order Entry Service Gateway">
     <protocol>TCP/IP</protocol>
@@ -249,8 +249,8 @@
     <backup-host-ip>164.74.5.39</backup-host-ip>
     <dr-primary-host-ip>164.74.45.32</dr-primary-host-ip>
     <dr-backup-host-ip>164.74.45.33</dr-backup-host-ip>
-    <ToCMESchemaVersion>7</ToCMESchemaVersion>
-    <FromCMESchemaVersion>7</FromCMESchemaVersion>
+    <ToCMESchemaVersion>7,8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
   </marketsegment>
   <marketsegment id="20" label="EBS OESGW for LON MSGW">
     <protocol>TCP/IP</protocol>
@@ -258,7 +258,7 @@
     <backup-host-ip>164.74.47.49</backup-host-ip>
     <dr-primary-host-ip>164.74.5.40</dr-primary-host-ip>
     <dr-backup-host-ip>164.74.5.41</dr-backup-host-ip>
-    <ToCMESchemaVersion>7</ToCMESchemaVersion>
-    <FromCMESchemaVersion>7</FromCMESchemaVersion>
+    <ToCMESchemaVersion>7,8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
   </marketsegment>
 </configuration>

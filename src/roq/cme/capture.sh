@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+INTERFACE="10.247.43.74"  # eth1@if11
+
+OUTPUT="test.pcap"
+
 # channel 344
 
 FILTER=$(
@@ -10,10 +14,8 @@ echo \
   "(port 22344 and host 233.72.75.96)"
 )
 
+echo "INTEFACE=$INTERFACE"
 echo "FILTER=$FILTER"
+echo "OUTPUT=$OUTPUT"
 
-tcpdump \
-  -i enp2s0 \
-  -s 65535 \
-  -w test.pcap \
-  $FILTER
+tcpdump -i $INTERFACE -w $OUTPUT $FILTER

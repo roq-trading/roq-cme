@@ -207,49 +207,49 @@
     <protocol>TCP/IP</protocol>
     <primary-host-ip>69.50.114.38</primary-host-ip>
     <backup-host-ip>69.50.114.39</backup-host-ip>
-    <ToCMESchemaVersion>7</ToCMESchemaVersion>
-    <FromCMESchemaVersion>7</FromCMESchemaVersion>
+    <ToCMESchemaVersion>7,8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
   </marketsegment>
   <marketsegment id="36" label="EBS NYC FX Spot and Spot Metals">
     <protocol>TCP/IP</protocol>
     <primary-host-ip>69.50.114.20</primary-host-ip>
     <backup-host-ip>69.50.114.28</backup-host-ip>
-    <ToCMESchemaVersion>7</ToCMESchemaVersion>
-    <FromCMESchemaVersion>7</FromCMESchemaVersion>
+    <ToCMESchemaVersion>7,8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
   </marketsegment>
     <marketsegment id="94" label="AutoCert EBS NYC FX Spot and Spot Metals">
     <protocol>TCP/IP</protocol>
     <primary-host-ip>69.50.114.16</primary-host-ip>
     <backup-host-ip>69.50.114.17</backup-host-ip>
-    <ToCMESchemaVersion>7</ToCMESchemaVersion>
-    <FromCMESchemaVersion>7</FromCMESchemaVersion>
+    <ToCMESchemaVersion>7,8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
   </marketsegment>
     <marketsegment id="20" label="EBS OESGW for LON MSGW">
     <protocol>TCP/IP</protocol>
     <primary-host-ip>69.50.114.40</primary-host-ip>
     <backup-host-ip>69.50.114.41</backup-host-ip>
-    <ToCMESchemaVersion>7</ToCMESchemaVersion>
-    <FromCMESchemaVersion>7</FromCMESchemaVersion>
+    <ToCMESchemaVersion>7,8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
   </marketsegment>
   <marketsegment id="38" label="EBS LON FX Spot and NDFs">
     <protocol>TCP/IP</protocol>
     <primary-host-ip>69.50.114.29</primary-host-ip>
     <backup-host-ip>69.50.114.37</backup-host-ip>
-    <ToCMESchemaVersion>7</ToCMESchemaVersion>
-    <FromCMESchemaVersion>7</FromCMESchemaVersion>
+    <ToCMESchemaVersion>7,8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
   </marketsegment>
     <marketsegment id="93" label="AutoCert EBS LON FX Spot and NDFs">
     <protocol>TCP/IP</protocol>
     <primary-host-ip>69.50.114.18</primary-host-ip>
     <backup-host-ip>69.50.114.19</backup-host-ip>
-    <ToCMESchemaVersion>7</ToCMESchemaVersion>
-    <FromCMESchemaVersion>7</FromCMESchemaVersion>
+    <ToCMESchemaVersion>7,8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
   </marketsegment>
     <marketsegment id="8" label="EBS OESGW for all CGWs">
     <protocol>TCP/IP</protocol>
     <primary-host-ip>69.50.114.27</primary-host-ip>
     <backup-host-ip>69.50.114.49</backup-host-ip>
-    <ToCMESchemaVersion>7</ToCMESchemaVersion>
-    <FromCMESchemaVersion>7</FromCMESchemaVersion>
+    <ToCMESchemaVersion>7,8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
   </marketsegment>
 </configuration>

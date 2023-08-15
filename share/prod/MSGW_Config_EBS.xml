@@ -1,0 +1,48 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<configuration environment="Production" updated="Fri Aug 27 14:17:34 2021 CDT">
+  <marketsegment id="36" label="EBS NYC FX Spot and Spot Metals">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>164.74.1.65</primary-host-ip>
+    <backup-host-ip>164.74.1.1</backup-host-ip>
+    <dr-primary-host-ip>164.74.41.65</dr-primary-host-ip>
+    <dr-backup-host-ip>164.74.41.1</dr-backup-host-ip>
+    <ToCMESchemaVersion>7,8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="38" label="EBS LON FX Spot and NDFs">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>164.74.43.65</primary-host-ip>
+    <backup-host-ip>164.74.43.1</backup-host-ip>
+    <dr-primary-host-ip>164.74.3.16</dr-primary-host-ip>
+    <dr-backup-host-ip>164.74.3.17</dr-backup-host-ip>
+    <ToCMESchemaVersion>7,8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="18" label="EBS OESGW for NYC MSGW">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>164.74.5.38</primary-host-ip>
+    <backup-host-ip>164.74.5.39</backup-host-ip>
+    <dr-primary-host-ip>164.74.45.32</dr-primary-host-ip>
+    <dr-backup-host-ip>164.74.45.33</dr-backup-host-ip>
+    <ToCMESchemaVersion>7,8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+  <marketsegment id="20" label="EBS OESGW for LON MSGW">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>164.74.47.48</primary-host-ip>
+    <backup-host-ip>164.74.47.49</backup-host-ip>
+    <dr-primary-host-ip>164.74.5.40</dr-primary-host-ip>
+    <dr-backup-host-ip>164.74.5.41</dr-backup-host-ip>
+    <ToCMESchemaVersion>7,8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+   <marketsegment id="8" label="EBS OESGW for all CGWs">
+    <protocol>TCP/IP</protocol>
+    <primary-host-ip>164.74.5.36</primary-host-ip>
+    <backup-host-ip>164.74.5.37</backup-host-ip>
+    <dr-primary-host-ip>164.74.45.30</dr-primary-host-ip>
+    <dr-backup-host-ip>164.74.45.31</dr-backup-host-ip>
+    <ToCMESchemaVersion>7,8</ToCMESchemaVersion>
+    <FromCMESchemaVersion>8</FromCMESchemaVersion>
+  </marketsegment>
+</configuration>
