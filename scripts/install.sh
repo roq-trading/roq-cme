@@ -38,11 +38,13 @@ MINIFORGE_DOWNLOAD_URL="https://github.com/conda-forge/miniforge/releases/latest
 
 CONDA_DOWNLOAD_URL="$MINIFORGE_DOWNLOAD_URL/$CONDA_INSTALLER"
 
-if [[ -d $OPT_DIR ]]; then
-  if [[ ! -f $OPT_DIR/$CONDA_INSTALLER ]]; then
-    echo -e "\033[1;34mDownload installer...\033[0m"
-    curl --location --output "$OPT_DIR/$CONDA_INSTALLER" "$CONDA_DOWNLOAD_URL"
-  fi
+if [[ ! -d $OPT_DIR ]]; then
+  mkdir -p $OPT_DIR
+fi
+
+if [[ ! -f $OPT_DIR/$CONDA_INSTALLER ]]; then
+  echo -e "\033[1;34mDownload installer...\033[0m"
+  curl --location --output "$OPT_DIR/$CONDA_INSTALLER" "$CONDA_DOWNLOAD_URL"
 fi
 
 echo -e "\033[1;34mInstall conda...\033[0m"
