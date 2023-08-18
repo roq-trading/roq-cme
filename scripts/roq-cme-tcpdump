@@ -12,15 +12,21 @@ if [[ -z $2 ]]; then
   (>&2 echo -e "\033[1;31mERROR: Expected second argument to be environment. Use one of 'prod', 'test' or 'cert'.\033[0m") && exit 1
 fi
 
-INTERFACE="$2"
-ENV="$1"
+if [[ -z $3 ]]; then
+  (>&2 echo -e "\033[1;31mERROR: Expected third argument to be comma-separated list of channel id's\033[0m") && exit 1
+fi
+
+INTERFACE="$1"
+ENV="$2"
+CHANNEL_IDS="$3"
 
 echo "INTERFACE=$INTERFACE"
 echo "ENV=$ENV"
+echo "CHANNEL_IDS=$CHANNEL_IDS"
 
-$CONFIG_FILE="$CONDA_PREFIX/share/roq-cme/$ENV/config.xml"
+CONFIG_FILE="$CONDA_PREFIX/share/roq-cme/$ENV/config.xml"
 
-FILTER=$(roq-cme-pcap-filter --type tcpdump --config_file $CONFIG_FILE --channel_ids 344)
+FILTER=$(roq-cme-pcap-filter --type tcpdump --config_file $CONFIG_FILE --channel_ids $CHANNEL_IDS)
 
 OUTPUT="test.pcap"
 
