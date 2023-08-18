@@ -1,18 +1,18 @@
 /* Copyright (c) 2017-2023, Hans Erik Thrane */
 
-#include "roq/cme/pcap/settings.hpp"
+#include "roq/cme/pcap_filter/settings.hpp"
 
 using namespace std::literals;
 
 namespace roq {
 namespace cme {
-namespace pcap {
+namespace pcap_filter {
 
 // === IMPLEMENTATION ===
 
 Settings::Settings(args::Parser const &) : flags::Flags{flags::Flags::create()} {
 }
 
-}  // namespace pcap
+}  // namespace pcap_filter
 }  // namespace cme
 }  // namespace roq

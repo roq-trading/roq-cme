@@ -7,7 +7,7 @@ add_subdirectory(ilink)
 add_subdirectory(secdef)
 
 add_subdirectory(channel_tester)
-add_subdirectory(pcap)
+add_subdirectory(pcap_filter)
 
 set(SOURCES
     account.cpp

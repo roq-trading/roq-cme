@@ -1,4 +1,4 @@
-set(TARGET_NAME ${PROJECT_NAME}-pcap)
+set(TARGET_NAME ${PROJECT_NAME}-pcap-filter)
 
 add_subdirectory(flags)
 
@@ -8,7 +8,7 @@ add_executable(${TARGET_NAME} ${SOURCES})
 
 target_link_libraries(
   ${TARGET_NAME}
-  PRIVATE ${PROJECT_NAME}-pcap-flags
+  PRIVATE ${PROJECT_NAME}-pcap-filter-flags
           ${PROJECT_NAME}-mdp
           roq-io::roq-io
           roq-core::roq-core

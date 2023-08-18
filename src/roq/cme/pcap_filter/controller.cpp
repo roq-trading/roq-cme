@@ -1,6 +1,6 @@
 /* Copyright (c) 2017-2023, Hans Erik Thrane */
 
-#include "roq/cme/pcap/controller.hpp"
+#include "roq/cme/pcap_filter/controller.hpp"
 
 #include <vector>
 
@@ -12,7 +12,7 @@ using namespace std::literals;
 
 namespace roq {
 namespace cme {
-namespace pcap {
+namespace pcap_filter {
 
 // === HELPERS ===
 
@@ -60,6 +60,6 @@ void Controller::dispatch() {
   }
 }
 
-}  // namespace pcap
+}  // namespace pcap_filter
 }  // namespace cme
 }  // namespace roq

@@ -1,6 +1,6 @@
 /* Copyright (c) 2017-2023, Hans Erik Thrane */
 
-#include "roq/cme/pcap/application.hpp"
+#include "roq/cme/pcap_filter/application.hpp"
 
 #include "roq/flags/args.hpp"
 #include "roq/logging/flags/settings.hpp"
@@ -11,7 +11,7 @@ using namespace std::literals;
 
 namespace {
 roq::Tool::Info const INFO{
-    .description = "Roq CME PCAP Tool"sv,
+    .description = "Roq CME PCAP Filter Tool"sv,
     .package_name = ROQ_PACKAGE_NAME,
     .host = ROQ_HOST,
     .build_version = ROQ_BUILD_VERSION,
@@ -26,5 +26,5 @@ roq::Tool::Info const INFO{
 int main(int argc, char **argv) {
   roq::flags::Args args{argc, argv, INFO.description, INFO.build_version};
   roq::logging::flags::Settings settings{args};
-  return roq::cme::pcap::Application{args, settings, INFO}.run();
+  return roq::cme::pcap_filter::Application{args, settings, INFO}.run();
 }

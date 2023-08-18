@@ -58,7 +58,8 @@ ROQ_CHANNEL="https://roq-trading.com/conda/$BUILD"
 $CONDA_DIR/bin/conda install \
   --freeze-installed --yes \
   --channel $ROQ_CHANNEL \
-  roq-cme roq-tools roq-test
+  roq-cme \
+  roq-tools
 
 echo -e "\033[1;34mReady!\033[0m"
 echo -e "\033[1;34mYou can now activate your conda environment using 'source $CONDA_DIR/bin/activate'.\033[0m"
