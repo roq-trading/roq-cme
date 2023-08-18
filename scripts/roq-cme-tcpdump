@@ -26,4 +26,4 @@ FILTER=$(roq-cme-pcap-filter --type tcpdump --config_file $CONFIG_FILE --channel
 
 echo "FILTER=$FILTER"
 
-tcpdump $FILTER $@
+sudo tcpdump $FILTER $@
