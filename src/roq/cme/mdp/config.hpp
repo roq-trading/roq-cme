@@ -21,7 +21,7 @@ struct Config final {
     uint16_t port = {};
   };
 
-  explicit Config(std::string_view const &filename);
+  Config(std::string_view const &filename, bool verbose);
 
   template <typename Callback>
   bool find(std::string_view const &channel_id, ConnectionType type, Priority priority, Callback callback) const {

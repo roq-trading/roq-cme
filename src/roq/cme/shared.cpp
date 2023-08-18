@@ -107,7 +107,7 @@ void read_secdef(T &securities, MS &market_segments, D &dispatcher, auto &settin
 // === IMPLEMENTATION ===
 
 Shared::Shared(server::Dispatcher &dispatcher, Settings const &settings)
-    : dispatcher_{dispatcher}, settings{settings}, mdp_config_{settings.multicast.config_file},
+    : dispatcher_{dispatcher}, settings{settings}, mdp_config_{settings.multicast.config_file, true},
       ilink_config_{read_ilink_config<decltype(ilink_config_)>(settings.ilink.config_file)}, buffer(BUFFER_SIZE) {
   read_secdef(securities, market_segments, dispatcher, settings);
 }

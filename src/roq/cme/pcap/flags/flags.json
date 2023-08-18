@@ -1,0 +1,25 @@
+{
+  "name": "Flags",
+  "type": "flags",
+  "values": [
+    {
+      "name": "type",
+      "type": "std::string",
+      "required": true,
+      "description": "type of output, e.g. tcpdump"
+    },
+    {
+      "name": "config_file",
+      "type": "std::string",
+      "validator": "roq::flags::validators::Path",
+      "required": true,
+      "description": "config file (path)"
+    },
+    {
+      "name": "channel_ids",
+      "type": "std::vector<std::string>",
+      "required": true,
+      "description": "Comma-separated list of multicast channels, e.g. 310"
+    }
+  ]
+}

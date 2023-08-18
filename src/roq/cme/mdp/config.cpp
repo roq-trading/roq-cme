@@ -63,8 +63,9 @@ struct Handler final : public ConfigReader::Handler {
 };
 
 template <typename T>
-auto read_connections(auto &filename) {
-  log::info(R"(Reading "{}"...)"sv, filename);
+auto read_connections(auto &filename, bool verbose) {
+  if (verbose)
+    log::info(R"(Reading "{}"...)"sv, filename);
   T result;
   Handler handler{result};
   ConfigReader::read(handler, filename);
@@ -72,7 +73,8 @@ auto read_connections(auto &filename) {
 }
 }  // namespace
 
-Config::Config(std::string_view const &filename) : connections_(read_connections<decltype(connections_)>(filename)) {
+Config::Config(std::string_view const &filename, bool verbose)
+    : connections_(read_connections<decltype(connections_)>(filename, verbose)) {
 }
 
 }  // namespace mdp
