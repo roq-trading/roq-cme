@@ -4,6 +4,10 @@ All notable changes will be documented in this file.
 
 ## Head
 
+### Fixed
+
+* `CancelAllOrders` could cause unhandled exception (#387)
+
 ### Changed
 
 * `OrderRequestID` has no space for version after `order_id` increased to 48 bits

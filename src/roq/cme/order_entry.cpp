@@ -592,9 +592,12 @@ uint16_t OrderEntry::operator()(
 
 uint16_t OrderEntry::operator()(
     Event<CancelAllOrders> const &event, [[maybe_unused]] std::string_view const &request_id) {
-  if (!ready()) [[unlikely]]
-    throw oms::NotReady{"not ready"sv};
-  send_order_mass_action_request(event.value);
+  if (ready()) {
+    send_order_mass_action_request(event.value);
+  } else {
+    auto &[message_info, cancel_all_orders] = event;
+    log::warn(R"(*** NOT CONNECTED! UNABLE TO CANCEL ALL ORDERS FOR ACCOUNT="{}")"sv, cancel_all_orders.account);
+  }
   return stream_id_;
 }
 
