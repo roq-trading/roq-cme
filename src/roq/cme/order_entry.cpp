@@ -890,6 +890,7 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportTradeOutright525> co
                   .update_time_utc = update_time_utc,
                   .external_account = {},
                   .external_order_id = external_order_id,
+                  .client_order_id = {},
                   .fills = fills,
                   .routing_id = {},
                   .update_type = UpdateType::INCREMENTAL,
