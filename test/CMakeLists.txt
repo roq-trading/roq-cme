@@ -33,6 +33,7 @@ target_link_libraries(
   roq-server::roq-server
   roq-core::roq-core
   roq-io::roq-io
+  roq-utils::roq-utils
   roq-logging::roq-logging
   aklomp::base64
   EXPAT::EXPAT

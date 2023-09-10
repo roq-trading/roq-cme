@@ -24,6 +24,7 @@ requirements:
     - pkg-config
   host:
     - abseil-cpp
+    - brotli
     - catch2  # [linux]
     - expat
     - fmt
@@ -34,7 +35,6 @@ requirements:
     - roq-oss-base64
     - roq-oss-benchmark
     - roq-oss-botan
-    - brotli
     - roq-oss-catch2  # [osx]
     - roq-oss-cppitertools
     - roq-oss-libsodium
@@ -43,6 +43,7 @@ requirements:
     - roq-oss-tomlplusplus
     - roq-oss-zlib-ng
     - roq-server
+    - roq-utils
     - roq-web
 
 about:

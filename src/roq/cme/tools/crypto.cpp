@@ -14,9 +14,9 @@
 
 #include "roq/utils/safe_cast.hpp"
 
-#include "roq/core/text/writer.hpp"
+#include "roq/utils/codec/base64.hpp"
 
-#include "roq/core/codec/base64.hpp"
+#include "roq/utils/text/writer.hpp"
 
 #include "roq/debug/hex/message.hpp"
 
@@ -34,8 +34,8 @@ namespace {
 template <typename R>
 R create_hmac(auto &access_secret) {
   std::vector<std::byte> buffer;
-  buffer.resize(core::codec::Base64::get_max_binary_length(std::size(access_secret)));
-  auto key = core::codec::Base64::decode(buffer, access_secret, true, true);
+  buffer.resize(utils::codec::Base64::get_max_binary_length(std::size(access_secret)));
+  auto key = utils::codec::Base64::decode(buffer, access_secret, true, true);
   return R{key};
 }
 }  // namespace
@@ -47,7 +47,7 @@ Crypto::Crypto(std::string_view const &secret) : mac_{create_hmac<decltype(mac_)
 
 std::span<std::byte const> Crypto::create_signature(
     std::span<std::byte> const &buffer, CanonicalMessage const &message) {
-  core::text::Writer writer{buffer};
+  utils::text::Writer writer{buffer};
   static_assert(std::is_same<decltype(message.request_timestamp)::rep, int64_t>::value);
   writer  //
       .write(message.request_timestamp.count())
