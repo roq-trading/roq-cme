@@ -1213,8 +1213,10 @@ void OrderEntry::operator()(io::net::ConnectionManager::Read const &) {
   size_t total_bytes = 0;
   while (!std::empty(buffer)) {
     auto bytes = parse(buffer);
-    if (bytes == 0)  // note! we didn't receive the full message
+    if (bytes == 0) {  // note! we didn't receive the full message
+      log::error("!!! MESSAGE WAS NOT RECEIVED IN FULL !!!"sv);
       break;
+    }
     assert(bytes <= std::size(buffer));
     total_bytes += bytes;
     buffer = buffer.subspan(bytes);
