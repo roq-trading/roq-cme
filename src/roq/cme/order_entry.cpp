@@ -1213,12 +1213,15 @@ void OrderEntry::operator()(io::net::ConnectionManager::Read const &) {
   size_t total_bytes = 0;
   while (!std::empty(buffer)) {
     auto bytes = parse(buffer);
+    if (bytes == 0)  // note! we didn't receive the full message
+      break;
     assert(bytes <= std::size(buffer));
     total_bytes += bytes;
     buffer = buffer.subspan(bytes);
   }
   (*connection_manager_).drain(total_bytes);
 }
+
 size_t OrderEntry::parse(std::span<std::byte const> const &buffer) {
   size_t result = 0;
   profile_.parse([&]() {

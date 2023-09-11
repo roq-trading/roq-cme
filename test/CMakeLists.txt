@@ -1,6 +1,7 @@
 set(TARGET_NAME ${PROJECT_NAME}-test)
 
 set(SOURCES
+    execution_report_outright.cpp
     establish.cpp
     ilink_config_reader.cpp
     ilink_simple.cpp
