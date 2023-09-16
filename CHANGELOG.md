@@ -6,6 +6,7 @@ All notable changes will be documented in this file.
 
 ### Fixed
 
+* TCP fragmentation could cause freeze (#392)
 * `CancelAllOrders` could cause unhandled exception (#387)
 
 ### Changed
