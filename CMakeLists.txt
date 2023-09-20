@@ -75,6 +75,20 @@ pkg_check_modules(UUID REQUIRED uuid)
 
 find_program(CLANG_FORMAT clang-format REQUIRED)
 
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+  include(CTest)
+endif()
+
+if(BUILD_TESTING)
+  find_package(Catch2 REQUIRED)
+endif()
+
+option(BUILD_BENCHMARK "Enable benchmark" ON)
+
+if(BUILD_BENCHMARK)
+  find_package(benchmark REQUIRED)
+endif()
+
 # include
 
 include_directories(
@@ -85,26 +99,6 @@ include_directories(
 # sub-projects
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/src/roq/cme)
-
-# test
-
-if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
-  include(CTest)
-endif()
-
-if(BUILD_TESTING)
-  find_package(Catch2 REQUIRED)
-  add_subdirectory(${CMAKE_SOURCE_DIR}/test)
-endif()
-
-# benchmark
-
-option(BUILD_BENCHMARK "Enable benchmark" ON)
-
-if(BUILD_BENCHMARK)
-  find_package(benchmark REQUIRED)
-  add_subdirectory(${CMAKE_SOURCE_DIR}/benchmark)
-endif()
 
 # install
 
