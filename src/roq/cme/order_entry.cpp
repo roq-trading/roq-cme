@@ -762,7 +762,8 @@ void OrderEntry::operator()(Trace<cme_ilink::BusinessReject521> const &event) {
 void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportNew522> const &event) {
   profile_.execution_report_new([&]() {
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
-    auto &[trace_info, value] = event;
+    auto &trace_info = event.trace_info;
+    auto &value = event.value;
     log::info("DEBUG execution_report_new={}"sv, const_cast<value_type &>(value));
     auto order_id = get_order_id(value);
     if (order_id) {
@@ -800,7 +801,8 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportNew522> const &event
 void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportReject523> const &event) {
   profile_.execution_report_reject([&]() {
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
-    auto &[trace_info, value] = event;
+    auto &trace_info = event.trace_info;
+    auto &value = event.value;
     log::info("DEBUG execution_report_reject={}"sv, const_cast<value_type &>(value));
     auto cl_ord_id = value.getClOrdIDAsStringView();
     auto text = value.getTextAsStringView();
@@ -827,7 +829,8 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportReject523> const &ev
 void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportTradeOutright525> const &event) {
   profile_.execution_report_trade_outright([&]() {
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
-    auto &[trace_info, value] = event;
+    auto &trace_info = event.trace_info;
+    auto &value = event.value;
     log::info("DEBUG execution_report_trade_outright={}"sv, const_cast<value_type &>(value));
     auto order_id = get_order_id(value);
     if (order_id) {
@@ -920,7 +923,8 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportTradeSpreadLeg527> c
 void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportModify531> const &event) {
   profile_.execution_report_modify([&]() {
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
-    auto &[trace_info, value] = event;
+    auto &trace_info = event.trace_info;
+    auto &value = event.value;
     log::info("DEBUG execution_report_modify={}"sv, const_cast<value_type &>(value));
     auto order_id = get_order_id(value);
     if (order_id) {
@@ -958,7 +962,8 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportModify531> const &ev
 void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportStatus532> const &event) {
   profile_.execution_report_status([&]() {
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
-    auto &[trace_info, value] = event;
+    auto &trace_info = event.trace_info;
+    auto &value = event.value;
     log::info("DEBUG execution_report_status={}"sv, const_cast<value_type &>(value));
     auto order_id = get_order_id(value);
     if (order_id) {
@@ -984,7 +989,8 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportStatus532> const &ev
 void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportCancel534> const &event) {
   profile_.execution_report_cancel([&]() {
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
-    auto &[trace_info, value] = event;
+    auto &trace_info = event.trace_info;
+    auto &value = event.value;
     log::info("DEBUG execution_report_cancel={}"sv, const_cast<value_type &>(value));
     auto order_id = get_order_id(value);
     if (order_id) {
@@ -1040,7 +1046,8 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportPendingReplace565> c
 void OrderEntry::operator()(Trace<cme_ilink::OrderMassActionReport562> const &event) {
   profile_.order_mass_action_report([&]() {
     using value_type = std::remove_cvref<decltype(event)>::type::value_type;
-    auto &[trace_info, value] = event;
+    auto &trace_info = event.trace_info;
+    auto &value = event.value;
     log::info("DEBUG order_mass_action_report={}"sv, const_cast<value_type &>(value));
     switch (value.massActionResponse()) {
       using enum cme_ilink::MassActionResponse::Value;
