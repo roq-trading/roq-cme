@@ -9,7 +9,7 @@
 
 #include "roq/debug/hex/message.hpp"
 
-#include "roq/core/hash/sha256.hpp"
+#include "roq/utils/hash/sha256.hpp"
 
 #include "roq/cme/tools/canonical_message.hpp"
 #include "roq/cme/tools/crypto.hpp"
