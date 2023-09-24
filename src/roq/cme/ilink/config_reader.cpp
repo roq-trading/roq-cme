@@ -8,11 +8,11 @@
 
 #include "roq/logging.hpp"
 
+#include "roq/io/fs/file.hpp"
+
+#include "roq/io/memory/mapping.hpp"
+
 #include "roq/core/charconv.hpp"
-
-#include "roq/core/fs/file.hpp"
-
-#include "roq/core/memory/mapping.hpp"
 
 #include "roq/core/expat/parser.hpp"
 
@@ -31,15 +31,15 @@ void trim(auto &value) {
 }  // namespace
 
 void ConfigReader::read(Handler &handler, std::string_view const &filename) {
-  core::fs::File file{filename, {core::fs::Flags::READ_ONLY}};
-  core::memory::Mapping memory(
+  io::fs::File file{filename, {io::fs::Flags::READ_ONLY}};
+  io::memory::Mapping memory(
       std::size(file),
       {
-          core::memory::Protections::READ,
-          core::memory::Protections::WRITE,
+          io::memory::Protections::READ,
+          io::memory::Protections::WRITE,
       },
       {
-          core::memory::Flags::PRIVATE,
+          io::memory::Flags::PRIVATE,
       },
       file);
   auto buffer = static_cast<std::span<std::byte const>>(memory);
