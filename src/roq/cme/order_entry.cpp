@@ -480,6 +480,9 @@ auto order_update_from_execution_report(T &value, auto &security, auto &external
       .last_traded_price = last_traded_price,
       .last_liquidity = liquidity,
       .routing_id = {},
+      .max_request_version = {},
+      .max_response_version = {},
+      .max_accepted_version = {},
       .update_type = update_type,
       .sending_time_utc = {},
   };
@@ -1098,6 +1101,9 @@ void OrderEntry::operator()(Trace<cme_ilink::OrderMassActionReport562> const &ev
               .last_traded_price = NaN,
               .last_liquidity = {},
               .routing_id = {},
+              .max_request_version = {},
+              .max_response_version = {},
+              .max_accepted_version = {},
               .update_type = UpdateType::INCREMENTAL,
               .sending_time_utc = {},
           };
