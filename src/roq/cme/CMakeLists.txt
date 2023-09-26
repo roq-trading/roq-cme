@@ -59,24 +59,22 @@ add_dependencies(${TARGET_NAME} autogen-headers)
 target_link_libraries(
   ${TARGET_NAME}
   PRIVATE ${PROJECT_NAME}-flags
-  PRIVATE ${PROJECT_NAME}-tools
+          ${PROJECT_NAME}-tools
           ${PROJECT_NAME}-mdp
           ${PROJECT_NAME}-ilink
           ${PROJECT_NAME}-secdef
           roq-server::roq-server
           roq-server::roq-server-flags
           roq-web::roq-web
-          roq-io::roq-io
           roq-core::roq-core
+          roq-io::roq-io
           roq-logging::roq-logging
           roq-logging::roq-logging-flags
           roq-flags::roq-flags
           roq-api::roq-api
           absl::flat_hash_map
           absl::flat_hash_set
-          aklomp::base64
           EXPAT::EXPAT
-          ${UUID_LIBRARIES}
           ${RT_LIBRARIES})
 
 if(ROQ_BUILD_TYPE STREQUAL "Release")

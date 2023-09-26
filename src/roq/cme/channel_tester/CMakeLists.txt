@@ -10,8 +10,8 @@ target_link_libraries(
   ${TARGET_NAME}
   PRIVATE ${PROJECT_NAME}-channel-tester-flags
           ${PROJECT_NAME}-mdp
-          roq-io::roq-io
           roq-core::roq-core
+          roq-io::roq-io
           roq-logging::roq-logging
           roq-logging::roq-logging-flags
           roq-flags::roq-flags

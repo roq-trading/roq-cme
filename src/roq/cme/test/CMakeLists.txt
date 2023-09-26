@@ -29,20 +29,18 @@ add_executable(${TARGET_NAME} ${SOURCES})
 
 target_link_libraries(
   ${TARGET_NAME}
-  ${PROJECT_NAME}-secdef
-  ${PROJECT_NAME}-mdp
-  ${PROJECT_NAME}-ilink
-  ${PROJECT_NAME}-tools
-  roq-server::roq-server
-  roq-core::roq-core
-  roq-io::roq-io
-  roq-utils::roq-utils
-  roq-logging::roq-logging
-  aklomp::base64
-  EXPAT::EXPAT
-  Catch2::Catch2
-  ${UUID_LIBRARIES}
-  ${RT_LIBRARIES})
+  PRIVATE ${PROJECT_NAME}-secdef
+          ${PROJECT_NAME}-mdp
+          ${PROJECT_NAME}-ilink
+          ${PROJECT_NAME}-tools
+          roq-server::roq-server
+          roq-core::roq-core
+          roq-io::roq-io
+          roq-utils::roq-utils
+          roq-logging::roq-logging
+          EXPAT::EXPAT
+          Catch2::Catch2
+          ${RT_LIBRARIES})
 
 if(ROQ_BUILD_TYPE STREQUAL "Release")
   set_target_properties(${TARGET_NAME} PROPERTIES LINK_FLAGS_RELEASE -s)
