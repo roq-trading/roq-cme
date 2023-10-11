@@ -152,8 +152,8 @@ void Gateway::operator()(Event<Disconnected> const &event) {
               .account = account,
               .exchange = {},
               .symbol = {},
-              .side = {},
               .strategy_id = {},
+              .side = {},
           };
           Event event{message_info, cancel_all_orders};
           (*order_entry)(event, {});
