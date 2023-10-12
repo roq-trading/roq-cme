@@ -150,6 +150,7 @@ void Gateway::operator()(Event<Disconnected> const &event) {
           log::warn(R"(- account="{}")"sv, account);
           auto cancel_all_orders = CancelAllOrders{
               .account = account,
+              .order_id = {},
               .exchange = {},
               .symbol = {},
               .strategy_id = {},
