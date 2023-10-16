@@ -130,41 +130,7 @@ void Gateway::operator()(Event<Timer> const &event) {
 void Gateway::operator()(Event<Connected> const &) {
 }
 
-void Gateway::operator()(Event<Disconnected> const &event) {
-  auto const &[message_info, disconnected] = event;
-  log::warn(
-      R"(Disconnected: source="{}", order_cancel_policy={})"sv,
-      message_info.source_name,
-      disconnected.order_cancel_policy);
-  switch (disconnected.order_cancel_policy) {
-    using enum OrderCancelPolicy;
-    case UNDEFINED:
-      break;
-    case MANAGED_ORDERS:
-      log::warn("*** CANCEL MANAGED ORDERS NOT IMPLEMENTED ***"sv);
-      break;
-    case BY_ACCOUNT:
-      log::warn("*** CANCEL ALL ACCOUNT ORDERS ***"sv);
-      for (auto &[account, order_entry] : order_entry_) {
-        if (dispatcher_.can_user_trade_account(account, message_info.source)) {
-          log::warn(R"(- account="{}")"sv, account);
-          auto cancel_all_orders = CancelAllOrders{
-              .account = account,
-              .order_id = {},
-              .exchange = {},
-              .symbol = {},
-              .strategy_id = {},
-              .side = {},
-          };
-          Event event{message_info, cancel_all_orders};
-          (*order_entry)(event, {});
-        }
-      }
-      break;
-    case BY_STRATEGY:
-      log::warn("*** CANCEL MANAGED ORDERS BY STRATEGY NOT IMPLEMENTED ***"sv);
-      break;
-  }
+void Gateway::operator()(Event<Disconnected> const &) {
 }
 
 uint16_t Gateway::operator()(
@@ -194,7 +160,6 @@ uint16_t Gateway::operator()(
 }
 
 uint16_t Gateway::operator()(Event<CancelAllOrders> const &event, std::string_view const &request_id) {
-  log::info("DEBUG event={}"sv, event);
   assert(!std::empty(event.value.account));
   return get_order_entry(event.value.account)(event, request_id);
 }

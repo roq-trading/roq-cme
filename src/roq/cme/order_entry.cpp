@@ -594,14 +594,35 @@ uint16_t OrderEntry::operator()(
   return stream_id_;
 }
 
-uint16_t OrderEntry::operator()(
-    Event<CancelAllOrders> const &event, [[maybe_unused]] std::string_view const &request_id) {
-  if (ready()) {
-    send_order_mass_action_request(event.value);
-  } else {
-    auto &[message_info, cancel_all_orders] = event;
-    log::warn(R"(*** NOT CONNECTED! UNABLE TO CANCEL ALL ORDERS FOR ACCOUNT="{}")"sv, cancel_all_orders.account);
-  }
+uint16_t OrderEntry::operator()(Event<CancelAllOrders> const &event, std::string_view const &request_id) {
+  if (!ready()) [[unlikely]]
+    throw oms::NotReady{"not ready"sv};
+  auto &cancel_all_orders = event.value;
+  auto send_ack = [&]() {
+    auto cancel_all_orders_ack = CancelAllOrdersAck{
+        .stream_id = stream_id_,
+        .account = account_.get_name(),
+        .order_id = cancel_all_orders.order_id,
+        .exchange = cancel_all_orders.exchange,
+        .symbol = cancel_all_orders.symbol,
+        .side = cancel_all_orders.side,
+        .origin = Origin::GATEWAY,
+        .status = RequestStatus::FORWARDED,
+        .error = {},
+        .text = {},
+        .request_id = request_id,
+        .external_account = {},
+        .number_of_affected_orders = {},
+        .round_trip_latency = {},
+        .user = {},
+        .strategy_id = cancel_all_orders.strategy_id,
+    };
+    TraceInfo trace_info{event};
+    Trace event_2{trace_info, cancel_all_orders_ack};
+    shared_(event_2);
+  };
+  send_order_mass_action_request(cancel_all_orders);
+  send_ack();
   return stream_id_;
 }
 
@@ -1052,11 +1073,34 @@ void OrderEntry::operator()(Trace<cme_ilink::OrderMassActionReport562> const &ev
     auto &trace_info = event.trace_info;
     auto &value = event.value;
     log::info("DEBUG order_mass_action_report={}"sv, const_cast<value_type &>(value));
+    auto send_ack = [&](auto status, Error error, std::string_view const &text) {
+      auto cancel_all_orders_ack = CancelAllOrdersAck{
+          .stream_id = stream_id_,
+          .account = account_.get_name(),
+          .order_id = {},
+          .exchange = {},
+          .symbol = {},
+          .side = {},
+          .origin = Origin::EXCHANGE,
+          .status = status,
+          .error = error,
+          .text = text,
+          .request_id = {},  // XXX FIXME TODO how to recover this ???
+          .external_account = {},
+          .number_of_affected_orders = {},
+          .round_trip_latency = {},
+          .user = {},
+          .strategy_id = {},
+      };
+      Trace event_2{event, cancel_all_orders_ack};
+      shared_(event_2);
+    };
     switch (value.massActionResponse()) {
       using enum cme_ilink::MassActionResponse::Value;
       case Rejected: {
         auto mass_action_reject_reason = value.massActionRejectReason();
         log::info("*** CANCEL ALL ORDERS FAILED, REASON={} ***"sv, mass_action_reject_reason);
+        send_ack(RequestStatus::REJECTED, Error::UNKNOWN, "unknown"sv);
         break;
       }
       case Accepted: {
@@ -1112,6 +1156,7 @@ void OrderEntry::operator()(Trace<cme_ilink::OrderMassActionReport562> const &ev
           (*this)(callback, event_2, orig_cl_ord_id);
         });
         log::info("*** CANCEL ALL ORDERS SUCCEEDED, TOTAL_AFFECTED_ORDERS={} ***"sv, count);
+        send_ack(RequestStatus::ACCEPTED, {}, {});
         break;
       }
       case NULL_VALUE:
