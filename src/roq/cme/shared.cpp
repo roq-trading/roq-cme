@@ -89,6 +89,9 @@ void read_secdef(T &securities, MS &market_segments, D &dispatcher, auto &settin
           .settlement_date = {},
           .expiry_datetime = {},  // MaturityMonthYear ???
           .expiry_datetime_utc = {},
+          .exchange_time_utc = {},
+          .exchange_sequence = {},
+          .sending_time_utc = {},
           .discard = security.discard,
       };
       TraceInfo trace_info;

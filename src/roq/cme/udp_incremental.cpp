@@ -518,6 +518,7 @@ void UDPIncremental::operator()(Trace<cme_mdp::SecurityStatus30> const &event, m
     value.sbeRewind();  // note!
     auto security_id = mdp::get_int(value.securityID(), value.securityIDNullValue());
     auto trading_status = mdp::map_security_trading_status(value.securityTradingStatus());
+    auto exchange_time_utc = std::chrono::nanoseconds{value.transactTime()};
     auto dispatch = [&](auto security_id) {
       shared_.get_security(security_id, [&](auto &security) {
         auto market_status = MarketStatus{
@@ -525,6 +526,9 @@ void UDPIncremental::operator()(Trace<cme_mdp::SecurityStatus30> const &event, m
             .exchange = security.exchange,
             .symbol = security.symbol,
             .trading_status = trading_status,
+            .exchange_time_utc = exchange_time_utc,
+            .exchange_sequence = frame.sequence_number,
+            .sending_time_utc = frame.sending_time,
         };
         create_trace_and_dispatch(handler_, trace_info, market_status, true);
       });
