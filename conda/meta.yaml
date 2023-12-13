@@ -35,7 +35,7 @@ requirements:
     - roq-oss-benchmark
     - roq-oss-catch2  # [osx]
     - roq-oss-cppitertools
-    - roq-oss-libsodium
+    - libsodium
     - roq-oss-magic_enum
     - roq-oss-tomlplusplus
     - roq-server
