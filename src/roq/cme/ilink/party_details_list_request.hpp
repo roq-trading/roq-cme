@@ -32,21 +32,16 @@ struct PartyDetailsListRequest final {
 
 template <>
 struct fmt::formatter<roq::cme::ilink::PartyDetailsListRequest> {
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(roq::cme::ilink::PartyDetailsListRequest const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(roq::cme::ilink::PartyDetailsListRequest const &value, format_context &context) const {
     using namespace std::literals;
-    using namespace fmt::literals;
     return fmt::format_to(
         context.out(),
         R"({{)"
         R"(party_details_list_req_id={}, )"
         R"(sending_time_epoch={}, )"
         R"(seq_num={})"
-        R"(}})"_cf,
+        R"(}})"sv,
         value.party_details_list_req_id,
         value.sending_time_epoch,
         value.seq_num);

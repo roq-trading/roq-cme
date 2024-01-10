@@ -52,14 +52,9 @@ struct OrderMassActionRequest final {
 
 template <>
 struct fmt::formatter<roq::cme::ilink::OrderMassActionRequest> {
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(roq::cme::ilink::OrderMassActionRequest const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(roq::cme::ilink::OrderMassActionRequest const &value, format_context &context) const {
     using namespace std::literals;
-    using namespace fmt::literals;
     return fmt::format_to(
         context.out(),
         R"({{)"
@@ -80,7 +75,7 @@ struct fmt::formatter<roq::cme::ilink::OrderMassActionRequest> {
         R"(time_in_force={}, )"
         R"(liquidity_flag={}, )"
         R"(orig_order_user="{}")"
-        R"(}})"_cf,
+        R"(}})"sv,
         value.party_details_list_req_id,
         value.order_request_id,
         magic_enum::enum_name(value.manual_order_indicator),

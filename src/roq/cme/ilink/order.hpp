@@ -22,12 +22,8 @@ namespace ilink {}  // namespace ilink
 template <>
 struct fmt::formatter<cme_ilink::OrderCancelReject535> {
   using value_type = cme_ilink::OrderCancelReject535;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type &value, format_context &context) const {
     using namespace std::literals;
     using namespace roq::cme::ilink;
     value.sbeRewind();  // note!
@@ -83,12 +79,8 @@ struct fmt::formatter<cme_ilink::OrderCancelReject535> {
 template <>
 struct fmt::formatter<cme_ilink::OrderCancelReplaceReject536> {
   using value_type = cme_ilink::OrderCancelReplaceReject536;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type &value, format_context &context) const {
     using namespace std::literals;
     using namespace roq::cme::ilink;
     value.sbeRewind();  // note!

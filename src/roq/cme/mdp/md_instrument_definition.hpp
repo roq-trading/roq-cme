@@ -212,12 +212,8 @@ inline size_t compute_length(cme_mdp::MDInstrumentDefinitionFX63 &value) {
 template <>
 struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFuture54::NoEvents> {
   using value_type = cme_mdp::MDInstrumentDefinitionFuture54::NoEvents;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(
         context.out(),
@@ -233,12 +229,8 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFuture54::NoEvents> {
 template <>
 struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFuture54::NoMDFeedTypes> {
   using value_type = cme_mdp::MDInstrumentDefinitionFuture54::NoMDFeedTypes;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(
         context.out(),
@@ -254,12 +246,8 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFuture54::NoMDFeedTypes> {
 template <>
 struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFuture54::NoInstAttrib> {
   using value_type = cme_mdp::MDInstrumentDefinitionFuture54::NoInstAttrib;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     /* XXX FIXME
     return fmt::format_to(
@@ -284,12 +272,8 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFuture54::NoInstAttrib> {
 template <>
 struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFuture54::NoLotTypeRules> {
   using value_type = cme_mdp::MDInstrumentDefinitionFuture54::NoLotTypeRules;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     /* XXX FIXME
     return fmt::format_to(
@@ -314,12 +298,8 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFuture54::NoLotTypeRules> {
 template <>
 struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFuture54> {
   using value_type = cme_mdp::MDInstrumentDefinitionFuture54;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type &value, format_context &context) const {
     using namespace std::literals;
     using namespace roq::cme::mdp;
     value.sbeRewind();  // note!
@@ -429,12 +409,8 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFuture54> {
 template <>
 struct fmt::formatter<cme_mdp::MDInstrumentDefinitionOption55> {
   using value_type = cme_mdp::MDInstrumentDefinitionOption55;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type &value, format_context &context) const {
     using namespace std::literals;
     using namespace roq::cme::mdp;
     value.sbeRewind();  // note!
@@ -540,12 +516,8 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionOption55> {
 template <>
 struct fmt::formatter<cme_mdp::MDInstrumentDefinitionSpread56> {
   using value_type = cme_mdp::MDInstrumentDefinitionSpread56;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type &value, format_context &context) const {
     using namespace std::literals;
     using namespace roq::cme::mdp;
     value.sbeRewind();  // note!
@@ -651,12 +623,8 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionSpread56> {
 template <>
 struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFixedIncome57> {
   using value_type = cme_mdp::MDInstrumentDefinitionFixedIncome57;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type &value, format_context &context) const {
     using namespace std::literals;
     using namespace roq::cme::mdp;
     value.sbeRewind();  // note!
@@ -780,12 +748,8 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFixedIncome57> {
 template <>
 struct fmt::formatter<cme_mdp::MDInstrumentDefinitionRepo58> {
   using value_type = cme_mdp::MDInstrumentDefinitionRepo58;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type &value, format_context &context) const {
     using namespace std::literals;
     using namespace roq::cme::mdp;
     value.sbeRewind();  // note!
@@ -891,12 +855,8 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionRepo58> {
 template <>
 struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFX63> {
   using value_type = cme_mdp::MDInstrumentDefinitionFX63;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type &value, format_context &context) const {
     using namespace std::literals;
     using namespace roq::cme::mdp;
     value.sbeRewind();  // note!

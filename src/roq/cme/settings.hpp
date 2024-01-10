@@ -30,14 +30,9 @@ struct Settings final : public server::flags::Settings, public flags::Flags {
 
 template <>
 struct fmt::formatter<roq::cme::Settings> {
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(roq::cme::Settings const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(roq::cme::Settings const &value, format_context &context) const {
     using namespace std::literals;
-    using namespace fmt::literals;
     return fmt::format_to(
         context.out(),
         R"({{)"
@@ -46,7 +41,7 @@ struct fmt::formatter<roq::cme::Settings> {
         R"(ilink={}, )"
         R"(test={}, )"
         R"(server={})"
-        R"(}})"_cf,
+        R"(}})"sv,
         value.common,
         value.multicast,
         value.ilink,

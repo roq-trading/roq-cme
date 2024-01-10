@@ -287,12 +287,8 @@ struct Group final {
 
 template <>
 struct fmt::formatter<cme_mdp::MessageHeader> {
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(cme_mdp::MessageHeader const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(cme_mdp::MessageHeader const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(
         context.out(),
@@ -314,12 +310,8 @@ struct fmt::formatter<cme_mdp::MessageHeader> {
 template <>
 struct fmt::formatter<cme_mdp::Decimal9> {
   using value_type = cme_mdp::Decimal9;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), R"({})"sv, roq::cme::mdp::get_double(value));
   }
@@ -328,12 +320,8 @@ struct fmt::formatter<cme_mdp::Decimal9> {
 template <>
 struct fmt::formatter<cme_mdp::Decimal9NULL> {
   using value_type = cme_mdp::Decimal9NULL;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), R"({})"sv, roq::cme::mdp::get_double(value));
   }
@@ -342,12 +330,8 @@ struct fmt::formatter<cme_mdp::Decimal9NULL> {
 template <>
 struct fmt::formatter<cme_mdp::DecimalQty> {
   using value_type = cme_mdp::DecimalQty;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), R"({})"sv, roq::cme::mdp::get_double(value));
   }
@@ -356,12 +340,8 @@ struct fmt::formatter<cme_mdp::DecimalQty> {
 template <>
 struct fmt::formatter<cme_mdp::PRICE9> {
   using value_type = cme_mdp::PRICE9;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), R"({})"sv, roq::cme::mdp::get_double(value));
   }
@@ -370,12 +350,8 @@ struct fmt::formatter<cme_mdp::PRICE9> {
 template <>
 struct fmt::formatter<cme_mdp::PRICENULL9> {
   using value_type = cme_mdp::PRICENULL9;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), R"({})"sv, roq::cme::mdp::get_double(value));
   }
@@ -386,12 +362,8 @@ struct fmt::formatter<cme_mdp::PRICENULL9> {
 template <>
 struct fmt::formatter<cme_mdp::AggressorFlag::Value> {
   using value_type = cme_mdp::AggressorFlag::Value;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), R"({})"sv, magic_enum::enum_name(value));
   }
@@ -400,12 +372,8 @@ struct fmt::formatter<cme_mdp::AggressorFlag::Value> {
 template <>
 struct fmt::formatter<cme_mdp::AggressorSide::Value> {
   using value_type = cme_mdp::AggressorSide::Value;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), R"({})"sv, magic_enum::enum_name(value));
   }
@@ -414,12 +382,8 @@ struct fmt::formatter<cme_mdp::AggressorSide::Value> {
 template <>
 struct fmt::formatter<cme_mdp::EventType::Value> {
   using value_type = cme_mdp::EventType::Value;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), R"({})"sv, magic_enum::enum_name(value));
   }
@@ -428,12 +392,8 @@ struct fmt::formatter<cme_mdp::EventType::Value> {
 template <>
 struct fmt::formatter<cme_mdp::HaltReason::Value> {
   using value_type = cme_mdp::HaltReason::Value;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), R"({})"sv, magic_enum::enum_name(value));
   }
@@ -442,12 +402,8 @@ struct fmt::formatter<cme_mdp::HaltReason::Value> {
 template <>
 struct fmt::formatter<cme_mdp::LegSide::Value> {
   using value_type = cme_mdp::LegSide::Value;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), R"({})"sv, magic_enum::enum_name(value));
   }
@@ -456,12 +412,8 @@ struct fmt::formatter<cme_mdp::LegSide::Value> {
 template <>
 struct fmt::formatter<cme_mdp::MDEntryType::Value> {
   using value_type = cme_mdp::MDEntryType::Value;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), R"({})"sv, magic_enum::enum_name(value));
   }
@@ -470,12 +422,8 @@ struct fmt::formatter<cme_mdp::MDEntryType::Value> {
 template <>
 struct fmt::formatter<cme_mdp::MDEntryTypeBook::Value> {
   using value_type = cme_mdp::MDEntryTypeBook::Value;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), R"({})"sv, magic_enum::enum_name(value));
   }
@@ -484,12 +432,8 @@ struct fmt::formatter<cme_mdp::MDEntryTypeBook::Value> {
 template <>
 struct fmt::formatter<cme_mdp::MDEntryTypeDailyStatistics::Value> {
   using value_type = cme_mdp::MDEntryTypeDailyStatistics::Value;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), R"({})"sv, magic_enum::enum_name(value));
   }
@@ -498,12 +442,8 @@ struct fmt::formatter<cme_mdp::MDEntryTypeDailyStatistics::Value> {
 template <>
 struct fmt::formatter<cme_mdp::MDEntryTypeStatistics::Value> {
   using value_type = cme_mdp::MDEntryTypeStatistics::Value;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), R"({})"sv, magic_enum::enum_name(value));
   }
@@ -512,12 +452,8 @@ struct fmt::formatter<cme_mdp::MDEntryTypeStatistics::Value> {
 template <>
 struct fmt::formatter<cme_mdp::MDUpdateAction::Value> {
   using value_type = cme_mdp::MDUpdateAction::Value;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), R"({})"sv, magic_enum::enum_name(value));
   }
@@ -526,12 +462,8 @@ struct fmt::formatter<cme_mdp::MDUpdateAction::Value> {
 template <>
 struct fmt::formatter<cme_mdp::MoneyOrPar::Value> {
   using value_type = cme_mdp::MoneyOrPar::Value;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), R"({})"sv, magic_enum::enum_name(value));
   }
@@ -540,12 +472,8 @@ struct fmt::formatter<cme_mdp::MoneyOrPar::Value> {
 template <>
 struct fmt::formatter<cme_mdp::OpenCloseSettlFlag::Value> {
   using value_type = cme_mdp::OpenCloseSettlFlag::Value;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), R"({})"sv, magic_enum::enum_name(value));
   }
@@ -554,12 +482,8 @@ struct fmt::formatter<cme_mdp::OpenCloseSettlFlag::Value> {
 template <>
 struct fmt::formatter<cme_mdp::OrderUpdateAction::Value> {
   using value_type = cme_mdp::OrderUpdateAction::Value;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), R"({})"sv, magic_enum::enum_name(value));
   }
@@ -568,12 +492,8 @@ struct fmt::formatter<cme_mdp::OrderUpdateAction::Value> {
 template <>
 struct fmt::formatter<cme_mdp::PriceSource::Value> {
   using value_type = cme_mdp::PriceSource::Value;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), R"({})"sv, magic_enum::enum_name(value));
   }
@@ -582,12 +502,8 @@ struct fmt::formatter<cme_mdp::PriceSource::Value> {
 template <>
 struct fmt::formatter<cme_mdp::PutOrCall::Value> {
   using value_type = cme_mdp::PutOrCall::Value;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), R"({})"sv, magic_enum::enum_name(value));
   }
@@ -596,12 +512,8 @@ struct fmt::formatter<cme_mdp::PutOrCall::Value> {
 template <>
 struct fmt::formatter<cme_mdp::RepoSubType::Value> {
   using value_type = cme_mdp::RepoSubType::Value;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), R"({})"sv, magic_enum::enum_name(value));
   }
@@ -610,12 +522,8 @@ struct fmt::formatter<cme_mdp::RepoSubType::Value> {
 template <>
 struct fmt::formatter<cme_mdp::SecurityAltIDSource::Value> {
   using value_type = cme_mdp::SecurityAltIDSource::Value;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), R"({})"sv, magic_enum::enum_name(value));
   }
@@ -624,12 +532,8 @@ struct fmt::formatter<cme_mdp::SecurityAltIDSource::Value> {
 template <>
 struct fmt::formatter<cme_mdp::SecurityTradingEvent::Value> {
   using value_type = cme_mdp::SecurityTradingEvent::Value;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), R"({})"sv, magic_enum::enum_name(value));
   }
@@ -638,12 +542,8 @@ struct fmt::formatter<cme_mdp::SecurityTradingEvent::Value> {
 template <>
 struct fmt::formatter<cme_mdp::SecurityTradingStatus::Value> {
   using value_type = cme_mdp::SecurityTradingStatus::Value;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), R"({})"sv, magic_enum::enum_name(value));
   }
@@ -652,12 +552,8 @@ struct fmt::formatter<cme_mdp::SecurityTradingStatus::Value> {
 template <>
 struct fmt::formatter<cme_mdp::SecurityUpdateAction::Value> {
   using value_type = cme_mdp::SecurityUpdateAction::Value;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), R"({})"sv, magic_enum::enum_name(value));
   }
@@ -666,12 +562,8 @@ struct fmt::formatter<cme_mdp::SecurityUpdateAction::Value> {
 template <>
 struct fmt::formatter<cme_mdp::Side::Value> {
   using value_type = cme_mdp::Side::Value;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), R"({})"sv, magic_enum::enum_name(value));
   }
@@ -680,12 +572,8 @@ struct fmt::formatter<cme_mdp::Side::Value> {
 template <>
 struct fmt::formatter<cme_mdp::WorkupTradingStatus::Value> {
   using value_type = cme_mdp::WorkupTradingStatus::Value;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), R"({})"sv, magic_enum::enum_name(value));
   }
@@ -696,12 +584,8 @@ struct fmt::formatter<cme_mdp::WorkupTradingStatus::Value> {
 template <>
 struct fmt::formatter<cme_mdp::InstAttribValue> {
   using value_type = cme_mdp::InstAttribValue;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), R"({})"sv, value.rawValue());
   }
@@ -710,12 +594,8 @@ struct fmt::formatter<cme_mdp::InstAttribValue> {
 template <>
 struct fmt::formatter<cme_mdp::MatchEventIndicator> {
   using value_type = cme_mdp::MatchEventIndicator;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), R"({})"sv, value.rawValue());
   }
@@ -724,12 +604,8 @@ struct fmt::formatter<cme_mdp::MatchEventIndicator> {
 template <>
 struct fmt::formatter<cme_mdp::SettlPriceType> {
   using value_type = cme_mdp::SettlPriceType;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), R"({})"sv, value.rawValue());
   }
@@ -740,12 +616,8 @@ struct fmt::formatter<cme_mdp::SettlPriceType> {
 template <>
 struct fmt::formatter<cme_mdp::MaturityMonthYear> {
   using value_type = cme_mdp::MaturityMonthYear;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(
         context.out(),
@@ -767,12 +639,6 @@ struct fmt::formatter<cme_mdp::MaturityMonthYear> {
 template <typename T>
 struct fmt::formatter<roq::cme::mdp::Group<T>> {
   using value_type = roq::cme::mdp::Group<T>;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type &value, Context &context) const {
-    return value.format_to(context);
-  }
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type &value, format_context &context) const { return value.format_to(context); }
 };

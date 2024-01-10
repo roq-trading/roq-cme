@@ -37,14 +37,9 @@ struct Establish final {
 
 template <>
 struct fmt::formatter<roq::cme::ilink::Establish> {
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(roq::cme::ilink::Establish const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(roq::cme::ilink::Establish const &value, format_context &context) const {
     using namespace std::literals;
-    using namespace fmt::literals;
     return fmt::format_to(
         context.out(),
         R"({{)"
@@ -59,7 +54,7 @@ struct fmt::formatter<roq::cme::ilink::Establish> {
         R"(session="{}", )"
         R"(firm="{}", )"
         R"(keep_alive_interval="{}", )"
-        R"(}})"_cf,
+        R"(}})"sv,
         roq::debug::hex::Message{value.hmac_signature},
         value.access_key_id,
         value.trading_system_name,

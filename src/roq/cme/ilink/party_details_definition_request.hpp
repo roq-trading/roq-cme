@@ -59,14 +59,9 @@ struct PartyDetailsDefinitionRequest final {
 
 template <>
 struct fmt::formatter<roq::cme::ilink::PartyDetailsDefinitionRequest> {
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(roq::cme::ilink::PartyDetailsDefinitionRequest const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(roq::cme::ilink::PartyDetailsDefinitionRequest const &value, format_context &context) const {
     using namespace std::literals;
-    using namespace fmt::literals;
     return fmt::format_to(
         context.out(),
         R"({{)"
@@ -86,7 +81,7 @@ struct fmt::formatter<roq::cme::ilink::PartyDetailsDefinitionRequest> {
         R"(cust_order_handling_inst={}, )"
         R"(executor={}, )"
         R"(idm_short_code={})"
-        R"(}})"_cf,
+        R"(}})"sv,
         value.party_details_list_req_id,
         value.sending_time_epoch,
         magic_enum::enum_name(value.list_update_action),

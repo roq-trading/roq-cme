@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <fmt/chrono.h>
 #include <fmt/format.h>
 
 #include <chrono>
@@ -36,12 +37,8 @@ struct Frame final {
 
 template <>
 struct fmt::formatter<roq::cme::mdp::Frame> {
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(roq::cme::mdp::Frame const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(roq::cme::mdp::Frame const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(
         context.out(),

@@ -44,14 +44,9 @@ struct SecurityDefinitionRequest final {
 
 template <>
 struct fmt::formatter<roq::cme::ilink::SecurityDefinitionRequest> {
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(roq::cme::ilink::SecurityDefinitionRequest const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(roq::cme::ilink::SecurityDefinitionRequest const &value, format_context &context) const {
     using namespace std::literals;
-    using namespace fmt::literals;
     return fmt::format_to(
         context.out(),
         R"({{)"
@@ -68,7 +63,7 @@ struct fmt::formatter<roq::cme::ilink::SecurityDefinitionRequest> {
         R"(max_no_of_substitutions={}, )"
         R"(source_repo_id={}, )"
         R"(broken_date_term_type={})"
-        R"(}})"_cf,
+        R"(}})"sv,
         value.party_details_list_req_id,
         value.security_req_id,
         value.manual_order_indicator,

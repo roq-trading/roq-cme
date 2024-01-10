@@ -58,12 +58,8 @@ MDIncrementalRefreshSessionStatisticsLongQty67
 template <>
 struct fmt::formatter<cme_mdp::MDIncrementalRefreshVolume37::NoMDEntries> {
   using value_type = cme_mdp::MDIncrementalRefreshVolume37::NoMDEntries;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(
         context.out(),
@@ -85,12 +81,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshVolume37::NoMDEntries> {
 template <>
 struct fmt::formatter<cme_mdp::MDIncrementalRefreshVolume37> {
   using value_type = cme_mdp::MDIncrementalRefreshVolume37;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type &value, format_context &context) const {
     using namespace std::literals;
     value.sbeRewind();  // note!
     return fmt::format_to(
@@ -113,12 +105,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshVolume37> {
 template <>
 struct fmt::formatter<cme_mdp::MDIncrementalRefreshBook46::NoMDEntries> {
   using value_type = cme_mdp::MDIncrementalRefreshBook46::NoMDEntries;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(
         context.out(),
@@ -148,12 +136,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshBook46::NoMDEntries> {
 template <>
 struct fmt::formatter<cme_mdp::MDIncrementalRefreshBook46::NoOrderIDEntries> {
   using value_type = cme_mdp::MDIncrementalRefreshBook46::NoOrderIDEntries;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(
         context.out(),
@@ -175,12 +159,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshBook46::NoOrderIDEntries> {
 template <>
 struct fmt::formatter<cme_mdp::MDIncrementalRefreshBook46> {
   using value_type = cme_mdp::MDIncrementalRefreshBook46;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type &value, format_context &context) const {
     using namespace std::literals;
     value.sbeRewind();  // note!
     fmt::format_to(
@@ -208,12 +188,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshBook46> {
 template <>
 struct fmt::formatter<cme_mdp::MDIncrementalRefreshOrderBook47::NoMDEntries> {
   using value_type = cme_mdp::MDIncrementalRefreshOrderBook47::NoMDEntries;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(
         context.out(),
@@ -239,12 +215,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshOrderBook47::NoMDEntries> {
 template <>
 struct fmt::formatter<cme_mdp::MDIncrementalRefreshOrderBook47> {
   using value_type = cme_mdp::MDIncrementalRefreshOrderBook47;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type &value, format_context &context) const {
     using namespace std::literals;
     value.sbeRewind();  // note!
     return fmt::format_to(
@@ -267,12 +239,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshOrderBook47> {
 template <>
 struct fmt::formatter<cme_mdp::MDIncrementalRefreshTradeSummary48::NoMDEntries> {
   using value_type = cme_mdp::MDIncrementalRefreshTradeSummary48::NoMDEntries;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(
         context.out(),
@@ -302,12 +270,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshTradeSummary48::NoMDEntries> 
 template <>
 struct fmt::formatter<cme_mdp::MDIncrementalRefreshTradeSummary48::NoOrderIDEntries> {
   using value_type = cme_mdp::MDIncrementalRefreshTradeSummary48::NoOrderIDEntries;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(
         context.out(),
@@ -323,12 +287,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshTradeSummary48::NoOrderIDEntr
 template <>
 struct fmt::formatter<cme_mdp::MDIncrementalRefreshTradeSummary48> {
   using value_type = cme_mdp::MDIncrementalRefreshTradeSummary48;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type &value, format_context &context) const {
     using namespace std::literals;
     value.sbeRewind();  // note!
     fmt::format_to(
@@ -356,12 +316,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshTradeSummary48> {
 template <>
 struct fmt::formatter<cme_mdp::MDIncrementalRefreshDailyStatistics49::NoMDEntries> {
   using value_type = cme_mdp::MDIncrementalRefreshDailyStatistics49::NoMDEntries;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(
         context.out(),
@@ -389,12 +345,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshDailyStatistics49::NoMDEntrie
 template <>
 struct fmt::formatter<cme_mdp::MDIncrementalRefreshDailyStatistics49> {
   using value_type = cme_mdp::MDIncrementalRefreshDailyStatistics49;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type &value, format_context &context) const {
     using namespace std::literals;
     value.sbeRewind();  // note!
     return fmt::format_to(
@@ -417,12 +369,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshDailyStatistics49> {
 template <>
 struct fmt::formatter<cme_mdp::MDIncrementalRefreshLimitsBanding50::NoMDEntries> {
   using value_type = cme_mdp::MDIncrementalRefreshLimitsBanding50::NoMDEntries;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(
         context.out(),
@@ -448,12 +396,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshLimitsBanding50::NoMDEntries>
 template <>
 struct fmt::formatter<cme_mdp::MDIncrementalRefreshLimitsBanding50> {
   using value_type = cme_mdp::MDIncrementalRefreshLimitsBanding50;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type &value, format_context &context) const {
     using namespace std::literals;
     value.sbeRewind();  // note!
     return fmt::format_to(
@@ -476,12 +420,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshLimitsBanding50> {
 template <>
 struct fmt::formatter<cme_mdp::MDIncrementalRefreshSessionStatistics51::NoMDEntries> {
   using value_type = cme_mdp::MDIncrementalRefreshSessionStatistics51::NoMDEntries;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(
         context.out(),
@@ -507,12 +447,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshSessionStatistics51::NoMDEntr
 template <>
 struct fmt::formatter<cme_mdp::MDIncrementalRefreshSessionStatistics51> {
   using value_type = cme_mdp::MDIncrementalRefreshSessionStatistics51;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type &value, format_context &context) const {
     using namespace std::literals;
     value.sbeRewind();  // note!
     return fmt::format_to(
@@ -535,12 +471,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshSessionStatistics51> {
 template <>
 struct fmt::formatter<cme_mdp::MDIncrementalRefreshBookLongQty64::NoMDEntries> {
   using value_type = cme_mdp::MDIncrementalRefreshBookLongQty64::NoMDEntries;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(
         context.out(),
@@ -568,12 +500,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshBookLongQty64::NoMDEntries> {
 template <>
 struct fmt::formatter<cme_mdp::MDIncrementalRefreshBookLongQty64::NoOrderIDEntries> {
   using value_type = cme_mdp::MDIncrementalRefreshBookLongQty64::NoOrderIDEntries;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(
         context.out(),
@@ -595,12 +523,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshBookLongQty64::NoOrderIDEntri
 template <>
 struct fmt::formatter<cme_mdp::MDIncrementalRefreshBookLongQty64> {
   using value_type = cme_mdp::MDIncrementalRefreshBookLongQty64;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type &value, format_context &context) const {
     using namespace std::literals;
     value.sbeRewind();  // note!
     fmt::format_to(
@@ -628,12 +552,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshBookLongQty64> {
 template <>
 struct fmt::formatter<cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65::NoMDEntries> {
   using value_type = cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65::NoMDEntries;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(
         context.out(),
@@ -663,12 +583,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65::NoMDEn
 template <>
 struct fmt::formatter<cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65::NoOrderIDEntries> {
   using value_type = cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65::NoOrderIDEntries;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(
         context.out(),
@@ -684,12 +600,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65::NoOrde
 template <>
 struct fmt::formatter<cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65> {
   using value_type = cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type &value, format_context &context) const {
     using namespace std::literals;
     value.sbeRewind();  // note!
     fmt::format_to(
@@ -717,12 +629,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65> {
 template <>
 struct fmt::formatter<cme_mdp::MDIncrementalRefreshVolumeLongQty66::NoMDEntries> {
   using value_type = cme_mdp::MDIncrementalRefreshVolumeLongQty66::NoMDEntries;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(
         context.out(),
@@ -744,12 +652,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshVolumeLongQty66::NoMDEntries>
 template <>
 struct fmt::formatter<cme_mdp::MDIncrementalRefreshVolumeLongQty66> {
   using value_type = cme_mdp::MDIncrementalRefreshVolumeLongQty66;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type &value, format_context &context) const {
     using namespace std::literals;
     value.sbeRewind();  // note!
     return fmt::format_to(
@@ -772,12 +676,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshVolumeLongQty66> {
 template <>
 struct fmt::formatter<cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67::NoMDEntries> {
   using value_type = cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67::NoMDEntries;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(
         context.out(),
@@ -803,12 +703,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67::N
 template <>
 struct fmt::formatter<cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67> {
   using value_type = cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type &value, format_context &context) const {
     using namespace std::literals;
     value.sbeRewind();  // note!
     return fmt::format_to(

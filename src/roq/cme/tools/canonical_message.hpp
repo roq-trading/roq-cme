@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <fmt/chrono.h>
 #include <fmt/compile.h>
 #include <fmt/format.h>
 
@@ -32,14 +33,9 @@ struct CanonicalMessage final {
 
 template <>
 struct fmt::formatter<roq::cme::tools::CanonicalMessage> {
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(roq::cme::tools::CanonicalMessage const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(roq::cme::tools::CanonicalMessage const &value, format_context &context) const {
     using namespace std::literals;
-    using namespace fmt::literals;
     if (std::empty(value.trading_system_name)) {
       return fmt::format_to(
           context.out(),
@@ -48,7 +44,7 @@ struct fmt::formatter<roq::cme::tools::CanonicalMessage> {
           R"(uuid={}, )"
           R"(session="{}", )"
           R"(firm_id="{}")"
-          R"(}})"_cf,
+          R"(}})"sv,
           value.request_timestamp,
           value.uuid,
           value.session,
@@ -66,7 +62,7 @@ struct fmt::formatter<roq::cme::tools::CanonicalMessage> {
           R"(trading_system_vendor="{}", )"
           R"(next_seq_no={}, )"
           R"(keep_alive_interval={})"
-          R"(}})"_cf,
+          R"(}})"sv,
           value.request_timestamp,
           value.uuid,
           value.session,

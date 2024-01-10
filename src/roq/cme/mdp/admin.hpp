@@ -22,12 +22,8 @@ namespace mdp {}  // namespace mdp
 template <>
 struct fmt::formatter<cme_mdp::ChannelReset4::NoMDEntries> {
   using value_type = cme_mdp::ChannelReset4::NoMDEntries;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(
         context.out(),
@@ -45,12 +41,8 @@ struct fmt::formatter<cme_mdp::ChannelReset4::NoMDEntries> {
 template <>
 struct fmt::formatter<cme_mdp::ChannelReset4> {
   using value_type = cme_mdp::ChannelReset4;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     const_cast<value_type &>(value).sbeRewind();  // note!
     return fmt::format_to(
@@ -71,12 +63,8 @@ struct fmt::formatter<cme_mdp::ChannelReset4> {
 template <>
 struct fmt::formatter<cme_mdp::AdminHeartbeat12> {
   using value_type = cme_mdp::AdminHeartbeat12;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(
         context.out(),

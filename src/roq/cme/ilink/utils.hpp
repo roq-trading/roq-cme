@@ -101,12 +101,10 @@ struct Group final {
 /*
 template <>
 struct fmt::formatter<cme_ilink::MessageHeader> {
-  template <typename Context>
-  constexpr auto parse(Context &context) {
+  constexpr auto parse(format_parse_context &context) {
     return std::begin(context);
   }
-  template <typename Context>
-  auto format(cme_ilink::MessageHeader const &value, Context &context) const {
+  auto format(cme_ilink::MessageHeader const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(
         context.out(),
@@ -129,12 +127,8 @@ struct fmt::formatter<cme_ilink::MessageHeader> {
 template <>
 struct fmt::formatter<cme_ilink::PRICE9> {
   using value_type = cme_ilink::PRICE9;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), R"({})"sv, roq::cme::ilink::get_double(value));
   }
@@ -143,12 +137,8 @@ struct fmt::formatter<cme_ilink::PRICE9> {
 template <>
 struct fmt::formatter<cme_ilink::PRICENULL9> {
   using value_type = cme_ilink::PRICENULL9;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), R"({})"sv, roq::cme::ilink::get_double(value));
   }
@@ -157,12 +147,8 @@ struct fmt::formatter<cme_ilink::PRICENULL9> {
 template <>
 struct fmt::formatter<cme_ilink::Decimal32NULL> {
   using value_type = cme_ilink::Decimal32NULL;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), R"({})"sv, roq::cme::ilink::get_double(value));
   }
@@ -171,12 +157,8 @@ struct fmt::formatter<cme_ilink::Decimal32NULL> {
 template <>
 struct fmt::formatter<cme_ilink::Decimal64NULL> {
   using value_type = cme_ilink::Decimal64NULL;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), R"({})"sv, roq::cme::ilink::get_double(value));
   }
@@ -187,12 +169,8 @@ struct fmt::formatter<cme_ilink::Decimal64NULL> {
 template <>
 struct fmt::formatter<cme_ilink::MaturityMonthYear> {
   using value_type = cme_ilink::MaturityMonthYear;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(
         context.out(),
@@ -213,12 +191,8 @@ struct fmt::formatter<cme_ilink::MaturityMonthYear> {
 template <>
 struct fmt::formatter<cme_ilink::ExecInst> {
   using value_type = cme_ilink::ExecInst;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), R"({})"sv, value.rawValue());
   }
@@ -229,12 +203,8 @@ struct fmt::formatter<cme_ilink::ExecInst> {
 template <>
 struct fmt::formatter<cme_ilink::BooleanFlag::Value> {
   using value_type = cme_ilink::BooleanFlag::Value;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), "{}"sv, magic_enum::enum_name(value));
   }
@@ -245,12 +215,8 @@ struct fmt::formatter<cme_ilink::BooleanFlag::Value> {
 template <>
 struct fmt::formatter<cme_ilink::BooleanNULL::Value> {
   using value_type = cme_ilink::BooleanNULL::Value;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), "{}"sv, magic_enum::enum_name(value));
   }
@@ -261,12 +227,8 @@ struct fmt::formatter<cme_ilink::BooleanNULL::Value> {
 template <>
 struct fmt::formatter<cme_ilink::ExecMode::Value> {
   using value_type = cme_ilink::ExecMode::Value;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), "{}"sv, magic_enum::enum_name(value));
   }
@@ -277,12 +239,8 @@ struct fmt::formatter<cme_ilink::ExecMode::Value> {
 template <>
 struct fmt::formatter<cme_ilink::ExecReason::Value> {
   using value_type = cme_ilink::ExecReason::Value;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), "{}"sv, magic_enum::enum_name(value));
   }
@@ -293,12 +251,8 @@ struct fmt::formatter<cme_ilink::ExecReason::Value> {
 template <>
 struct fmt::formatter<cme_ilink::ExpCycle::Value> {
   using value_type = cme_ilink::ExpCycle::Value;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), "{}"sv, magic_enum::enum_name(value));
   }
@@ -309,12 +263,8 @@ struct fmt::formatter<cme_ilink::ExpCycle::Value> {
 template <>
 struct fmt::formatter<cme_ilink::FTI::Value> {
   using value_type = cme_ilink::FTI::Value;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), "{}"sv, magic_enum::enum_name(value));
   }
@@ -325,12 +275,8 @@ struct fmt::formatter<cme_ilink::FTI::Value> {
 template <>
 struct fmt::formatter<cme_ilink::KeepAliveLapsed::Value> {
   using value_type = cme_ilink::KeepAliveLapsed::Value;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), "{}"sv, magic_enum::enum_name(value));
   }
@@ -341,12 +287,8 @@ struct fmt::formatter<cme_ilink::KeepAliveLapsed::Value> {
 template <>
 struct fmt::formatter<cme_ilink::ManualOrdInd::Value> {
   using value_type = cme_ilink::ManualOrdInd::Value;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), "{}"sv, magic_enum::enum_name(value));
   }
@@ -357,12 +299,8 @@ struct fmt::formatter<cme_ilink::ManualOrdInd::Value> {
 template <>
 struct fmt::formatter<cme_ilink::ManualOrdIndReq::Value> {
   using value_type = cme_ilink::ManualOrdIndReq::Value;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), "{}"sv, magic_enum::enum_name(value));
   }
@@ -373,12 +311,8 @@ struct fmt::formatter<cme_ilink::ManualOrdIndReq::Value> {
 template <>
 struct fmt::formatter<cme_ilink::OrdStatusTrd::Value> {
   using value_type = cme_ilink::OrdStatusTrd::Value;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), "{}"sv, magic_enum::enum_name(value));
   }
@@ -389,12 +323,8 @@ struct fmt::formatter<cme_ilink::OrdStatusTrd::Value> {
 template <>
 struct fmt::formatter<cme_ilink::OrderStatus::Value> {
   using value_type = cme_ilink::OrderStatus::Value;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), "{}"sv, magic_enum::enum_name(value));
   }
@@ -405,12 +335,8 @@ struct fmt::formatter<cme_ilink::OrderStatus::Value> {
 template <>
 struct fmt::formatter<cme_ilink::OrderType::Value> {
   using value_type = cme_ilink::OrderType::Value;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), "{}"sv, magic_enum::enum_name(value));
   }
@@ -421,12 +347,8 @@ struct fmt::formatter<cme_ilink::OrderType::Value> {
 template <>
 struct fmt::formatter<cme_ilink::SecRspTyp::Value> {
   using value_type = cme_ilink::SecRspTyp::Value;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), "{}"sv, magic_enum::enum_name(value));
   }
@@ -437,12 +359,8 @@ struct fmt::formatter<cme_ilink::SecRspTyp::Value> {
 template <>
 struct fmt::formatter<cme_ilink::ShortSaleType::Value> {
   using value_type = cme_ilink::ShortSaleType::Value;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), "{}"sv, magic_enum::enum_name(value));
   }
@@ -453,12 +371,8 @@ struct fmt::formatter<cme_ilink::ShortSaleType::Value> {
 template <>
 struct fmt::formatter<cme_ilink::SideReq::Value> {
   using value_type = cme_ilink::SideReq::Value;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), "{}"sv, magic_enum::enum_name(value));
   }
@@ -469,12 +383,8 @@ struct fmt::formatter<cme_ilink::SideReq::Value> {
 template <>
 struct fmt::formatter<cme_ilink::SplitMsg::Value> {
   using value_type = cme_ilink::SplitMsg::Value;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), "{}"sv, magic_enum::enum_name(value));
   }
@@ -485,12 +395,8 @@ struct fmt::formatter<cme_ilink::SplitMsg::Value> {
 template <>
 struct fmt::formatter<cme_ilink::TimeInForce::Value> {
   using value_type = cme_ilink::TimeInForce::Value;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(context.out(), "{}"sv, magic_enum::enum_name(value));
   }

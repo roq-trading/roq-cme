@@ -22,12 +22,8 @@ namespace ilink {}  // namespace ilink
 template <>
 struct fmt::formatter<cme_ilink::PartyDetailsDefinitionRequestAck519::NoPartyDetails> {
   using value_type = cme_ilink::PartyDetailsDefinitionRequestAck519::NoPartyDetails;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type &value, format_context &context) const {
     using namespace std::literals;
     using namespace roq::cme::ilink;
     return fmt::format_to(
@@ -40,12 +36,8 @@ struct fmt::formatter<cme_ilink::PartyDetailsDefinitionRequestAck519::NoPartyDet
 template <>
 struct fmt::formatter<cme_ilink::PartyDetailsDefinitionRequestAck519::NoTrdRegPublications> {
   using value_type = cme_ilink::PartyDetailsDefinitionRequestAck519::NoTrdRegPublications;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type &value, format_context &context) const {
     using namespace std::literals;
     using namespace roq::cme::ilink;
     return fmt::format_to(
@@ -58,12 +50,8 @@ struct fmt::formatter<cme_ilink::PartyDetailsDefinitionRequestAck519::NoTrdRegPu
 template <>
 struct fmt::formatter<cme_ilink::PartyDetailsDefinitionRequestAck519> {
   using value_type = cme_ilink::PartyDetailsDefinitionRequestAck519;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type &value, format_context &context) const {
     using namespace std::literals;
     using namespace roq::cme::ilink;
     value.sbeRewind();  // note!
@@ -125,12 +113,8 @@ struct fmt::formatter<cme_ilink::PartyDetailsDefinitionRequestAck519> {
 template <>
 struct fmt::formatter<cme_ilink::BusinessReject521> {
   using value_type = cme_ilink::BusinessReject521;
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(value_type &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type &value, format_context &context) const {
     using namespace std::literals;
     using namespace roq::cme::ilink;
     value.sbeRewind();  // note!

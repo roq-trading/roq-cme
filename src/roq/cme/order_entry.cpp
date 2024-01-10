@@ -66,7 +66,7 @@ auto const MANUAL_ORDER_INDICATOR = cme_ilink::ManualOrdIndReq::Automated;  // X
 
 namespace {
 auto create_name(auto stream_id, auto const &account) {
-  return fmt::format("{}:{}:{}"_cf, stream_id, NAME, account);
+  return fmt::format("{}:{}:{}"sv, stream_id, NAME, account);
 }
 
 auto create_connection_factory(auto &settings, auto &context, auto &uri) {

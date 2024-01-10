@@ -14,6 +14,8 @@
 #include <cme_ilink/FTI.h>
 #include <cme_ilink/KeepAliveLapsed.h>
 
+#include "roq/cme/ilink/utils.hpp"
+
 namespace roq {
 namespace cme {
 namespace ilink {
@@ -33,14 +35,9 @@ struct Sequence final {
 
 template <>
 struct fmt::formatter<roq::cme::ilink::Sequence> {
-  template <typename Context>
-  constexpr auto parse(Context &context) {
-    return std::begin(context);
-  }
-  template <typename Context>
-  auto format(roq::cme::ilink::Sequence const &value, Context &context) const {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(roq::cme::ilink::Sequence const &value, format_context &context) const {
     using namespace std::literals;
-    using namespace fmt::literals;
     return fmt::format_to(
         context.out(),
         R"({{)"
@@ -48,7 +45,7 @@ struct fmt::formatter<roq::cme::ilink::Sequence> {
         R"(next_seq_no={}, )"
         R"(fault_tolerance_indicator={}, )"
         R"(keep_alive_interval_lapsed="{}")"
-        R"(}})"_cf,
+        R"(}})"sv,
         value.uuid,
         value.next_seq_no,
         value.fault_tolerance_indicator,
