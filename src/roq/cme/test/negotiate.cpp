@@ -56,7 +56,7 @@ TEST_CASE("simple", "[negotiate]") {
 }
 
 TEST_CASE("decode", "[negotiate]") {
-  auto message =
+  [[maybe_unused]] auto message =
       "\x58\x00"  // length (88)
       "\xfe\xca"
       "\x4c\x00"  // block length (76)

@@ -53,7 +53,7 @@ TEST_CASE("simple", "[party_details_definition_request]") {
   };
   auto message = party_details_definition_request.encode(buffer);
   fmt::print("{}\n"sv, debug::hex::Message{message});
-  auto tmp = std::string_view{reinterpret_cast<char const *>(std::data(message)), std::size(message)};
+  [[maybe_unused]] auto tmp = std::string_view{reinterpret_cast<char const *>(std::data(message)), std::size(message)};
   auto tmp_2 = fmt::format("{}"sv, debug::hex::Message{message});
   auto expected =
       "\x93\x00"                          // block length

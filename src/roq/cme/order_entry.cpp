@@ -700,10 +700,10 @@ void OrderEntry::operator()(Trace<cme_ilink::EstablishmentReject505> const &even
   });
 }
 
-void OrderEntry::operator()(Trace<cme_ilink::Sequence506> const &event) {
+void OrderEntry::operator()(Trace<cme_ilink::Sequence506> const &) {
   profile_.sequence([&]() {
-    using value_type = std::remove_cvref<decltype(event)>::type::value_type;
-    auto &[trace_info, value] = event;
+    // using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+    // auto &[trace_info, value] = event;
     // log::info("DEBUG sequence={}"sv, const_cast<value_type &>(value));
   });
 }

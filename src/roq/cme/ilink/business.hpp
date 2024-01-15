@@ -23,7 +23,7 @@ template <>
 struct fmt::formatter<cme_ilink::PartyDetailsDefinitionRequestAck519::NoPartyDetails> {
   using value_type = cme_ilink::PartyDetailsDefinitionRequestAck519::NoPartyDetails;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
-  auto format(value_type &value, format_context &context) const {
+  auto format([[maybe_unused]] value_type &value, format_context &context) const {
     using namespace std::literals;
     using namespace roq::cme::ilink;
     return fmt::format_to(
@@ -37,7 +37,7 @@ template <>
 struct fmt::formatter<cme_ilink::PartyDetailsDefinitionRequestAck519::NoTrdRegPublications> {
   using value_type = cme_ilink::PartyDetailsDefinitionRequestAck519::NoTrdRegPublications;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
-  auto format(value_type &value, format_context &context) const {
+  auto format([[maybe_unused]] value_type &value, format_context &context) const {
     using namespace std::literals;
     using namespace roq::cme::ilink;
     return fmt::format_to(

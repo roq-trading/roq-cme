@@ -77,7 +77,7 @@ TEST_CASE("simple", "[new_order_single]") {
   fmt::print(stderr, "{}\n"sv, debug::hex::Message{message});
   fmt::print(
       stderr, "{} {} {}\n"sv, std::size(message), value_type::sbeBlockAndHeaderLength(), value_type::sbeBlockLength());
-  auto expected =
+  [[maybe_unused]] auto expected =
       "\x7c\x00"  // block length
       "\x02\x02"  // template id (514)
       "\x08\x00"  // schema id (8)

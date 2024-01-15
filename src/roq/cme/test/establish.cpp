@@ -63,7 +63,7 @@ TEST_CASE("simple", "[establish]") {
       std::size(message),
       Establish503::sbeBlockAndHeaderLength(),
       Establish503::sbeBlockLength());
-  auto expected =
+  [[maybe_unused]] auto expected =
       "\x4c\x00"  // block length
       "\xf4\x01"  // template id (500)
       "\x08\x00"  // schema id (8)
@@ -75,7 +75,7 @@ TEST_CASE("simple", "[establish]") {
 }
 
 TEST_CASE("decode", "[establish]") {
-  auto message =
+  [[maybe_unused]] auto message =
       "\x92\x00"  // length
       "\xfe\xca"
       "\x84\x00"  // block length
