@@ -468,7 +468,7 @@ auto order_update_from_execution_report(T &value, auto &security, auto &external
       .external_account = {},
       .external_order_id = external_order_id,
       .client_order_id = client_order_id,
-      .status = order_status,
+      .order_status = order_status,
       .quantity = quantity,
       .price = price,
       .stop_price = stop_price,
@@ -606,7 +606,7 @@ uint16_t OrderEntry::operator()(Event<CancelAllOrders> const &event, std::string
         .symbol = cancel_all_orders.symbol,
         .side = cancel_all_orders.side,
         .origin = Origin::GATEWAY,
-        .status = RequestStatus::FORWARDED,
+        .request_status = RequestStatus::FORWARDED,
         .error = {},
         .text = {},
         .request_id = request_id,
@@ -765,9 +765,9 @@ void OrderEntry::operator()(Trace<cme_ilink::BusinessReject521> const &event) {
       log::info("DEBUG type={}, user_id={}, order_id={}"sv, type, user_id, order_id);
       auto text = value.getTextAsStringView();
       auto response = oms::Response{
-          .type = type,
+          .request_type = type,
           .origin = Origin::EXCHANGE,
-          .status = RequestStatus::REJECTED,
+          .request_status = RequestStatus::REJECTED,
           .error = {},
           .text = text,
           .version = {},
@@ -799,9 +799,9 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportNew522> const &event
               log::warn("Unexpected: type={}"sv, type);
             auto order_update = order_update_from_execution_report(value, security, external_order_id);
             auto response = oms::Response{
-                .type = type,
+                .request_type = type,
                 .origin = Origin::EXCHANGE,
-                .status = RequestStatus::ACCEPTED,
+                .request_status = RequestStatus::ACCEPTED,
                 .error = {},
                 .text = {},
                 .version = {},
@@ -834,9 +834,9 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportReject523> const &ev
     if (type != RequestType::CREATE_ORDER) [[unlikely]]
       log::warn("Unexpected: type={}"sv, type);
     auto response = oms::Response{
-        .type = type,
+        .request_type = type,
         .origin = Origin::EXCHANGE,
-        .status = RequestStatus::REJECTED,
+        .request_status = RequestStatus::REJECTED,
         .error = {},
         .text = text,
         .version = {},
@@ -961,9 +961,9 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportModify531> const &ev
               log::warn("Unexpected: type={}"sv, type);
             auto order_update = order_update_from_execution_report(value, security, external_order_id);
             auto response = oms::Response{
-                .type = type,
+                .request_type = type,
                 .origin = Origin::EXCHANGE,
-                .status = RequestStatus::ACCEPTED,
+                .request_status = RequestStatus::ACCEPTED,
                 .error = {},
                 .text = {},
                 .version = {},
@@ -1027,9 +1027,9 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportCancel534> const &ev
               log::warn("Unexpected: type={}"sv, type);
             auto order_update = order_update_from_execution_report(value, security, external_order_id);
             auto response = oms::Response{
-                .type = RequestType::CANCEL_ORDER,
+                .request_type = RequestType::CANCEL_ORDER,
                 .origin = Origin::EXCHANGE,
-                .status = RequestStatus::ACCEPTED,
+                .request_status = RequestStatus::ACCEPTED,
                 .error = {},
                 .text = {},
                 .version = {},
@@ -1082,7 +1082,7 @@ void OrderEntry::operator()(Trace<cme_ilink::OrderMassActionReport562> const &ev
           .symbol = {},
           .side = {},
           .origin = Origin::EXCHANGE,
-          .status = status,
+          .request_status = status,
           .error = error,
           .text = text,
           .request_id = {},  // XXX FIXME TODO how to recover this ???
@@ -1135,7 +1135,7 @@ void OrderEntry::operator()(Trace<cme_ilink::OrderMassActionReport562> const &ev
               .external_account = {},
               .external_order_id = external_order_id,
               .client_order_id = orig_cl_ord_id,
-              .status = OrderStatus::CANCELED,
+              .order_status = OrderStatus::CANCELED,
               .quantity = {},
               .price = NaN,
               .stop_price = NaN,
@@ -1180,9 +1180,9 @@ void OrderEntry::operator()(Trace<cme_ilink::OrderCancelReject535> const &event)
     if (type != RequestType::CANCEL_ORDER) [[unlikely]]
       log::warn("Unexpected: type={}"sv, type);
     auto response = oms::Response{
-        .type = type,
+        .request_type = type,
         .origin = Origin::EXCHANGE,
-        .status = RequestStatus::REJECTED,
+        .request_status = RequestStatus::REJECTED,
         .error = {},
         .text = text,
         .version = {},
@@ -1209,9 +1209,9 @@ void OrderEntry::operator()(Trace<cme_ilink::OrderCancelReplaceReject536> const 
     if (type != RequestType::MODIFY_ORDER) [[unlikely]]
       log::warn("Unexpected: type={}"sv, type);
     auto response = oms::Response{
-        .type = type,
+        .request_type = type,
         .origin = Origin::EXCHANGE,
-        .status = RequestStatus::REJECTED,
+        .request_status = RequestStatus::REJECTED,
         .error = {},
         .text = text,
         .version = {},
