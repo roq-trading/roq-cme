@@ -9,6 +9,8 @@
 #include "roq/utils/safe_cast.hpp"
 #include "roq/utils/update.hpp"
 
+#include "roq/utils/metrics/const.hpp"
+
 #include "roq/core/byte_order.hpp"
 
 #include "roq/core/metrics/factory.hpp"
@@ -627,34 +629,34 @@ uint16_t OrderEntry::operator()(Event<CancelAllOrders> const &event, std::string
 
 void OrderEntry::operator()(metrics::Writer &writer) {
   writer  //
-      .write(counter_.disconnect, metrics::COUNTER)
-      .write(profile_.parse, metrics::PROFILE)
-      .write(profile_.negotiation_response, metrics::PROFILE)
-      .write(profile_.negotiation_reject, metrics::PROFILE)
-      .write(profile_.establishment_ack, metrics::PROFILE)
-      .write(profile_.establishment_reject, metrics::PROFILE)
-      .write(profile_.sequence, metrics::PROFILE)
-      .write(profile_.terminate, metrics::PROFILE)
-      .write(profile_.retransmission, metrics::PROFILE)
-      .write(profile_.retransmission_reject, metrics::PROFILE)
-      .write(profile_.not_applied, metrics::PROFILE)
-      .write(profile_.party_details_definition_request_ack, metrics::PROFILE)
-      .write(profile_.business_reject, metrics::PROFILE)
-      .write(profile_.execution_report_new, metrics::PROFILE)
-      .write(profile_.execution_report_reject, metrics::PROFILE)
-      .write(profile_.execution_report_trade_outright, metrics::PROFILE)
-      .write(profile_.execution_report_trade_spread, metrics::PROFILE)
-      .write(profile_.execution_report_trade_spread_leg, metrics::PROFILE)
-      .write(profile_.execution_report_modify, metrics::PROFILE)
-      .write(profile_.execution_report_status, metrics::PROFILE)
-      .write(profile_.execution_report_cancel, metrics::PROFILE)
-      .write(profile_.execution_report_pending_cancel, metrics::PROFILE)
-      .write(profile_.execution_report_pending_replace, metrics::PROFILE)
-      .write(profile_.order_cancel_reject, metrics::PROFILE)
-      .write(profile_.order_cancel_replace_reject, metrics::PROFILE)
-      .write(profile_.order_mass_action_report, metrics::PROFILE)
-      .write(profile_.security_definition_response, metrics::PROFILE)
-      .write(latency_.ping, metrics::LATENCY);
+      .write(counter_.disconnect, utils::metrics::COUNTER)
+      .write(profile_.parse, utils::metrics::PROFILE)
+      .write(profile_.negotiation_response, utils::metrics::PROFILE)
+      .write(profile_.negotiation_reject, utils::metrics::PROFILE)
+      .write(profile_.establishment_ack, utils::metrics::PROFILE)
+      .write(profile_.establishment_reject, utils::metrics::PROFILE)
+      .write(profile_.sequence, utils::metrics::PROFILE)
+      .write(profile_.terminate, utils::metrics::PROFILE)
+      .write(profile_.retransmission, utils::metrics::PROFILE)
+      .write(profile_.retransmission_reject, utils::metrics::PROFILE)
+      .write(profile_.not_applied, utils::metrics::PROFILE)
+      .write(profile_.party_details_definition_request_ack, utils::metrics::PROFILE)
+      .write(profile_.business_reject, utils::metrics::PROFILE)
+      .write(profile_.execution_report_new, utils::metrics::PROFILE)
+      .write(profile_.execution_report_reject, utils::metrics::PROFILE)
+      .write(profile_.execution_report_trade_outright, utils::metrics::PROFILE)
+      .write(profile_.execution_report_trade_spread, utils::metrics::PROFILE)
+      .write(profile_.execution_report_trade_spread_leg, utils::metrics::PROFILE)
+      .write(profile_.execution_report_modify, utils::metrics::PROFILE)
+      .write(profile_.execution_report_status, utils::metrics::PROFILE)
+      .write(profile_.execution_report_cancel, utils::metrics::PROFILE)
+      .write(profile_.execution_report_pending_cancel, utils::metrics::PROFILE)
+      .write(profile_.execution_report_pending_replace, utils::metrics::PROFILE)
+      .write(profile_.order_cancel_reject, utils::metrics::PROFILE)
+      .write(profile_.order_cancel_replace_reject, utils::metrics::PROFILE)
+      .write(profile_.order_mass_action_report, utils::metrics::PROFILE)
+      .write(profile_.security_definition_response, utils::metrics::PROFILE)
+      .write(latency_.ping, utils::metrics::LATENCY);
 }
 
 // session

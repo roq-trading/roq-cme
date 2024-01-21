@@ -9,6 +9,8 @@
 #include "roq/utils/safe_cast.hpp"
 #include "roq/utils/update.hpp"
 
+#include "roq/utils/metrics/const.hpp"
+
 #include "roq/debug/hex/message.hpp"
 
 #include "roq/core/metrics/factory.hpp"
@@ -434,16 +436,16 @@ void UDPInstrumentDefinition::publish_stream_status(TraceInfo const &trace_info,
 
 void UDPInstrumentDefinition::operator()(metrics::Writer &writer) {
   writer  //
-      .write(counter_.disconnect, metrics::COUNTER)
-      .write(profile_.parse, metrics::PROFILE)
-      .write(profile_.admin_heartbeat, metrics::PROFILE)
-      .write(profile_.channel_reset, metrics::PROFILE)
-      .write(profile_.md_instrument_definition_future, metrics::PROFILE)
-      .write(profile_.md_instrument_definition_option, metrics::PROFILE)
-      .write(profile_.md_instrument_definition_spread, metrics::PROFILE)
-      .write(profile_.md_instrument_definition_fixed_income, metrics::PROFILE)
-      .write(profile_.md_instrument_definition_repo, metrics::PROFILE)
-      .write(profile_.md_instrument_definition_fx, metrics::PROFILE);
+      .write(counter_.disconnect, utils::metrics::COUNTER)
+      .write(profile_.parse, utils::metrics::PROFILE)
+      .write(profile_.admin_heartbeat, utils::metrics::PROFILE)
+      .write(profile_.channel_reset, utils::metrics::PROFILE)
+      .write(profile_.md_instrument_definition_future, utils::metrics::PROFILE)
+      .write(profile_.md_instrument_definition_option, utils::metrics::PROFILE)
+      .write(profile_.md_instrument_definition_spread, utils::metrics::PROFILE)
+      .write(profile_.md_instrument_definition_fixed_income, utils::metrics::PROFILE)
+      .write(profile_.md_instrument_definition_repo, utils::metrics::PROFILE)
+      .write(profile_.md_instrument_definition_fx, utils::metrics::PROFILE);
 }
 
 }  // namespace cme
