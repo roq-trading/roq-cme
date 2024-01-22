@@ -7,8 +7,6 @@
 
 #include "roq/debug/hex/message.hpp"
 
-#include "roq/utils/metrics/const.hpp"
-
 #include "roq/core/metrics/factory.hpp"
 
 #include "roq/io/network_address.hpp"
@@ -465,11 +463,11 @@ void UDPMBOMarketRecovery::publish_stream_status(TraceInfo const &trace_info, Co
 
 void UDPMBOMarketRecovery::operator()(metrics::Writer &writer) {
   writer  //
-      .write(counter_.disconnect, utils::metrics::COUNTER)
-      .write(profile_.parse, utils::metrics::PROFILE)
-      .write(profile_.admin_heartbeat, utils::metrics::PROFILE)
-      .write(profile_.channel_reset, utils::metrics::PROFILE)
-      .write(profile_.snapshot_full_refresh_order_book, utils::metrics::PROFILE);
+      .write(counter_.disconnect, metrics::Type::COUNTER)
+      .write(profile_.parse, metrics::Type::PROFILE)
+      .write(profile_.admin_heartbeat, metrics::Type::PROFILE)
+      .write(profile_.channel_reset, metrics::Type::PROFILE)
+      .write(profile_.snapshot_full_refresh_order_book, metrics::Type::PROFILE);
 }
 
 }  // namespace cme

@@ -8,8 +8,6 @@
 #include "roq/utils/safe_cast.hpp"
 #include "roq/utils/update.hpp"
 
-#include "roq/utils/metrics/const.hpp"
-
 #include "roq/debug/hex/message.hpp"
 
 #include "roq/core/metrics/factory.hpp"
@@ -1343,29 +1341,29 @@ void UDPIncremental::publish_stream_status(TraceInfo const &trace_info, Connecti
 
 void UDPIncremental::operator()(metrics::Writer &writer) {
   writer  //
-      .write(counter_.disconnect, utils::metrics::COUNTER)
-      .write(counter_.sequence_reset, utils::metrics::COUNTER)
-      .write(profile_.parse, utils::metrics::PROFILE)
-      .write(profile_.admin_heartbeat, utils::metrics::PROFILE)
-      .write(profile_.channel_reset, utils::metrics::PROFILE)
-      .write(profile_.security_status, utils::metrics::PROFILE)
-      .write(profile_.md_instrument_definition_future, utils::metrics::PROFILE)
-      .write(profile_.md_instrument_definition_option, utils::metrics::PROFILE)
-      .write(profile_.md_instrument_definition_spread, utils::metrics::PROFILE)
-      .write(profile_.md_instrument_definition_fixed_income, utils::metrics::PROFILE)
-      .write(profile_.md_instrument_definition_repo, utils::metrics::PROFILE)
-      .write(profile_.md_instrument_definition_fx, utils::metrics::PROFILE)
-      .write(profile_.md_incremental_refresh_book, utils::metrics::PROFILE)
-      .write(profile_.md_incremental_refresh_book_long_qty, utils::metrics::PROFILE)
-      .write(profile_.md_incremental_refresh_order_book, utils::metrics::PROFILE)
-      .write(profile_.md_incremental_refresh_trade_summary, utils::metrics::PROFILE)
-      .write(profile_.md_incremental_refresh_trade_summary_long_qty, utils::metrics::PROFILE)
-      .write(profile_.md_incremental_refresh_daily_statistics, utils::metrics::PROFILE)
-      .write(profile_.md_incremental_refresh_session_statistics, utils::metrics::PROFILE)
-      .write(profile_.md_incremental_refresh_session_statistics_long_qty, utils::metrics::PROFILE)
-      .write(profile_.md_incremental_refresh_volume, utils::metrics::PROFILE)
-      .write(profile_.md_incremental_refresh_volume_long_qty, utils::metrics::PROFILE)
-      .write(profile_.md_incremental_refresh_limits_banding, utils::metrics::PROFILE);
+      .write(counter_.disconnect, metrics::Type::COUNTER)
+      .write(counter_.sequence_reset, metrics::Type::COUNTER)
+      .write(profile_.parse, metrics::Type::PROFILE)
+      .write(profile_.admin_heartbeat, metrics::Type::PROFILE)
+      .write(profile_.channel_reset, metrics::Type::PROFILE)
+      .write(profile_.security_status, metrics::Type::PROFILE)
+      .write(profile_.md_instrument_definition_future, metrics::Type::PROFILE)
+      .write(profile_.md_instrument_definition_option, metrics::Type::PROFILE)
+      .write(profile_.md_instrument_definition_spread, metrics::Type::PROFILE)
+      .write(profile_.md_instrument_definition_fixed_income, metrics::Type::PROFILE)
+      .write(profile_.md_instrument_definition_repo, metrics::Type::PROFILE)
+      .write(profile_.md_instrument_definition_fx, metrics::Type::PROFILE)
+      .write(profile_.md_incremental_refresh_book, metrics::Type::PROFILE)
+      .write(profile_.md_incremental_refresh_book_long_qty, metrics::Type::PROFILE)
+      .write(profile_.md_incremental_refresh_order_book, metrics::Type::PROFILE)
+      .write(profile_.md_incremental_refresh_trade_summary, metrics::Type::PROFILE)
+      .write(profile_.md_incremental_refresh_trade_summary_long_qty, metrics::Type::PROFILE)
+      .write(profile_.md_incremental_refresh_daily_statistics, metrics::Type::PROFILE)
+      .write(profile_.md_incremental_refresh_session_statistics, metrics::Type::PROFILE)
+      .write(profile_.md_incremental_refresh_session_statistics_long_qty, metrics::Type::PROFILE)
+      .write(profile_.md_incremental_refresh_volume, metrics::Type::PROFILE)
+      .write(profile_.md_incremental_refresh_volume_long_qty, metrics::Type::PROFILE)
+      .write(profile_.md_incremental_refresh_limits_banding, metrics::Type::PROFILE);
 }
 
 }  // namespace cme
