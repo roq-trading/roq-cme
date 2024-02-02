@@ -4,9 +4,9 @@
 
 #include "roq/api.hpp"
 
-#include "roq/utils/mbp/sequencer.hpp"
+#include "roq/market/mbp/sequencer.hpp"
 
-#include "roq/utils/mbo/sequencer.hpp"
+#include "roq/market/mbo/sequencer.hpp"
 
 #include "roq/logging.hpp"
 
@@ -28,7 +28,7 @@ struct Security final {
   // sequencing
 
   struct {
-    utils::mbp::Sequencer sequencer;
+    market::mbp::Sequencer sequencer;
     uint32_t resubscribe = {};  // XXX move to sequencer
   } mbp = {};
 
@@ -36,7 +36,7 @@ struct Security final {
     uint32_t no_chunks = {};
     uint32_t last_chunk = {};
     std::vector<MBOUpdate> orders;
-    utils::mbo::Sequencer sequencer;
+    market::mbo::Sequencer sequencer;
     uint32_t resubscribe = {};  // XXX move to sequencer
   } mbo = {};
 

@@ -35,6 +35,7 @@ requirements:
     - roq-cme-mdp
     - roq-core
     - roq-flags
+    - roq-market
     - roq-oss-benchmark
     - roq-oss-brotli
     - roq-oss-cppitertools

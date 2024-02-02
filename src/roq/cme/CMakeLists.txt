@@ -68,6 +68,7 @@ target_link_libraries(
           roq-web::roq-web
           roq-core::roq-core
           roq-io::roq-io
+          roq-market::roq-market
           roq-logging::roq-logging
           roq-logging::roq-logging-flags
           roq-flags::roq-flags
