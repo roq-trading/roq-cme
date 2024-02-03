@@ -5,8 +5,8 @@
 #include <absl/container/flat_hash_map.h>
 #include <absl/container/node_hash_map.h>
 
-#include "roq/core/metrics/counter.hpp"
-#include "roq/core/metrics/profile.hpp"
+#include "roq/utils/metrics/counter.hpp"
+#include "roq/utils/metrics/profile.hpp"
 
 #include "roq/io/buffer.hpp"
 #include "roq/io/context.hpp"
@@ -100,15 +100,15 @@ struct UDPInstrumentDefinition final : public io::net::udp::Receiver::Handler, p
   io::Buffer receive_buffer_;
   // metrics
   struct {
-    core::metrics::Counter disconnect;
+    utils::metrics::Counter disconnect;
   } counter_;
   struct {
-    core::metrics::Profile parse, admin_heartbeat, channel_reset,  //
-        md_instrument_definition_future,                           //
-        md_instrument_definition_option,                           //
-        md_instrument_definition_spread,                           //
-        md_instrument_definition_fixed_income,                     //
-        md_instrument_definition_repo,                             //
+    utils::metrics::Profile parse, admin_heartbeat, channel_reset,  //
+        md_instrument_definition_future,                            //
+        md_instrument_definition_option,                            //
+        md_instrument_definition_spread,                            //
+        md_instrument_definition_fixed_income,                      //
+        md_instrument_definition_repo,                              //
         md_instrument_definition_fx;
   } profile_;
   // cache

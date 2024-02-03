@@ -4,15 +4,15 @@
 
 #include <string>
 
-#include "roq/core/download.hpp"
-
-#include "roq/core/metrics/counter.hpp"
-#include "roq/core/metrics/latency.hpp"
-#include "roq/core/metrics/profile.hpp"
+#include "roq/utils/metrics/counter.hpp"
+#include "roq/utils/metrics/latency.hpp"
+#include "roq/utils/metrics/profile.hpp"
 
 #include "roq/io/context.hpp"
 #include "roq/io/net/connection_factory.hpp"
 #include "roq/io/net/connection_manager.hpp"
+
+#include "roq/core/download.hpp"
 
 #include "roq/server.hpp"
 
@@ -160,10 +160,10 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public ili
   std::vector<std::byte> encode_buffer_2_;
   // metrics
   struct {
-    core::metrics::Counter disconnect;
+    utils::metrics::Counter disconnect;
   } counter_;
   struct {
-    core::metrics::Profile parse,
+    utils::metrics::Profile parse,
         // session
         negotiation_response,   //
         negotiation_reject,     //
@@ -197,7 +197,7 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public ili
         security_definition_response;  //
   } profile_;
   struct {
-    core::metrics::Latency ping;
+    utils::metrics::Latency ping;
   } latency_;
   // state
   struct {

@@ -5,8 +5,8 @@
 #include <absl/container/flat_hash_map.h>
 #include <absl/container/node_hash_map.h>
 
-#include "roq/core/metrics/counter.hpp"
-#include "roq/core/metrics/profile.hpp"
+#include "roq/utils/metrics/counter.hpp"
+#include "roq/utils/metrics/profile.hpp"
 
 #include "roq/io/context.hpp"
 
@@ -131,10 +131,10 @@ struct UDPIncremental final : public io::net::udp::Receiver::Handler, public mdp
   std::unique_ptr<io::net::udp::Receiver> const receiver_;
   // metrics
   struct {
-    core::metrics::Counter disconnect, sequence_reset;
+    utils::metrics::Counter disconnect, sequence_reset;
   } counter_;
   struct {
-    core::metrics::Profile parse, admin_heartbeat, channel_reset,               //
+    utils::metrics::Profile parse, admin_heartbeat, channel_reset,              //
         security_status,                                                        //
         md_instrument_definition_future,                                        //
         md_instrument_definition_option,                                        //
