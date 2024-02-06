@@ -448,13 +448,15 @@ void UDPMBPMarketRecovery::dispatch_market_by_price(
     return;
   auto &sequencer = security.mbp.sequencer;
   try {
-    auto publish_snapshot = [&](auto &bids, auto &asks, auto exchange_sequence) {
+    auto publish_snapshot = [&](auto &bids, auto &asks, auto exchange_sequence, auto retries, auto delay) {
       log::info(
-          R"(PUBLISH MBP SNAPSHOT exchange="{}", symbol="{}", security_id={}, exchange_sequence={})"sv,
+          R"(PUBLISH MBP SNAPSHOT exchange="{}", symbol="{}", security_id={}, exchange_sequence={}, retries={}, delay={})"sv,
           security.exchange,
           security.symbol,
           security_id,
-          exchange_sequence);
+          exchange_sequence,
+          retries,
+          std::chrono::duration_cast<std::chrono::milliseconds>(delay));
       auto market_by_price_update = MarketByPriceUpdate{
           .stream_id = stream_id_,
           .exchange = security.exchange,

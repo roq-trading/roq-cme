@@ -963,13 +963,15 @@ void UDPIncremental::dispatch_market_by_price(
       auto market_by_price_update = create_update(bids, asks, UpdateType::INCREMENTAL);
       create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true);
     };
-    auto publish_snapshot = [&](auto &bids, auto &asks, [[maybe_unused]] auto exchange_sequence) {
+    auto publish_snapshot = [&](auto &bids, auto &asks, auto exchange_sequence, auto retries, auto delay) {
       log::info(
-          R"(PUBLISH MBP SNAPSHOT exchange="{}", symbol="{}", security_id={}, exchange_sequence={})"sv,
+          R"(PUBLISH MBP SNAPSHOT exchange="{}", symbol="{}", security_id={}, exchange_sequence={}, retries={}, delay={})"sv,
           security.exchange,
           security.symbol,
           security_id,
-          exchange_sequence);
+          exchange_sequence,
+          retries,
+          std::chrono::duration_cast<std::chrono::milliseconds>(delay));
       auto market_by_price_update = create_update(bids, asks, UpdateType::SNAPSHOT);
       create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true);
       security.mbp.resubscribe = {};
@@ -1036,13 +1038,15 @@ void UDPIncremental::dispatch_market_by_order(
       auto market_by_order_update = create_update(orders, UpdateType::INCREMENTAL);
       create_trace_and_dispatch(handler_, trace_info, market_by_order_update, true);
     };
-    auto publish_snapshot = [&](auto &orders, [[maybe_unused]] auto exchange_sequence) {
+    auto publish_snapshot = [&](auto &orders, auto exchange_sequence, auto retries, auto delay) {
       log::info(
-          R"(PUBLISH MBO SNAPSHOT exchange={}, symbol="{}", security_id={}, exchange_sequence={})"sv,
+          R"(PUBLISH MBO SNAPSHOT exchange={}, symbol="{}", security_id={}, exchange_sequence={}, retries={}, delay={})"sv,
           security.exchange,
           security.symbol,
           security_id,
-          exchange_sequence);
+          exchange_sequence,
+          retries,
+          std::chrono::duration_cast<std::chrono::milliseconds>(delay));
       auto market_by_order_update = create_update(orders, UpdateType::SNAPSHOT);
       create_trace_and_dispatch(handler_, trace_info, market_by_order_update, true);
       security.mbo.resubscribe = {};

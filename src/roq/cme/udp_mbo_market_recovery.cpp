@@ -297,14 +297,16 @@ void UDPMBOMarketRecovery::operator()(
             if (last) {
               auto &sequencer = security.mbo.sequencer;
               try {
-                auto publish_snapshot = [&](auto &orders, auto exchange_sequence) {
+                auto publish_snapshot = [&](auto &orders, auto exchange_sequence, auto retries, auto delay) {
                   log::info(
-                      R"(PUBLISH SNAPSHOT exchange="{}", symbol="{}", security_id={}, exchange_sequence={}, last_sequence={})"sv,
+                      R"(PUBLISH SNAPSHOT exchange="{}", symbol="{}", security_id={}, exchange_sequence={}, last_sequence={}, retries={}, delay={})"sv,
                       security.exchange,
                       security.symbol,
                       security_id,
                       last_msg_seq_num_processed,
-                      sequencer.last_sequence());
+                      sequencer.last_sequence(),
+                      retries,
+                      std::chrono::duration_cast<std::chrono::milliseconds>(delay));
                   auto market_by_order_update = MarketByOrderUpdate{
                       .stream_id = stream_id_,
                       .exchange = security.exchange,
