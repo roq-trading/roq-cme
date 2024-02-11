@@ -4,6 +4,7 @@
 
 #include "roq/mask.hpp"
 
+#include "roq/oms/exceptions.hpp"
 #include "roq/oms/order.hpp"
 
 #include "roq/utils/safe_cast.hpp"
