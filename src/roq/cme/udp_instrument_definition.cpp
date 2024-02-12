@@ -9,7 +9,7 @@
 #include "roq/utils/safe_cast.hpp"
 #include "roq/utils/update.hpp"
 
-#include "roq/debug/hex/message.hpp"
+#include "roq/utils/debug/hex/message.hpp"
 
 #include "roq/core/metrics/factory.hpp"
 
@@ -96,7 +96,7 @@ void drain(auto &receiver, auto &buffer, auto stream_id, auto parse) {
       return;
     // parse message
     std::span message{std::data(buffer), bytes};
-    log::info<5>("{}"sv, debug::hex::Message{message});
+    log::info<5>("{}"sv, utils::debug::hex::Message{message});
     if (mdp::Frame::parse(message, [&](auto &frame) { log::info<5>("frame={}"sv, frame); })) {
     } else {
       // failed to parse frame
@@ -158,7 +158,7 @@ void UDPInstrumentDefinition::operator()(io::net::udp::Receiver::Read const &) {
   publish_stream_status(trace_info, ConnectionStatus::READY);  // first message will publish
   auto parse = [&](auto &message) {
     if (!mdp::Parser::dispatch(*this, message, trace_info)) {
-      log::warn("{}"sv, debug::hex::Message{message});
+      log::warn("{}"sv, utils::debug::hex::Message{message});
       log::fatal("Failed to parse message"sv);
     }
   };

@@ -10,7 +10,7 @@
 #include <cme_ilink/Establish503.h>
 #include <cme_ilink/MessageHeader.h>
 
-#include "roq/debug/hex/message.hpp"
+#include "roq/utils/debug/hex/message.hpp"
 
 using namespace std::literals;
 
@@ -56,7 +56,7 @@ TEST_CASE("simple", "[establish]") {
       .putFirm("abc"sv)
       .keepAliveInterval(123);
   std::span message{std::data(buffer), Establish503::sbeBlockAndHeaderLength()};
-  fmt::print(stderr, "{}\n"sv, debug::hex::Message{message});
+  fmt::print(stderr, "{}\n"sv, utils::debug::hex::Message{message});
   fmt::print(
       stderr,
       "{} {} {}\n"sv,

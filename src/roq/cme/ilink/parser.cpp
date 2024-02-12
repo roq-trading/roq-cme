@@ -4,7 +4,7 @@
 
 #include "roq/logging.hpp"
 
-#include "roq/debug/hex/message.hpp"
+#include "roq/utils/debug/hex/message.hpp"
 
 #include "roq/core/byte_order.hpp"
 
@@ -39,7 +39,7 @@ size_t parse_helper(auto &buffer, Callback callback) {
 }  // namespace
 
 size_t Parser::dispatch(Handler &handler, std::span<std::byte const> const &buffer, TraceInfo const &trace_info) {
-  log::info<5>(R"(Received message="{}")"sv, debug::hex::Message{buffer});
+  log::info<5>(R"(Received message="{}")"sv, utils::debug::hex::Message{buffer});
   return parse_helper(buffer, [&](auto &message_2) {
     // SBE is not const-safe
     std::span message{reinterpret_cast<char *>(const_cast<std::byte *>(std::data(message_2))), std::size(message_2)};
@@ -212,7 +212,7 @@ size_t Parser::dispatch(Handler &handler, std::span<std::byte const> const &buff
           break;
         }
         default: {
-          log::warn("{}"sv, debug::hex::Message{buffer});
+          log::warn("{}"sv, utils::debug::hex::Message{buffer});
           log::warn("Unexpected: template_id={}"sv, template_id);
           // result = false; // XXX HANS ???
           return;

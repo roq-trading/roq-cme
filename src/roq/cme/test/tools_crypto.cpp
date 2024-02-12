@@ -7,7 +7,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-#include "roq/debug/hex/message.hpp"
+#include "roq/utils/debug/hex/message.hpp"
 
 #include "roq/utils/hash/sha256.hpp"
 
@@ -43,7 +43,7 @@ TEST_CASE("negotiate", "[tools_crypto]") {
       .keep_alive_interval = {},
   };
   auto signature = crypto.create_signature(buffer, message);
-  auto tmp = fmt::format("{}"sv, debug::hex::Message{signature});
+  auto tmp = fmt::format("{}"sv, utils::debug::hex::Message{signature});
   /*
   auto const expected = R"(\x55\x51\x3a\xfc\xd2\x4b\xd0\x4c\xbe\x2f\x69\x44\xe0\x26\xf1\xf2)"
                         R"(\xb3\xb9\x26\x5c\x02\x60\xac\xba\x7e\xa6\x69\x2d\x29\x51\x55\xf6)"sv;
@@ -68,7 +68,7 @@ TEST_CASE("establish", "[tools_crypto]") {
       .keep_alive_interval = 30s,
   };
   auto signature = crypto.create_signature(buffer, message);
-  auto tmp = fmt::format("{}"sv, debug::hex::Message{signature});
+  auto tmp = fmt::format("{}"sv, utils::debug::hex::Message{signature});
   /*
   auto const expected = R"(\xcc\xc8\x97\x27\x75\x36\x62\x69\x47\xfd\xaf\xcb\xbc\xb8\x23\x3e)"
                         R"(\x48\x9a\x18\x02\x5e\x67\xef\x8d\x30\x19\x67\x44\x97\xd9\xf0\x07)"sv;

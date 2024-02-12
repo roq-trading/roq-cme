@@ -12,7 +12,7 @@
 
 #include "roq/logging.hpp"
 
-#include "roq/debug/hex/message.hpp"
+#include "roq/utils/debug/hex/message.hpp"
 
 #include "roq/core/byte_order.hpp"
 
@@ -200,12 +200,12 @@ bool Parser::dispatch(Handler &handler, std::span<std::byte const> const &buffer
             case cme_mdp::SnapshotFullRefreshTCP61::SBE_TEMPLATE_ID:
             case cme_mdp::CollateralMarketValue62::SBE_TEMPLATE_ID:
             case cme_mdp::SnapshotFullRefreshTCPLongQty68::SBE_TEMPLATE_ID:
-              log::warn("{}"sv, debug::hex::Message{buffer});
+              log::warn("{}"sv, utils::debug::hex::Message{buffer});
               // don't parse / silent drop
               log::warn("Drop: template_id={}"sv, template_id);
               break;
             default: {
-              log::warn("{}"sv, debug::hex::Message{buffer});
+              log::warn("{}"sv, utils::debug::hex::Message{buffer});
               log::warn("Unexpected: template_id={}"sv, template_id);
               result = false;
               return;

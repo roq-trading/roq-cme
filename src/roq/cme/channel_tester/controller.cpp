@@ -6,8 +6,6 @@
 
 #include "roq/logging.hpp"
 
-#include "roq/debug/hex/message.hpp"
-
 #include "roq/io/engine/context_factory.hpp"
 
 #include "roq/cme/mdp/parser.hpp"
@@ -67,7 +65,6 @@ void Controller::operator()(io::net::udp::Receiver::Read const &read) {
       return;
     auto message = std::span{std::data(buffer_), bytes};
     log::info<5>("received {} byte(s)"sv, std::size(message));
-    // log::print("{}\n"sv, debug::hex::Message{message});
     if (mdp::Frame::parse(message, [&](auto &frame) {
           log::info<1>("frame={}"sv, frame);
           auto sequence_number = frame.sequence_number;

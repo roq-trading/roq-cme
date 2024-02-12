@@ -1347,8 +1347,8 @@ void OrderEntry::send(T const &value) {
       {reinterpret_cast<std::byte const *>(&sofh), sizeof(sofh)},
       message,
   }};
-  // log::info(R"(DEBUG message="{}{}")"sv, debug::hex::Message{data[0]}, debug::hex::Message{data[1]});
-  log::info<5>(R"(Sending message="{}{}")"sv, debug::hex::Message{data[0]}, debug::hex::Message{data[1]});
+  // log::info(R"(DEBUG message="{}{}")"sv, utils::debug::hex::Message{data[0]}, utils::debug::hex::Message{data[1]});
+  log::info<5>(R"(Sending message="{}{}")"sv, utils::debug::hex::Message{data[0]}, utils::debug::hex::Message{data[1]});
   (*connection_manager_).send(data);
   next_heartbeat_ = clock::get_system() + KEEP_ALIVE_INTERVAL;
 }

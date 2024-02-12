@@ -9,7 +9,7 @@
 #include <span>
 #include <string_view>
 
-#include "roq/debug/hex/message.hpp"
+#include "roq/utils/debug/hex/message.hpp"
 
 namespace roq {
 namespace cme {
@@ -55,7 +55,7 @@ struct fmt::formatter<roq::cme::ilink::Establish> {
         R"(firm="{}", )"
         R"(keep_alive_interval="{}", )"
         R"(}})"sv,
-        roq::debug::hex::Message{value.hmac_signature},
+        roq::utils::debug::hex::Message{value.hmac_signature},
         value.access_key_id,
         value.trading_system_name,
         value.trading_system_version,

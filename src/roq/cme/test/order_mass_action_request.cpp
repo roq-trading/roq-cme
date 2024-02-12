@@ -10,7 +10,7 @@
 #include <cme_ilink/MessageHeader.h>
 #include <cme_ilink/OrderMassActionRequest529.h>
 
-#include "roq/debug/hex/message.hpp"
+#include "roq/utils/debug/hex/message.hpp"
 
 #include "roq/cme/ilink/order_mass_action_request.hpp"
 
@@ -50,10 +50,10 @@ TEST_CASE("order_mass_action_request_simple", "[order_mass_action_request]") {
       .orig_order_user = {},
   };
   auto message = order_mass_action_request.encode(buffer);
-  fmt::print(stderr, "{}\n"sv, debug::hex::Message{message});
-  fmt::print(stderr, "{}\n"sv, debug::hex::Message{message.subspan(8 + 68, 1)});
+  fmt::print(stderr, "{}\n"sv, utils::debug::hex::Message{message});
+  fmt::print(stderr, "{}\n"sv, utils::debug::hex::Message{message.subspan(8 + 68, 1)});
   // fmt::print(stderr, "{}\n"sv, order_mass_action_request.ord_type);
-  fmt::print(stderr, "{}\n"sv, debug::hex::Message{message.subspan(8 + 70, 1)});
+  fmt::print(stderr, "{}\n"sv, utils::debug::hex::Message{message.subspan(8 + 70, 1)});
   // fmt::print(stderr, "{}\n"sv, order_mass_action_request.liquidity_flag);
 }
 

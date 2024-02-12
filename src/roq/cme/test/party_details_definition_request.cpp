@@ -10,7 +10,7 @@
 #include <cme_ilink/MessageHeader.h>
 #include <cme_ilink/PartyDetailsDefinitionRequest518.h>
 
-#include "roq/debug/hex/message.hpp"
+#include "roq/utils/debug/hex/message.hpp"
 
 #include "roq/cme/ilink/party_details_definition_request.hpp"
 
@@ -52,9 +52,9 @@ TEST_CASE("simple", "[party_details_definition_request]") {
       .no_party_details = party_details,
   };
   auto message = party_details_definition_request.encode(buffer);
-  fmt::print("{}\n"sv, debug::hex::Message{message});
+  fmt::print("{}\n"sv, utils::debug::hex::Message{message});
   [[maybe_unused]] auto tmp = std::string_view{reinterpret_cast<char const *>(std::data(message)), std::size(message)};
-  auto tmp_2 = fmt::format("{}"sv, debug::hex::Message{message});
+  auto tmp_2 = fmt::format("{}"sv, utils::debug::hex::Message{message});
   auto expected =
       "\x93\x00"                          // block length
       "\x06\x02"                          // template id
@@ -87,6 +87,6 @@ TEST_CASE("simple", "[party_details_definition_request]") {
       // no trd reg publications
       "\x02\x00"  // block length
       "\x00"sv;   // count
-  auto expected_2 = fmt::format("{}"sv, debug::hex::Message{expected});
+  auto expected_2 = fmt::format("{}"sv, utils::debug::hex::Message{expected});
   CHECK(tmp_2 == expected_2);
 }

@@ -8,7 +8,7 @@
 #include "roq/utils/safe_cast.hpp"
 #include "roq/utils/update.hpp"
 
-#include "roq/debug/hex/message.hpp"
+#include "roq/utils/debug/hex/message.hpp"
 
 #include "roq/core/metrics/factory.hpp"
 
@@ -369,7 +369,7 @@ void drain(auto &receiver, auto &channel, auto stream_id, auto &settings, auto p
           }
           // parse message
           std::span message{std::data(buffer), bytes};
-          log::info<5>("{}"sv, debug::hex::Message{message});
+          log::info<5>("{}"sv, utils::debug::hex::Message{message});
           bool hold = false, drop = false;
           value_type sequence_number = {};
           if (mdp::Frame::parse(message, [&](auto &frame) {
@@ -463,11 +463,11 @@ void UDPIncremental::operator()(io::net::udp::Receiver::Read const &) {
   auto parse = [&](auto &message) {
     log_this_message_ = false;  // DEBUG
     if (!mdp::Parser::dispatch(*this, message, trace_info)) {
-      log::warn("{}"sv, debug::hex::Message{message});
+      log::warn("{}"sv, utils::debug::hex::Message{message});
       log::fatal("Failed to parse message"sv);
     }
     if (log_this_message_) {  // DEBUG
-      log::info("{}"sv, debug::hex::Message{message});
+      log::info("{}"sv, utils::debug::hex::Message{message});
     }
   };
   drain(*receiver_, channel_, stream_id_, shared_.settings, parse, [&]() { on_sequence_reset(); });

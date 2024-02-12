@@ -10,7 +10,7 @@
 #include <cme_ilink/MessageHeader.h>
 #include <cme_ilink/NewOrderSingle514.h>
 
-#include "roq/debug/hex/message.hpp"
+#include "roq/utils/debug/hex/message.hpp"
 
 using namespace std::literals;
 
@@ -74,7 +74,7 @@ TEST_CASE("simple", "[new_order_single]") {
   auto message = encode(buffer, message_header, new_order_single);
   */
   std::span message{std::data(buffer), value_type::sbeBlockAndHeaderLength()};
-  fmt::print(stderr, "{}\n"sv, debug::hex::Message{message});
+  fmt::print(stderr, "{}\n"sv, utils::debug::hex::Message{message});
   fmt::print(
       stderr, "{} {} {}\n"sv, std::size(message), value_type::sbeBlockAndHeaderLength(), value_type::sbeBlockLength());
   [[maybe_unused]] auto expected =

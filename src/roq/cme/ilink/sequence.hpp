@@ -9,8 +9,6 @@
 #include <span>
 #include <string_view>
 
-#include "roq/debug/hex/message.hpp"
-
 #include <cme_ilink/FTI.h>
 #include <cme_ilink/KeepAliveLapsed.h>
 

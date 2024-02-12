@@ -9,8 +9,6 @@
 #include <span>
 #include <string_view>
 
-#include "roq/debug/hex/message.hpp"
-
 #include <cme_ilink/SplitMsg.h>
 
 #include "roq/cme/ilink/utils.hpp"

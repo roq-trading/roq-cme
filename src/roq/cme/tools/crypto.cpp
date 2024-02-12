@@ -18,8 +18,6 @@
 
 #include "roq/utils/text/writer.hpp"
 
-#include "roq/debug/hex/message.hpp"
-
 using namespace std::literals;
 
 namespace roq {

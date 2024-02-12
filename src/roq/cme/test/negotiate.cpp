@@ -10,7 +10,7 @@
 #include <cme_ilink/MessageHeader.h>
 #include <cme_ilink/Negotiate500.h>
 
-#include "roq/debug/hex/message.hpp"
+#include "roq/utils/debug/hex/message.hpp"
 
 #include "roq/cme/ilink/negotiate.hpp"
 
@@ -36,7 +36,7 @@ TEST_CASE("simple", "[negotiate]") {
       .firm = "ROQ"sv,
   };
   auto message = negotiate.encode(buffer);
-  auto message_2 = fmt::format("{}"sv, debug::hex::Message{message});
+  auto message_2 = fmt::format("{}"sv, utils::debug::hex::Message{message});
   auto expected =
       "\x4c\x00"  // block length
       "\xf4\x01"  // template id
@@ -51,7 +51,7 @@ TEST_CASE("simple", "[negotiate]") {
       "\x4d\x39\x48"                              // session
       "\x52\x4f\x51\x00\x00"                      // firm
       "\x00\x00"sv;                               // credentials
-  auto expected_2 = fmt::format("{}"sv, debug::hex::Message{expected});
+  auto expected_2 = fmt::format("{}"sv, utils::debug::hex::Message{expected});
   CHECK(message_2 == expected_2);
 }
 
