@@ -4,15 +4,15 @@
 
 #include "roq/mask.hpp"
 
-#include "roq/oms/exceptions.hpp"
-#include "roq/oms/order.hpp"
-
 #include "roq/utils/safe_cast.hpp"
 #include "roq/utils/update.hpp"
 
 #include "roq/core/byte_order.hpp"
 
 #include "roq/core/metrics/factory.hpp"
+
+#include "roq/server/oms/exceptions.hpp"
+#include "roq/server/oms/order.hpp"
 
 #include "roq/cme/ilink/session.hpp"
 
@@ -269,7 +269,7 @@ auto map(Mask<ExecutionInstruction> execution_instructions) -> uint8_t {
     }
   });
   if (error) [[unlikely]] {
-    throw oms::Rejected{Origin::GATEWAY, Error::INVALID_EXECUTION_INSTRUCTION, "unsupported"sv};
+    throw server::oms::Rejected{Origin::GATEWAY, Error::INVALID_EXECUTION_INSTRUCTION, "unsupported"sv};
   }
   return result;
 }
@@ -428,7 +428,7 @@ auto get_aggressor_indicator(T &value) -> Liquidity {
 // execution report -> order update
 
 template <typename T>
-auto order_update_from_execution_report(T &value, auto &security, auto &external_order_id) -> oms::OrderUpdate {
+auto order_update_from_execution_report(T &value, auto &security, auto &external_order_id) -> server::oms::OrderUpdate {
   using value_type = std::remove_cvref<T>::type;
   auto account = value.getSenderIDAsStringView();
   auto side = map(value.side());
@@ -565,38 +565,38 @@ void OrderEntry::operator()(Event<Timer> const &event) {
 }
 
 uint16_t OrderEntry::operator()(
-    Event<CreateOrder> const &event, oms::Order const &order, std::string_view const &request_id) {
+    Event<CreateOrder> const &event, server::oms::Order const &order, std::string_view const &request_id) {
   if (!ready()) [[unlikely]]
-    throw oms::NotReady{"not ready"sv};
+    throw server::oms::NotReady{"not ready"sv};
   send_new_order_single(event.value, order, request_id);
   return stream_id_;
 }
 
 uint16_t OrderEntry::operator()(
     Event<ModifyOrder> const &event,
-    oms::Order const &order,
+    server::oms::Order const &order,
     [[maybe_unused]] std::string_view const &request_id,
     [[maybe_unused]] std::string_view const &previous_request_id) {
   if (!ready()) [[unlikely]]
-    throw oms::NotReady{"not ready"sv};
+    throw server::oms::NotReady{"not ready"sv};
   send_order_cancel_replace_request(event.value, order);
   return stream_id_;
 }
 
 uint16_t OrderEntry::operator()(
     Event<CancelOrder> const &event,
-    oms::Order const &order,
+    server::oms::Order const &order,
     [[maybe_unused]] std::string_view const &request_id,
     [[maybe_unused]] std::string_view const &previous_request_id) {
   if (!ready()) [[unlikely]]
-    throw oms::NotReady{"not ready"sv};
+    throw server::oms::NotReady{"not ready"sv};
   send_order_cancel_request(event.value, order);
   return stream_id_;
 }
 
 uint16_t OrderEntry::operator()(Event<CancelAllOrders> const &event, std::string_view const &request_id) {
   if (!ready()) [[unlikely]]
-    throw oms::NotReady{"not ready"sv};
+    throw server::oms::NotReady{"not ready"sv};
   auto &cancel_all_orders = event.value;
   auto send_ack = [&]() {
     auto cancel_all_orders_ack = CancelAllOrdersAck{
@@ -765,7 +765,7 @@ void OrderEntry::operator()(Trace<cme_ilink::BusinessReject521> const &event) {
       auto [type, user_id, order_id] = decode_order_request_id(get_business_reject_ref_id(value));
       log::info("DEBUG type={}, user_id={}, order_id={}"sv, type, user_id, order_id);
       auto text = value.getTextAsStringView();
-      auto response = oms::Response{
+      auto response = server::oms::Response{
           .request_type = type,
           .origin = Origin::EXCHANGE,
           .request_status = RequestStatus::REJECTED,
@@ -799,7 +799,7 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportNew522> const &event
             if (type != RequestType::CREATE_ORDER) [[unlikely]]
               log::warn("Unexpected: type={}"sv, type);
             auto order_update = order_update_from_execution_report(value, security, external_order_id);
-            auto response = oms::Response{
+            auto response = server::oms::Response{
                 .request_type = type,
                 .origin = Origin::EXCHANGE,
                 .request_status = RequestStatus::ACCEPTED,
@@ -834,7 +834,7 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportReject523> const &ev
     log::info("DEBUG type={}, user_id={}, order_id={}"sv, type, user_id, order_id);
     if (type != RequestType::CREATE_ORDER) [[unlikely]]
       log::warn("Unexpected: type={}"sv, type);
-    auto response = oms::Response{
+    auto response = server::oms::Response{
         .request_type = type,
         .origin = Origin::EXCHANGE,
         .request_status = RequestStatus::REJECTED,
@@ -961,7 +961,7 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportModify531> const &ev
             if (type != RequestType::MODIFY_ORDER) [[unlikely]]
               log::warn("Unexpected: type={}"sv, type);
             auto order_update = order_update_from_execution_report(value, security, external_order_id);
-            auto response = oms::Response{
+            auto response = server::oms::Response{
                 .request_type = type,
                 .origin = Origin::EXCHANGE,
                 .request_status = RequestStatus::ACCEPTED,
@@ -1027,7 +1027,7 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportCancel534> const &ev
             if (type != RequestType::CANCEL_ORDER) [[unlikely]]
               log::warn("Unexpected: type={}"sv, type);
             auto order_update = order_update_from_execution_report(value, security, external_order_id);
-            auto response = oms::Response{
+            auto response = server::oms::Response{
                 .request_type = RequestType::CANCEL_ORDER,
                 .origin = Origin::EXCHANGE,
                 .request_status = RequestStatus::ACCEPTED,
@@ -1120,7 +1120,7 @@ void OrderEntry::operator()(Trace<cme_ilink::OrderMassActionReport562> const &ev
               affected_order_id,
               cxl_quantity);
           auto external_order_id = fmt::format("{}"sv, affected_order_id);
-          auto order_update = oms::OrderUpdate{
+          auto order_update = server::oms::OrderUpdate{
               .account = account,
               .exchange = {},
               .symbol = {},
@@ -1180,7 +1180,7 @@ void OrderEntry::operator()(Trace<cme_ilink::OrderCancelReject535> const &event)
     log::info("DEBUG type={}, user_id={}, order_id={}"sv, type, user_id, order_id);
     if (type != RequestType::CANCEL_ORDER) [[unlikely]]
       log::warn("Unexpected: type={}"sv, type);
-    auto response = oms::Response{
+    auto response = server::oms::Response{
         .request_type = type,
         .origin = Origin::EXCHANGE,
         .request_status = RequestStatus::REJECTED,
@@ -1209,7 +1209,7 @@ void OrderEntry::operator()(Trace<cme_ilink::OrderCancelReplaceReject536> const 
     log::info("DEBUG type={}, user_id={}, order_id={}"sv, type, user_id, order_id);
     if (type != RequestType::MODIFY_ORDER) [[unlikely]]
       log::warn("Unexpected: type={}"sv, type);
-    auto response = oms::Response{
+    auto response = server::oms::Response{
         .request_type = type,
         .origin = Origin::EXCHANGE,
         .request_status = RequestStatus::REJECTED,
@@ -1526,12 +1526,13 @@ void OrderEntry::send_order_mass_status_request() {
 // note!
 //   undoc: execution mode must be x0 (NULL results in reject reason 109)
 void OrderEntry::send_new_order_single(
-    CreateOrder const &create_order, oms::Order const &order, std::string_view const &request_id) {
+    CreateOrder const &create_order, server::oms::Order const &order, std::string_view const &request_id) {
   if (shared_.find_security_id(market_segment_id_, order.symbol, [&](auto security_id) {
         log::info("DEBUG found security_id={}"sv, security_id);
         if (shared_.get_security(security_id, [&](auto &security) {
               if (create_order.exchange != security.exchange) [[unlikely]] {
-                throw oms::Rejected{Origin::GATEWAY, Error::INVALID_EXCHANGE, "Expected: {}"sv, security.exchange};
+                throw server::oms::Rejected{
+                    Origin::GATEWAY, Error::INVALID_EXCHANGE, "Expected: {}"sv, security.exchange};
               }
               auto order_qty = get_quantity(create_order.quantity);
               auto side = map(create_order.side);
@@ -1577,7 +1578,7 @@ void OrderEntry::send_new_order_single(
         }
       })) {
   } else {
-    throw oms::Rejected{
+    throw server::oms::Rejected{
         Origin::GATEWAY,
         Error::INVALID_SYMBOL,
         R"(No mapping for market_segment_id={} and symbol="{}")"sv,
@@ -1588,7 +1589,7 @@ void OrderEntry::send_new_order_single(
 
 // note!
 //   undoc: execution mode must be x0 (NULL results in reject reason 109)
-void OrderEntry::send_order_cancel_replace_request(ModifyOrder const &modify_order, oms::Order const &order) {
+void OrderEntry::send_order_cancel_replace_request(ModifyOrder const &modify_order, server::oms::Order const &order) {
   log::info("DEBUG modify_order={}"sv, modify_order);
   log::info("DEBUG order={}"sv, order);
   if (shared_.find_security_id(market_segment_id_, order.symbol, [&](auto security_id) {
@@ -1633,7 +1634,7 @@ void OrderEntry::send_order_cancel_replace_request(ModifyOrder const &modify_ord
         send(order_cancel_replace_request);
       })) {
   } else {
-    throw oms::Rejected{
+    throw server::oms::Rejected{
         Origin::GATEWAY,
         Error::INVALID_SYMBOL,
         R"(No mapping for market_segment_id={} and symbol="{}")"sv,
@@ -1642,7 +1643,7 @@ void OrderEntry::send_order_cancel_replace_request(ModifyOrder const &modify_ord
   }
 }
 
-void OrderEntry::send_order_cancel_request(CancelOrder const &cancel_order, oms::Order const &order) {
+void OrderEntry::send_order_cancel_request(CancelOrder const &cancel_order, server::oms::Order const &order) {
   log::info("DEBUG cancel_order={}"sv, cancel_order);
   log::info("DEBUG order={}"sv, order);
   if (shared_.find_security_id(market_segment_id_, order.symbol, [&](auto security_id) {
@@ -1671,7 +1672,7 @@ void OrderEntry::send_order_cancel_request(CancelOrder const &cancel_order, oms:
         send(order_cancel_request);
       })) {
   } else {
-    throw oms::Rejected{
+    throw server::oms::Rejected{
         Origin::GATEWAY,
         Error::INVALID_SYMBOL,
         R"(No mapping for market_segment_id={} and symbol="{}")"sv,
@@ -1711,7 +1712,10 @@ void OrderEntry::send_order_mass_action_request(CancelAllOrders const &) {
 
 template <typename Callback, typename... Args>
 void OrderEntry::operator()(
-    Callback callback, Trace<oms::OrderUpdate> const &event, std::string_view const &client_order_id, Args &&...args) {
+    Callback callback,
+    Trace<server::oms::OrderUpdate> const &event,
+    std::string_view const &client_order_id,
+    Args &&...args) {
   auto &[trace_info, order_update] = event;
   if (shared_.update_order(
           client_order_id, stream_id_, trace_info, order_update, std::forward<Args>(args)..., [&](auto &order) {
@@ -1724,7 +1728,7 @@ void OrderEntry::operator()(
 
 template <typename... Args>
 void OrderEntry::operator()(
-    Trace<oms::Response> const &event, std::string_view const &client_order_id, Args &&...args) {
+    Trace<server::oms::Response> const &event, std::string_view const &client_order_id, Args &&...args) {
   auto &[trace_info, response] = event;
   if (shared_.update_order(
           client_order_id,
@@ -1739,7 +1743,8 @@ void OrderEntry::operator()(
 }
 
 template <typename... Args>
-void OrderEntry::operator()(Trace<oms::Response> const &event, uint8_t user_id, uint64_t order_id, Args &&...args) {
+void OrderEntry::operator()(
+    Trace<server::oms::Response> const &event, uint8_t user_id, uint64_t order_id, Args &&...args) {
   auto &[trace_info, response] = event;
   if (shared_.update_order(
           user_id,
