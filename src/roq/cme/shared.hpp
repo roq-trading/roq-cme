@@ -2,16 +2,14 @@
 
 #pragma once
 
-#include <absl/container/flat_hash_map.h>
-#include <absl/container/flat_hash_set.h>
-#include <absl/container/node_hash_map.h>
-
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "roq/api.hpp"
 #include "roq/server.hpp"
+
+#include "roq/utils/container.hpp"
 
 #include "roq/cme/settings.hpp"
 
@@ -31,7 +29,7 @@ struct Shared final {
   mdp::Config mdp_config_;
 
  private:
-  absl::flat_hash_map<uint8_t, ilink::ConfigReader::MarketSegment> ilink_config_;
+  utils::unordered_map<uint8_t, ilink::ConfigReader::MarketSegment> ilink_config_;
 
  public:
   template <typename Callback>
@@ -43,9 +41,9 @@ struct Shared final {
     return true;
   }
 
-  absl::node_hash_map<int32_t, tools::Security> securities;
-  absl::flat_hash_map<std::string, absl::flat_hash_set<int32_t>> security_groups;
-  absl::flat_hash_map<uint8_t, absl::flat_hash_map<std::string, int32_t>> market_segments;
+  utils::unordered_map<int32_t, tools::Security> securities;
+  utils::unordered_map<std::string, utils::unordered_set<int32_t>> security_groups;
+  utils::unordered_map<uint8_t, utils::unordered_map<std::string, int32_t>> market_segments;
 
  private:
   struct {
@@ -103,7 +101,7 @@ struct Shared final {
       Callback callback) {
     if (!security.discard) {
       security_groups[security_group].insert(security_id);
-      market_segments[market_segment_id].try_emplace(security.symbol, security_id);
+      market_segments[market_segment_id].try_emplace(static_cast<std::string_view>(security.symbol), security_id);
     }
     auto iter = securities.try_emplace(security_id, std::move(security)).first;
     callback((*iter).second);

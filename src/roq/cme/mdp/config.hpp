@@ -2,12 +2,12 @@
 
 #pragma once
 
-#include <absl/container/node_hash_map.h>
-
 #include <string>
 #include <string_view>
 
 #include "roq/priority.hpp"
+
+#include "roq/utils/container.hpp"
 
 #include "roq/cme/mdp/connection_type.hpp"
 
@@ -42,7 +42,7 @@ struct Config final {
 
  private:
   // channel => type => feed => connectoin
-  absl::node_hash_map<std::string, absl::node_hash_map<ConnectionType, absl::node_hash_map<Priority, Connection>>>
+  utils::unordered_map<std::string, utils::unordered_map<ConnectionType, utils::unordered_map<Priority, Connection>>>
       connections_;
 };
 

@@ -2,13 +2,12 @@
 
 #pragma once
 
-#include <absl/container/flat_hash_map.h>
-#include <absl/container/flat_hash_set.h>
-
 #include <string>
 #include <string_view>
 
 #include "roq/api.hpp"
+
+#include "roq/utils/container.hpp"
 
 namespace roq {
 namespace cme {
@@ -26,8 +25,8 @@ struct ConfigReader final {
   };
   struct Channel final {
     std::string label;
-    absl::flat_hash_set<std::string> products;
-    absl::flat_hash_map<std::string, Connection> connections;
+    utils::unordered_set<std::string> products;
+    utils::unordered_map<std::string, Connection> connections;
   };
 
   struct Handler {
