@@ -467,8 +467,8 @@ void UDPMBPMarketRecovery::dispatch_market_by_price(
           .exchange_time_utc = exchange_time_utc,
           .exchange_sequence = sequencer.last_sequence(),
           .sending_time_utc = sending_time_utc,
-          .price_decimals = {},
-          .quantity_decimals = {},
+          .price_precision = {},
+          .quantity_precision = {},
           .checksum = {},
       };
       Trace event(trace_info, market_by_price_update);

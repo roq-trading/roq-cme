@@ -954,8 +954,8 @@ void UDPIncremental::dispatch_market_by_price(
           .exchange_time_utc = exchange_time_utc,
           .exchange_sequence = exchange_sequence,
           .sending_time_utc = sending_time_utc,
-          .price_decimals = {},
-          .quantity_decimals = {},
+          .price_precision = {},
+          .quantity_precision = {},
           .checksum = {},
       };
     };
@@ -1028,8 +1028,8 @@ void UDPIncremental::dispatch_market_by_order(
           .exchange_time_utc = exchange_time_utc,
           .exchange_sequence = exchange_sequence,
           .sending_time_utc = sending_time_utc,
-          .price_decimals = {},
-          .quantity_decimals = {},
+          .price_precision = {},
+          .quantity_precision = {},
           .max_depth = {},
           .checksum = {},
       };

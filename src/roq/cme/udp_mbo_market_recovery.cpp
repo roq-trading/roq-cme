@@ -316,8 +316,8 @@ void UDPMBOMarketRecovery::operator()(
                       .exchange_time_utc = {},
                       .exchange_sequence = sequencer.last_sequence(),
                       .sending_time_utc = {},
-                      .price_decimals = {},
-                      .quantity_decimals = {},
+                      .price_precision = {},
+                      .quantity_precision = {},
                       .checksum = {},
                   };
                   Trace event(trace_info, market_by_order_update);
