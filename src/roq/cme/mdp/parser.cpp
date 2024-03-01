@@ -56,10 +56,10 @@ bool Parser::dispatch(Handler &handler, std::span<std::byte const> const &buffer
           auto block_length = header.blockLength();
           auto template_id = header.templateId();
           auto version = header.version();
-          log::debug("block_length={}, template={}, version={}"sv, block_length, template_id, version);
+          // log::debug("block_length={}, template={}, version={}"sv, block_length, template_id, version);
           auto length =
               message_size.length - (sizeof(MessageSize::value_type) + cme_mdp::MessageHeader::encodedLength());
-          log::debug("length={}"sv, length);
+          // log::debug("length={}"sv, length);
           assert(std::size(message) >= length);
           auto tmp = message.subspan(0, length);
           switch (template_id) {

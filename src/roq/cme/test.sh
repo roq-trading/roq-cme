@@ -39,14 +39,17 @@ $PREFIX "./roq-cme" \
   --event_log_symlink true \
   --client_listen_address "$HOME/run/$NAME.sock" \
   --service_listen_address "$HOME/run/metrics/${NAME}.sock" \
-  --multicast_channel_ids "310" \
+  --multicast_channel_ids "344" \
   --multicast_config_file "$MULTICAST_CONFIG_FILE" \
-  --multicast_local_interface "1.2.3.4" \
-  --ilink_firm_id "ROQ" \
-  --ilink_market_segment_ids "84" \
-  --ilink_config_file="$ILINK_CONFIG_FILE" \
-  --secdef_config_file="$SECDEF_CONFIG_FILE" \
+  --multicast_local_interface "192.168.188.66" \
+  --enable_market_by_order=true \
+  --test_mbp_to_mbo_clear_price_level=true \
   $@
+
+#  --ilink_firm_id "ROQ" \
+#  --ilink_market_segment_ids "84" \
+#  --ilink_config_file="$ILINK_CONFIG_FILE" \
+#  --secdef_config_file="$SECDEF_CONFIG_FILE" \
 
 # $PREFIX "./roq-cme" \
 #   --name=cme \
