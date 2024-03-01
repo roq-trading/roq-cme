@@ -40,6 +40,8 @@ find_package(roq-utils REQUIRED)
 find_package(roq-web REQUIRED)
 find_package(unordered_dense REQUIRED)
 
+pkg_check_modules(LIBPCAP REQUIRED libpcap)
+
 if(UNIX AND NOT APPLE)
   find_package(rt REQUIRED) # XXX
 endif()

@@ -30,6 +30,7 @@ requirements:
     - expat
     - fmt
     - libabseil
+    - libpcap
     - libsodium
     - roq-cme-ilink
     - roq-cme-mdp
