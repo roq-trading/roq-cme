@@ -30,7 +30,6 @@ requirements:
     - expat
     - fmt
     - libabseil
-    - libpcap
     - libsodium
     - roq-cme-ilink
     - roq-cme-mdp
@@ -40,6 +39,7 @@ requirements:
     - roq-oss-benchmark
     - roq-oss-brotli
     - roq-oss-cppitertools
+    - roq-oss-libpcap
     - roq-oss-magic_enum
     - roq-oss-tomlplusplus
     - roq-oss-unordered_dense
