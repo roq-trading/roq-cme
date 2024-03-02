@@ -87,8 +87,13 @@ void Controller::dispatch(std::string_view const &path) {
       if ((*ip_header).ip_p == IPPROTO_UDP) {
         auto udp_header =
             reinterpret_cast<struct udphdr const *>(packet + sizeof(struct ether_header) + sizeof(struct ip));
+#if __APPLE__
+        auto src_port = ntohs((*udp_header).uh_sport);
+        auto dst_port = ntohs((*udp_header).uh_dport);
+#else
         auto src_port = ntohs((*udp_header).source);
         auto dst_port = ntohs((*udp_header).dest);
+#endif
         auto offset = sizeof(struct ether_header) + sizeof(struct ip) + sizeof(struct udphdr);
         std::span payload{reinterpret_cast<std::byte const *>(packet + offset), (*header).len - offset};
         log::info("{} {} {}"sv, timestamp, dst, dst_port);
