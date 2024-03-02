@@ -16,6 +16,7 @@ add_subdirectory(secdef)
 
 add_subdirectory(channel_tester)
 add_subdirectory(pcap_filter)
+add_subdirectory(pcap_import)
 
 set(SOURCES
     account.cpp
