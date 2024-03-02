@@ -14,6 +14,8 @@ namespace roq {
 namespace cme {
 namespace mdp {
 
+// === HELPERS ===
+
 namespace {
 auto get_type(auto &value) {
   using enum ConnectionType;
@@ -71,10 +73,23 @@ auto read_connections(auto &filename, bool verbose) {
   ConfigReader::read(handler, filename);
   return result;
 }
+
+template <typename R>
+R create_connection_types(auto &connections) {
+  R result;
+  for (auto &[channel, tmp_1] : connections)
+    for (auto &[connection_type, tmp_2] : tmp_1)
+      for (auto &[priority, connection] : tmp_2)
+        result[connection.multicast_address][connection.port] = connection_type;
+  return result;
+}
 }  // namespace
 
+// === IMPLEMENTATION ===
+
 Config::Config(std::string_view const &filename, bool verbose)
-    : connections_(read_connections<decltype(connections_)>(filename, verbose)) {
+    : connections_{read_connections<decltype(connections_)>(filename, verbose)},
+      connection_types_{create_connection_types<decltype(connection_types_)>(connections_)} {
 }
 
 }  // namespace mdp

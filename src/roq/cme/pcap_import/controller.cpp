@@ -18,6 +18,8 @@
 
 #include "roq/utils/debug/hex/message.hpp"
 
+#include "roq/cme/pcap_import/pcap.hpp"
+
 using namespace std::literals;
 
 namespace roq {
@@ -27,40 +29,6 @@ namespace pcap_import {
 // === HELPERS ===
 
 namespace {
-using callback_t = std::function<void(struct pcap_pkthdr const *header, u_char const *packet)>;
-
-void helper(u_char *user_data, struct pcap_pkthdr const *header, u_char const *packet) {
-  auto callback = reinterpret_cast<callback_t const *>(user_data);
-  (*callback)(header, packet);
-}
-
-struct PCAP final {
-  explicit PCAP(std::string const &path) : handle_{pcap_open_offline(path.c_str(), error_buffer_), deleter} {
-    if (handle_ == nullptr)
-      throw RuntimeError{"pcap_open_offline: {}"sv, error_buffer_};
-  }
-
-  explicit PCAP(std::string_view const &path) : PCAP{std::string{path}} {}
-
-  void dispatch(callback_t const &callback) {
-    auto res =
-        pcap_dispatch(handle_.get(), -1, helper, reinterpret_cast<u_char *>(&const_cast<callback_t &>(callback)));
-    if (res < 0)
-      throw RuntimeError{"pcap_dispatch: {}"sv, pcap_geterr(handle_.get())};
-  }
-
- private:
-  using value_type = pcap_t;
-
-  char error_buffer_[PCAP_ERRBUF_SIZE] = {};
-  std::unique_ptr<value_type, void (*)(value_type *)> handle_;
-
-  static void deleter(value_type *handle) {
-    if (handle)
-      pcap_close(handle);
-  }
-};
-
 auto convert(timeval ts) {
   return std::chrono::nanoseconds{std::chrono::seconds{ts.tv_sec} + std::chrono::microseconds{ts.tv_usec}};
 }
@@ -68,11 +36,11 @@ auto convert(timeval ts) {
 
 // === IMPLEMENTATION ===
 
-Controller::Controller(Settings const &settings) : settings_{settings} {
+Controller::Controller(Settings const &settings)
+    : settings_{settings}, config_{settings.config_file, false}, market_data_{*this} {
 }
 
 void Controller::dispatch(std::string_view const &path) {
-  PCAP pcap{path};
   auto callback = [this](struct pcap_pkthdr const *header, u_char const *packet) {
     auto timestamp = convert((*header).ts);
     // note! assuming ether
@@ -96,144 +64,61 @@ void Controller::dispatch(std::string_view const &path) {
 #endif
         auto offset = sizeof(struct ether_header) + sizeof(struct ip) + sizeof(struct udphdr);
         std::span payload{reinterpret_cast<std::byte const *>(packet + offset), (*header).len - offset};
-        log::info("{} {} {}"sv, timestamp, dst, dst_port);
-        log::info<5>("{}"sv, utils::debug::hex::Message{payload});
-        TraceInfo trace_info;
-        mdp::Parser::dispatch(*this, payload, trace_info);
+        log::info<5>(
+            "timestamp={}, address={}, port={}, payload={}"sv,
+            timestamp,
+            dst,
+            dst_port,
+            utils::debug::hex::Message{payload});
+        if (config_.find(dst, dst_port, [&](auto connection_type) {
+              TraceInfo trace_info{timestamp, timestamp, timestamp};
+              market_data_.dispatch(connection_type, payload, trace_info, 0);
+            })) {
+        } else {
+          log::warn(R"(Unexpected: address="{}", port={})"sv, dst, dst_port);
+        }
       }
     }
   };
-  pcap.dispatch(callback);
+  PCAP{path}.dispatch(callback);
 }
 
-// mdp::Parser::Handler
+// market_data::Manager::Handler
 
-void Controller::operator()(mdp::Frame const &) {
-  // log::info("frame={}"sv, frame);
+void Controller::operator()(Trace<StreamStatus> const &event) {
+  log::info("event={}"sv, event);
 }
 
-// - admin
-
-void Controller::operator()(Trace<cme_mdp::AdminHeartbeat12> const &event, mdp::Frame const &frame) {
-  dispatch(event, frame);
+void Controller::operator()(Trace<ExternalLatency> const &event) {
+  log::info("event={}"sv, event);
 }
 
-void Controller::operator()(Trace<cme_mdp::ChannelReset4> const &event, mdp::Frame const &frame) {
-  dispatch(event, frame);
+void Controller::operator()(Trace<ReferenceData> const &event, bool is_last) {
+  log::info("event={}"sv, event);
 }
 
-// - instrument definitions
-
-void Controller::operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &event, mdp::Frame const &frame) {
-  dispatch(event, frame);
+void Controller::operator()(Trace<MarketStatus> const &event, bool is_last) {
+  log::info("event={}"sv, event);
 }
 
-void Controller::operator()(Trace<cme_mdp::MDInstrumentDefinitionOption55> const &event, mdp::Frame const &frame) {
-  dispatch(event, frame);
+void Controller::operator()(Trace<TopOfBook> const &event, bool is_last) {
+  log::info("event={}"sv, event);
 }
 
-void Controller::operator()(Trace<cme_mdp::MDInstrumentDefinitionSpread56> const &event, mdp::Frame const &frame) {
-  dispatch(event, frame);
+void Controller::operator()(Trace<MarketByPriceUpdate> const &event, bool is_last) {
+  log::info("event={}"sv, event);
 }
 
-void Controller::operator()(Trace<cme_mdp::MDInstrumentDefinitionFixedIncome57> const &event, mdp::Frame const &frame) {
-  dispatch(event, frame);
+void Controller::operator()(Trace<MarketByOrderUpdate> const &event, bool is_last) {
+  log::info("event={}"sv, event);
 }
 
-void Controller::operator()(Trace<cme_mdp::MDInstrumentDefinitionRepo58> const &event, mdp::Frame const &frame) {
-  dispatch(event, frame);
+void Controller::operator()(Trace<TradeSummary> const &event, bool is_last) {
+  log::info("event={}"sv, event);
 }
 
-void Controller::operator()(Trace<cme_mdp::MDInstrumentDefinitionFX63> const &event, mdp::Frame const &frame) {
-  dispatch(event, frame);
-}
-
-// - status
-
-void Controller::operator()(Trace<cme_mdp::SecurityStatus30> const &event, mdp::Frame const &frame) {
-  dispatch(event, frame);
-}
-
-// - market by price
-
-void Controller::operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &event, mdp::Frame const &frame) {
-  dispatch(event, frame);
-}
-
-void Controller::operator()(Trace<cme_mdp::SnapshotFullRefreshLongQty69> const &event, mdp::Frame const &frame) {
-  dispatch(event, frame);
-}
-
-void Controller::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &event, mdp::Frame const &frame) {
-  dispatch(event, frame);
-}
-
-void Controller::operator()(Trace<cme_mdp::MDIncrementalRefreshBookLongQty64> const &event, mdp::Frame const &frame) {
-  dispatch(event, frame);
-}
-
-// - market by order
-
-void Controller::operator()(Trace<cme_mdp::SnapshotFullRefreshOrderBook53> const &event, mdp::Frame const &frame) {
-  dispatch(event, frame);
-}
-
-void Controller::operator()(Trace<cme_mdp::MDIncrementalRefreshOrderBook47> const &event, mdp::Frame const &frame) {
-  dispatch(event, frame);
-}
-
-// - trade summary
-
-void Controller::operator()(Trace<cme_mdp::MDIncrementalRefreshTradeSummary48> const &event, mdp::Frame const &frame) {
-  dispatch(event, frame);
-}
-
-void Controller::operator()(
-    Trace<cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65> const &event, mdp::Frame const &frame) {
-  dispatch(event, frame);
-}
-
-// - statistics
-
-void Controller::operator()(
-    Trace<cme_mdp::MDIncrementalRefreshDailyStatistics49> const &event, mdp::Frame const &frame) {
-  dispatch(event, frame);
-}
-
-void Controller::operator()(
-    Trace<cme_mdp::MDIncrementalRefreshSessionStatistics51> const &event, mdp::Frame const &frame) {
-  dispatch(event, frame);
-}
-
-void Controller::operator()(
-    Trace<cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67> const &event, mdp::Frame const &frame) {
-  dispatch(event, frame);
-}
-
-void Controller::operator()(Trace<cme_mdp::MDIncrementalRefreshVolume37> const &event, mdp::Frame const &frame) {
-  dispatch(event, frame);
-}
-
-void Controller::operator()(Trace<cme_mdp::MDIncrementalRefreshVolumeLongQty66> const &event, mdp::Frame const &frame) {
-  dispatch(event, frame);
-}
-
-// - misc
-
-void Controller::operator()(Trace<cme_mdp::MDIncrementalRefreshLimitsBanding50> const &event, mdp::Frame const &frame) {
-  dispatch(event, frame);
-}
-
-void Controller::operator()(Trace<cme_mdp::QuoteRequest39> const &event, mdp::Frame const &frame) {
-  dispatch(event, frame);
-}
-
-// helpers
-
-template <typename T>
-void Controller::dispatch(Trace<T> const &event, mdp::Frame const &) {
-  auto &value = const_cast<T &>(event.value);  // note! not const-safe
-  log::info("value={}"sv, value);
+void Controller::operator()(Trace<StatisticsUpdate> const &event, bool is_last) {
+  log::info("event={}"sv, event);
 }
 
 }  // namespace pcap_import

@@ -40,10 +40,27 @@ struct Config final {
     return true;
   }
 
+  template <typename Callback>
+  bool find(std::string_view const &address, uint16_t port, Callback callback) const {
+    auto iter_1 = connection_types_.find(address);
+    if (iter_1 != std::end(connection_types_)) {
+      auto &tmp_1 = (*iter_1).second;
+      auto iter_2 = tmp_1.find(port);
+      if (iter_2 != std::end(tmp_1)) {
+        callback((*iter_2).second);
+        return true;
+      }
+    }
+    return false;
+  }
+
  private:
-  // channel => type => feed => connectoin
+  // channel => type => feed => connection
   utils::unordered_map<std::string, utils::unordered_map<ConnectionType, utils::unordered_map<Priority, Connection>>>
       connections_;
+
+  // address ==> port ==> connection type
+  utils::unordered_map<std::string, utils::unordered_map<uint16_t, ConnectionType>> connection_types_;
 };
 
 }  // namespace mdp

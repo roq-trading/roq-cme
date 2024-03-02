@@ -13,6 +13,7 @@ add_subdirectory(tools)
 add_subdirectory(mdp)
 add_subdirectory(ilink)
 add_subdirectory(secdef)
+add_subdirectory(market_data)
 
 add_subdirectory(channel_tester)
 add_subdirectory(pcap_filter)
@@ -64,6 +65,7 @@ target_link_libraries(
           ${PROJECT_NAME}-mdp
           ${PROJECT_NAME}-ilink
           ${PROJECT_NAME}-secdef
+          ${PROJECT_NAME}-market_data
           roq-server::roq-server
           roq-server::roq-server-flags
           roq-web::roq-web
