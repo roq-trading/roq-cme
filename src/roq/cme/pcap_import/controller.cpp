@@ -29,6 +29,13 @@ namespace pcap_import {
 // === HELPERS ===
 
 namespace {
+auto create_market_data(auto &handler, auto &settings) {
+  auto config = market_data::Manager::Config{
+      .cache_all_reference_data = settings.cache_all_reference_data,
+  };
+  return market_data::Manager{handler, config};
+}
+
 template <typename R>
 R create_symbols_regex(auto &symbols) {
   using result_type = std::remove_cvref<R>::type;
@@ -46,7 +53,7 @@ auto convert(timeval ts) {
 // === IMPLEMENTATION ===
 
 Controller::Controller(Settings const &settings)
-    : settings_{settings}, config_{settings.config_file, false}, market_data_{*this},
+    : settings_{settings}, config_{settings.config_file, false}, market_data_{create_market_data(*this, settings)},
       symbols_regex_{create_symbols_regex<decltype(symbols_regex_)>(settings.symbols)} {
 }
 
@@ -103,31 +110,31 @@ void Controller::operator()(Trace<ExternalLatency> const &event) {
   log::info("event={}"sv, event);
 }
 
-void Controller::operator()(Trace<ReferenceData> const &event, bool is_last) {
+void Controller::operator()(Trace<ReferenceData> const &event, [[maybe_unused]] bool is_last) {
   log::info("event={}"sv, event);
 }
 
-void Controller::operator()(Trace<MarketStatus> const &event, bool is_last) {
+void Controller::operator()(Trace<MarketStatus> const &event, [[maybe_unused]] bool is_last) {
   log::info("event={}"sv, event);
 }
 
-void Controller::operator()(Trace<TopOfBook> const &event, bool is_last) {
+void Controller::operator()(Trace<TopOfBook> const &event, [[maybe_unused]] bool is_last) {
   log::info("event={}"sv, event);
 }
 
-void Controller::operator()(Trace<MarketByPriceUpdate> const &event, bool is_last) {
+void Controller::operator()(Trace<MarketByPriceUpdate> const &event, [[maybe_unused]] bool is_last) {
   log::info("event={}"sv, event);
 }
 
-void Controller::operator()(Trace<MarketByOrderUpdate> const &event, bool is_last) {
+void Controller::operator()(Trace<MarketByOrderUpdate> const &event, [[maybe_unused]] bool is_last) {
   log::info("event={}"sv, event);
 }
 
-void Controller::operator()(Trace<TradeSummary> const &event, bool is_last) {
+void Controller::operator()(Trace<TradeSummary> const &event, [[maybe_unused]] bool is_last) {
   log::info("event={}"sv, event);
 }
 
-void Controller::operator()(Trace<StatisticsUpdate> const &event, bool is_last) {
+void Controller::operator()(Trace<StatisticsUpdate> const &event, [[maybe_unused]] bool is_last) {
   log::info("event={}"sv, event);
 }
 

@@ -37,14 +37,18 @@ struct Manager final : public Shared::Handler,
     virtual bool discard_symbol(std::string_view const &symbol) = 0;
   };
 
-  explicit Manager(Handler &);
+  struct Config final {
+    bool cache_all_reference_data = {};
+  };
+
+  Manager(Handler &, Config const &);
 
   void dispatch(mdp::ConnectionType, std::span<std::byte const> const &payload, TraceInfo const &, uint16_t stream_id);
 
  protected:
   void operator()(Trace<StreamStatus> const &event) override { handler_(event); }
   void operator()(Trace<ExternalLatency> const &event) override { handler_(event); }
-  void operator()(Trace<ReferenceData> const &event, bool is_last) override { handler_(event, is_last); }
+  void operator()(Trace<ReferenceData> const &event, bool is_last) override;
   void operator()(Trace<MarketStatus> const &event, bool is_last) override { handler_(event, is_last); }
   void operator()(Trace<TopOfBook> const &event, bool is_last) override { handler_(event, is_last); }
   void operator()(Trace<MarketByPriceUpdate> const &event, bool is_last) override { handler_(event, is_last); }
@@ -57,6 +61,7 @@ struct Manager final : public Shared::Handler,
 
  private:
   Handler &handler_;
+  Config const config_;
   Shared shared_;
   Channel channel_;
   InstrumentDefinition instrument_definition_;

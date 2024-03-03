@@ -12,10 +12,10 @@ namespace market_data {
 
 // === IMPLEMENTATION ===
 
-Manager::Manager(Handler &handler)
-    : handler_{handler}, shared_{*this}, channel_{"344", 1024 * 1024, 10}, instrument_definition_{*this, shared_},
-      market_by_price_recovery_{*this, shared_, channel_}, market_by_order_recovery_{*this, shared_, channel_},
-      incremental_{*this, shared_} {
+Manager::Manager(Handler &handler, Config const &config)
+    : handler_{handler}, config_{config}, shared_{*this}, channel_{"344", 1024 * 1024, 10},
+      instrument_definition_{*this, shared_}, market_by_price_recovery_{*this, shared_, channel_},
+      market_by_order_recovery_{*this, shared_, channel_}, incremental_{*this, shared_} {
 }
 
 void Manager::dispatch(
@@ -41,6 +41,12 @@ void Manager::dispatch(
       incremental_.dispatch(payload, trace_info, stream_id);
       break;
   }
+}
+
+void Manager::operator()(Trace<ReferenceData> const &event, bool is_last) {
+  if (event.value.discard && !config_.cache_all_reference_data)
+    return;
+  handler_(event, is_last);
 }
 
 }  // namespace market_data

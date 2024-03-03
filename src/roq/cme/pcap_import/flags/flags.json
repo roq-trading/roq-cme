@@ -25,6 +25,12 @@
       "name": "symbols",
       "type": "std::vector<std::string>",
       "description": "Comma-separated list of symbols (regex)"
+    },
+    {
+      "name": "cache_all_reference_data",
+      "type": "bool",
+      "default": false,
+      "description": "Cache all reference data?"
     }
   ]
 }
