@@ -18,6 +18,8 @@
 
 #include "roq/utils/debug/hex/message.hpp"
 
+#include "roq/core/codec/encoder.hpp"
+
 #include "roq/cme/pcap_import/pcap.hpp"
 
 using namespace std::literals;
@@ -25,6 +27,12 @@ using namespace std::literals;
 namespace roq {
 namespace cme {
 namespace pcap_import {
+
+// === CONSTANTS ===
+
+namespace {
+std::vector<core::event_log::User> const USERS;
+}
 
 // === HELPERS ===
 
@@ -54,7 +62,8 @@ auto convert(timeval ts) {
 
 Controller::Controller(Settings const &settings)
     : settings_{settings}, config_{settings.config_file, false}, market_data_{create_market_data(*this, settings)},
-      symbols_regex_{create_symbols_regex<decltype(symbols_regex_)>(settings.symbols)} {
+      symbols_regex_{create_symbols_regex<decltype(symbols_regex_)>(settings.symbols)},
+      encode_buffer_(settings.encode_buffer_size) {
 }
 
 void Controller::dispatch(std::string_view const &path) {
@@ -98,44 +107,55 @@ void Controller::dispatch(std::string_view const &path) {
     }
   };
   PCAP{path}.dispatch(callback);
+  if (producer_)
+    (*producer_).close();
 }
 
 // market_data::Manager::Handler
 
 void Controller::operator()(Trace<StreamStatus> const &event) {
   log::info("event={}"sv, event);
+  append(event);
 }
 
 void Controller::operator()(Trace<ExternalLatency> const &event) {
   log::info("event={}"sv, event);
+  append(event);
 }
 
 void Controller::operator()(Trace<ReferenceData> const &event, [[maybe_unused]] bool is_last) {
   log::info("event={}"sv, event);
+  append(event);
 }
 
 void Controller::operator()(Trace<MarketStatus> const &event, [[maybe_unused]] bool is_last) {
   log::info("event={}"sv, event);
+  append(event);
 }
 
 void Controller::operator()(Trace<TopOfBook> const &event, [[maybe_unused]] bool is_last) {
   log::info("event={}"sv, event);
+  append(event);
 }
 
 void Controller::operator()(Trace<MarketByPriceUpdate> const &event, [[maybe_unused]] bool is_last) {
   log::info("event={}"sv, event);
+  // append(event);
 }
 
 void Controller::operator()(Trace<MarketByOrderUpdate> const &event, [[maybe_unused]] bool is_last) {
   log::info("event={}"sv, event);
+  // append(event);
 }
 
 void Controller::operator()(Trace<TradeSummary> const &event, [[maybe_unused]] bool is_last) {
   log::info("event={}"sv, event);
+  append(event);
 }
 
 void Controller::operator()(Trace<StatisticsUpdate> const &event, [[maybe_unused]] bool is_last) {
   log::info("event={}"sv, event);
+  append(event);
 }
 
 bool Controller::discard_symbol(std::string_view const &symbol) {
@@ -153,6 +173,73 @@ bool Controller::discard_symbol(std::string_view const &symbol) {
     log::info<1>(R"(Discard symbol="{}" (reason: no regex match))"sv, symbol);
   discard_symbol_.emplace(symbol, discard);
   return discard;
+}
+
+// helpers
+
+void Controller::create_producer(std::chrono::nanoseconds timestamp_utc) {
+  auto path = settings_.output_file;
+  auto paths = std::make_tuple<std::string, std::string, std::string>(std::string{path}, {}, {});
+  if (std::empty(std::get<0>(paths))) {
+    auto create_directories = true;
+    auto create_symlink = false;
+    paths = core::event_log::Producer::create_paths(
+        settings_.event_log_dir,
+        Category::PUBLIC,
+        settings_.name,
+        timestamp_utc,
+        core::event_log::Producer::DirectoryFormat::ISO_WEEK,
+        create_directories,
+        create_symlink);
+  }
+  auto config = core::event_log::Producer::Config{
+      .input_buffer_size = settings_.event_log_buffer_size,
+      .output_buffer_size = settings_.event_log_buffer_size,
+      .compression_level = static_cast<uint8_t>(settings_.event_log_compression_level),
+      .encoding = core::event_log::Encoding::FLATBUFFERS,
+      .utimes_on_sync = false,
+  };
+  producer_ = std::make_unique<core::event_log::Producer>(
+      ROQ_PACKAGE_NAME, settings_.name, source_session_id_, paths, USERS, config);
+}
+
+template <typename T>
+void Controller::append(Trace<T> const &event) {
+  auto &[trace_info, value] = event;
+  auto message_info = MessageInfo{
+      .source = SOURCE_NONE,
+      .source_name = settings_.name,
+      .source_session_id = source_session_id_,
+      .source_seqno = ++source_seqno_,
+      .receive_time_utc = trace_info.origin_create_time_utc,
+      .receive_time = trace_info.origin_create_time,
+      .source_send_time = {},
+      .source_receive_time = trace_info.source_receive_time,
+      .origin_create_time = trace_info.origin_create_time,
+      .origin_create_time_utc = trace_info.origin_create_time_utc,
+      .is_last = true,
+      .opaque = {},
+  };
+  auto message = core::codec::Encoder{encode_buffer_}.encode(value);
+  if (!producer_)
+    create_producer(message_info.receive_time_utc);
+  // XXX HANS -- this should be cleaned up -- why core::queue ???
+  auto header = core::queue::Message::Header{
+      .boundary = {},
+      .origin_create_time = {},
+      .source_receive_dtime = {},
+      .source_send_dtime = {},
+      .source_seqno = message_info.source_seqno,
+      .opaque = {},
+      .message_length = {},
+      .type = core::queue::Message::Type::MESSAGE,  // REQUIRED
+      .is_last = {},
+      .source_id = {},
+      .unused = {},
+      .origin_create_time_utc = static_cast<uint64_t>(message_info.origin_create_time.count()),  // REQUIRED
+      .receive_time_utc = static_cast<uint64_t>(message_info.receive_time_utc.count()),          // REQUIRED
+  };
+  (*producer_).write(header, message, message_info);
 }
 
 }  // namespace pcap_import

@@ -3,6 +3,12 @@
   "type": "flags",
   "values": [
     {
+      "name": "name",
+      "type": "std::string",
+      "required": true,
+      "description": "gateway name"
+    },
+    {
       "name": "config_file",
       "type": "std::string",
       "validator": "roq::flags::validators::Path",
@@ -31,6 +37,38 @@
       "type": "bool",
       "default": false,
       "description": "Cache all reference data?"
+    },
+    {
+      "name": "event_log_dir",
+      "type": "std::string",
+      "description": "event-log directory"
+    },
+    {
+      "name": "output_file",
+      "type": "std::string",
+      "required": true,
+      "description": "output file"
+    },
+    {
+      "name": "event_log_buffer_size",
+      "type": "uint32_t",
+      "required": true,
+      "default": 1048576,
+      "description": "event-log output buffer size (bytes)"
+    },
+    {
+      "name": "event_log_compression_level",
+      "type": "uint32_t",
+      "required": true,
+      "default": 4,
+      "description": "event-log compression level"
+    },
+    {
+      "name": "encode_buffer_size",
+      "type": "uint32_t",
+      "required": true,
+      "default": 1048576,
+      "description": "Encode buffer size"
     }
   ]
 }

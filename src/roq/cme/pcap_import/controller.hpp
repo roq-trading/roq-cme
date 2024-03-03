@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <memory>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -9,6 +10,8 @@
 #include "roq/utils/container.hpp"
 
 #include "roq/utils/regex/pattern.hpp"
+
+#include "roq/core/event_log/producer.hpp"
 
 #include "roq/cme/mdp/config.hpp"
 #include "roq/cme/mdp/connection_type.hpp"
@@ -43,12 +46,23 @@ struct Controller final : public market_data::Manager::Handler {
   // - helpers
   bool discard_symbol(std::string_view const &symbol) override;
 
+  // helpers
+
+  void create_producer(std::chrono::nanoseconds timestamp_utc);
+
+  template <typename T>
+  void append(Trace<T> const &);
+
  private:
   Settings const &settings_;
   mdp::Config config_;
   market_data::Manager market_data_;
   std::vector<utils::regex::Pattern> const symbols_regex_;
   utils::unordered_map<std::string, bool> discard_symbol_;
+  std::unique_ptr<core::event_log::Producer> producer_;
+  std::vector<std::byte> encode_buffer_;
+  UUID const source_session_id_ = {};
+  uint64_t source_seqno_ = {};
 };
 
 }  // namespace pcap_import
