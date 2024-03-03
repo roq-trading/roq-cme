@@ -13,7 +13,7 @@ namespace market_data {
 // === IMPLEMENTATION ===
 
 Manager::Manager(Handler &handler)
-    : handler_{handler}, channel_{"344", 1024 * 1024, 10}, instrument_definition_{*this, shared_},
+    : handler_{handler}, shared_{*this}, channel_{"344", 1024 * 1024, 10}, instrument_definition_{*this, shared_},
       market_by_price_recovery_{*this, shared_, channel_}, market_by_order_recovery_{*this, shared_, channel_},
       incremental_{*this, shared_} {
 }

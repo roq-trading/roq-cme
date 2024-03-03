@@ -18,7 +18,8 @@ namespace roq {
 namespace cme {
 namespace market_data {
 
-struct Manager final : public InstrumentDefinition::Handler,
+struct Manager final : public Shared::Handler,
+                       public InstrumentDefinition::Handler,
                        public MarketByPriceRecovery::Handler,
                        public MarketByOrderRecovery::Handler,
                        public Incremental::Handler {
@@ -32,6 +33,8 @@ struct Manager final : public InstrumentDefinition::Handler,
     virtual void operator()(Trace<MarketByOrderUpdate> const &, bool is_last) = 0;
     virtual void operator()(Trace<TradeSummary> const &, bool is_last) = 0;
     virtual void operator()(Trace<StatisticsUpdate> const &, bool is_last) = 0;
+    // - helpers
+    virtual bool discard_symbol(std::string_view const &symbol) = 0;
   };
 
   explicit Manager(Handler &);
@@ -48,6 +51,9 @@ struct Manager final : public InstrumentDefinition::Handler,
   void operator()(Trace<MarketByOrderUpdate> const &event, bool is_last) override { handler_(event, is_last); }
   void operator()(Trace<TradeSummary> const &event, bool is_last) override { handler_(event, is_last); }
   void operator()(Trace<StatisticsUpdate> const &event, bool is_last) override { handler_(event, is_last); }
+
+  // Shared::Handler
+  bool discard_symbol(std::string_view const &symbol) override { return handler_.discard_symbol(symbol); }
 
  private:
   Handler &handler_;

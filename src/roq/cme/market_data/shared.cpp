@@ -113,7 +113,7 @@ void read_secdef(T &securities, MS &market_segments, D &dispatcher, auto &settin
 
 // === IMPLEMENTATION ===
 
-Shared::Shared() : buffer(BUFFER_SIZE) {
+Shared::Shared(Handler &handler) : handler_{handler}, buffer(BUFFER_SIZE) {
   // read_secdef(securities, market_segments, dispatcher, settings);
 }
 

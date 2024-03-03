@@ -17,6 +17,13 @@ namespace cme {
 namespace market_data {
 
 struct Shared final {
+  struct Handler {
+    virtual bool discard_symbol(std::string_view const &symbol) = 0;
+  };
+
+ private:
+  Handler &handler_;
+
  public:
   utils::unordered_map<int32_t, tools::Security> securities;
   utils::unordered_map<std::string, utils::unordered_set<int32_t>> security_groups;
@@ -45,13 +52,12 @@ struct Shared final {
   std::vector<Fill> fills;
 
  public:
-  Shared();
+  explicit Shared(Handler &);
 
   Shared(Shared &&) = default;
   Shared(Shared const &) = delete;
 
-  // auto discard_symbol(std::string_view const &name) const { return dispatcher_.discard_symbol(name); }
-  auto discard_symbol([[maybe_unused]] std::string_view const &name) const { return false; }
+  auto discard_symbol(std::string_view const &name) const { return handler_.discard_symbol(name); }
 
   // security
 

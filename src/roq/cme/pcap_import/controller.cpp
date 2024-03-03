@@ -29,6 +29,15 @@ namespace pcap_import {
 // === HELPERS ===
 
 namespace {
+template <typename R>
+R create_symbols_regex(auto &symbols) {
+  using result_type = std::remove_cvref<R>::type;
+  result_type result;
+  for (auto &item : symbols)
+    result.emplace_back(item);
+  return result;
+}
+
 auto convert(timeval ts) {
   return std::chrono::nanoseconds{std::chrono::seconds{ts.tv_sec} + std::chrono::microseconds{ts.tv_usec}};
 }
@@ -37,7 +46,8 @@ auto convert(timeval ts) {
 // === IMPLEMENTATION ===
 
 Controller::Controller(Settings const &settings)
-    : settings_{settings}, config_{settings.config_file, false}, market_data_{*this} {
+    : settings_{settings}, config_{settings.config_file, false}, market_data_{*this},
+      symbols_regex_{create_symbols_regex<decltype(symbols_regex_)>(settings.symbols)} {
 }
 
 void Controller::dispatch(std::string_view const &path) {
@@ -119,6 +129,23 @@ void Controller::operator()(Trace<TradeSummary> const &event, bool is_last) {
 
 void Controller::operator()(Trace<StatisticsUpdate> const &event, bool is_last) {
   log::info("event={}"sv, event);
+}
+
+bool Controller::discard_symbol(std::string_view const &symbol) {
+  auto iter = discard_symbol_.find(symbol);
+  if (iter != std::end(discard_symbol_))
+    return (*iter).second;
+  bool discard = !std::empty(symbols_regex_);
+  for (auto &regex : symbols_regex_) {  // note! O(n)
+    if (regex.match(symbol)) {
+      discard = false;
+      break;
+    }
+  }
+  if (discard)
+    log::info<1>(R"(Discard symbol="{}" (reason: no regex match))"sv, symbol);
+  discard_symbol_.emplace(symbol, discard);
+  return discard;
 }
 
 }  // namespace pcap_import

@@ -2,7 +2,13 @@
 
 #pragma once
 
+#include <string>
 #include <string_view>
+#include <vector>
+
+#include "roq/utils/container.hpp"
+
+#include "roq/utils/regex/pattern.hpp"
 
 #include "roq/cme/mdp/config.hpp"
 #include "roq/cme/mdp/connection_type.hpp"
@@ -34,11 +40,15 @@ struct Controller final : public market_data::Manager::Handler {
   void operator()(Trace<MarketByOrderUpdate> const &, bool is_last) override;
   void operator()(Trace<TradeSummary> const &, bool is_last) override;
   void operator()(Trace<StatisticsUpdate> const &, bool is_last) override;
+  // - helpers
+  bool discard_symbol(std::string_view const &symbol) override;
 
  private:
   Settings const &settings_;
   mdp::Config config_;
   market_data::Manager market_data_;
+  std::vector<utils::regex::Pattern> const symbols_regex_;
+  utils::unordered_map<std::string, bool> discard_symbol_;
 };
 
 }  // namespace pcap_import
