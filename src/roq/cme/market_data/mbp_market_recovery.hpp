@@ -2,47 +2,31 @@
 
 #pragma once
 
-#include "roq/utils/metrics/counter.hpp"
-#include "roq/utils/metrics/profile.hpp"
-
-#include "roq/io/buffer.hpp"
-#include "roq/io/context.hpp"
-#include "roq/io/net/udp/receiver.hpp"
-
-#include "roq/server.hpp"
-
-#include "roq/cme/channel.hpp"
-#include "roq/cme/shared.hpp"
+#include "roq/api.hpp"
 
 #include "roq/cme/mdp/parser.hpp"
 
+#include "roq/cme/market_data/channel.hpp"
+#include "roq/cme/market_data/shared.hpp"
+
 namespace roq {
 namespace cme {
+namespace market_data {
 
-struct UDPMBOMarketRecovery final : public io::net::udp::Receiver::Handler, public mdp::Parser::Handler {
+struct MBPMarketRecovery final : public mdp::Parser::Handler {
   struct Handler {
     virtual void operator()(Trace<StreamStatus> const &) = 0;
     virtual void operator()(Trace<ExternalLatency> const &) = 0;
-    virtual void operator()(Trace<MarketByOrderUpdate> const &, bool is_last) = 0;
+    virtual void operator()(Trace<MarketByPriceUpdate> const &, bool is_last) = 0;
   };
 
-  UDPMBOMarketRecovery(Handler &, io::Context &, uint16_t stream_id, Shared &, Channel &);
+  MBPMarketRecovery(Handler &, Shared &, Channel &);
 
-  UDPMBOMarketRecovery(UDPMBOMarketRecovery const &) = delete;
-  UDPMBOMarketRecovery(UDPMBOMarketRecovery &&) = delete;
-
-  void operator()(Event<Start> const &);
-  void operator()(Event<Stop> const &);
-  void operator()(Event<Timer> const &);
-
-  void operator()(metrics::Writer &);
-
- protected:
-  void operator()(io::net::udp::Receiver::Read const &) override;
-  void operator()(io::net::udp::Receiver::Error const &) override;
+  void dispatch(std::span<std::byte const> const &payload, TraceInfo const &, uint16_t stream_id);
 
  protected:
   // mdp::Parser::Handler
+
   void operator()(mdp::Frame const &) override;
   // - admin
   void operator()(Trace<cme_mdp::AdminHeartbeat12> const &, mdp::Frame const &) override;
@@ -77,36 +61,25 @@ struct UDPMBOMarketRecovery final : public io::net::udp::Receiver::Handler, publ
   void operator()(Trace<cme_mdp::MDIncrementalRefreshLimitsBanding50> const &, mdp::Frame const &) override;
   void operator()(Trace<cme_mdp::QuoteRequest39> const &, mdp::Frame const &) override;
 
- protected:
-  void publish_stream_status(TraceInfo const &, ConnectionStatus connection_status);
+  // helpers
+
+  void dispatch_market_by_price(
+      auto &trace_info,
+      auto security_id,
+      auto &security,
+      auto exchange_sequence,
+      auto exchange_time_utc,
+      auto sending_time_utc,
+      auto &bids,
+      auto &asks);
 
  private:
   Handler &handler_;
-  // config
-  std::string const channel_name_;
-  uint16_t const stream_id_;
-  std::string const name_;
-  // receiver
-  std::unique_ptr<io::net::udp::Receiver> const receiver_;
-  // buffer
-  io::Buffer receive_buffer_;
-  // metrics
-  struct {
-    utils::metrics::Counter disconnect;
-  } counter_;
-  struct {
-    utils::metrics::Profile parse,       //
-        admin_heartbeat, channel_reset,  //
-        snapshot_full_refresh_order_book;
-    ;
-  } profile_;
-  // cache
   Shared &shared_;
   Channel &channel_;
-  ConnectionStatus connection_status_ = {};
-  // state
-  std::chrono::nanoseconds last_update_time_ = {};
+  uint16_t const stream_id_ = {};  // XXX TODO
 };
 
+}  // namespace market_data
 }  // namespace cme
 }  // namespace roq

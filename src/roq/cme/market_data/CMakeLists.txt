@@ -5,8 +5,8 @@ set(SOURCES
     incremental.cpp
     instrument_definition.cpp
     manager.cpp
-    market_by_order_recovery.cpp
-    market_by_price_recovery.cpp
+    mbofd_market_recovery.cpp
+    mbp_market_recovery.cpp
     shared.cpp)
 
 add_library(${TARGET_NAME} OBJECT ${SOURCES})

@@ -30,7 +30,7 @@ set(SOURCES
     shared.cpp
     udp_incremental.cpp
     udp_instrument_definition.cpp
-    udp_mbo_market_recovery.cpp
+    udp_mbofd_market_recovery.cpp
     udp_mbp_market_recovery.cpp
     main.cpp)
 

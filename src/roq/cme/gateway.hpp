@@ -20,7 +20,7 @@
 
 #include "roq/cme/udp_incremental.hpp"
 #include "roq/cme/udp_instrument_definition.hpp"
-#include "roq/cme/udp_mbo_market_recovery.hpp"
+#include "roq/cme/udp_mbofd_market_recovery.hpp"
 #include "roq/cme/udp_mbp_market_recovery.hpp"
 
 #include "roq/cme/order_entry.hpp"
@@ -32,7 +32,7 @@ struct Gateway final : public server::Handler,
                        public UDPIncremental::Handler,
                        public UDPInstrumentDefinition::Handler,
                        public UDPMBPMarketRecovery::Handler,
-                       public UDPMBOMarketRecovery::Handler,
+                       public UDPMBOFDMarketRecovery::Handler,
                        public OrderEntry::Handler {
   Gateway(server::Dispatcher &, Settings const &, Config const &, io::Context &);
 
@@ -99,7 +99,7 @@ struct Gateway final : public server::Handler,
   std::vector<std::unique_ptr<UDPIncremental>> udp_incremental_;
   std::vector<std::unique_ptr<UDPInstrumentDefinition>> udp_instrument_definition_;
   std::vector<std::unique_ptr<UDPMBPMarketRecovery>> udp_mbp_market_recovery_;
-  std::vector<std::unique_ptr<UDPMBOMarketRecovery>> udp_mbo_market_recovery_;
+  std::vector<std::unique_ptr<UDPMBOFDMarketRecovery>> udp_mbofd_market_recovery_;
   utils::unordered_map<std::string, std::unique_ptr<OrderEntry>> order_entry_;
   // cache
   std::vector<MBPUpdate> bids_, asks_;

@@ -14,8 +14,8 @@ namespace market_data {
 
 Manager::Manager(Handler &handler, Config const &config)
     : handler_{handler}, config_{config}, shared_{*this}, channel_{"344", 1024 * 1024, 10},
-      instrument_definition_{*this, shared_}, market_by_price_recovery_{*this, shared_, channel_},
-      market_by_order_recovery_{*this, shared_, channel_}, incremental_{*this, shared_} {
+      instrument_definition_{*this, shared_}, mbp_market_recovery_{*this, shared_, channel_},
+      mbofd_market_recovery_{*this, shared_, channel_}, incremental_{*this, shared_} {
 }
 
 void Manager::dispatch(
@@ -28,14 +28,14 @@ void Manager::dispatch(
     case HISTORICAL_REPLAY:
       log::fatal("Unexpected"sv);
       break;
-    case INSTRUMENT_REPLAY:
+    case INSTRUMENT_DEFINITION:
       instrument_definition_.dispatch(payload, trace_info, stream_id);
       break;
-    case SNAPSHOT:
-      market_by_price_recovery_.dispatch(payload, trace_info, stream_id);
+    case MBP_MARKET_RECOVERY:
+      mbp_market_recovery_.dispatch(payload, trace_info, stream_id);
       break;
-    case SNAPSHOT_MBO:
-      market_by_order_recovery_.dispatch(payload, trace_info, stream_id);
+    case MBOFD_MARKET_RECOVERY:
+      mbofd_market_recovery_.dispatch(payload, trace_info, stream_id);
       break;
     case INCREMENTAL:
       incremental_.dispatch(payload, trace_info, stream_id);

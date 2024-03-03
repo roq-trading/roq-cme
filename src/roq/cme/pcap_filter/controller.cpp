@@ -42,14 +42,14 @@ void Controller::dispatch() {
   mdp::Config config{settings_.config_file, false};
   std::vector<std::pair<std::string, uint16_t>> filter;
   for (auto &channel_id : settings_.channel_ids) {
-    find(filter, config, channel_id, mdp::ConnectionType::INSTRUMENT_REPLAY, Priority::PRIMARY);
-    find(filter, config, channel_id, mdp::ConnectionType::INSTRUMENT_REPLAY, Priority::SECONDARY);
+    find(filter, config, channel_id, mdp::ConnectionType::INSTRUMENT_DEFINITION, Priority::PRIMARY);
+    find(filter, config, channel_id, mdp::ConnectionType::INSTRUMENT_DEFINITION, Priority::SECONDARY);
     find(filter, config, channel_id, mdp::ConnectionType::INCREMENTAL, Priority::PRIMARY);
     find(filter, config, channel_id, mdp::ConnectionType::INCREMENTAL, Priority::SECONDARY);
-    find(filter, config, channel_id, mdp::ConnectionType::SNAPSHOT, Priority::PRIMARY);
-    find(filter, config, channel_id, mdp::ConnectionType::SNAPSHOT, Priority::SECONDARY);
-    find(filter, config, channel_id, mdp::ConnectionType::SNAPSHOT_MBO, Priority::PRIMARY);
-    find(filter, config, channel_id, mdp::ConnectionType::SNAPSHOT_MBO, Priority::SECONDARY);
+    find(filter, config, channel_id, mdp::ConnectionType::MBP_MARKET_RECOVERY, Priority::PRIMARY);
+    find(filter, config, channel_id, mdp::ConnectionType::MBP_MARKET_RECOVERY, Priority::SECONDARY);
+    find(filter, config, channel_id, mdp::ConnectionType::MBOFD_MARKET_RECOVERY, Priority::PRIMARY);
+    find(filter, config, channel_id, mdp::ConnectionType::MBOFD_MARKET_RECOVERY, Priority::SECONDARY);
   }
   auto n = std::size(filter);
   for (size_t i = 0; i < n; ++i) {

@@ -13,14 +13,14 @@ namespace roq {
 namespace cme {
 namespace market_data {
 
-struct MarketByPriceRecovery final : public mdp::Parser::Handler {
+struct MBOFDMarketRecovery final : public mdp::Parser::Handler {
   struct Handler {
     virtual void operator()(Trace<StreamStatus> const &) = 0;
     virtual void operator()(Trace<ExternalLatency> const &) = 0;
-    virtual void operator()(Trace<MarketByPriceUpdate> const &, bool is_last) = 0;
+    virtual void operator()(Trace<MarketByOrderUpdate> const &, bool is_last) = 0;
   };
 
-  MarketByPriceRecovery(Handler &, Shared &, Channel &);
+  MBOFDMarketRecovery(Handler &, Shared &, Channel &);
 
   void dispatch(std::span<std::byte const> const &payload, TraceInfo const &, uint16_t stream_id);
 
@@ -60,18 +60,6 @@ struct MarketByPriceRecovery final : public mdp::Parser::Handler {
   // - misc
   void operator()(Trace<cme_mdp::MDIncrementalRefreshLimitsBanding50> const &, mdp::Frame const &) override;
   void operator()(Trace<cme_mdp::QuoteRequest39> const &, mdp::Frame const &) override;
-
-  // helpers
-
-  void dispatch_market_by_price(
-      auto &trace_info,
-      auto security_id,
-      auto &security,
-      auto exchange_sequence,
-      auto exchange_time_utc,
-      auto sending_time_utc,
-      auto &bids,
-      auto &asks);
 
  private:
   Handler &handler_;

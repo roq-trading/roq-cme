@@ -53,11 +53,11 @@ auto create_udp_mbp_market_recovery(auto &gateway, auto &context, auto &stream_i
   return result;
 }
 
-auto create_udp_mbo_market_recovery(auto &gateway, auto &context, auto &stream_id, auto &shared, auto &channels) {
-  std::vector<std::unique_ptr<UDPMBOMarketRecovery>> result;
+auto create_udp_mbofd_market_recovery(auto &gateway, auto &context, auto &stream_id, auto &shared, auto &channels) {
+  std::vector<std::unique_ptr<UDPMBOFDMarketRecovery>> result;
   if (shared.settings.common.enable_market_by_order) {
     for (auto &channel : channels)
-      result.emplace_back(std::make_unique<UDPMBOMarketRecovery>(gateway, context, ++stream_id, shared, channel));
+      result.emplace_back(std::make_unique<UDPMBOFDMarketRecovery>(gateway, context, ++stream_id, shared, channel));
   }
   return result;
 }
@@ -109,7 +109,7 @@ Gateway::Gateway(server::Dispatcher &dispatcher, Settings const &settings, Confi
       udp_incremental_{create_udp_incremental(*this, context_, stream_id_, shared_, channels_)},
       udp_instrument_definition_{create_udp_instrument_definition(*this, context_, stream_id_, shared_, channels_)},
       udp_mbp_market_recovery_{create_udp_mbp_market_recovery(*this, context_, stream_id_, shared_, channels_)},
-      udp_mbo_market_recovery_{create_udp_mbo_market_recovery(*this, context_, stream_id_, shared_, channels_)},
+      udp_mbofd_market_recovery_{create_udp_mbofd_market_recovery(*this, context_, stream_id_, shared_, channels_)},
       order_entry_{create_order_entry<decltype(order_entry_)>(*this, context_, stream_id_, accounts_, shared_)} {
 }
 
@@ -215,7 +215,7 @@ void Gateway::dispatch(Args &&...args) {
     helper(*item);
   for (auto &item : udp_mbp_market_recovery_)
     helper(*item);
-  for (auto &item : udp_mbo_market_recovery_)
+  for (auto &item : udp_mbofd_market_recovery_)
     helper(*item);
   for (auto &[_, item] : order_entry_)
     helper(*item);

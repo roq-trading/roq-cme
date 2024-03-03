@@ -22,11 +22,11 @@ auto get_type(auto &value) {
   if (value.compare("H"sv) == 0)
     return HISTORICAL_REPLAY;
   if (value.compare("N"sv) == 0)
-    return INSTRUMENT_REPLAY;
+    return INSTRUMENT_DEFINITION;
   if (value.compare("S"sv) == 0)
-    return SNAPSHOT;
+    return MBP_MARKET_RECOVERY;
   if (value.compare("SMBO"sv) == 0)
-    return SNAPSHOT_MBO;
+    return MBOFD_MARKET_RECOVERY;
   if (value.compare("I"sv) == 0)
     return INCREMENTAL;
   throw RuntimeError{R"(Unexpected: feed-type="{}")"sv, value};

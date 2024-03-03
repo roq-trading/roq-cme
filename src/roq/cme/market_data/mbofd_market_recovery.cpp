@@ -1,8 +1,6 @@
 /* Copyright (c) 2017-2024, Hans Erik Thrane */
 
-#include "roq/cme/market_data/market_by_price_recovery.hpp"
-
-#include "roq/utils/safe_cast.hpp"
+#include "roq/cme/market_data/mbofd_market_recovery.hpp"
 
 #include "roq/utils/debug/hex/message.hpp"
 
@@ -17,76 +15,26 @@ namespace market_data {
 // === HELPERS ===
 
 namespace {
-template <typename T>
-void mbp_emplace_back(auto &result, T const &item, auto &security) {
-  auto price = mdp::get_double(const_cast<T &>(item).mDEntryPx());
-  auto quantity = mdp::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue());
-  auto number_of_orders = mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue());
-  auto md_price_level = mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue());
-  uint32_t price_level = md_price_level > 0 ? (md_price_level - 1) : 0;
-  auto update = MBPUpdate{
+void emplace_back(cme_mdp::SnapshotFullRefreshOrderBook53::NoMDEntries const &item, auto &security, auto &orders) {
+  auto price = mdp::get_double(const_cast<cme_mdp::SnapshotFullRefreshOrderBook53::NoMDEntries &>(item).mDEntryPx());
+  auto quantity = item.mDDisplayQty();
+  auto priority = mdp::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue());
+  auto order_id = mdp::get_int(item.orderID(), item.orderIDNullValue());
+  auto side = mdp::map(item.mDEntryType());
+  auto order = MBOUpdate{
       .price = price * security.display_factor,
-      .quantity = utils::safe_cast(quantity),
-      .implied_quantity = NaN,
-      .number_of_orders = utils::safe_cast(number_of_orders),
-      .update_action = {},
-      .price_level = price_level,
+      .quantity = static_cast<double>(quantity),
+      .priority = priority,
+      .order_id = {},
+      .side = side,
+      .action = UpdateAction::NEW,
+      .reason = {},
   };
-  result.emplace_back(std::move(update));
+  fmt::format_to(std::back_inserter(order.order_id), "{}"sv, order_id);
+  orders.emplace_back(std::move(order));
 }
 
-template <typename T>
-void emplace_back(T const &item, auto &security, auto &bids, auto &asks) {
-  switch (item.mDEntryType()) {
-    using enum cme_mdp::MDEntryType::Value;
-    case Bid:
-      mbp_emplace_back(bids, item, security);
-      break;
-    case Offer:
-      mbp_emplace_back(asks, item, security);
-      break;
-    case Trade:
-      break;
-    case OpenPrice:
-      break;
-    case SettlementPrice:
-      break;
-    case TradingSessionHighPrice:
-      break;
-    case TradingSessionLowPrice:
-      break;
-    case VWAP:
-      break;
-    case ClearedVolume:
-      break;
-    case OpenInterest:
-      break;
-    case ImpliedBid:
-      break;
-    case ImpliedOffer:
-      break;
-    case BookReset:  // XXX ????????????????????????
-      break;
-    case SessionHighBid:
-      break;
-    case SessionLowOffer:
-      break;
-    case FixingPrice:
-      break;
-    case ElectronicVolume:
-      break;
-    case ThresholdLimitsandPriceBandVariation:
-      break;
-    case MarketBestOffer:
-      break;
-    case MarketBestBid:
-      break;
-    case NULL_VALUE:
-      break;
-  }
-}
-
-// note! don't care about re-ordering or dropped messages
+// note! don't care about re-ordering or dropped messages (*** maybe we should ??? ***)
 void drain(auto &receiver, auto &buffer, auto stream_id, auto parse) {
   while (true) {
     // read into buffer
@@ -110,21 +58,21 @@ void drain(auto &receiver, auto &buffer, auto stream_id, auto parse) {
 
 // === IMPLEMENTATION ===
 
-MarketByPriceRecovery ::MarketByPriceRecovery(Handler &handler, Shared &shared, Channel &channel)
+MBOFDMarketRecovery ::MBOFDMarketRecovery(Handler &handler, Shared &shared, Channel &channel)
     : handler_{handler}, shared_{shared}, channel_{channel} {
 }
 
-void MarketByPriceRecovery ::dispatch(
+void MBOFDMarketRecovery ::dispatch(
     std::span<std::byte const> const &payload, TraceInfo const &trace_info, uint16_t stream_id) {
   mdp::Parser::dispatch(*this, payload, trace_info);
 }
 
 // mdp::Parser::Handler
 
-void MarketByPriceRecovery::operator()(mdp::Frame const &) {
+void MBOFDMarketRecovery::operator()(mdp::Frame const &) {
 }
 
-void MarketByPriceRecovery::operator()(Trace<cme_mdp::AdminHeartbeat12> const &event, mdp::Frame const &frame) {
+void MBOFDMarketRecovery::operator()(Trace<cme_mdp::AdminHeartbeat12> const &event, mdp::Frame const &frame) {
   auto &trace_info = event.trace_info;
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -137,293 +85,271 @@ void MarketByPriceRecovery::operator()(Trace<cme_mdp::AdminHeartbeat12> const &e
   create_trace_and_dispatch(handler_, trace_info, external_latency);
 }
 
-void MarketByPriceRecovery::operator()(Trace<cme_mdp::ChannelReset4> const &event, mdp::Frame const &frame) {
+void MBOFDMarketRecovery::operator()(Trace<cme_mdp::ChannelReset4> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("channel_reset_4={}, frame={}"sv, value, frame);
 }
 
-void MarketByPriceRecovery::operator()(Trace<cme_mdp::SecurityStatus30> const &event, mdp::Frame const &frame) {
+void MBOFDMarketRecovery::operator()(Trace<cme_mdp::SecurityStatus30> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("security_status_30={}, frame={}"sv, value, frame);
 }
 
-void MarketByPriceRecovery::operator()(
+void MBOFDMarketRecovery::operator()(
     Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_instrument_definition_future_54={}, frame={}"sv, value, frame);
 }
 
-void MarketByPriceRecovery::operator()(
+void MBOFDMarketRecovery::operator()(
     Trace<cme_mdp::MDInstrumentDefinitionOption55> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_instrument_definition_option_55={}, frame={}"sv, value, frame);
 }
 
-void MarketByPriceRecovery::operator()(
+void MBOFDMarketRecovery::operator()(
     Trace<cme_mdp::MDInstrumentDefinitionSpread56> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_instrument_definition_spread_56={}, frame={}"sv, value, frame);
 }
 
-void MarketByPriceRecovery::operator()(
+void MBOFDMarketRecovery::operator()(
     Trace<cme_mdp::MDInstrumentDefinitionFixedIncome57> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_instrument_definition_fixed_income_57={}, frame={}"sv, value, frame);
 }
 
-void MarketByPriceRecovery::operator()(
+void MBOFDMarketRecovery::operator()(
     Trace<cme_mdp::MDInstrumentDefinitionRepo58> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_instrument_definition_repo_58={}, frame={}"sv, value, frame);
 }
 
-void MarketByPriceRecovery::operator()(
-    Trace<cme_mdp::MDInstrumentDefinitionFX63> const &event, mdp::Frame const &frame) {
+void MBOFDMarketRecovery::operator()(Trace<cme_mdp::MDInstrumentDefinitionFX63> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_instrument_definition_fx_63={}, frame={}"sv, value, frame);
 }
 
-void MarketByPriceRecovery::operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &event, mdp::Frame const &frame) {
-  auto &trace_info = event.trace_info;
+void MBOFDMarketRecovery::operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("snapshot_full_refresh_52={}, frame={}"sv, value, frame);
-  auto security_id = value.securityID();
-  shared_.get_security(security_id, [&](auto &security) {
-    if (!security.mbp.resubscribe)
-      return;
-    auto last_msg_seq_num_processed = value.lastMsgSeqNumProcessed();
-    if (last_msg_seq_num_processed < security.mbp.resubscribe)
-      return;
-    auto transact_time = std::chrono::nanoseconds{value.transactTime()};
-    auto &mbp = shared_.get_mbp();
-    value.sbeRewind();  // note!
-    value.noMDEntries().forEach([&](auto const &item) { emplace_back(item, security, mbp.bids, mbp.asks); });
-    if (!std::empty(mbp)) {
-      dispatch_market_by_price(
-          trace_info,
-          security_id,
-          security,
-          last_msg_seq_num_processed,
-          transact_time,
-          frame.sending_time,
-          mbp.bids,
-          mbp.asks);
-    }
-  });
 }
 
-void MarketByPriceRecovery::operator()(
+void MBOFDMarketRecovery::operator()(
     Trace<cme_mdp::SnapshotFullRefreshLongQty69> const &event, mdp::Frame const &frame) {
-  auto &trace_info = event.trace_info;
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("snapshot_full_refresh_long_qty_69={}, frame={}"sv, value, frame);
-  auto security_id = value.securityID();
-  shared_.get_security(security_id, [&](auto &security) {
-    if (!security.mbp.resubscribe)
-      return;
-    auto last_msg_seq_num_processed = value.lastMsgSeqNumProcessed();
-    if (last_msg_seq_num_processed < security.mbp.resubscribe)
-      return;
-    auto transact_time = std::chrono::nanoseconds{value.transactTime()};
-    auto &mbp = shared_.get_mbp();
-    value.sbeRewind();  // note!
-    value.noMDEntries().forEach([&](auto const &item) { emplace_back(item, security, mbp.bids, mbp.asks); });
-    if (!std::empty(mbp)) {
-      dispatch_market_by_price(
-          trace_info,
-          security_id,
-          security,
-          last_msg_seq_num_processed,
-          transact_time,
-          frame.sending_time,
-          mbp.bids,
-          mbp.asks);
-    }
-  });
 }
 
-void MarketByPriceRecovery::operator()(
-    Trace<cme_mdp::MDIncrementalRefreshBook46> const &event, mdp::Frame const &frame) {
+void MBOFDMarketRecovery::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_incremental_refresh_book_46={}, frame={}"sv, value, frame);
 }
 
-void MarketByPriceRecovery::operator()(
+void MBOFDMarketRecovery::operator()(
     Trace<cme_mdp::MDIncrementalRefreshBookLongQty64> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_incremental_refresh_book_long_qty_64={}, frame={}"sv, value, frame);
 }
 
-void MarketByPriceRecovery::operator()(
+void MBOFDMarketRecovery::operator()(
     Trace<cme_mdp::SnapshotFullRefreshOrderBook53> const &event, mdp::Frame const &frame) {
+  auto &trace_info = event.trace_info;
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("snapshot_full_refresh_order_book_53={}, frame={}"sv, value, frame);
+  auto security_id = value.securityID();
+  shared_.get_security(security_id, [&](auto &security) {
+    if (!security.mbo.resubscribe)
+      return;
+    auto last_msg_seq_num_processed = value.lastMsgSeqNumProcessed();
+    if (last_msg_seq_num_processed < security.mbo.resubscribe)
+      return;
+    auto current_chunk = value.currentChunk();
+    auto no_chunks = value.noChunks();
+    log::info(
+        R"(DEBUG SNAPSHOT exchange="{}", symbol="{}", security_id={}, exchange_sequence={}, current_chunk={}, no_chunks={})"sv,
+        security.exchange,
+        security.symbol,
+        security_id,
+        last_msg_seq_num_processed,
+        current_chunk,
+        no_chunks);
+    /*
+    if (current_chunk == no_chunks)
+      log::info(
+          R"(DEBUG SNAPSHOT exchange="{}", symbol="{}", security_id={}, exchange_sequence={})"sv,
+          security.exchange,
+          security.symbol,
+          security_id,
+          last_msg_seq_num_processed);
+    */
+    if (security.update_mbo_snapshot(current_chunk, no_chunks, [&](auto &orders, bool last) {
+          if (current_chunk == 1 && !std::empty(orders)) {
+            log::warn("MBO UNEXPECTED"sv);
+          }
+          value.sbeRewind();  // note!
+          value.noMDEntries().forEach([&](auto const &item) { emplace_back(item, security, orders); });
+          log::info<5>("DEBUG MBO orders=[{}]"sv, fmt::join(orders, ","sv));
+          if (last) {
+            auto &sequencer = security.mbo.sequencer;
+            try {
+              auto publish_snapshot = [&](auto &orders, auto exchange_sequence, auto retries, auto delay) {
+                log::info(
+                    R"(PUBLISH SNAPSHOT exchange="{}", symbol="{}", security_id={}, exchange_sequence={}, last_sequence={}, retries={}, delay={})"sv,
+                    security.exchange,
+                    security.symbol,
+                    security_id,
+                    last_msg_seq_num_processed,
+                    sequencer.last_sequence(),
+                    retries,
+                    std::chrono::duration_cast<std::chrono::milliseconds>(delay));
+                auto market_by_order_update = MarketByOrderUpdate{
+                    .stream_id = stream_id_,
+                    .exchange = security.exchange,
+                    .symbol = security.symbol,
+                    .orders = orders,
+                    .update_type = UpdateType::SNAPSHOT,
+                    .exchange_time_utc = {},
+                    .exchange_sequence = sequencer.last_sequence(),
+                    .sending_time_utc = {},
+                    .price_precision = {},
+                    .quantity_precision = {},
+                    .checksum = {},
+                };
+                Trace event(trace_info, market_by_order_update);
+                // XXX FIXME server dispatcher
+                // shared_(event, true, [&](auto &market_by_order) {
+                //   sequencer.apply(market_by_order, exchange_sequence, false);
+                //   // sequencer.apply(market_by_order, last_msg_seq_num_processed, false);
+                // });
+                handler_(event, true);
+                security.mbo.resubscribe = {};
+              };
+              auto request_snapshot = [&]([[maybe_unused]] auto retries) {
+                log::info(
+                    R"(REQUEST SNAPSHOT exchange="{}", symbol="{}", security_id={}, exchange_sequence={}, retries={})"sv,
+                    security.exchange,
+                    security.symbol,
+                    security_id,
+                    last_msg_seq_num_processed,
+                    retries);
+                security.mbo.resubscribe = last_msg_seq_num_processed;
+              };
+              log::info(
+                  R"(DEBUG UPDATE MBO SNAPSHOT exchange="{}", symbol="{}", security_id={}, exchange_sequence={})"sv,
+                  security.exchange,
+                  security.symbol,
+                  security_id,
+                  last_msg_seq_num_processed);
+              // note! last_msg_seq_num_processed sometimes point to a completely unrelated security
+              auto force = channel_.sequence.first_sequence_number <= security.mbo.resubscribe &&
+                           last_msg_seq_num_processed <= channel_.sequence.last_sequence_number;
+              log::warn(
+                  "DEBUG force={}, first_sequence={}, resubscribe={}, exchange_sequence={}, last_sequence={}"sv,
+                  force,
+                  channel_.sequence.first_sequence_number,
+                  security.mbo.resubscribe,
+                  last_msg_seq_num_processed,
+                  channel_.sequence.last_sequence_number);
+              sequencer(orders, last_msg_seq_num_processed, force, publish_snapshot, request_snapshot);
+            } catch (BadState &) {
+              log::warn(
+                  R"(RESUBSCRIBE MBO exchange="{}", symbol="{}", security_id={}, exchange_sequence={}, security_id={})"sv,
+                  security.exchange,
+                  security.symbol,
+                  security_id,
+                  last_msg_seq_num_processed,
+                  security_id);
+              // XXX HANS publish stale
+              sequencer.clear();  // note! wait for next incremental
+            }
+          }
+        })) {
+      log::info("DONE"sv);
+    }
+  });
 }
 
-void MarketByPriceRecovery::operator()(
+void MBOFDMarketRecovery::operator()(
     Trace<cme_mdp::MDIncrementalRefreshOrderBook47> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_incremental_refresh_order_book_47={}, frame={}"sv, value, frame);
 }
 
-void MarketByPriceRecovery::operator()(
+void MBOFDMarketRecovery::operator()(
     Trace<cme_mdp::MDIncrementalRefreshTradeSummary48> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_incremental_refresh_trade_summary_48={}, frame={}"sv, value, frame);
 }
 
-void MarketByPriceRecovery::operator()(
+void MBOFDMarketRecovery::operator()(
     Trace<cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_incremental_refresh_trade_summary_long_qty_65={}, frame={}"sv, value, frame);
 }
 
-void MarketByPriceRecovery::operator()(
+void MBOFDMarketRecovery::operator()(
     Trace<cme_mdp::MDIncrementalRefreshDailyStatistics49> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_incremental_refresh_daily_statistics_49={}, frame={}"sv, value, frame);
 }
 
-void MarketByPriceRecovery::operator()(
+void MBOFDMarketRecovery::operator()(
     Trace<cme_mdp::MDIncrementalRefreshSessionStatistics51> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_incremental_refresh_session_statistics_51={}, frame={}"sv, value, frame);
 }
 
-void MarketByPriceRecovery::operator()(
+void MBOFDMarketRecovery::operator()(
     Trace<cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_incremental_refresh_session_statistics_long_qty_67={}, frame={}"sv, value, frame);
 }
 
-void MarketByPriceRecovery::operator()(
+void MBOFDMarketRecovery::operator()(
     Trace<cme_mdp::MDIncrementalRefreshVolume37> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_incremental_refresh_volume_37={}, frame={}"sv, value, frame);
 }
 
-void MarketByPriceRecovery::operator()(
+void MBOFDMarketRecovery::operator()(
     Trace<cme_mdp::MDIncrementalRefreshVolumeLongQty66> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_incremental_refresh_volume_long_qty_66={}, frame={}"sv, value, frame);
 }
 
-void MarketByPriceRecovery::operator()(
+void MBOFDMarketRecovery::operator()(
     Trace<cme_mdp::MDIncrementalRefreshLimitsBanding50> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_incremental_refresh_limits_banding_50={}, frame={}"sv, value, frame);
 }
 
-void MarketByPriceRecovery::operator()(Trace<cme_mdp::QuoteRequest39> const &event, mdp::Frame const &frame) {
+void MBOFDMarketRecovery::operator()(Trace<cme_mdp::QuoteRequest39> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("quote_request_39={}, frame={}"sv, value, frame);
-}
-
-// helpers
-
-void MarketByPriceRecovery::dispatch_market_by_price(
-    auto &trace_info,
-    auto security_id,
-    auto &security,
-    auto exchange_sequence,
-    auto exchange_time_utc,
-    auto sending_time_utc,
-    auto &bids,
-    auto &asks) {
-  if (!security.mbp.resubscribe)
-    return;
-  auto &sequencer = security.mbp.sequencer;
-  try {
-    auto publish_snapshot = [&](auto &bids, auto &asks, auto exchange_sequence, auto retries, auto delay) {
-      log::info(
-          R"(PUBLISH MBP SNAPSHOT exchange="{}", symbol="{}", security_id={}, exchange_sequence={}, retries={}, delay={})"sv,
-          security.exchange,
-          security.symbol,
-          security_id,
-          exchange_sequence,
-          retries,
-          std::chrono::duration_cast<std::chrono::milliseconds>(delay));
-      auto market_by_price_update = MarketByPriceUpdate{
-          .stream_id = stream_id_,
-          .exchange = security.exchange,
-          .symbol = security.symbol,
-          .bids = {const_cast<MBPUpdate *>(std::data(bids)), std::size(bids)},  // FIXME
-          .asks = {const_cast<MBPUpdate *>(std::data(asks)), std::size(asks)},  // FIXME
-          .update_type = UpdateType::SNAPSHOT,
-          .exchange_time_utc = exchange_time_utc,
-          .exchange_sequence = sequencer.last_sequence(),
-          .sending_time_utc = sending_time_utc,
-          .price_precision = {},
-          .quantity_precision = {},
-          .checksum = {},
-      };
-      Trace event(trace_info, market_by_price_update);
-      // XXX FIXME normalize:
-      // shared_(event, true, [&](auto &market_by_price) { sequencer.apply(market_by_price, exchange_sequence, false);
-      // });
-      handler_(event, true);  // XXX FIXME
-      security.mbp.resubscribe = {};
-    };
-    auto request_snapshot = [&]([[maybe_unused]] auto retries) {
-      log::info(
-          R"(REQUEST MBP SNAPSHOT exchange="{}", symbol="{}", security_id={}, exchange_sequence={}, retries={})"sv,
-          security.exchange,
-          security.symbol,
-          security_id,
-          exchange_sequence,
-          retries);
-      security.mbp.resubscribe = exchange_sequence;
-    };
-    log::info(
-        R"(DEBUG UPDATE MBP SNAPSHOT exchange="{}", symbol="{}", security_id={}, exchange_sequence={})"sv,
-        security.exchange,
-        security.symbol,
-        security_id,
-        exchange_sequence);
-    // note! last_msg_seq_num_processed sometimes point to a completely unrelated security
-    auto force = channel_.sequence.first_sequence_number <= security.mbp.resubscribe &&
-                 exchange_sequence <= channel_.sequence.last_sequence_number;
-    log::warn(
-        "DEBUG force={}, first_sequence={}, resubscribe={}, exchange_sequence={}, last_sequence={}"sv,
-        force,
-        channel_.sequence.first_sequence_number,
-        security.mbp.resubscribe,
-        exchange_sequence,
-        channel_.sequence.last_sequence_number);
-    sequencer(bids, asks, exchange_sequence, force, publish_snapshot, request_snapshot);
-  } catch (BadState &) {
-    log::warn(
-        R"(RESUBSCRIBE MBP exchange="{}", symbol="{}", security_id={}, exchange_sequence={})"sv,
-        security.exchange,
-        security.symbol,
-        security_id,
-        exchange_sequence);
-    // XXX HANS publish stale
-    sequencer.clear();  // note! wait for next incremental
-  }
 }
 
 }  // namespace market_data

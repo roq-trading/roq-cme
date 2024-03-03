@@ -11,8 +11,8 @@
 
 #include "roq/cme/market_data/incremental.hpp"
 #include "roq/cme/market_data/instrument_definition.hpp"
-#include "roq/cme/market_data/market_by_order_recovery.hpp"
-#include "roq/cme/market_data/market_by_price_recovery.hpp"
+#include "roq/cme/market_data/mbofd_market_recovery.hpp"
+#include "roq/cme/market_data/mbp_market_recovery.hpp"
 
 namespace roq {
 namespace cme {
@@ -20,8 +20,8 @@ namespace market_data {
 
 struct Manager final : public Shared::Handler,
                        public InstrumentDefinition::Handler,
-                       public MarketByPriceRecovery::Handler,
-                       public MarketByOrderRecovery::Handler,
+                       public MBPMarketRecovery::Handler,
+                       public MBOFDMarketRecovery::Handler,
                        public Incremental::Handler {
   struct Handler {
     virtual void operator()(Trace<StreamStatus> const &) = 0;
@@ -65,8 +65,8 @@ struct Manager final : public Shared::Handler,
   Shared shared_;
   Channel channel_;
   InstrumentDefinition instrument_definition_;
-  MarketByPriceRecovery market_by_price_recovery_;
-  MarketByOrderRecovery market_by_order_recovery_;
+  MBPMarketRecovery mbp_market_recovery_;
+  MBOFDMarketRecovery mbofd_market_recovery_;
   Incremental incremental_;
 };
 
