@@ -18,6 +18,8 @@
 
 #include "roq/utils/debug/hex/message.hpp"
 
+#include "roq/market/mbp/factory.hpp"
+
 #include "roq/core/codec/encoder.hpp"
 
 #include "roq/cme/pcap_import/pcap.hpp"
@@ -126,6 +128,10 @@ void Controller::operator()(Trace<ExternalLatency> const &event) {
 void Controller::operator()(Trace<ReferenceData> const &event, [[maybe_unused]] bool is_last) {
   log::info("event={}"sv, event);
   append(event);
+  // ...
+  auto &reference_data = event.value;
+  auto &market_by_price = get_market_by_price(reference_data.exchange, reference_data.symbol);
+  market_by_price(reference_data);
 }
 
 void Controller::operator()(Trace<MarketStatus> const &event, [[maybe_unused]] bool is_last) {
@@ -140,7 +146,7 @@ void Controller::operator()(Trace<TopOfBook> const &event, [[maybe_unused]] bool
 
 void Controller::operator()(Trace<MarketByPriceUpdate> const &event, [[maybe_unused]] bool is_last) {
   log::info("event={}"sv, event);
-  // append(event);
+  append(event);
 }
 
 void Controller::operator()(Trace<MarketByOrderUpdate> const &event, [[maybe_unused]] bool is_last) {
@@ -173,6 +179,18 @@ bool Controller::discard_symbol(std::string_view const &symbol) {
     log::info<1>(R"(Discard symbol="{}" (reason: no regex match))"sv, symbol);
   discard_symbol_.emplace(symbol, discard);
   return discard;
+}
+
+roq::cache::MarketByPrice &Controller::get_market_by_price(
+    [[maybe_unused]] std::string_view const &exchange, std::string_view const &symbol) {
+  auto iter = market_by_price_.find(symbol);
+  if (iter == std::end(market_by_price_)) {
+    GatewaySettings gateway_settings;  // XXX
+    auto market_by_price = market::mbp::Factory::create(exchange, symbol, gateway_settings);
+    auto res = market_by_price_.emplace(symbol, std::move(market_by_price));
+    iter = res.first;
+  }
+  return *(*iter).second;
 }
 
 // helpers

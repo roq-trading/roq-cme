@@ -35,6 +35,8 @@ struct Manager final : public Shared::Handler,
     virtual void operator()(Trace<StatisticsUpdate> const &, bool is_last) = 0;
     // - helpers
     virtual bool discard_symbol(std::string_view const &symbol) = 0;
+    virtual cache::MarketByPrice &get_market_by_price(
+        std::string_view const &exchange, std::string_view const &symbol) = 0;
   };
 
   struct Config final {
@@ -58,6 +60,9 @@ struct Manager final : public Shared::Handler,
 
   // Shared::Handler
   bool discard_symbol(std::string_view const &symbol) override { return handler_.discard_symbol(symbol); }
+  cache::MarketByPrice &get_market_by_price(std::string_view const &exchange, std::string_view const &symbol) override {
+    return handler_.get_market_by_price(exchange, symbol);
+  }
 
  private:
   Handler &handler_;

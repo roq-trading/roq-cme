@@ -10,6 +10,8 @@
 
 #include "roq/utils/container.hpp"
 
+#include "roq/cache/market_by_price.hpp"
+
 #include "roq/cme/tools/security.hpp"
 
 namespace roq {
@@ -19,6 +21,8 @@ namespace market_data {
 struct Shared final {
   struct Handler {
     virtual bool discard_symbol(std::string_view const &symbol) = 0;
+    virtual cache::MarketByPrice &get_market_by_price(
+        std::string_view const &exchange, std::string_view const &symbol) = 0;
   };
 
  private:
@@ -58,6 +62,10 @@ struct Shared final {
   Shared(Shared const &) = delete;
 
   auto discard_symbol(std::string_view const &name) const { return handler_.discard_symbol(name); }
+
+  cache::MarketByPrice &get_market_by_price(std::string_view const &exchange, std::string_view const &symbol) {
+    return handler_.get_market_by_price(exchange, symbol);
+  }
 
   // security
 

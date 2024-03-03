@@ -7,6 +7,8 @@
 #include <string_view>
 #include <vector>
 
+#include "roq/cache/market_by_price.hpp"
+
 #include "roq/utils/container.hpp"
 
 #include "roq/utils/regex/pattern.hpp"
@@ -45,6 +47,8 @@ struct Controller final : public market_data::Manager::Handler {
   void operator()(Trace<StatisticsUpdate> const &, bool is_last) override;
   // - helpers
   bool discard_symbol(std::string_view const &symbol) override;
+  roq::cache::MarketByPrice &get_market_by_price(
+      std::string_view const &exchange, std::string_view const &symbol) override;
 
   // helpers
 
@@ -63,6 +67,7 @@ struct Controller final : public market_data::Manager::Handler {
   std::vector<std::byte> encode_buffer_;
   UUID const source_session_id_ = {};
   uint64_t source_seqno_ = {};
+  utils::unordered_map<std::string, std::unique_ptr<cache::MarketByPrice>> market_by_price_;
 };
 
 }  // namespace pcap_import

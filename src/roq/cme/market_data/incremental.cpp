@@ -679,7 +679,9 @@ void Incremental::dispatch_market_by_price(
     };
     auto publish_update = [&](auto &bids, auto &asks) {
       auto market_by_price_update = create_update(bids, asks, UpdateType::INCREMENTAL);
-      create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true);
+      // create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true);
+      auto &market_by_price = shared_.get_market_by_price(security.exchange, security.symbol);
+      // market_by_price(market_by_price_update);
     };
     auto publish_snapshot = [&](auto &bids, auto &asks, auto exchange_sequence, auto retries, auto delay) {
       log::info(
@@ -691,7 +693,9 @@ void Incremental::dispatch_market_by_price(
           retries,
           std::chrono::duration_cast<std::chrono::milliseconds>(delay));
       auto market_by_price_update = create_update(bids, asks, UpdateType::SNAPSHOT);
-      create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true);
+      // create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true);
+      auto &market_by_price = shared_.get_market_by_price(security.exchange, security.symbol);
+      // market_by_price(market_by_price_update);
       security.mbp.resubscribe = {};
     };
     auto request_snapshot = [&]([[maybe_unused]] auto retries) {
