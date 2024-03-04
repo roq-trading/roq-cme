@@ -6,6 +6,7 @@
 
 #include "roq/cme/mdp/parser.hpp"
 
+#include "roq/cme/market_data/channel.hpp"
 #include "roq/cme/market_data/shared.hpp"
 
 namespace roq {
@@ -25,7 +26,7 @@ struct Incremental final : public mdp::Parser::Handler {
     virtual void operator()(Trace<StatisticsUpdate> const &, bool is_last) = 0;
   };
 
-  Incremental(Handler &, Shared &);
+  Incremental(Handler &, Shared &, Channel &);
 
   void dispatch(std::span<std::byte const> const &payload, TraceInfo const &, uint16_t stream_id);
 
@@ -88,16 +89,19 @@ struct Incremental final : public mdp::Parser::Handler {
       auto &orders);
 
   template <typename T>
-  void dispatch_trade_summary(Trace<T> const &event, mdp::Frame const &frame);
+  void dispatch_trade_summary(Trace<T> const &, mdp::Frame const &);
 
   template <typename T, typename Callback>
-  void dispatch_statistics(Trace<T> const &event, mdp::Frame const &frame, Callback callback);
+  void dispatch_statistics(Trace<T> const &, mdp::Frame const &, Callback callback);
 
-  void check_report_sequence(tools::Security &security, auto const &value, mdp::Frame const &frame);
+  void check_report_sequence(tools::Security &, auto const &value, mdp::Frame const &);
+
+  void on_sequence_reset();
 
  private:
   Handler &handler_;
   Shared &shared_;
+  Channel &channel_;
   uint16_t const stream_id_ = {};                    // XXX TODO
   bool const market_by_order_ = false;               // XXX settings
   bool const mbp_to_mbo_clear_price_level_ = false;  // XXX settings

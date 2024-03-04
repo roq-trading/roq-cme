@@ -10,6 +10,7 @@
 
 #include "roq/utils/container.hpp"
 
+#include "roq/cache/market_by_order.hpp"
 #include "roq/cache/market_by_price.hpp"
 
 #include "roq/cme/tools/security.hpp"
@@ -22,6 +23,8 @@ struct Shared final {
   struct Handler {
     virtual bool discard_symbol(std::string_view const &symbol) = 0;
     virtual cache::MarketByPrice &get_market_by_price(
+        std::string_view const &exchange, std::string_view const &symbol) = 0;
+    virtual cache::MarketByOrder &get_market_by_order(
         std::string_view const &exchange, std::string_view const &symbol) = 0;
   };
 
@@ -65,6 +68,10 @@ struct Shared final {
 
   cache::MarketByPrice &get_market_by_price(std::string_view const &exchange, std::string_view const &symbol) {
     return handler_.get_market_by_price(exchange, symbol);
+  }
+
+  cache::MarketByOrder &get_market_by_order(std::string_view const &exchange, std::string_view const &symbol) {
+    return handler_.get_market_by_order(exchange, symbol);
   }
 
   // security

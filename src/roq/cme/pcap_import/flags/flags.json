@@ -53,7 +53,7 @@
       "name": "event_log_buffer_size",
       "type": "uint32_t",
       "required": true,
-      "default": 1048576,
+      "default": 134217728,
       "description": "event-log output buffer size (bytes)"
     },
     {
@@ -67,7 +67,7 @@
       "name": "encode_buffer_size",
       "type": "uint32_t",
       "required": true,
-      "default": 1048576,
+      "default": 16777216,
       "description": "Encode buffer size"
     }
   ]

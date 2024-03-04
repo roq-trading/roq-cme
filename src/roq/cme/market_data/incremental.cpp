@@ -5,6 +5,8 @@
 #include "roq/utils/common.hpp"
 #include "roq/utils/safe_cast.hpp"
 
+#include "roq/utils/debug/hex/message.hpp"
+
 #include "roq/logging.hpp"
 
 using namespace std::literals;
@@ -12,6 +14,12 @@ using namespace std::literals;
 namespace roq {
 namespace cme {
 namespace market_data {
+
+// === CONSTANTS ===
+
+namespace {
+auto const FILTER_SNAPSHOT_FROM_INCREMENTAL = 1024uz;
+}
 
 // === HELPERS ===
 
@@ -235,12 +243,116 @@ void emplace_back(cme_mdp::MDIncrementalRefreshOrderBook47::NoMDEntries const &i
 
 // === IMPLEMENTATION ===
 
-Incremental ::Incremental(Handler &handler, Shared &shared) : handler_{handler}, shared_{shared} {
+Incremental ::Incremental(Handler &handler, Shared &shared, Channel &channel)
+    : handler_{handler}, shared_{shared}, channel_{channel} {
 }
 
 void Incremental ::dispatch(
     std::span<std::byte const> const &payload, TraceInfo const &trace_info, uint16_t stream_id) {
-  mdp::Parser::dispatch(*this, payload, trace_info);
+  auto parse = [&](auto &message) { mdp::Parser::dispatch(*this, message, trace_info); };
+  assert(!std::empty(payload));
+  using value_type = typename decltype(channel_.incremental.buffer)::value_type;
+  auto stop = false;
+  if (channel_.incremental.buffer.next([&](auto buffer) -> std::pair<size_t, value_type> {
+        // read into buffer
+        auto bytes = std::size(payload);
+        assert(bytes <= std::size(buffer));
+        std::memcpy(std::data(buffer), std::data(payload), bytes);
+        /*
+        auto bytes = receiver.recv(buffer);
+        log::info<5>("Received {} byte(s) (stream_id={})"sv, bytes, stream_id);
+        if (!bytes) {
+          stop = true;
+          return {};
+        }
+        */
+        // parse message
+        std::span message{std::data(buffer), bytes};
+        log::info<5>("{}"sv, utils::debug::hex::Message{message});
+        bool hold = false, drop = false;
+        value_type sequence_number = {};
+        if (mdp::Frame::parse(message, [&](auto &frame) {
+              log::info<5>("frame={}, last_sequence_number={}"sv, frame, channel_.sequence.last_sequence_number);
+              // check sequence number
+              sequence_number = frame.sequence_number;
+              if (sequence_number < FILTER_SNAPSHOT_FROM_INCREMENTAL) {
+                drop = true;
+                return;
+              }
+              if (channel_.sequence.first_sequence_number) {
+                auto next_sequence_number = channel_.sequence.last_sequence_number + 1;
+                hold = sequence_number > next_sequence_number;
+                drop = sequence_number < next_sequence_number;
+              }
+              if (hold) {
+                auto delta = static_cast<int64_t>(sequence_number) -
+                             static_cast<int64_t>(channel_.sequence.last_sequence_number);
+                log::warn(
+                    "DEBUG HOLD sequence_number={}, last_sequence_number={}, delta={}"sv,
+                    sequence_number,
+                    channel_.sequence.last_sequence_number,
+                    delta);
+              }
+              /*
+              // TEST >>>
+              if (settings.test.drop && !hold && !drop) {
+                if ((sequence_number % settings.test.drop) == 0) {
+                  log::warn("DEBUG: *** SIMULATE DROP ***"sv);
+                  drop = true;
+                }
+              }
+              if (settings.test.reordering && !hold && !drop) {
+                if ((sequence_number % settings.test.reordering) == 0) {
+                  log::warn("DEBUG: *** SIMULATE REORDERING ***"sv);
+                  hold = true;
+                  stop = true;
+                }
+              }
+              // <<< TEST
+              */
+            })) {
+          log::info<5>("hold={}, drop={}"sv, hold, drop);
+          if (drop)
+            return {};
+          if (hold)
+            return {bytes, sequence_number};
+          // parse this message
+          channel_.update_sequence_number(sequence_number);
+          parse(message);
+          return {};
+        } else {
+          // failed to parse frame
+          log::warn("Unexpected"sv);
+          return {};  // XXX not sure what to do here
+        }
+      })) {
+    // successfully parsed a message
+    // now process any withheld messages
+    while (!stop) {
+      if (channel_.sequence.first_sequence_number) {
+        // check next sequence number
+        auto sequence_number = channel_.sequence.last_sequence_number + 1;
+        if (channel_.incremental.buffer.get(sequence_number, [&](auto &message) {
+              // parse this message
+              channel_.update_sequence_number(sequence_number);
+              parse(message);
+            })) {
+        } else {
+          // does not exist
+          stop = true;
+        }
+      } else {
+        // not ready
+        stop = true;
+      }
+    }
+  } else {
+    // full: no available buffer
+    log::warn<0>("*** BUFFER FULL ***"sv);  // XXX should be log level 1
+    channel_.incremental.buffer.clear();
+    on_sequence_reset();
+    // XXX resubscribe
+  }
 }
 
 // mdp::Parser::Handler
@@ -679,9 +791,7 @@ void Incremental::dispatch_market_by_price(
     };
     auto publish_update = [&](auto &bids, auto &asks) {
       auto market_by_price_update = create_update(bids, asks, UpdateType::INCREMENTAL);
-      // create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true);
-      auto &market_by_price = shared_.get_market_by_price(security.exchange, security.symbol);
-      // market_by_price(market_by_price_update);
+      create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true);
     };
     auto publish_snapshot = [&](auto &bids, auto &asks, auto exchange_sequence, auto retries, auto delay) {
       log::info(
@@ -693,9 +803,7 @@ void Incremental::dispatch_market_by_price(
           retries,
           std::chrono::duration_cast<std::chrono::milliseconds>(delay));
       auto market_by_price_update = create_update(bids, asks, UpdateType::SNAPSHOT);
-      // create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true);
-      auto &market_by_price = shared_.get_market_by_price(security.exchange, security.symbol);
-      // market_by_price(market_by_price_update);
+      create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true);
       security.mbp.resubscribe = {};
     };
     auto request_snapshot = [&]([[maybe_unused]] auto retries) {
@@ -1035,6 +1143,16 @@ void Incremental::dispatch_statistics(Trace<T> const &event, mdp::Frame const &f
 
 void Incremental::check_report_sequence(tools::Security &security, auto const &value, mdp::Frame const &frame) {
   auto rpt_seq = value.rptSeq();
+  /*
+  auto diff = static_cast<int64_t>(rpt_seq) - static_cast<int64_t>(security.rpt_seq);
+  log::info(
+      R"(sequence_number={}, symbol="{}", rpt_seq={}/{}/{})"sv,
+      frame.sequence_number,
+      security.symbol,
+      rpt_seq,
+      security.rpt_seq,
+      diff);
+  */
   if (!security.update_rpt_seq(rpt_seq))
     return;
   log::warn(R"(RESUBSCRIBE exchange="{}", symbol="{}", rpt_seq={})"sv, security.exchange, security.symbol, rpt_seq);
@@ -1042,6 +1160,12 @@ void Incremental::check_report_sequence(tools::Security &security, auto const &v
   security.mbp.resubscribe = frame.sequence_number;
   security.mbo.sequencer.clear();
   security.mbo.resubscribe = frame.sequence_number;
+}
+
+void Incremental::on_sequence_reset() {
+  log::warn<0>("*** SEQUENCE RESET ***"sv);  // XXX should be log level 1
+  // ++counter_.sequence_reset;
+  channel_.sequence = {};
 }
 
 }  // namespace market_data

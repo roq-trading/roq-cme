@@ -377,8 +377,8 @@ void MBPMarketRecovery::dispatch_market_by_price(
       };
       // Trace event{trace_info, market_by_price_update};
       auto &market_by_price = shared_.get_market_by_price(security.exchange, security.symbol);
-      // market_by_price(market_by_price_update);
-      // sequencer.apply(market_by_price, exchange_sequence, false);
+      market_by_price(market_by_price_update);
+      sequencer.apply(market_by_price, exchange_sequence, false);
       security.mbp.resubscribe = {};
     };
     auto request_snapshot = [&]([[maybe_unused]] auto retries) {

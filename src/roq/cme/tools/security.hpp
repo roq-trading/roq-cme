@@ -54,7 +54,9 @@ struct Security final {
       mbo.orders.clear();
     };
     if (mbo.no_chunks) {
-      if (current_chunk == (mbo.last_chunk + uint32_t{1})) {
+      if (current_chunk == mbo.last_chunk) {
+        // same
+      } else if (current_chunk == (mbo.last_chunk + uint32_t{1})) {
         if (current_chunk == no_chunks) {
           callback(mbo.orders, true);
           reset();

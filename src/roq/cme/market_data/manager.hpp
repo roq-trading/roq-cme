@@ -4,6 +4,9 @@
 
 #include "roq/api.hpp"
 
+#include "roq/cache/market_by_order.hpp"
+#include "roq/cache/market_by_price.hpp"
+
 #include "roq/cme/mdp/connection_type.hpp"
 
 #include "roq/cme/market_data/channel.hpp"
@@ -37,6 +40,8 @@ struct Manager final : public Shared::Handler,
     virtual bool discard_symbol(std::string_view const &symbol) = 0;
     virtual cache::MarketByPrice &get_market_by_price(
         std::string_view const &exchange, std::string_view const &symbol) = 0;
+    virtual cache::MarketByOrder &get_market_by_order(
+        std::string_view const &exchange, std::string_view const &symbol) = 0;
   };
 
   struct Config final {
@@ -53,8 +58,8 @@ struct Manager final : public Shared::Handler,
   void operator()(Trace<ReferenceData> const &event, bool is_last) override;
   void operator()(Trace<MarketStatus> const &event, bool is_last) override { handler_(event, is_last); }
   void operator()(Trace<TopOfBook> const &event, bool is_last) override { handler_(event, is_last); }
-  void operator()(Trace<MarketByPriceUpdate> const &event, bool is_last) override { handler_(event, is_last); }
-  void operator()(Trace<MarketByOrderUpdate> const &event, bool is_last) override { handler_(event, is_last); }
+  void operator()(Trace<MarketByPriceUpdate> const &event, bool is_last) override;
+  void operator()(Trace<MarketByOrderUpdate> const &event, bool is_last) override;
   void operator()(Trace<TradeSummary> const &event, bool is_last) override { handler_(event, is_last); }
   void operator()(Trace<StatisticsUpdate> const &event, bool is_last) override { handler_(event, is_last); }
 
@@ -62,6 +67,9 @@ struct Manager final : public Shared::Handler,
   bool discard_symbol(std::string_view const &symbol) override { return handler_.discard_symbol(symbol); }
   cache::MarketByPrice &get_market_by_price(std::string_view const &exchange, std::string_view const &symbol) override {
     return handler_.get_market_by_price(exchange, symbol);
+  }
+  cache::MarketByOrder &get_market_by_order(std::string_view const &exchange, std::string_view const &symbol) override {
+    return handler_.get_market_by_order(exchange, symbol);
   }
 
  private:
@@ -73,6 +81,8 @@ struct Manager final : public Shared::Handler,
   MBPMarketRecovery mbp_market_recovery_;
   MBOFDMarketRecovery mbofd_market_recovery_;
   Incremental incremental_;
+  std::vector<MBPUpdate> bids_, asks_;
+  std::vector<MBOUpdate> orders_;
 };
 
 }  // namespace market_data

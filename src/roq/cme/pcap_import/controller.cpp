@@ -20,6 +20,8 @@
 
 #include "roq/market/mbp/factory.hpp"
 
+#include "roq/market/mbo/factory.hpp"
+
 #include "roq/core/codec/encoder.hpp"
 
 #include "roq/cme/pcap_import/pcap.hpp"
@@ -145,22 +147,22 @@ void Controller::operator()(Trace<TopOfBook> const &event, [[maybe_unused]] bool
 }
 
 void Controller::operator()(Trace<MarketByPriceUpdate> const &event, [[maybe_unused]] bool is_last) {
-  log::info("event={}"sv, event);
+  // log::info("event={}"sv, event);
   append(event);
 }
 
 void Controller::operator()(Trace<MarketByOrderUpdate> const &event, [[maybe_unused]] bool is_last) {
-  log::info("event={}"sv, event);
-  // append(event);
+  // log::info("event={}"sv, event);
+  append(event);
 }
 
 void Controller::operator()(Trace<TradeSummary> const &event, [[maybe_unused]] bool is_last) {
-  log::info("event={}"sv, event);
+  // log::info("event={}"sv, event);
   append(event);
 }
 
 void Controller::operator()(Trace<StatisticsUpdate> const &event, [[maybe_unused]] bool is_last) {
-  log::info("event={}"sv, event);
+  // log::info("event={}"sv, event);
   append(event);
 }
 
@@ -188,6 +190,18 @@ roq::cache::MarketByPrice &Controller::get_market_by_price(
     GatewaySettings gateway_settings;  // XXX
     auto market_by_price = market::mbp::Factory::create(exchange, symbol, gateway_settings);
     auto res = market_by_price_.emplace(symbol, std::move(market_by_price));
+    iter = res.first;
+  }
+  return *(*iter).second;
+}
+
+roq::cache::MarketByOrder &Controller::get_market_by_order(
+    [[maybe_unused]] std::string_view const &exchange, std::string_view const &symbol) {
+  auto iter = market_by_order_.find(symbol);
+  if (iter == std::end(market_by_order_)) {
+    GatewaySettings gateway_settings;  // XXX
+    auto market_by_order = market::mbo::Factory::create(exchange, symbol, gateway_settings);
+    auto res = market_by_order_.emplace(symbol, std::move(market_by_order));
     iter = res.first;
   }
   return *(*iter).second;

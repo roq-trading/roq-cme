@@ -10,12 +10,19 @@ namespace roq {
 namespace cme {
 namespace market_data {
 
+// === CONSTANTS ===
+
+namespace {
+auto const BUFFER_SIZE = 2048uz;  // >=1440 MTU
+auto const BUFFER_DEPTH = 10uz;
+}  // namespace
+
 // === IMPLEMENTATION ===
 
 Manager::Manager(Handler &handler, Config const &config)
-    : handler_{handler}, config_{config}, shared_{*this}, channel_{"344", 1024 * 1024, 10},
+    : handler_{handler}, config_{config}, shared_{*this}, channel_{"344", BUFFER_SIZE, BUFFER_DEPTH},
       instrument_definition_{*this, shared_}, mbp_market_recovery_{*this, shared_, channel_},
-      mbofd_market_recovery_{*this, shared_, channel_}, incremental_{*this, shared_} {
+      mbofd_market_recovery_{*this, shared_, channel_}, incremental_{*this, shared_, channel_} {
 }
 
 void Manager::dispatch(
@@ -47,6 +54,24 @@ void Manager::operator()(Trace<ReferenceData> const &event, bool is_last) {
   if (event.value.discard && !config_.cache_all_reference_data)
     return;
   handler_(event, is_last);
+}
+
+void Manager::operator()(Trace<MarketByPriceUpdate> const &event, bool is_last) {
+  auto &[trace_info, market_by_price_update] = event;
+  auto &market_by_price = handler_.get_market_by_price(market_by_price_update.exchange, market_by_price_update.symbol);
+  market_by_price(market_by_price_update, bids_, asks_, [&](auto &market_by_price_update_2) {
+    Trace event_2{trace_info, market_by_price_update_2};
+    handler_(event_2, is_last);
+  });
+}
+
+void Manager::operator()(Trace<MarketByOrderUpdate> const &event, bool is_last) {
+  auto &[trace_info, market_by_order_update] = event;
+  auto &market_by_order = handler_.get_market_by_order(market_by_order_update.exchange, market_by_order_update.symbol);
+  market_by_order(market_by_order_update, orders_, [&](auto &market_by_order_update_2) {
+    Trace event_2{trace_info, market_by_order_update_2};
+    handler_(event_2, is_last);
+  });
 }
 
 }  // namespace market_data

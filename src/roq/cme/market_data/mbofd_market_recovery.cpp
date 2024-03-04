@@ -230,11 +230,10 @@ void MBOFDMarketRecovery::operator()(
                     .checksum = {},
                 };
                 Trace event(trace_info, market_by_order_update);
-                // XXX FIXME server dispatcher
-                // shared_(event, true, [&](auto &market_by_order) {
-                //   sequencer.apply(market_by_order, exchange_sequence, false);
-                //   // sequencer.apply(market_by_order, last_msg_seq_num_processed, false);
-                // });
+                auto &market_by_order = shared_.get_market_by_order(security.exchange, security.symbol);
+                market_by_order(market_by_order_update);
+                sequencer.apply(market_by_order, exchange_sequence, false);
+                // sequencer.apply(market_by_order, last_msg_seq_num_processed, false);
                 handler_(event, true);
                 security.mbo.resubscribe = {};
               };
