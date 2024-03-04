@@ -3,6 +3,7 @@
 #include "roq/cme/market_data/mbp_market_recovery.hpp"
 
 #include "roq/utils/safe_cast.hpp"
+#include "roq/utils/update.hpp"
 
 #include "roq/utils/debug/hex/message.hpp"
 
@@ -13,6 +14,15 @@ using namespace std::literals;
 namespace roq {
 namespace cme {
 namespace market_data {
+
+// === CONSTANTS ===
+
+namespace {
+auto const SUPPORTS = Mask{
+    SupportType::MARKET_BY_PRICE,
+    SupportType::STATISTICS,
+};
+}  // namespace
 
 // === HELPERS ===
 
@@ -110,12 +120,18 @@ void drain(auto &receiver, auto &buffer, auto stream_id, auto parse) {
 
 // === IMPLEMENTATION ===
 
-MBPMarketRecovery ::MBPMarketRecovery(Handler &handler, Shared &shared, Channel &channel)
-    : handler_{handler}, shared_{shared}, channel_{channel} {
+MBPMarketRecovery ::MBPMarketRecovery(
+    Handler &handler, Shared &shared, Channel &channel, uint16_t stream_id, Priority priority)
+    : handler_{handler}, shared_{shared}, channel_{channel}, stream_id_{stream_id}, priority_{priority} {
 }
 
-void MBPMarketRecovery ::dispatch(
-    std::span<std::byte const> const &payload, TraceInfo const &trace_info, uint16_t stream_id) {
+void MBPMarketRecovery::start() {
+  TraceInfo trace_info;  // XXX we need a timsestamp
+  publish_stream_status(trace_info, ConnectionStatus::CONNECTING);
+}
+
+void MBPMarketRecovery::dispatch(std::span<std::byte const> const &payload, TraceInfo const &trace_info) {
+  publish_stream_status(trace_info, ConnectionStatus::READY);  // first message will publish
   mdp::Parser::dispatch(*this, payload, trace_info);
 }
 
@@ -418,6 +434,27 @@ void MBPMarketRecovery::dispatch_market_by_price(
     // XXX HANS publish stale
     sequencer.clear();  // note! wait for next incremental
   }
+}
+
+void MBPMarketRecovery::publish_stream_status(TraceInfo const &trace_info, ConnectionStatus connection_status) {
+  if (!utils::update(connection_status_, connection_status))
+    return;
+  auto stream_status = StreamStatus{
+      .stream_id = stream_id_,
+      .account = {},
+      .supports = SUPPORTS,
+      .transport = Transport::UDP,
+      .protocol = Protocol::SBE,
+      .encoding = {Encoding::SBE},
+      .priority = priority_,
+      .connection_status = connection_status_,
+      .interface = {},  // XXX
+      .authority = {},
+      .path = {},  // XXX channel_name_,
+      .proxy = {},
+  };
+  log::info("stream_status={}"sv, stream_status);
+  create_trace_and_dispatch(handler_, trace_info, stream_status);
 }
 
 }  // namespace market_data

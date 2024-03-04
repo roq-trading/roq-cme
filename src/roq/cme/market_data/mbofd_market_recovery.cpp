@@ -2,6 +2,8 @@
 
 #include "roq/cme/market_data/mbofd_market_recovery.hpp"
 
+#include "roq/utils/update.hpp"
+
 #include "roq/utils/debug/hex/message.hpp"
 
 #include "roq/logging.hpp"
@@ -11,6 +13,14 @@ using namespace std::literals;
 namespace roq {
 namespace cme {
 namespace market_data {
+
+// === CONSTANTS ===
+
+namespace {
+auto const SUPPORTS = Mask{
+    SupportType::MARKET_BY_ORDER,
+};
+}  // namespace
 
 // === HELPERS ===
 
@@ -58,12 +68,18 @@ void drain(auto &receiver, auto &buffer, auto stream_id, auto parse) {
 
 // === IMPLEMENTATION ===
 
-MBOFDMarketRecovery ::MBOFDMarketRecovery(Handler &handler, Shared &shared, Channel &channel)
-    : handler_{handler}, shared_{shared}, channel_{channel} {
+MBOFDMarketRecovery ::MBOFDMarketRecovery(
+    Handler &handler, Shared &shared, Channel &channel, uint16_t stream_id, Priority priority)
+    : handler_{handler}, shared_{shared}, channel_{channel}, stream_id_{stream_id}, priority_{priority} {
 }
 
-void MBOFDMarketRecovery ::dispatch(
-    std::span<std::byte const> const &payload, TraceInfo const &trace_info, uint16_t stream_id) {
+void MBOFDMarketRecovery::start() {
+  TraceInfo trace_info;  // XXX we need a timsestamp
+  publish_stream_status(trace_info, ConnectionStatus::CONNECTING);
+}
+
+void MBOFDMarketRecovery::dispatch(std::span<std::byte const> const &payload, TraceInfo const &trace_info) {
+  publish_stream_status(trace_info, ConnectionStatus::READY);  // first message will publish
   mdp::Parser::dispatch(*this, payload, trace_info);
 }
 
@@ -349,6 +365,27 @@ void MBOFDMarketRecovery::operator()(Trace<cme_mdp::QuoteRequest39> const &event
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("quote_request_39={}, frame={}"sv, value, frame);
+}
+
+void MBOFDMarketRecovery::publish_stream_status(TraceInfo const &trace_info, ConnectionStatus connection_status) {
+  if (!utils::update(connection_status_, connection_status))
+    return;
+  auto stream_status = StreamStatus{
+      .stream_id = stream_id_,
+      .account = {},
+      .supports = SUPPORTS,
+      .transport = Transport::UDP,
+      .protocol = Protocol::SBE,
+      .encoding = {Encoding::SBE},
+      .priority = priority_,
+      .connection_status = connection_status_,
+      .interface = {},  // XXX
+      .authority = {},
+      .path = {},  // XXX channel_name_,
+      .proxy = {},
+  };
+  log::info("stream_status={}"sv, stream_status);
+  create_trace_and_dispatch(handler_, trace_info, stream_status);
 }
 
 }  // namespace market_data

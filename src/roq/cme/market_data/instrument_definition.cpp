@@ -4,11 +4,24 @@
 
 #include "roq/logging.hpp"
 
+#include "roq/utils/update.hpp"
+
 using namespace std::literals;
 
 namespace roq {
 namespace cme {
 namespace market_data {
+
+// === CONSTANTS ===
+
+namespace {
+auto const SUPPORTS = Mask{
+    SupportType::REFERENCE_DATA,
+    SupportType::MARKET_STATUS,
+};
+
+auto const FILTER_SNAPSHOT_FROM_INCREMENTAL = 1024uz;
+}  // namespace
 
 // === HELPERS ===
 
@@ -37,11 +50,17 @@ void create_security(auto &shared, auto &value, Callback callback) {
 
 // === IMPLEMENTATION ===
 
-InstrumentDefinition ::InstrumentDefinition(Handler &handler, Shared &shared) : handler_{handler}, shared_{shared} {
+InstrumentDefinition ::InstrumentDefinition(Handler &handler, Shared &shared, uint16_t stream_id, Priority priority)
+    : handler_{handler}, shared_{shared}, stream_id_{stream_id}, priority_{priority} {
 }
 
-void InstrumentDefinition ::dispatch(
-    std::span<std::byte const> const &payload, TraceInfo const &trace_info, uint16_t stream_id) {
+void InstrumentDefinition::start() {
+  TraceInfo trace_info;  // XXX we need a timsestamp
+  publish_stream_status(trace_info, ConnectionStatus::CONNECTING);
+}
+
+void InstrumentDefinition::dispatch(std::span<std::byte const> const &payload, TraceInfo const &trace_info) {
+  publish_stream_status(trace_info, ConnectionStatus::READY);  // first message will publish
   mdp::Parser::dispatch(*this, payload, trace_info);
 }
 
@@ -269,6 +288,27 @@ void InstrumentDefinition::operator()(Trace<cme_mdp::QuoteRequest39> const &even
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("quote_request_39={}, frame={}"sv, value, frame);
+}
+
+void InstrumentDefinition::publish_stream_status(TraceInfo const &trace_info, ConnectionStatus connection_status) {
+  if (!utils::update(connection_status_, connection_status))
+    return;
+  auto stream_status = StreamStatus{
+      .stream_id = stream_id_,
+      .account = {},
+      .supports = SUPPORTS,
+      .transport = Transport::UDP,
+      .protocol = Protocol::SBE,
+      .encoding = {Encoding::SBE},
+      .priority = priority_,
+      .connection_status = connection_status_,
+      .interface = {},  // XXX
+      .authority = {},
+      .path = {},  // XXX channel_name_,
+      .proxy = {},
+  };
+  log::info("stream_status={}"sv, stream_status);
+  create_trace_and_dispatch(handler_, trace_info, stream_status);
 }
 
 }  // namespace market_data

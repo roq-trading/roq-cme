@@ -20,9 +20,11 @@ struct MBPMarketRecovery final : public mdp::Parser::Handler {
     virtual void operator()(Trace<MarketByPriceUpdate> const &, bool is_last) = 0;
   };
 
-  MBPMarketRecovery(Handler &, Shared &, Channel &);
+  MBPMarketRecovery(Handler &, Shared &, Channel &, uint16_t stream_id, Priority);
 
-  void dispatch(std::span<std::byte const> const &payload, TraceInfo const &, uint16_t stream_id);
+  void start();
+
+  void dispatch(std::span<std::byte const> const &payload, TraceInfo const &);
 
  protected:
   // mdp::Parser::Handler
@@ -73,11 +75,15 @@ struct MBPMarketRecovery final : public mdp::Parser::Handler {
       auto &bids,
       auto &asks);
 
+  void publish_stream_status(TraceInfo const &, ConnectionStatus);
+
  private:
   Handler &handler_;
   Shared &shared_;
   Channel &channel_;
-  uint16_t const stream_id_ = {};  // XXX TODO
+  uint16_t const stream_id_;
+  Priority const priority_;
+  ConnectionStatus connection_status_ = {};
 };
 
 }  // namespace market_data

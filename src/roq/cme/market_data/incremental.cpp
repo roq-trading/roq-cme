@@ -4,6 +4,7 @@
 
 #include "roq/utils/common.hpp"
 #include "roq/utils/safe_cast.hpp"
+#include "roq/utils/update.hpp"
 
 #include "roq/utils/debug/hex/message.hpp"
 
@@ -18,8 +19,18 @@ namespace market_data {
 // === CONSTANTS ===
 
 namespace {
+auto const SUPPORTS = Mask{
+    SupportType::REFERENCE_DATA,
+    SupportType::MARKET_STATUS,
+    SupportType::TOP_OF_BOOK,
+    SupportType::MARKET_BY_PRICE,
+    SupportType::MARKET_BY_ORDER,
+    SupportType::TRADE_SUMMARY,
+    SupportType::STATISTICS,
+};
+
 auto const FILTER_SNAPSHOT_FROM_INCREMENTAL = 1024uz;
-}
+}  // namespace
 
 // === HELPERS ===
 
@@ -243,12 +254,17 @@ void emplace_back(cme_mdp::MDIncrementalRefreshOrderBook47::NoMDEntries const &i
 
 // === IMPLEMENTATION ===
 
-Incremental ::Incremental(Handler &handler, Shared &shared, Channel &channel)
-    : handler_{handler}, shared_{shared}, channel_{channel} {
+Incremental ::Incremental(Handler &handler, Shared &shared, Channel &channel, uint16_t stream_id, Priority priority)
+    : handler_{handler}, shared_{shared}, channel_{channel}, stream_id_{stream_id}, priority_{priority} {
 }
 
-void Incremental ::dispatch(
-    std::span<std::byte const> const &payload, TraceInfo const &trace_info, uint16_t stream_id) {
+void Incremental::start() {
+  TraceInfo trace_info;  // XXX we need a timsestamp
+  publish_stream_status(trace_info, ConnectionStatus::CONNECTING);
+}
+
+void Incremental::dispatch(std::span<std::byte const> const &payload, TraceInfo const &trace_info) {
+  publish_stream_status(trace_info, ConnectionStatus::READY);  // first message will publish
   auto parse = [&](auto &message) { mdp::Parser::dispatch(*this, message, trace_info); };
   assert(!std::empty(payload));
   using value_type = typename decltype(channel_.incremental.buffer)::value_type;
@@ -1166,6 +1182,27 @@ void Incremental::on_sequence_reset() {
   log::warn<0>("*** SEQUENCE RESET ***"sv);  // XXX should be log level 1
   // ++counter_.sequence_reset;
   channel_.sequence = {};
+}
+
+void Incremental::publish_stream_status(TraceInfo const &trace_info, ConnectionStatus connection_status) {
+  if (!utils::update(connection_status_, connection_status))
+    return;
+  auto stream_status = StreamStatus{
+      .stream_id = stream_id_,
+      .account = {},
+      .supports = SUPPORTS,
+      .transport = Transport::UDP,
+      .protocol = Protocol::SBE,
+      .encoding = {Encoding::SBE},
+      .priority = priority_,
+      .connection_status = connection_status_,
+      .interface = {},  // XXX
+      .authority = {},
+      .path = {},  // XXX channel_name_,
+      .proxy = {},
+  };
+  log::info("stream_status={}"sv, stream_status);
+  create_trace_and_dispatch(handler_, trace_info, stream_status);
 }
 
 }  // namespace market_data

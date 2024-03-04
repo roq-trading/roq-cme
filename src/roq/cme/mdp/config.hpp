@@ -47,7 +47,7 @@ struct Config final {
       auto &tmp_1 = (*iter_1).second;
       auto iter_2 = tmp_1.find(port);
       if (iter_2 != std::end(tmp_1)) {
-        callback((*iter_2).second);
+        callback((*iter_2).second.first, (*iter_2).second.second);
         return true;
       }
     }
@@ -59,8 +59,9 @@ struct Config final {
   utils::unordered_map<std::string, utils::unordered_map<ConnectionType, utils::unordered_map<Priority, Connection>>>
       connections_;
 
-  // address ==> port ==> connection type
-  utils::unordered_map<std::string, utils::unordered_map<uint16_t, ConnectionType>> connection_types_;
+  // address ==> port ==> {connection type, priority}
+  utils::unordered_map<std::string, utils::unordered_map<uint16_t, std::pair<ConnectionType, Priority>>>
+      connection_types_;
 };
 
 }  // namespace mdp

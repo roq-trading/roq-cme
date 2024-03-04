@@ -43,13 +43,13 @@ auto get_priority(auto &value) {
 
 template <typename T>
 struct Handler final : public ConfigReader::Handler {
-  explicit Handler(T &connections) : connections_(connections) {}
+  explicit Handler(T &connections) : connections_{connections} {}
   void operator()(std::string_view const &channel_id, ConfigReader::Channel const &channel) override {
     for (auto &[connection_id, connection] : channel.connections) {
       try {
         auto type = get_type(connection.feed_type);
         auto priority = get_priority(connection.feed);
-        Config::Connection tmp{
+        auto tmp = Config::Connection{
             .multicast_address = connection.ip,
             .port = core::from_chars<uint16_t>(connection.port),
         };
@@ -80,7 +80,7 @@ R create_connection_types(auto &connections) {
   for (auto &[channel, tmp_1] : connections)
     for (auto &[connection_type, tmp_2] : tmp_1)
       for (auto &[priority, connection] : tmp_2)
-        result[connection.multicast_address][connection.port] = connection_type;
+        result[connection.multicast_address][connection.port] = {connection_type, priority};
   return result;
 }
 }  // namespace

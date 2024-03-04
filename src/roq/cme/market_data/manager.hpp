@@ -48,9 +48,11 @@ struct Manager final : public Shared::Handler,
     bool cache_all_reference_data = {};
   };
 
-  Manager(Handler &, Config const &);
+  Manager(Handler &, Config const &, uint16_t &stream_id);
 
-  void dispatch(mdp::ConnectionType, std::span<std::byte const> const &payload, TraceInfo const &, uint16_t stream_id);
+  void start();
+
+  void dispatch(mdp::ConnectionType, Priority, std::span<std::byte const> const &payload, TraceInfo const &);
 
  protected:
   void operator()(Trace<StreamStatus> const &event) override { handler_(event); }

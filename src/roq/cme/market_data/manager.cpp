@@ -19,33 +19,38 @@ auto const BUFFER_DEPTH = 10uz;
 
 // === IMPLEMENTATION ===
 
-Manager::Manager(Handler &handler, Config const &config)
+Manager::Manager(Handler &handler, Config const &config, uint16_t &stream_id)
     : handler_{handler}, config_{config}, shared_{*this}, channel_{"344", BUFFER_SIZE, BUFFER_DEPTH},
-      instrument_definition_{*this, shared_}, mbp_market_recovery_{*this, shared_, channel_},
-      mbofd_market_recovery_{*this, shared_, channel_}, incremental_{*this, shared_, channel_} {
+      instrument_definition_{*this, shared_, ++stream_id, Priority::PRIMARY},
+      mbp_market_recovery_{*this, shared_, channel_, ++stream_id, Priority::PRIMARY},
+      mbofd_market_recovery_{*this, shared_, channel_, ++stream_id, Priority::PRIMARY},
+      incremental_{*this, shared_, channel_, ++stream_id, Priority::PRIMARY} {
+}
+
+void Manager::start() {
 }
 
 void Manager::dispatch(
     mdp::ConnectionType connection_type,
+    Priority,
     std::span<std::byte const> const &payload,
-    TraceInfo const &trace_info,
-    uint16_t stream_id) {
+    TraceInfo const &trace_info) {
   switch (connection_type) {
     using enum mdp::ConnectionType;
     case HISTORICAL_REPLAY:
       log::fatal("Unexpected"sv);
       break;
     case INSTRUMENT_DEFINITION:
-      instrument_definition_.dispatch(payload, trace_info, stream_id);
+      instrument_definition_.dispatch(payload, trace_info);
       break;
     case MBP_MARKET_RECOVERY:
-      mbp_market_recovery_.dispatch(payload, trace_info, stream_id);
+      mbp_market_recovery_.dispatch(payload, trace_info);
       break;
     case MBOFD_MARKET_RECOVERY:
-      mbofd_market_recovery_.dispatch(payload, trace_info, stream_id);
+      mbofd_market_recovery_.dispatch(payload, trace_info);
       break;
     case INCREMENTAL:
-      incremental_.dispatch(payload, trace_info, stream_id);
+      incremental_.dispatch(payload, trace_info);
       break;
   }
 }
