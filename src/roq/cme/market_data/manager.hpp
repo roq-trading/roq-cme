@@ -79,10 +79,14 @@ struct Manager final : public Shared::Handler,
   Config const config_;
   Shared shared_;
   Channel channel_;
-  InstrumentDefinition instrument_definition_;
-  MBPMarketRecovery mbp_market_recovery_;
-  MBOFDMarketRecovery mbofd_market_recovery_;
-  Incremental incremental_;
+  InstrumentDefinition instrument_definition_1_;
+  InstrumentDefinition instrument_definition_2_;
+  MBPMarketRecovery mbp_market_recovery_1_;
+  MBPMarketRecovery mbp_market_recovery_2_;
+  MBOFDMarketRecovery mbofd_market_recovery_1_;
+  MBOFDMarketRecovery mbofd_market_recovery_2_;
+  Incremental incremental_1_;
+  Incremental incremental_2_;
   std::vector<MBPUpdate> bids_, asks_;
   std::vector<MBOUpdate> orders_;
 };

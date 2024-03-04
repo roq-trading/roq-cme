@@ -21,10 +21,14 @@ auto const BUFFER_DEPTH = 10uz;
 
 Manager::Manager(Handler &handler, Config const &config, uint16_t &stream_id)
     : handler_{handler}, config_{config}, shared_{*this}, channel_{"344", BUFFER_SIZE, BUFFER_DEPTH},
-      instrument_definition_{*this, shared_, ++stream_id, Priority::PRIMARY},
-      mbp_market_recovery_{*this, shared_, channel_, ++stream_id, Priority::PRIMARY},
-      mbofd_market_recovery_{*this, shared_, channel_, ++stream_id, Priority::PRIMARY},
-      incremental_{*this, shared_, channel_, ++stream_id, Priority::PRIMARY} {
+      instrument_definition_1_{*this, shared_, ++stream_id, Priority::PRIMARY},
+      instrument_definition_2_{*this, shared_, ++stream_id, Priority::SECONDARY},
+      mbp_market_recovery_1_{*this, shared_, channel_, ++stream_id, Priority::PRIMARY},
+      mbp_market_recovery_2_{*this, shared_, channel_, ++stream_id, Priority::SECONDARY},
+      mbofd_market_recovery_1_{*this, shared_, channel_, ++stream_id, Priority::PRIMARY},
+      mbofd_market_recovery_2_{*this, shared_, channel_, ++stream_id, Priority::SECONDARY},
+      incremental_1_{*this, shared_, channel_, ++stream_id, Priority::PRIMARY},
+      incremental_2_{*this, shared_, channel_, ++stream_id, Priority::SECONDARY} {
 }
 
 void Manager::start() {
@@ -32,7 +36,7 @@ void Manager::start() {
 
 void Manager::dispatch(
     mdp::ConnectionType connection_type,
-    Priority,
+    Priority priority,
     std::span<std::byte const> const &payload,
     TraceInfo const &trace_info) {
   switch (connection_type) {
@@ -41,16 +45,28 @@ void Manager::dispatch(
       log::fatal("Unexpected"sv);
       break;
     case INSTRUMENT_DEFINITION:
-      instrument_definition_.dispatch(payload, trace_info);
+      if (priority == Priority::PRIMARY)
+        instrument_definition_1_.dispatch(payload, trace_info);
+      else
+        instrument_definition_2_.dispatch(payload, trace_info);
       break;
     case MBP_MARKET_RECOVERY:
-      mbp_market_recovery_.dispatch(payload, trace_info);
+      if (priority == Priority::PRIMARY)
+        mbp_market_recovery_1_.dispatch(payload, trace_info);
+      else
+        mbp_market_recovery_2_.dispatch(payload, trace_info);
       break;
     case MBOFD_MARKET_RECOVERY:
-      mbofd_market_recovery_.dispatch(payload, trace_info);
+      if (priority == Priority::PRIMARY)
+        mbofd_market_recovery_1_.dispatch(payload, trace_info);
+      else
+        mbofd_market_recovery_2_.dispatch(payload, trace_info);
       break;
     case INCREMENTAL:
-      incremental_.dispatch(payload, trace_info);
+      if (priority == Priority::PRIMARY)
+        incremental_1_.dispatch(payload, trace_info);
+      else
+        incremental_2_.dispatch(payload, trace_info);
       break;
   }
 }
