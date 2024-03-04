@@ -103,7 +103,7 @@ struct Incremental final : public mdp::Parser::Handler {
   Shared &shared_;
   Channel &channel_;
   uint16_t const stream_id_ = {};                    // XXX TODO
-  bool const market_by_order_ = false;               // XXX settings
+  bool const market_by_order_ = true;                // XXX settings
   bool const mbp_to_mbo_clear_price_level_ = false;  // XXX settings
   // - refresh book
   std::vector<std::tuple<int32_t, Side, double, UpdateAction>> md_entries_;
