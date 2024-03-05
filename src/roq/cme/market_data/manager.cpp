@@ -21,11 +21,11 @@ auto const BUFFER_DEPTH = 10uz;
 
 namespace {
 template <typename R>
-R create_channels(auto &handler, auto &config, auto &shared, auto &channel_ids, auto &stream_id) {
+R create_channels(auto &handler, auto &shared, auto &channel_ids, auto &config, auto &stream_id) {
   using result_type = std::remove_cvref<R>::type;
   result_type result;
   for (auto &channel_id : channel_ids)
-    result.try_emplace(channel_id, handler, shared, stream_id);
+    result.try_emplace(channel_id, handler, shared, config, channel_id, stream_id);
   return result;
 }
 }  // namespace
@@ -33,18 +33,39 @@ R create_channels(auto &handler, auto &config, auto &shared, auto &channel_ids, 
 // === IMPLEMENTATION ===
 
 Manager::Manager(
-    Handler &handler, Config const &config, std::span<uint16_t const> const &channel_ids, uint16_t &stream_id)
-    : handler_{handler}, config_{config}, shared_{*this},
-      channels_{create_channels<decltype(channels_)>(*this, config, shared_, channel_ids, stream_id)} {
+    Handler &handler,
+    Config const &config,
+    std::span<uint16_t const> const &channel_ids,
+    mdp::Config const &config_2,
+    uint16_t &stream_id)
+    : handler_{handler}, config_{config}, shared_{*this, config},
+      channels_{create_channels<decltype(channels_)>(*this, shared_, channel_ids, config_2, stream_id)} {
 }
 
-void Manager::operator()(Event<Start> const &) {
+void Manager::operator()(Event<Start> const &event) {
+  dispatch(event);
 }
 
-void Manager::operator()(Event<Stop> const &) {
+void Manager::operator()(Event<Stop> const &event) {
+  dispatch(event);
 }
 
-void Manager::operator()(Event<Timer> const &) {
+void Manager::operator()(Event<Timer> const &event) {
+  dispatch(event);
+}
+
+template <typename T>
+void Manager::dispatch(Event<T> const &event) {
+  for (auto &[channel_id, item] : channels_) {
+    item.instrument_definition_1(event);
+    item.instrument_definition_2(event);
+    item.mbp_market_recovery_1(event);
+    item.mbp_market_recovery_2(event);
+    item.mbofd_market_recovery_1(event);
+    item.mbofd_market_recovery_2(event);
+    item.incremental_1(event);
+    item.incremental_2(event);
+  }
 }
 
 void Manager::dispatch(
@@ -113,16 +134,17 @@ void Manager::operator()(Trace<MarketByOrderUpdate> const &event, bool is_last) 
   });
 }
 
-Manager::Channel2::Channel2(Manager &handler, Shared &shared, uint16_t &stream_id)
+Manager::Channel2::Channel2(
+    Manager &handler, Shared &shared, mdp::Config const &config, uint16_t channel_id, uint16_t &stream_id)
     : channel{"344", BUFFER_SIZE, BUFFER_DEPTH},
-      instrument_definition_1{handler, shared, ++stream_id, Priority::PRIMARY},
-      instrument_definition_2{handler, shared, ++stream_id, Priority::SECONDARY},
-      mbp_market_recovery_1{handler, shared, channel, ++stream_id, Priority::PRIMARY},
-      mbp_market_recovery_2{handler, shared, channel, ++stream_id, Priority::SECONDARY},
-      mbofd_market_recovery_1{handler, shared, channel, ++stream_id, Priority::PRIMARY},
-      mbofd_market_recovery_2{handler, shared, channel, ++stream_id, Priority::SECONDARY},
-      incremental_1{handler, shared, channel, ++stream_id, Priority::PRIMARY},
-      incremental_2{handler, shared, channel, ++stream_id, Priority::SECONDARY} {
+      instrument_definition_1{handler, shared, ++stream_id, config, channel_id, Priority::PRIMARY},
+      instrument_definition_2{handler, shared, ++stream_id, config, channel_id, Priority::SECONDARY},
+      mbp_market_recovery_1{handler, shared, channel, ++stream_id, config, channel_id, Priority::PRIMARY},
+      mbp_market_recovery_2{handler, shared, channel, ++stream_id, config, channel_id, Priority::SECONDARY},
+      mbofd_market_recovery_1{handler, shared, channel, ++stream_id, config, channel_id, Priority::PRIMARY},
+      mbofd_market_recovery_2{handler, shared, channel, ++stream_id, config, channel_id, Priority::SECONDARY},
+      incremental_1{handler, shared, channel, ++stream_id, config, channel_id, Priority::PRIMARY},
+      incremental_2{handler, shared, channel, ++stream_id, config, channel_id, Priority::SECONDARY} {
 }
 
 }  // namespace market_data

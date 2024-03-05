@@ -35,18 +35,22 @@ namespace pcap_import {
 // === CONSTANTS ===
 
 namespace {
+auto const LOCAL_INTERFACE = "pcap"sv;
 std::vector<core::event_log::User> const USERS;
-}
+auto const TIMER_FREQUENCY = 100ms;
+}  // namespace
 
 // === HELPERS ===
 
 namespace {
-auto create_market_data(auto &handler, auto &settings) {
-  auto config = market_data::Manager::Config{
+auto create_market_data(auto &handler, auto &settings, auto &config_2) {
+  auto config = market_data::Config{
       .cache_all_reference_data = settings.cache_all_reference_data,
+      .local_interface = LOCAL_INTERFACE,
+      .multicast_timeout = 10s,
   };
   uint16_t stream_id = {};
-  return market_data::Manager{handler, config, settings.channel_ids, stream_id};
+  return market_data::Manager{handler, config, settings.channel_ids, config_2, stream_id};
 }
 
 template <typename R>
@@ -66,14 +70,37 @@ auto convert(timeval ts) {
 // === IMPLEMENTATION ===
 
 Controller::Controller(Settings const &settings)
-    : settings_{settings}, config_{settings.config_file, false}, market_data_{create_market_data(*this, settings)},
+    : settings_{settings}, config_{settings.config_file, false},
+      market_data_{create_market_data(*this, settings, config_)},
       symbols_regex_{create_symbols_regex<decltype(symbols_regex_)>(settings.symbols)},
       encode_buffer_(settings.encode_buffer_size) {
 }
 
 void Controller::dispatch(std::string_view const &path) {
-  auto callback = [this](struct pcap_pkthdr const *header, u_char const *packet) {
+  auto initialized = false;
+  std::chrono::nanoseconds last_timer_update = {};
+  auto callback = [&](struct pcap_pkthdr const *header, u_char const *packet) {
     auto timestamp = convert((*header).ts);
+    TraceInfo trace_info{timestamp, timestamp, timestamp};
+    if (!initialized) {
+      initialized = true;
+      auto message_info = create_message_info(trace_info);
+      Start start;
+      Event event{message_info, start};
+      market_data_(event);
+    }
+    while (last_timer_update < timestamp) {
+      if (last_timer_update.count()) {
+        last_timer_update += TIMER_FREQUENCY;
+        TraceInfo trace_info_2{last_timer_update, last_timer_update, last_timer_update};
+        auto message_info = create_message_info(trace_info_2);
+        Timer timer;
+        Event event{message_info, timer};
+        market_data_(event);
+      } else {
+        last_timer_update = timestamp;
+      }
+    }
     // note! assuming ether
     auto ether_header = reinterpret_cast<struct ether_header const *>(packet);
     auto ether_type = ntohs((*ether_header).ether_type);
@@ -240,20 +267,7 @@ void Controller::create_producer(std::chrono::nanoseconds timestamp_utc) {
 template <typename T>
 void Controller::append(Trace<T> const &event) {
   auto &[trace_info, value] = event;
-  auto message_info = MessageInfo{
-      .source = SOURCE_NONE,
-      .source_name = settings_.name,
-      .source_session_id = source_session_id_,
-      .source_seqno = ++source_seqno_,
-      .receive_time_utc = trace_info.origin_create_time_utc,
-      .receive_time = trace_info.origin_create_time,
-      .source_send_time = {},
-      .source_receive_time = trace_info.source_receive_time,
-      .origin_create_time = trace_info.origin_create_time,
-      .origin_create_time_utc = trace_info.origin_create_time_utc,
-      .is_last = true,
-      .opaque = {},
-  };
+  auto message_info = create_message_info(trace_info);
   auto message = core::codec::Encoder{encode_buffer_}.encode(value);
   if (!producer_)
     create_producer(message_info.receive_time_utc);
@@ -274,6 +288,23 @@ void Controller::append(Trace<T> const &event) {
       .receive_time_utc = static_cast<uint64_t>(message_info.receive_time_utc.count()),          // REQUIRED
   };
   (*producer_).write(header, message, message_info);
+}
+
+MessageInfo Controller::create_message_info(TraceInfo const &trace_info) {
+  return {
+      .source = SOURCE_NONE,
+      .source_name = settings_.name,
+      .source_session_id = source_session_id_,
+      .source_seqno = ++source_seqno_,
+      .receive_time_utc = trace_info.origin_create_time_utc,
+      .receive_time = trace_info.origin_create_time,
+      .source_send_time = {},
+      .source_receive_time = trace_info.source_receive_time,
+      .origin_create_time = trace_info.origin_create_time,
+      .origin_create_time_utc = trace_info.origin_create_time_utc,
+      .is_last = true,
+      .opaque = {},
+  };
 }
 
 }  // namespace pcap_import

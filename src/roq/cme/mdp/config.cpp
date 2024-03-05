@@ -52,6 +52,7 @@ struct Handler final : public ConfigReader::Handler {
         auto tmp = Config::Connection{
             .multicast_address = connection.ip,
             .port = utils::from_chars<uint16_t>(connection.port),
+            .name = connection_id,
         };
         connections_[channel_id][type].try_emplace(priority, std::move(tmp));
       } catch (RuntimeError &e) {
@@ -86,13 +87,47 @@ R create_connection_types(auto &connections) {
       }
   return result;
 }
+
+template <typename R>
+R create_names(auto &connections) {
+  using result_type = std::remove_cvref<R>::type;
+  result_type result;
+  for (auto &[channel_id, tmp_1] : connections)
+    for (auto &[connection_type, tmp_2] : tmp_1)
+      for (auto &[priority, connection] : tmp_2) {
+        auto channel_id_2 = utils::from_chars<uint16_t>(channel_id);
+        result[channel_id_2][connection_type][priority] = connection.name;
+      }
+  return result;
+}
 }  // namespace
 
 // === IMPLEMENTATION ===
 
 Config::Config(std::string_view const &filename, bool verbose)
     : connections_{read_connections<decltype(connections_)>(filename, verbose)},
-      connection_types_{create_connection_types<decltype(connection_types_)>(connections_)} {
+      connection_types_{create_connection_types<decltype(connection_types_)>(connections_)},
+      names_{create_names<decltype(names_)>(connections_)} {
+}
+
+std::string_view Config::get_name(uint16_t channel_id, ConnectionType connection_type, Priority priority) const {
+  auto iter_1 = names_.find(channel_id);
+  if (iter_1 != std::end(names_)) {
+    auto &tmp_1 = (*iter_1).second;
+    auto iter_2 = tmp_1.find(connection_type);
+    if (iter_2 != std::end(tmp_1)) {
+      auto &tmp_2 = (*iter_2).second;
+      auto iter_3 = tmp_2.find(priority);
+      if (iter_3 != std::end(tmp_2)) {
+        return (*iter_3).second;
+      }
+    }
+  }
+  throw RuntimeError{
+      "Unexpected: channel_id={}, connection_type={}, priority={}"sv,
+      channel_id,
+      magic_enum::enum_name(connection_type),
+      priority};
 }
 
 }  // namespace mdp

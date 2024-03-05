@@ -4,6 +4,7 @@
 
 #include "roq/api.hpp"
 
+#include "roq/cme/mdp/config.hpp"
 #include "roq/cme/mdp/parser.hpp"
 
 #include "roq/cme/market_data/shared.hpp"
@@ -20,7 +21,7 @@ struct InstrumentDefinition final : public mdp::Parser::Handler {
     virtual void operator()(Trace<MarketStatus> const &, bool is_last) = 0;
   };
 
-  InstrumentDefinition(Handler &, Shared &, uint16_t stream_id, Priority);
+  InstrumentDefinition(Handler &, Shared &, uint16_t stream_id, mdp::Config const &, uint16_t channel_id, Priority);
 
   void operator()(Event<Start> const &);
   void operator()(Event<Stop> const &);
@@ -71,8 +72,10 @@ struct InstrumentDefinition final : public mdp::Parser::Handler {
   Handler &handler_;
   Shared &shared_;
   uint16_t const stream_id_;
+  std::string const name_;
   Priority const priority_;
   ConnectionStatus connection_status_ = {};
+  std::chrono::nanoseconds last_update_time_ = {};
 };
 
 }  // namespace market_data

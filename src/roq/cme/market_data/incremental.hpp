@@ -4,6 +4,7 @@
 
 #include "roq/api.hpp"
 
+#include "roq/cme/mdp/config.hpp"
 #include "roq/cme/mdp/parser.hpp"
 
 #include "roq/cme/market_data/channel.hpp"
@@ -26,7 +27,7 @@ struct Incremental final : public mdp::Parser::Handler {
     virtual void operator()(Trace<StatisticsUpdate> const &, bool is_last) = 0;
   };
 
-  Incremental(Handler &, Shared &, Channel &, uint16_t stream_id, Priority);
+  Incremental(Handler &, Shared &, Channel &, uint16_t stream_id, mdp::Config const &, uint16_t channel_id, Priority);
 
   void operator()(Event<Start> const &);
   void operator()(Event<Stop> const &);
@@ -109,10 +110,12 @@ struct Incremental final : public mdp::Parser::Handler {
   Shared &shared_;
   Channel &channel_;
   uint16_t const stream_id_;
+  std::string const name_;
   Priority const priority_;
   bool const market_by_order_ = true;                // XXX settings
   bool const mbp_to_mbo_clear_price_level_ = false;  // XXX settings
   ConnectionStatus connection_status_ = {};
+  std::chrono::nanoseconds last_update_time_ = {};
   // - refresh book
   std::vector<std::tuple<int32_t, Side, double, UpdateAction>> md_entries_;
   // - trade summary

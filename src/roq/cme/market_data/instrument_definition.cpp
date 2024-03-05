@@ -50,8 +50,15 @@ void create_security(auto &shared, auto &value, Callback callback) {
 
 // === IMPLEMENTATION ===
 
-InstrumentDefinition::InstrumentDefinition(Handler &handler, Shared &shared, uint16_t stream_id, Priority priority)
-    : handler_{handler}, shared_{shared}, stream_id_{stream_id}, priority_{priority} {
+InstrumentDefinition::InstrumentDefinition(
+    Handler &handler,
+    Shared &shared,
+    uint16_t stream_id,
+    mdp::Config const &config,
+    uint16_t channel_id,
+    Priority priority)
+    : handler_{handler}, shared_{shared}, stream_id_{stream_id},
+      name_{config.get_name(channel_id, mdp::ConnectionType::INSTRUMENT_DEFINITION, priority)}, priority_{priority} {
 }
 
 void InstrumentDefinition::operator()(Event<Start> const &event) {
@@ -64,7 +71,11 @@ void InstrumentDefinition::operator()(Event<Stop> const &event) {
   publish_stream_status(trace_info, ConnectionStatus::DISCONNECTED);
 }
 
-void InstrumentDefinition::operator()(Event<Timer> const &) {
+void InstrumentDefinition::operator()(Event<Timer> const &event) {
+  if (last_update_time_.count() && (last_update_time_ + shared_.config.multicast_timeout) < event.value.now) {
+    log::warn("*** DETECTED TIMEOUT ***"sv);
+    last_update_time_ = {};
+  }
 }
 
 void InstrumentDefinition::dispatch(std::span<std::byte const> const &payload, TraceInfo const &trace_info) {
@@ -310,9 +321,9 @@ void InstrumentDefinition::publish_stream_status(TraceInfo const &trace_info, Co
       .encoding = {Encoding::SBE},
       .priority = priority_,
       .connection_status = connection_status_,
-      .interface = {},  // XXX
+      .interface = shared_.config.local_interface,
       .authority = {},
-      .path = {},  // XXX channel_name_,
+      .path = name_,
       .proxy = {},
   };
   log::info("stream_status={}"sv, stream_status);

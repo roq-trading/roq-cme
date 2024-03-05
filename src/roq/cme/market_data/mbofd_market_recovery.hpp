@@ -4,6 +4,7 @@
 
 #include "roq/api.hpp"
 
+#include "roq/cme/mdp/config.hpp"
 #include "roq/cme/mdp/parser.hpp"
 
 #include "roq/cme/market_data/channel.hpp"
@@ -20,7 +21,8 @@ struct MBOFDMarketRecovery final : public mdp::Parser::Handler {
     virtual void operator()(Trace<MarketByOrderUpdate> const &, bool is_last) = 0;
   };
 
-  MBOFDMarketRecovery(Handler &, Shared &, Channel &, uint16_t stream_id, Priority);
+  MBOFDMarketRecovery(
+      Handler &, Shared &, Channel &, uint16_t stream_id, mdp::Config const &, uint16_t channel_id, Priority);
 
   void operator()(Event<Start> const &);
   void operator()(Event<Stop> const &);
@@ -72,8 +74,10 @@ struct MBOFDMarketRecovery final : public mdp::Parser::Handler {
   Shared &shared_;
   Channel &channel_;
   uint16_t const stream_id_;
+  std::string const name_;
   Priority const priority_;
   ConnectionStatus connection_status_ = {};
+  std::chrono::nanoseconds last_update_time_ = {};
 };
 
 }  // namespace market_data

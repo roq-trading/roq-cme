@@ -20,6 +20,7 @@ struct Config final {
   struct Connection final {
     std::string multicast_address;
     uint16_t port = {};
+    std::string name;
   };
 
   Config(std::string_view const &filename, bool verbose);
@@ -56,6 +57,8 @@ struct Config final {
     return false;
   }
 
+  std::string_view get_name(uint16_t channel_id, ConnectionType, Priority) const;
+
  private:
   // channel_id(string) => type => feed => connection
   utils::unordered_map<std::string, utils::unordered_map<ConnectionType, utils::unordered_map<Priority, Connection>>>
@@ -64,6 +67,9 @@ struct Config final {
   // address ==> port ==> {channel_id, connection type, priority}
   utils::unordered_map<std::string, utils::unordered_map<uint16_t, std::tuple<uint16_t, ConnectionType, Priority>>>
       connection_types_;
+
+  utils::unordered_map<uint16_t, utils::unordered_map<ConnectionType, utils::unordered_map<Priority, std::string>>>
+      names_;
 };
 
 }  // namespace mdp

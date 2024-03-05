@@ -121,8 +121,15 @@ void drain(auto &receiver, auto &buffer, auto stream_id, auto parse) {
 // === IMPLEMENTATION ===
 
 MBPMarketRecovery::MBPMarketRecovery(
-    Handler &handler, Shared &shared, Channel &channel, uint16_t stream_id, Priority priority)
-    : handler_{handler}, shared_{shared}, channel_{channel}, stream_id_{stream_id}, priority_{priority} {
+    Handler &handler,
+    Shared &shared,
+    Channel &channel,
+    uint16_t stream_id,
+    mdp::Config const &config,
+    uint16_t channel_id,
+    Priority priority)
+    : handler_{handler}, shared_{shared}, channel_{channel}, stream_id_{stream_id},
+      name_{config.get_name(channel_id, mdp::ConnectionType::MBP_MARKET_RECOVERY, priority)}, priority_{priority} {
 }
 
 void MBPMarketRecovery::operator()(Event<Start> const &event) {
@@ -135,7 +142,11 @@ void MBPMarketRecovery::operator()(Event<Stop> const &event) {
   publish_stream_status(trace_info, ConnectionStatus::DISCONNECTED);
 }
 
-void MBPMarketRecovery::operator()(Event<Timer> const &) {
+void MBPMarketRecovery::operator()(Event<Timer> const &event) {
+  if (last_update_time_.count() && (last_update_time_ + shared_.config.multicast_timeout) < event.value.now) {
+    log::warn("*** DETECTED TIMEOUT ***"sv);
+    last_update_time_ = {};
+  }
 }
 
 void MBPMarketRecovery::dispatch(std::span<std::byte const> const &payload, TraceInfo const &trace_info) {
@@ -389,8 +400,8 @@ void MBPMarketRecovery::dispatch_market_by_price(
           .stream_id = stream_id_,
           .exchange = security.exchange,
           .symbol = security.symbol,
-          .bids = {const_cast<MBPUpdate *>(std::data(bids)), std::size(bids)},  // FIXME
-          .asks = {const_cast<MBPUpdate *>(std::data(asks)), std::size(asks)},  // FIXME
+          .bids = bids,
+          .asks = asks,
           .update_type = UpdateType::SNAPSHOT,
           .exchange_time_utc = exchange_time_utc,
           .exchange_sequence = sequencer.last_sequence(),
@@ -456,9 +467,9 @@ void MBPMarketRecovery::publish_stream_status(TraceInfo const &trace_info, Conne
       .encoding = {Encoding::SBE},
       .priority = priority_,
       .connection_status = connection_status_,
-      .interface = {},  // XXX
+      .interface = shared_.config.local_interface,
       .authority = {},
-      .path = {},  // XXX channel_name_,
+      .path = name_,
       .proxy = {},
   };
   log::info("stream_status={}"sv, stream_status);

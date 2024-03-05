@@ -69,8 +69,15 @@ void drain(auto &receiver, auto &buffer, auto stream_id, auto parse) {
 // === IMPLEMENTATION ===
 
 MBOFDMarketRecovery::MBOFDMarketRecovery(
-    Handler &handler, Shared &shared, Channel &channel, uint16_t stream_id, Priority priority)
-    : handler_{handler}, shared_{shared}, channel_{channel}, stream_id_{stream_id}, priority_{priority} {
+    Handler &handler,
+    Shared &shared,
+    Channel &channel,
+    uint16_t stream_id,
+    mdp::Config const &config,
+    uint16_t channel_id,
+    Priority priority)
+    : handler_{handler}, shared_{shared}, channel_{channel}, stream_id_{stream_id},
+      name_{config.get_name(channel_id, mdp::ConnectionType::MBOFD_MARKET_RECOVERY, priority)}, priority_{priority} {
 }
 
 void MBOFDMarketRecovery::operator()(Event<Start> const &event) {
@@ -83,7 +90,11 @@ void MBOFDMarketRecovery::operator()(Event<Stop> const &event) {
   publish_stream_status(trace_info, ConnectionStatus::DISCONNECTED);
 }
 
-void MBOFDMarketRecovery::operator()(Event<Timer> const &) {
+void MBOFDMarketRecovery::operator()(Event<Timer> const &event) {
+  if (last_update_time_.count() && (last_update_time_ + shared_.config.multicast_timeout) < event.value.now) {
+    log::warn("*** DETECTED TIMEOUT ***"sv);
+    last_update_time_ = {};
+  }
 }
 
 void MBOFDMarketRecovery::dispatch(std::span<std::byte const> const &payload, TraceInfo const &trace_info) {
@@ -387,9 +398,9 @@ void MBOFDMarketRecovery::publish_stream_status(TraceInfo const &trace_info, Con
       .encoding = {Encoding::SBE},
       .priority = priority_,
       .connection_status = connection_status_,
-      .interface = {},  // XXX
+      .interface = shared_.config.local_interface,
       .authority = {},
-      .path = {},  // XXX channel_name_,
+      .path = name_,
       .proxy = {},
   };
   log::info("stream_status={}"sv, stream_status);

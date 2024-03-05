@@ -9,9 +9,11 @@
 #include "roq/cache/market_by_order.hpp"
 #include "roq/cache/market_by_price.hpp"
 
+#include "roq/cme/mdp/config.hpp"
 #include "roq/cme/mdp/connection_type.hpp"
 
 #include "roq/cme/market_data/channel.hpp"
+#include "roq/cme/market_data/config.hpp"
 #include "roq/cme/market_data/shared.hpp"
 
 #include "roq/cme/market_data/incremental.hpp"
@@ -46,11 +48,12 @@ struct Manager final : public Shared::Handler,
         std::string_view const &exchange, std::string_view const &symbol) = 0;
   };
 
-  struct Config final {
-    bool cache_all_reference_data = {};
-  };
-
-  Manager(Handler &, Config const &, std::span<uint16_t const> const &channel_ids, uint16_t &stream_id);
+  Manager(
+      Handler &,
+      Config const &,
+      std::span<uint16_t const> const &channel_ids,
+      mdp::Config const &,
+      uint16_t &stream_id);
 
   void operator()(Event<Start> const &);
   void operator()(Event<Stop> const &);
@@ -79,12 +82,15 @@ struct Manager final : public Shared::Handler,
     return handler_.get_market_by_order(exchange, symbol);
   }
 
+  template <typename T>
+  void dispatch(Event<T> const &);
+
  private:
   Handler &handler_;
   Config const config_;
   Shared shared_;
   struct Channel2 final {
-    Channel2(Manager &, Shared &, uint16_t &stream_id);
+    Channel2(Manager &, Shared &, mdp::Config const &, uint16_t channel_id, uint16_t &stream_id);
 
     Channel channel;
     InstrumentDefinition instrument_definition_1;

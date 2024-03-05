@@ -15,6 +15,8 @@
 
 #include "roq/cme/tools/security.hpp"
 
+#include "roq/cme/market_data/config.hpp"
+
 namespace roq {
 namespace cme {
 namespace market_data {
@@ -59,10 +61,12 @@ struct Shared final {
   std::vector<Fill> fills;
 
  public:
-  explicit Shared(Handler &);
+  Shared(Handler &, Config const &);
 
   Shared(Shared &&) = default;
   Shared(Shared const &) = delete;
+
+  Config const config;
 
   auto discard_symbol(std::string_view const &name) const { return handler_.discard_symbol(name); }
 

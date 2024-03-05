@@ -60,6 +60,8 @@ struct Controller final : public market_data::Manager::Handler {
   template <typename T>
   void append(Trace<T> const &);
 
+  MessageInfo create_message_info(TraceInfo const &);
+
  private:
   Settings const &settings_;
   mdp::Config config_;
