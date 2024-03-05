@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <span>
+
 #include "roq/api.hpp"
 
 #include "roq/cache/market_by_order.hpp"
@@ -48,11 +50,14 @@ struct Manager final : public Shared::Handler,
     bool cache_all_reference_data = {};
   };
 
-  Manager(Handler &, Config const &, uint16_t &stream_id);
+  Manager(Handler &, Config const &, std::span<uint16_t const> const &channel_ids, uint16_t &stream_id);
 
-  void start();
+  void operator()(Event<Start> const &);
+  void operator()(Event<Stop> const &);
+  void operator()(Event<Timer> const &);
 
-  void dispatch(mdp::ConnectionType, Priority, std::span<std::byte const> const &payload, TraceInfo const &);
+  void dispatch(
+      uint16_t channel_id, mdp::ConnectionType, Priority, std::span<std::byte const> const &payload, TraceInfo const &);
 
  protected:
   void operator()(Trace<StreamStatus> const &event) override { handler_(event); }
@@ -78,15 +83,20 @@ struct Manager final : public Shared::Handler,
   Handler &handler_;
   Config const config_;
   Shared shared_;
-  Channel channel_;
-  InstrumentDefinition instrument_definition_1_;
-  InstrumentDefinition instrument_definition_2_;
-  MBPMarketRecovery mbp_market_recovery_1_;
-  MBPMarketRecovery mbp_market_recovery_2_;
-  MBOFDMarketRecovery mbofd_market_recovery_1_;
-  MBOFDMarketRecovery mbofd_market_recovery_2_;
-  Incremental incremental_1_;
-  Incremental incremental_2_;
+  struct Channel2 final {
+    Channel2(Manager &, Shared &, uint16_t &stream_id);
+
+    Channel channel;
+    InstrumentDefinition instrument_definition_1;
+    InstrumentDefinition instrument_definition_2;
+    MBPMarketRecovery mbp_market_recovery_1;
+    MBPMarketRecovery mbp_market_recovery_2;
+    MBOFDMarketRecovery mbofd_market_recovery_1;
+    MBOFDMarketRecovery mbofd_market_recovery_2;
+    Incremental incremental_1;
+    Incremental incremental_2;
+  };
+  utils::unordered_map<uint16_t, Channel2> channels_;
   std::vector<MBPUpdate> bids_, asks_;
   std::vector<MBOUpdate> orders_;
 };

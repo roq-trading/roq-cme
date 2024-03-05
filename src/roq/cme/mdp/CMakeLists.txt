@@ -6,5 +6,5 @@ include(RoqAutogen)
 
 add_library(${TARGET_NAME} OBJECT ${SOURCES})
 
-target_link_libraries(${TARGET_NAME} PRIVATE roq-core::roq-core roq-io::roq-io
+target_link_libraries(${TARGET_NAME} PRIVATE roq-io::roq-io roq-utils::roq-utils
                                              roq-logging::roq-logging fmt::fmt EXPAT::EXPAT)

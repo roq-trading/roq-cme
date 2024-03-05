@@ -50,13 +50,21 @@ void create_security(auto &shared, auto &value, Callback callback) {
 
 // === IMPLEMENTATION ===
 
-InstrumentDefinition ::InstrumentDefinition(Handler &handler, Shared &shared, uint16_t stream_id, Priority priority)
+InstrumentDefinition::InstrumentDefinition(Handler &handler, Shared &shared, uint16_t stream_id, Priority priority)
     : handler_{handler}, shared_{shared}, stream_id_{stream_id}, priority_{priority} {
 }
 
-void InstrumentDefinition::start() {
-  TraceInfo trace_info;  // XXX we need a timsestamp
+void InstrumentDefinition::operator()(Event<Start> const &event) {
+  TraceInfo trace_info{event.message_info};
   publish_stream_status(trace_info, ConnectionStatus::CONNECTING);
+}
+
+void InstrumentDefinition::operator()(Event<Stop> const &event) {
+  TraceInfo trace_info{event.message_info};
+  publish_stream_status(trace_info, ConnectionStatus::DISCONNECTED);
+}
+
+void InstrumentDefinition::operator()(Event<Timer> const &) {
 }
 
 void InstrumentDefinition::dispatch(std::span<std::byte const> const &payload, TraceInfo const &trace_info) {

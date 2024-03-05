@@ -4,7 +4,7 @@
 
 #include "roq/logging.hpp"
 
-#include "roq/core/charconv.hpp"
+#include "roq/utils/charconv.hpp"
 
 #include "roq/cme/mdp/config_reader.hpp"
 
@@ -51,7 +51,7 @@ struct Handler final : public ConfigReader::Handler {
         auto priority = get_priority(connection.feed);
         auto tmp = Config::Connection{
             .multicast_address = connection.ip,
-            .port = core::from_chars<uint16_t>(connection.port),
+            .port = utils::from_chars<uint16_t>(connection.port),
         };
         connections_[channel_id][type].try_emplace(priority, std::move(tmp));
       } catch (RuntimeError &e) {
@@ -76,11 +76,14 @@ auto read_connections(auto &filename, bool verbose) {
 
 template <typename R>
 R create_connection_types(auto &connections) {
-  R result;
-  for (auto &[channel, tmp_1] : connections)
+  using result_type = std::remove_cvref<R>::type;
+  result_type result;
+  for (auto &[channel_id, tmp_1] : connections)
     for (auto &[connection_type, tmp_2] : tmp_1)
-      for (auto &[priority, connection] : tmp_2)
-        result[connection.multicast_address][connection.port] = {connection_type, priority};
+      for (auto &[priority, connection] : tmp_2) {
+        auto channel_id_2 = utils::from_chars<uint16_t>(channel_id);
+        result[connection.multicast_address][connection.port] = {channel_id_2, connection_type, priority};
+      }
   return result;
 }
 }  // namespace

@@ -254,13 +254,21 @@ void emplace_back(cme_mdp::MDIncrementalRefreshOrderBook47::NoMDEntries const &i
 
 // === IMPLEMENTATION ===
 
-Incremental ::Incremental(Handler &handler, Shared &shared, Channel &channel, uint16_t stream_id, Priority priority)
+Incremental::Incremental(Handler &handler, Shared &shared, Channel &channel, uint16_t stream_id, Priority priority)
     : handler_{handler}, shared_{shared}, channel_{channel}, stream_id_{stream_id}, priority_{priority} {
 }
 
-void Incremental::start() {
-  TraceInfo trace_info;  // XXX we need a timsestamp
+void Incremental::operator()(Event<Start> const &event) {
+  TraceInfo trace_info{event.message_info};
   publish_stream_status(trace_info, ConnectionStatus::CONNECTING);
+}
+
+void Incremental::operator()(Event<Stop> const &event) {
+  TraceInfo trace_info{event.message_info};
+  publish_stream_status(trace_info, ConnectionStatus::DISCONNECTED);
+}
+
+void Incremental::operator()(Event<Timer> const &) {
 }
 
 void Incremental::dispatch(std::span<std::byte const> const &payload, TraceInfo const &trace_info) {

@@ -46,7 +46,7 @@ auto create_market_data(auto &handler, auto &settings) {
       .cache_all_reference_data = settings.cache_all_reference_data,
   };
   uint16_t stream_id = {};
-  return market_data::Manager{handler, config, stream_id};
+  return market_data::Manager{handler, config, settings.channel_ids, stream_id};
 }
 
 template <typename R>
@@ -101,9 +101,9 @@ void Controller::dispatch(std::string_view const &path) {
             dst,
             dst_port,
             utils::debug::hex::Message{payload});
-        if (config_.find(dst, dst_port, [&](auto connection_type, auto priority) {
+        if (config_.find(dst, dst_port, [&](auto channel_id, auto connection_type, auto priority) {
               TraceInfo trace_info{timestamp, timestamp, timestamp};
-              market_data_.dispatch(connection_type, priority, payload, trace_info);
+              market_data_.dispatch(channel_id, connection_type, priority, payload, trace_info);
             })) {
         } else {
           log::warn(R"(Unexpected: address="{}", port={})"sv, dst, dst_port);
@@ -111,7 +111,7 @@ void Controller::dispatch(std::string_view const &path) {
       }
     }
   };
-  market_data_.start();
+  // market_data_.start();
   PCAP{path}.dispatch(callback);
   if (producer_)
     (*producer_).close();

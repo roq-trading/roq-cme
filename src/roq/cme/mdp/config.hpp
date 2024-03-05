@@ -4,6 +4,7 @@
 
 #include <string>
 #include <string_view>
+#include <tuple>
 
 #include "roq/priority.hpp"
 
@@ -47,7 +48,8 @@ struct Config final {
       auto &tmp_1 = (*iter_1).second;
       auto iter_2 = tmp_1.find(port);
       if (iter_2 != std::end(tmp_1)) {
-        callback((*iter_2).second.first, (*iter_2).second.second);
+        auto [channel_id, connection_type, priority] = (*iter_2).second;
+        callback(channel_id, connection_type, priority);
         return true;
       }
     }
@@ -55,12 +57,12 @@ struct Config final {
   }
 
  private:
-  // channel => type => feed => connection
+  // channel_id(string) => type => feed => connection
   utils::unordered_map<std::string, utils::unordered_map<ConnectionType, utils::unordered_map<Priority, Connection>>>
       connections_;
 
-  // address ==> port ==> {connection type, priority}
-  utils::unordered_map<std::string, utils::unordered_map<uint16_t, std::pair<ConnectionType, Priority>>>
+  // address ==> port ==> {channel_id, connection type, priority}
+  utils::unordered_map<std::string, utils::unordered_map<uint16_t, std::tuple<uint16_t, ConnectionType, Priority>>>
       connection_types_;
 };
 

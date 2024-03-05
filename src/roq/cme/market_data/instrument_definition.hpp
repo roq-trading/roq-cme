@@ -22,7 +22,9 @@ struct InstrumentDefinition final : public mdp::Parser::Handler {
 
   InstrumentDefinition(Handler &, Shared &, uint16_t stream_id, Priority);
 
-  void start();
+  void operator()(Event<Start> const &);
+  void operator()(Event<Stop> const &);
+  void operator()(Event<Timer> const &);
 
   void dispatch(std::span<std::byte const> const &payload, TraceInfo const &);
 

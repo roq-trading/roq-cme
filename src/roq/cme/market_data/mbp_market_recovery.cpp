@@ -120,14 +120,22 @@ void drain(auto &receiver, auto &buffer, auto stream_id, auto parse) {
 
 // === IMPLEMENTATION ===
 
-MBPMarketRecovery ::MBPMarketRecovery(
+MBPMarketRecovery::MBPMarketRecovery(
     Handler &handler, Shared &shared, Channel &channel, uint16_t stream_id, Priority priority)
     : handler_{handler}, shared_{shared}, channel_{channel}, stream_id_{stream_id}, priority_{priority} {
 }
 
-void MBPMarketRecovery::start() {
-  TraceInfo trace_info;  // XXX we need a timsestamp
+void MBPMarketRecovery::operator()(Event<Start> const &event) {
+  TraceInfo trace_info{event.message_info};
   publish_stream_status(trace_info, ConnectionStatus::CONNECTING);
+}
+
+void MBPMarketRecovery::operator()(Event<Stop> const &event) {
+  TraceInfo trace_info{event.message_info};
+  publish_stream_status(trace_info, ConnectionStatus::DISCONNECTED);
+}
+
+void MBPMarketRecovery::operator()(Event<Timer> const &) {
 }
 
 void MBPMarketRecovery::dispatch(std::span<std::byte const> const &payload, TraceInfo const &trace_info) {

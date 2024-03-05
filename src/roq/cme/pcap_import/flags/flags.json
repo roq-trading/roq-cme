@@ -17,7 +17,7 @@
     },
     {
       "name": "channel_ids",
-      "type": "std::vector<std::string>",
+      "type": "std::vector<uint16_t>",
       "required": true,
       "description": "Comma-separated list of multicast channels, e.g. 310"
     },
