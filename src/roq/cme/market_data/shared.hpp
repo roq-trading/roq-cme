@@ -10,12 +10,10 @@
 
 #include "roq/utils/container.hpp"
 
-#include "roq/cache/market_by_order.hpp"
-#include "roq/cache/market_by_price.hpp"
+#include "roq/server/md/dispatcher.hpp"
 
 #include "roq/cme/tools/security.hpp"
 
-#include "roq/cme/market_data/dispatcher.hpp"
 #include "roq/cme/market_data/options.hpp"
 
 namespace roq {
@@ -24,7 +22,7 @@ namespace market_data {
 
 struct Shared final {
  private:
-  Dispatcher &dispatcher_;
+  server::md::Dispatcher &dispatcher_;
 
  public:
   template <typename... Args>
@@ -59,7 +57,7 @@ struct Shared final {
   std::vector<Fill> fills;
 
  public:
-  Shared(Dispatcher &, Options const &);
+  Shared(server::md::Dispatcher &, Options const &);
 
   Shared(Shared &&) = default;
   Shared(Shared const &) = delete;

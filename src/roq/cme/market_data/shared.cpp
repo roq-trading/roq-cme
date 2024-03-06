@@ -113,7 +113,7 @@ void read_secdef(T &securities, MS &market_segments, D &dispatcher, auto &option
 
 // === IMPLEMENTATION ===
 
-Shared::Shared(Dispatcher &dispatcher, Options const &options)
+Shared::Shared(server::md::Dispatcher &dispatcher, Options const &options)
     : dispatcher_{dispatcher}, options{options}, buffer(BUFFER_SIZE) {
   // read_secdef(securities, market_segments, dispatcher, options);
 }

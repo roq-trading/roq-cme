@@ -12,4 +12,4 @@ set(SOURCES
 add_library(${TARGET_NAME} OBJECT ${SOURCES})
 
 target_link_libraries(${TARGET_NAME} PRIVATE ${PROJECT_NAME}-tools ${PROJECT_NAME}-mdp
-                                             roq-market::roq-market fmt::fmt)
+                                             roq-server::roq-server roq-market::roq-market fmt::fmt)

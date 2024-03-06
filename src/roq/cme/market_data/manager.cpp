@@ -33,7 +33,7 @@ R create_channels(auto &shared, auto &channel_ids, auto &config, auto &stream_id
 // === IMPLEMENTATION ===
 
 Manager::Manager(
-    Dispatcher &dispatcher,
+    server::md::Dispatcher &dispatcher,
     Options const &options,
     std::span<uint16_t const> const &channel_ids,
     mdp::Config const &config,
@@ -115,7 +115,7 @@ void Manager::dispatch(
 }
 
 Manager::Channel2::Channel2(Shared &shared, mdp::Config const &config, uint16_t channel_id, uint16_t &stream_id)
-    : channel{"344", BUFFER_SIZE, BUFFER_DEPTH},
+    : channel{channel_id, BUFFER_SIZE, BUFFER_DEPTH},
       instrument_definition_1{shared, ++stream_id, config, channel_id, Priority::PRIMARY},
       instrument_definition_2{shared, ++stream_id, config, channel_id, Priority::SECONDARY},
       mbp_market_recovery_1{shared, channel, ++stream_id, config, channel_id, Priority::PRIMARY},

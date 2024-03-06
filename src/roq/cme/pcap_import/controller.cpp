@@ -164,17 +164,22 @@ bool Controller::discard_symbol(std::string_view const &symbol) {
 }
 
 void Controller::operator()(Trace<StreamStatus> const &event) {
-  log::info("event={}"sv, event);
+  // log::info("event={}"sv, event);
   append(event);
 }
 
 void Controller::operator()(Trace<ExternalLatency> const &event) {
-  log::info("event={}"sv, event);
+  // log::info("event={}"sv, event);
+  append(event);
+}
+
+void Controller::operator()(Trace<RateLimitsUpdate> const &event) {
+  // log::info("event={}"sv, event);
   append(event);
 }
 
 void Controller::operator()(Trace<ReferenceData> const &event, [[maybe_unused]] bool is_last) {
-  log::info("event={}"sv, event);
+  // log::info("event={}"sv, event);
   auto &[trace_info, reference_data] = event;
   if (settings_.cache_all_reference_data || !reference_data.discard)
     append(event);
@@ -187,12 +192,12 @@ void Controller::operator()(Trace<ReferenceData> const &event, [[maybe_unused]] 
 }
 
 void Controller::operator()(Trace<MarketStatus> const &event, [[maybe_unused]] bool is_last) {
-  log::info("event={}"sv, event);
+  // log::info("event={}"sv, event);
   append(event);
 }
 
 void Controller::operator()(Trace<TopOfBook> const &event, [[maybe_unused]] bool is_last) {
-  log::info("event={}"sv, event);
+  // log::info("event={}"sv, event);
   append(event);
 }
 

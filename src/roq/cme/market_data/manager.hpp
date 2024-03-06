@@ -6,14 +6,12 @@
 
 #include "roq/api.hpp"
 
-#include "roq/cache/market_by_order.hpp"
-#include "roq/cache/market_by_price.hpp"
+#include "roq/server/md/dispatcher.hpp"
 
 #include "roq/cme/mdp/config.hpp"
 #include "roq/cme/mdp/connection_type.hpp"
 
 #include "roq/cme/market_data/channel.hpp"
-#include "roq/cme/market_data/dispatcher.hpp"
 #include "roq/cme/market_data/options.hpp"
 #include "roq/cme/market_data/shared.hpp"
 
@@ -28,7 +26,7 @@ namespace market_data {
 
 struct Manager final {
   Manager(
-      Dispatcher &,
+      server::md::Dispatcher &,
       Options const &,
       std::span<uint16_t const> const &channel_ids,
       mdp::Config const &,
@@ -46,7 +44,7 @@ struct Manager final {
   void dispatch(Event<T> const &);
 
  private:
-  Dispatcher &dispatcher_;
+  server::md::Dispatcher &dispatcher_;
   Options const options_;
   Shared shared_;
   struct Channel2 final {

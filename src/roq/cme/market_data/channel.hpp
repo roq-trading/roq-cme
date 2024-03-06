@@ -13,12 +13,12 @@ namespace cme {
 namespace market_data {
 
 struct Channel final {
-  Channel(std::string_view const &channel_id, size_t buffer_size, size_t buffer_depth);
+  Channel(uint16_t channel_id, size_t buffer_size, size_t buffer_depth);
 
   Channel(Channel &&) = default;
   Channel(Channel const &) = delete;
 
-  std::string const channel_id;
+  uint16_t const channel_id;
 
   std::string get_channel_name(std::string_view const &prefix, Priority = {}) const;
 
