@@ -121,14 +121,13 @@ void drain(auto &receiver, auto &buffer, auto stream_id, auto parse) {
 // === IMPLEMENTATION ===
 
 MBPMarketRecovery::MBPMarketRecovery(
-    Handler &handler,
     Shared &shared,
     Channel &channel,
     uint16_t stream_id,
     mdp::Config const &config,
     uint16_t channel_id,
     Priority priority)
-    : handler_{handler}, shared_{shared}, channel_{channel}, stream_id_{stream_id},
+    : shared_{shared}, channel_{channel}, stream_id_{stream_id},
       name_{config.get_name(channel_id, mdp::ConnectionType::MBP_MARKET_RECOVERY, priority)}, priority_{priority} {
 }
 
@@ -143,7 +142,7 @@ void MBPMarketRecovery::operator()(Event<Stop> const &event) {
 }
 
 void MBPMarketRecovery::operator()(Event<Timer> const &event) {
-  if (last_update_time_.count() && (last_update_time_ + shared_.config.multicast_timeout) < event.value.now) {
+  if (last_update_time_.count() && (last_update_time_ + shared_.options.multicast_timeout) < event.value.now) {
     log::warn("*** DETECTED TIMEOUT ***"sv);
     last_update_time_ = {};
   }
@@ -169,7 +168,7 @@ void MBPMarketRecovery::operator()(Trace<cme_mdp::AdminHeartbeat12> const &event
       .account = {},
       .latency = trace_info.origin_create_time_utc - frame.sending_time,
   };
-  create_trace_and_dispatch(handler_, trace_info, external_latency);
+  create_trace_and_dispatch(shared_, trace_info, external_latency);
 }
 
 void MBPMarketRecovery::operator()(Trace<cme_mdp::ChannelReset4> const &event, mdp::Frame const &frame) {
@@ -410,10 +409,8 @@ void MBPMarketRecovery::dispatch_market_by_price(
           .quantity_precision = {},
           .checksum = {},
       };
-      // Trace event{trace_info, market_by_price_update};
-      auto &market_by_price = shared_.get_market_by_price(security.exchange, security.symbol);
-      market_by_price(market_by_price_update);
-      sequencer.apply(market_by_price, exchange_sequence, false);
+      Trace event(trace_info, market_by_price_update);
+      shared_(event, true, [&](auto &market_by_price) { sequencer.apply(market_by_price, exchange_sequence, false); });
       security.mbp.resubscribe = {};
     };
     auto request_snapshot = [&]([[maybe_unused]] auto retries) {
@@ -467,13 +464,13 @@ void MBPMarketRecovery::publish_stream_status(TraceInfo const &trace_info, Conne
       .encoding = {Encoding::SBE},
       .priority = priority_,
       .connection_status = connection_status_,
-      .interface = shared_.config.local_interface,
+      .interface = shared_.options.local_interface,
       .authority = {},
       .path = name_,
       .proxy = {},
   };
   log::info("stream_status={}"sv, stream_status);
-  create_trace_and_dispatch(handler_, trace_info, stream_status);
+  create_trace_and_dispatch(shared_, trace_info, stream_status);
 }
 
 }  // namespace market_data

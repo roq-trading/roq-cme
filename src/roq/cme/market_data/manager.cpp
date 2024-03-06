@@ -21,11 +21,11 @@ auto const BUFFER_DEPTH = 10uz;
 
 namespace {
 template <typename R>
-R create_channels(auto &handler, auto &shared, auto &channel_ids, auto &config, auto &stream_id) {
+R create_channels(auto &shared, auto &channel_ids, auto &config, auto &stream_id) {
   using result_type = std::remove_cvref<R>::type;
   result_type result;
   for (auto &channel_id : channel_ids)
-    result.try_emplace(channel_id, handler, shared, config, channel_id, stream_id);
+    result.try_emplace(channel_id, shared, config, channel_id, stream_id);
   return result;
 }
 }  // namespace
@@ -33,13 +33,13 @@ R create_channels(auto &handler, auto &shared, auto &channel_ids, auto &config, 
 // === IMPLEMENTATION ===
 
 Manager::Manager(
-    Handler &handler,
-    Config const &config,
+    Dispatcher &dispatcher,
+    Options const &options,
     std::span<uint16_t const> const &channel_ids,
-    mdp::Config const &config_2,
+    mdp::Config const &config,
     uint16_t &stream_id)
-    : handler_{handler}, config_{config}, shared_{*this, config},
-      channels_{create_channels<decltype(channels_)>(*this, shared_, channel_ids, config_2, stream_id)} {
+    : dispatcher_{dispatcher}, options_{options}, shared_{dispatcher, options},
+      channels_{create_channels<decltype(channels_)>(shared_, channel_ids, config, stream_id)} {
 }
 
 void Manager::operator()(Event<Start> const &event) {
@@ -83,68 +83,47 @@ void Manager::dispatch(
         log::fatal("Unexpected"sv);
         break;
       case INSTRUMENT_DEFINITION:
-        if (priority == Priority::PRIMARY)
+        if (priority == Priority::PRIMARY) {
           channel.instrument_definition_1.dispatch(payload, trace_info);
-        else
+        } else {
           channel.instrument_definition_2.dispatch(payload, trace_info);
+        }
         break;
       case MBP_MARKET_RECOVERY:
-        if (priority == Priority::PRIMARY)
+        if (priority == Priority::PRIMARY) {
           channel.mbp_market_recovery_1.dispatch(payload, trace_info);
-        else
+        } else {
           channel.mbp_market_recovery_2.dispatch(payload, trace_info);
+        }
         break;
       case MBOFD_MARKET_RECOVERY:
-        if (priority == Priority::PRIMARY)
+        if (priority == Priority::PRIMARY) {
           channel.mbofd_market_recovery_1.dispatch(payload, trace_info);
-        else
+        } else {
           channel.mbofd_market_recovery_2.dispatch(payload, trace_info);
+        }
         break;
       case INCREMENTAL:
-        if (priority == Priority::PRIMARY)
+        if (priority == Priority::PRIMARY) {
           channel.incremental_1.dispatch(payload, trace_info);
-        else
+        } else {
           channel.incremental_2.dispatch(payload, trace_info);
+        }
         break;
     }
   }
 }
 
-void Manager::operator()(Trace<ReferenceData> const &event, bool is_last) {
-  if (event.value.discard && !config_.cache_all_reference_data)
-    return;
-  handler_(event, is_last);
-}
-
-void Manager::operator()(Trace<MarketByPriceUpdate> const &event, bool is_last) {
-  auto &[trace_info, market_by_price_update] = event;
-  auto &market_by_price = handler_.get_market_by_price(market_by_price_update.exchange, market_by_price_update.symbol);
-  market_by_price(market_by_price_update, bids_, asks_, [&](auto &market_by_price_update_2) {
-    Trace event_2{trace_info, market_by_price_update_2};
-    handler_(event_2, is_last);
-  });
-}
-
-void Manager::operator()(Trace<MarketByOrderUpdate> const &event, bool is_last) {
-  auto &[trace_info, market_by_order_update] = event;
-  auto &market_by_order = handler_.get_market_by_order(market_by_order_update.exchange, market_by_order_update.symbol);
-  market_by_order(market_by_order_update, orders_, [&](auto &market_by_order_update_2) {
-    Trace event_2{trace_info, market_by_order_update_2};
-    handler_(event_2, is_last);
-  });
-}
-
-Manager::Channel2::Channel2(
-    Manager &handler, Shared &shared, mdp::Config const &config, uint16_t channel_id, uint16_t &stream_id)
+Manager::Channel2::Channel2(Shared &shared, mdp::Config const &config, uint16_t channel_id, uint16_t &stream_id)
     : channel{"344", BUFFER_SIZE, BUFFER_DEPTH},
-      instrument_definition_1{handler, shared, ++stream_id, config, channel_id, Priority::PRIMARY},
-      instrument_definition_2{handler, shared, ++stream_id, config, channel_id, Priority::SECONDARY},
-      mbp_market_recovery_1{handler, shared, channel, ++stream_id, config, channel_id, Priority::PRIMARY},
-      mbp_market_recovery_2{handler, shared, channel, ++stream_id, config, channel_id, Priority::SECONDARY},
-      mbofd_market_recovery_1{handler, shared, channel, ++stream_id, config, channel_id, Priority::PRIMARY},
-      mbofd_market_recovery_2{handler, shared, channel, ++stream_id, config, channel_id, Priority::SECONDARY},
-      incremental_1{handler, shared, channel, ++stream_id, config, channel_id, Priority::PRIMARY},
-      incremental_2{handler, shared, channel, ++stream_id, config, channel_id, Priority::SECONDARY} {
+      instrument_definition_1{shared, ++stream_id, config, channel_id, Priority::PRIMARY},
+      instrument_definition_2{shared, ++stream_id, config, channel_id, Priority::SECONDARY},
+      mbp_market_recovery_1{shared, channel, ++stream_id, config, channel_id, Priority::PRIMARY},
+      mbp_market_recovery_2{shared, channel, ++stream_id, config, channel_id, Priority::SECONDARY},
+      mbofd_market_recovery_1{shared, channel, ++stream_id, config, channel_id, Priority::PRIMARY},
+      mbofd_market_recovery_2{shared, channel, ++stream_id, config, channel_id, Priority::SECONDARY},
+      incremental_1{shared, channel, ++stream_id, config, channel_id, Priority::PRIMARY},
+      incremental_2{shared, channel, ++stream_id, config, channel_id, Priority::SECONDARY} {
 }
 
 }  // namespace market_data

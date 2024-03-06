@@ -46,8 +46,8 @@ return result;
 */
 /*
 template <typename T, typename MS, typename D>
-void read_secdef(T &securities, MS &market_segments, D &dispatcher, auto &settings) {
-  auto config_file = settings.common.secdef_config_file;
+void read_secdef(T &securities, MS &market_segments, D &dispatcher, auto &options) {
+  auto config_file = options.common.secdef_config_file;
   if (std::empty(config_file))
     return;
   log::info(R"(Reading instrument definitions from "{}"... (*** can be very slow ***))"sv, config_file);
@@ -113,8 +113,9 @@ void read_secdef(T &securities, MS &market_segments, D &dispatcher, auto &settin
 
 // === IMPLEMENTATION ===
 
-Shared::Shared(Handler &handler, Config const &config) : handler_{handler}, config{config}, buffer(BUFFER_SIZE) {
-  // read_secdef(securities, market_segments, dispatcher, settings);
+Shared::Shared(Dispatcher &dispatcher, Options const &options)
+    : dispatcher_{dispatcher}, options{options}, buffer(BUFFER_SIZE) {
+  // read_secdef(securities, market_segments, dispatcher, options);
 }
 
 }  // namespace market_data

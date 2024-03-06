@@ -43,14 +43,14 @@ auto const TIMER_FREQUENCY = 100ms;
 // === HELPERS ===
 
 namespace {
-auto create_market_data(auto &handler, auto &settings, auto &config_2) {
-  auto config = market_data::Config{
+auto create_market_data(auto &handler, auto &settings, auto &config) {
+  auto options = market_data::Options{
       .cache_all_reference_data = settings.cache_all_reference_data,
       .local_interface = LOCAL_INTERFACE,
       .multicast_timeout = 10s,
   };
   uint16_t stream_id = {};
-  return market_data::Manager{handler, config, settings.channel_ids, config_2, stream_id};
+  return market_data::Manager{handler, options, settings.channel_ids, config, stream_id};
 }
 
 template <typename R>
@@ -146,6 +146,23 @@ void Controller::dispatch(std::string_view const &path) {
 
 // market_data::Manager::Handler
 
+bool Controller::discard_symbol(std::string_view const &symbol) {
+  auto iter = discard_symbol_.find(symbol);
+  if (iter != std::end(discard_symbol_))
+    return (*iter).second;
+  bool discard = !std::empty(symbols_regex_);
+  for (auto &regex : symbols_regex_) {  // note! O(n)
+    if (regex.match(symbol)) {
+      discard = false;
+      break;
+    }
+  }
+  if (discard)
+    log::info<1>(R"(Discard symbol="{}" (reason: no regex match))"sv, symbol);
+  discard_symbol_.emplace(symbol, discard);
+  return discard;
+}
+
 void Controller::operator()(Trace<StreamStatus> const &event) {
   log::info("event={}"sv, event);
   append(event);
@@ -158,11 +175,15 @@ void Controller::operator()(Trace<ExternalLatency> const &event) {
 
 void Controller::operator()(Trace<ReferenceData> const &event, [[maybe_unused]] bool is_last) {
   log::info("event={}"sv, event);
-  append(event);
+  auto &[trace_info, reference_data] = event;
+  if (settings_.cache_all_reference_data || !reference_data.discard)
+    append(event);
+  /*
   // ...
   auto &reference_data = event.value;
   auto &market_by_price = get_market_by_price(reference_data.exchange, reference_data.symbol);
   market_by_price(reference_data);
+  */
 }
 
 void Controller::operator()(Trace<MarketStatus> const &event, [[maybe_unused]] bool is_last) {
@@ -193,23 +214,6 @@ void Controller::operator()(Trace<TradeSummary> const &event, [[maybe_unused]] b
 void Controller::operator()(Trace<StatisticsUpdate> const &event, [[maybe_unused]] bool is_last) {
   // log::info("event={}"sv, event);
   append(event);
-}
-
-bool Controller::discard_symbol(std::string_view const &symbol) {
-  auto iter = discard_symbol_.find(symbol);
-  if (iter != std::end(discard_symbol_))
-    return (*iter).second;
-  bool discard = !std::empty(symbols_regex_);
-  for (auto &regex : symbols_regex_) {  // note! O(n)
-    if (regex.match(symbol)) {
-      discard = false;
-      break;
-    }
-  }
-  if (discard)
-    log::info<1>(R"(Discard symbol="{}" (reason: no regex match))"sv, symbol);
-  discard_symbol_.emplace(symbol, discard);
-  return discard;
 }
 
 roq::cache::MarketByPrice &Controller::get_market_by_price(

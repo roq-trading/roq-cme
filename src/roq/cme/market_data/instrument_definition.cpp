@@ -51,13 +51,8 @@ void create_security(auto &shared, auto &value, Callback callback) {
 // === IMPLEMENTATION ===
 
 InstrumentDefinition::InstrumentDefinition(
-    Handler &handler,
-    Shared &shared,
-    uint16_t stream_id,
-    mdp::Config const &config,
-    uint16_t channel_id,
-    Priority priority)
-    : handler_{handler}, shared_{shared}, stream_id_{stream_id},
+    Shared &shared, uint16_t stream_id, mdp::Config const &config, uint16_t channel_id, Priority priority)
+    : shared_{shared}, stream_id_{stream_id},
       name_{config.get_name(channel_id, mdp::ConnectionType::INSTRUMENT_DEFINITION, priority)}, priority_{priority} {
 }
 
@@ -72,7 +67,7 @@ void InstrumentDefinition::operator()(Event<Stop> const &event) {
 }
 
 void InstrumentDefinition::operator()(Event<Timer> const &event) {
-  if (last_update_time_.count() && (last_update_time_ + shared_.config.multicast_timeout) < event.value.now) {
+  if (last_update_time_.count() && (last_update_time_ + shared_.options.multicast_timeout) < event.value.now) {
     log::warn("*** DETECTED TIMEOUT ***"sv);
     last_update_time_ = {};
   }
@@ -96,7 +91,7 @@ void InstrumentDefinition::operator()(Trace<cme_mdp::AdminHeartbeat12> const &ev
       .account = {},
       .latency = trace_info.origin_create_time_utc - frame.sending_time,
   };
-  create_trace_and_dispatch(handler_, trace_info, external_latency);
+  create_trace_and_dispatch(shared_, trace_info, external_latency);
 }
 
 void InstrumentDefinition::operator()(Trace<cme_mdp::ChannelReset4> const &event, mdp::Frame const &frame) {
@@ -118,11 +113,11 @@ void InstrumentDefinition::operator()(
   log::info<5>("md_instrument_definition_future_54={}, frame={}"sv, value, frame);
   create_security(shared_, value, [&](auto &security) {
     auto reference_data = mdp::create_reference_data(value, stream_id_, security);
-    create_trace_and_dispatch(handler_, trace_info, reference_data, true);
+    create_trace_and_dispatch(shared_, trace_info, reference_data, true);
     if (security.discard)
       return;
     auto market_status = mdp::create_market_status(value, stream_id_, security);
-    create_trace_and_dispatch(handler_, trace_info, market_status, true);
+    create_trace_and_dispatch(shared_, trace_info, market_status, true);
   });
 }
 
@@ -134,11 +129,11 @@ void InstrumentDefinition::operator()(
   log::info<5>("md_instrument_definition_option_55={}, frame={}"sv, value, frame);
   create_security(shared_, value, [&](auto &security) {
     auto reference_data = mdp::create_reference_data(value, stream_id_, security);
-    create_trace_and_dispatch(handler_, trace_info, reference_data, true);
+    create_trace_and_dispatch(shared_, trace_info, reference_data, true);
     if (security.discard)
       return;
     auto market_status = mdp::create_market_status(value, stream_id_, security);
-    create_trace_and_dispatch(handler_, trace_info, market_status, true);
+    create_trace_and_dispatch(shared_, trace_info, market_status, true);
   });
 }
 
@@ -150,11 +145,11 @@ void InstrumentDefinition::operator()(
   log::info<5>("md_instrument_definition_spread_56={}, frame={}"sv, value, frame);
   create_security(shared_, value, [&](auto &security) {
     auto reference_data = mdp::create_reference_data(value, stream_id_, security);
-    create_trace_and_dispatch(handler_, trace_info, reference_data, true);
+    create_trace_and_dispatch(shared_, trace_info, reference_data, true);
     if (security.discard)
       return;
     auto market_status = mdp::create_market_status(value, stream_id_, security);
-    create_trace_and_dispatch(handler_, trace_info, market_status, true);
+    create_trace_and_dispatch(shared_, trace_info, market_status, true);
   });
 }
 
@@ -166,11 +161,11 @@ void InstrumentDefinition::operator()(
   log::info<5>("md_instrument_definition_fixed_income_57={}, frame={}"sv, value, frame);
   create_security(shared_, value, [&](auto &security) {
     auto reference_data = mdp::create_reference_data(value, stream_id_, security);
-    create_trace_and_dispatch(handler_, trace_info, reference_data, true);
+    create_trace_and_dispatch(shared_, trace_info, reference_data, true);
     if (security.discard)
       return;
     auto market_status = mdp::create_market_status(value, stream_id_, security);
-    create_trace_and_dispatch(handler_, trace_info, market_status, true);
+    create_trace_and_dispatch(shared_, trace_info, market_status, true);
   });
 }
 
@@ -182,11 +177,11 @@ void InstrumentDefinition::operator()(
   log::info<5>("md_instrument_definition_repo_58={}, frame={}"sv, value, frame);
   create_security(shared_, value, [&](auto &security) {
     auto reference_data = mdp::create_reference_data(value, stream_id_, security);
-    create_trace_and_dispatch(handler_, trace_info, reference_data, true);
+    create_trace_and_dispatch(shared_, trace_info, reference_data, true);
     if (security.discard)
       return;
     auto market_status = mdp::create_market_status(value, stream_id_, security);
-    create_trace_and_dispatch(handler_, trace_info, market_status, true);
+    create_trace_and_dispatch(shared_, trace_info, market_status, true);
   });
 }
 
@@ -198,11 +193,11 @@ void InstrumentDefinition::operator()(
   log::info<5>("md_instrument_definition_fx_63={}, frame={}"sv, value, frame);
   create_security(shared_, value, [&](auto &security) {
     auto reference_data = mdp::create_reference_data(value, stream_id_, security);
-    create_trace_and_dispatch(handler_, trace_info, reference_data, true);
+    create_trace_and_dispatch(shared_, trace_info, reference_data, true);
     if (security.discard)
       return;
     auto market_status = mdp::create_market_status(value, stream_id_, security);
-    create_trace_and_dispatch(handler_, trace_info, market_status, true);
+    create_trace_and_dispatch(shared_, trace_info, market_status, true);
   });
 }
 
@@ -321,13 +316,13 @@ void InstrumentDefinition::publish_stream_status(TraceInfo const &trace_info, Co
       .encoding = {Encoding::SBE},
       .priority = priority_,
       .connection_status = connection_status_,
-      .interface = shared_.config.local_interface,
+      .interface = shared_.options.local_interface,
       .authority = {},
       .path = name_,
       .proxy = {},
   };
   log::info("stream_status={}"sv, stream_status);
-  create_trace_and_dispatch(handler_, trace_info, stream_status);
+  create_trace_and_dispatch(shared_, trace_info, stream_status);
 }
 
 }  // namespace market_data

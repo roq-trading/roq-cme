@@ -9,7 +9,7 @@ namespace roq {
 namespace cme {
 namespace market_data {
 
-struct Config final {
+struct Options final {
   bool cache_all_reference_data = {};
   std::string_view local_interface;
   std::chrono::nanoseconds multicast_timeout = {};

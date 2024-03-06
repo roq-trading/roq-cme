@@ -15,25 +15,23 @@
 
 #include "roq/cme/tools/security.hpp"
 
-#include "roq/cme/market_data/config.hpp"
+#include "roq/cme/market_data/dispatcher.hpp"
+#include "roq/cme/market_data/options.hpp"
 
 namespace roq {
 namespace cme {
 namespace market_data {
 
 struct Shared final {
-  struct Handler {
-    virtual bool discard_symbol(std::string_view const &symbol) = 0;
-    virtual cache::MarketByPrice &get_market_by_price(
-        std::string_view const &exchange, std::string_view const &symbol) = 0;
-    virtual cache::MarketByOrder &get_market_by_order(
-        std::string_view const &exchange, std::string_view const &symbol) = 0;
-  };
-
  private:
-  Handler &handler_;
+  Dispatcher &dispatcher_;
 
  public:
+  template <typename... Args>
+  auto operator()(Args &&...args) {
+    return dispatcher_(std::forward<Args>(args)...);
+  }
+
   utils::unordered_map<int32_t, tools::Security> securities;
   utils::unordered_map<std::string, utils::unordered_set<int32_t>> security_groups;
   utils::unordered_map<uint8_t, utils::unordered_map<std::string, int32_t>> market_segments;
@@ -61,22 +59,14 @@ struct Shared final {
   std::vector<Fill> fills;
 
  public:
-  Shared(Handler &, Config const &);
+  Shared(Dispatcher &, Options const &);
 
   Shared(Shared &&) = default;
   Shared(Shared const &) = delete;
 
-  Config const config;
+  Options const options;
 
-  auto discard_symbol(std::string_view const &name) const { return handler_.discard_symbol(name); }
-
-  cache::MarketByPrice &get_market_by_price(std::string_view const &exchange, std::string_view const &symbol) {
-    return handler_.get_market_by_price(exchange, symbol);
-  }
-
-  cache::MarketByOrder &get_market_by_order(std::string_view const &exchange, std::string_view const &symbol) {
-    return handler_.get_market_by_order(exchange, symbol);
-  }
+  auto discard_symbol(std::string_view const &name) const { return dispatcher_.discard_symbol(name); }
 
   // security
 

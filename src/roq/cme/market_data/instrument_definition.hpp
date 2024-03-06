@@ -14,14 +14,7 @@ namespace cme {
 namespace market_data {
 
 struct InstrumentDefinition final : public mdp::Parser::Handler {
-  struct Handler {
-    virtual void operator()(Trace<StreamStatus> const &) = 0;
-    virtual void operator()(Trace<ExternalLatency> const &) = 0;
-    virtual void operator()(Trace<ReferenceData> const &, bool is_last) = 0;
-    virtual void operator()(Trace<MarketStatus> const &, bool is_last) = 0;
-  };
-
-  InstrumentDefinition(Handler &, Shared &, uint16_t stream_id, mdp::Config const &, uint16_t channel_id, Priority);
+  InstrumentDefinition(Shared &, uint16_t stream_id, mdp::Config const &, uint16_t channel_id, Priority);
 
   void operator()(Event<Start> const &);
   void operator()(Event<Stop> const &);
@@ -69,7 +62,6 @@ struct InstrumentDefinition final : public mdp::Parser::Handler {
   void publish_stream_status(TraceInfo const &, ConnectionStatus);
 
  private:
-  Handler &handler_;
   Shared &shared_;
   uint16_t const stream_id_;
   std::string const name_;

@@ -15,14 +15,7 @@ namespace cme {
 namespace market_data {
 
 struct MBOFDMarketRecovery final : public mdp::Parser::Handler {
-  struct Handler {
-    virtual void operator()(Trace<StreamStatus> const &) = 0;
-    virtual void operator()(Trace<ExternalLatency> const &) = 0;
-    virtual void operator()(Trace<MarketByOrderUpdate> const &, bool is_last) = 0;
-  };
-
-  MBOFDMarketRecovery(
-      Handler &, Shared &, Channel &, uint16_t stream_id, mdp::Config const &, uint16_t channel_id, Priority);
+  MBOFDMarketRecovery(Shared &, Channel &, uint16_t stream_id, mdp::Config const &, uint16_t channel_id, Priority);
 
   void operator()(Event<Start> const &);
   void operator()(Event<Stop> const &);
@@ -70,7 +63,6 @@ struct MBOFDMarketRecovery final : public mdp::Parser::Handler {
   void publish_stream_status(TraceInfo const &, ConnectionStatus);
 
  private:
-  Handler &handler_;
   Shared &shared_;
   Channel &channel_;
   uint16_t const stream_id_;

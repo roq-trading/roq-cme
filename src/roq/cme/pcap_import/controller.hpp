@@ -19,6 +19,7 @@
 #include "roq/cme/mdp/config.hpp"
 #include "roq/cme/mdp/connection_type.hpp"
 
+#include "roq/cme/market_data/dispatcher.hpp"
 #include "roq/cme/market_data/manager.hpp"
 
 #include "roq/cme/pcap_import/settings.hpp"
@@ -27,7 +28,7 @@ namespace roq {
 namespace cme {
 namespace pcap_import {
 
-struct Controller final : public market_data::Manager::Handler {
+struct Controller final : public market_data::Dispatcher {
   explicit Controller(Settings const &);
 
   Controller(Controller const &) = delete;
@@ -36,7 +37,8 @@ struct Controller final : public market_data::Manager::Handler {
   void dispatch(std::string_view const &path);
 
  protected:
-  // market_data::Manager::Handler
+  // market_data::Dispatcher
+  bool discard_symbol(std::string_view const &symbol) override;
   void operator()(Trace<StreamStatus> const &) override;
   void operator()(Trace<ExternalLatency> const &) override;
   void operator()(Trace<ReferenceData> const &, bool is_last) override;
@@ -46,8 +48,6 @@ struct Controller final : public market_data::Manager::Handler {
   void operator()(Trace<MarketByOrderUpdate> const &, bool is_last) override;
   void operator()(Trace<TradeSummary> const &, bool is_last) override;
   void operator()(Trace<StatisticsUpdate> const &, bool is_last) override;
-  // - helpers
-  bool discard_symbol(std::string_view const &symbol) override;
   roq::cache::MarketByPrice &get_market_by_price(
       std::string_view const &exchange, std::string_view const &symbol) override;
   roq::cache::MarketByOrder &get_market_by_order(
