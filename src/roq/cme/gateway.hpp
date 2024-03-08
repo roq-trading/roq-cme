@@ -4,7 +4,6 @@
 
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "roq/server.hpp"
 
@@ -83,14 +82,8 @@ struct Gateway final : public server::Handler, public OrderEntry::Handler {
   // mdp
   market_data::Manager manager_;
   // streams
-  std::vector<std::unique_ptr<MDPReceiver>> udp_incremental_;
-  std::vector<std::unique_ptr<MDPReceiver>> udp_instrument_definition_;
-  std::vector<std::unique_ptr<MDPReceiver>> udp_mbp_market_recovery_;
-  std::vector<std::unique_ptr<MDPReceiver>> udp_mbofd_market_recovery_;
+  std::vector<std::unique_ptr<MDPReceiver>> mdp_receivers_;
   utils::unordered_map<std::string, std::unique_ptr<OrderEntry>> order_entry_;
-  // cache
-  std::vector<MBPUpdate> bids_, asks_;
-  std::vector<MBOUpdate> orders_;
 };
 
 }  // namespace cme

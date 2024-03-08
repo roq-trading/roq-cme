@@ -26,47 +26,29 @@ auto create_market_data_manager(auto &dispatcher, auto &settings, auto &shared, 
   return market_data::Manager{dispatcher, options, settings.multicast.channel_ids, shared.mdp_config_, stream_id};
 }
 
-auto create_udp_incremental(auto &settings, auto &context, auto &shared, auto &manager) {
-  std::vector<std::unique_ptr<MDPReceiver>> result;
-  auto const connection_type = mdp::ConnectionType::INCREMENTAL;
-  for (auto channel_id : settings.multicast.channel_ids) {
+template <typename R>
+auto create_mdp_receivers(auto &settings, auto &context, auto &shared, auto &manager) {
+  using result_type = std::remove_cvref<R>::type;
+  result_type result;
+  auto helper_1 = [&](auto channel_id, auto connection_type) {
+    result.emplace_back(
+        std::make_unique<MDPReceiver>(context, shared, manager, channel_id, connection_type, Priority::PRIMARY));
+  };
+  auto helper_2 = [&](auto channel_id, auto connection_type) {
     result.emplace_back(
         std::make_unique<MDPReceiver>(context, shared, manager, channel_id, connection_type, Priority::PRIMARY));
     result.emplace_back(
         std::make_unique<MDPReceiver>(context, shared, manager, channel_id, connection_type, Priority::SECONDARY));
-  }
-  return result;
-}
-
-auto create_udp_instrument_definition(auto &settings, auto &context, auto &shared, auto &manager) {
-  std::vector<std::unique_ptr<MDPReceiver>> result;
-  auto const connection_type = mdp::ConnectionType::INSTRUMENT_DEFINITION;
-  if (std::empty(shared.settings.common.secdef_config_file)) {
-    for (auto channel_id : settings.multicast.channel_ids)
-      result.emplace_back(
-          std::make_unique<MDPReceiver>(context, shared, manager, channel_id, connection_type, Priority::PRIMARY));
-  } else {
-    log::warn("The instrument definitions channel is not used when the secdef file was chosen"sv);
-  }
-  return result;
-}
-
-auto create_udp_mbp_market_recovery(auto &settings, auto &context, auto &shared, auto &manager) {
-  std::vector<std::unique_ptr<MDPReceiver>> result;
-  auto const connection_type = mdp::ConnectionType::MBP_MARKET_RECOVERY;
-  for (auto channel_id : settings.multicast.channel_ids)
-    result.emplace_back(
-        std::make_unique<MDPReceiver>(context, shared, manager, channel_id, connection_type, Priority::PRIMARY));
-  return result;
-}
-
-auto create_udp_mbofd_market_recovery(auto &settings, auto &context, auto &shared, auto &manager) {
-  std::vector<std::unique_ptr<MDPReceiver>> result;
-  auto const connection_type = mdp::ConnectionType::MBOFD_MARKET_RECOVERY;
-  if (shared.settings.common.enable_market_by_order) {
-    for (auto channel_id : settings.multicast.channel_ids)
-      result.emplace_back(
-          std::make_unique<MDPReceiver>(context, shared, manager, channel_id, connection_type, Priority::PRIMARY));
+  };
+  for (auto channel_id : settings.multicast.channel_ids) {
+    if (std::empty(shared.settings.common.secdef_config_file)) {
+      helper_1(channel_id, mdp::ConnectionType::INSTRUMENT_DEFINITION);
+    } else {
+      log::warn("The instrument definitions channel is not used when the secdef file was chosen"sv);
+    }
+    helper_1(channel_id, mdp::ConnectionType::MBP_MARKET_RECOVERY);
+    helper_1(channel_id, mdp::ConnectionType::MBOFD_MARKET_RECOVERY);
+    helper_2(channel_id, mdp::ConnectionType::INCREMENTAL);
   }
   return result;
 }
@@ -115,10 +97,7 @@ R create_order_entry(auto &gateway, auto &context, auto &stream_id, auto &accoun
 Gateway::Gateway(server::Dispatcher &dispatcher, Settings const &settings, Config const &config, io::Context &context)
     : dispatcher_{dispatcher}, accounts_{create_accounts<decltype(accounts_)>(config)}, context_{context},
       shared_{dispatcher, settings}, manager_{create_market_data_manager(dispatcher_, settings, shared_, stream_id_)},
-      udp_incremental_{create_udp_incremental(settings, context_, shared_, manager_)},
-      udp_instrument_definition_{create_udp_instrument_definition(settings, context_, shared_, manager_)},
-      udp_mbp_market_recovery_{create_udp_mbp_market_recovery(settings, context_, shared_, manager_)},
-      udp_mbofd_market_recovery_{create_udp_mbofd_market_recovery(settings, context_, shared_, manager_)},
+      mdp_receivers_{create_mdp_receivers<decltype(mdp_receivers_)>(settings, context_, shared_, manager_)},
       order_entry_{create_order_entry<decltype(order_entry_)>(*this, context_, stream_id_, accounts_, shared_)} {
 }
 

@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
-#  --symbols 'ZN[HMUZ][0-9]' \
+SYMBOLS="^Z[TFNB][FGHJKMNQUVXZ][0-9]$"
 
 ./roq-cme-pcap-import \
   --name cme \
   --config_file ../config/config.xml \
   --channel_ids 344 \
-  --symbols 'ZNU3' \
+  --symbols $SYMBOLS \
   --output_file test.roq \
   $@

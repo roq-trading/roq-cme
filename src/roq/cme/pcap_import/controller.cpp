@@ -84,6 +84,11 @@ Controller::Controller(Settings const &settings)
 }
 
 void Controller::dispatch(std::string_view const &path) {
+  auto include = [](auto connection_type, auto priority) {
+    if (connection_type == mdp::ConnectionType::INCREMENTAL)
+      return true;
+    return priority == Priority::PRIMARY;  // XXX same as live
+  };
   auto initialized = false;
   std::chrono::nanoseconds last_timer_update = {};
   auto callback = [&](struct pcap_pkthdr const *header, u_char const *packet) {
@@ -136,8 +141,10 @@ void Controller::dispatch(std::string_view const &path) {
             dst_port,
             utils::debug::hex::Message{payload});
         if (config_.find(dst, dst_port, [&](auto channel_id, auto connection_type, auto priority) {
-              TraceInfo trace_info{timestamp, timestamp, timestamp};
-              market_data_.dispatch(channel_id, connection_type, priority, payload, trace_info);
+              if (include(connection_type, priority)) {
+                TraceInfo trace_info{timestamp, timestamp, timestamp};
+                market_data_.dispatch(channel_id, connection_type, priority, payload, trace_info);
+              }
             })) {
         } else {
           log::warn(R"(Unexpected: address="{}", port={})"sv, dst, dst_port);
