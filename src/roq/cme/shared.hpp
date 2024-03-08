@@ -73,8 +73,7 @@ struct Shared final {
   Shared(Shared &&) = default;
   Shared(Shared const &) = delete;
 
-  std::pair<std::string, uint16_t> get_multicast_config(
-      std::string_view const &channel_id, mdp::ConnectionType, Priority) const;
+  std::pair<std::string, uint16_t> get_multicast_config(uint16_t channel_id, mdp::ConnectionType, Priority) const;
 
   auto discard_symbol(std::string_view const &name) const { return dispatcher_.discard_symbol(name); }
 

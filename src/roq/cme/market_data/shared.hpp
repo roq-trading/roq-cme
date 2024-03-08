@@ -25,6 +25,12 @@ struct Shared final {
   server::md::Dispatcher &dispatcher_;
 
  public:
+  struct {
+    std::vector<MBPUpdate> bids, asks;
+    std::vector<MBOUpdate> orders;
+  } cache;
+
+ public:
   template <typename... Args>
   auto operator()(Args &&...args) {
     return dispatcher_(std::forward<Args>(args)...);

@@ -25,13 +25,10 @@ set(SOURCES
     channel.cpp
     config.cpp
     gateway.cpp
+    mdp_receiver.cpp
     order_entry.cpp
     settings.cpp
     shared.cpp
-    udp_incremental.cpp
-    udp_instrument_definition.cpp
-    udp_mbofd_market_recovery.cpp
-    udp_mbp_market_recovery.cpp
     main.cpp)
 
 include(RoqAutogen)

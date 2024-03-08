@@ -8,6 +8,8 @@
 
 #include "roq/logging.hpp"
 
+#include "roq/utils/charconv.hpp"
+
 #include "roq/io/fs/file.hpp"
 
 #include "roq/io/memory/mapping.hpp"
@@ -46,7 +48,7 @@ void ConfigReader::read(Handler &handler, std::string_view const &filename) {
 
 void ConfigReader::dispatch(Handler &handler, std::string_view const &buffer) {
   struct MyHandler final : public core::expat::Parser::Handler {
-    explicit MyHandler(ConfigReader::Handler &handler) : handler_(handler) {}
+    explicit MyHandler(ConfigReader::Handler &handler) : handler_{handler} {}
     void operator()(core::expat::Parser::StartElement const &start_element) override {
       auto &[name, attributes] = start_element;
       if (name.compare("channel"sv) == 0) {  // channel
@@ -102,7 +104,8 @@ void ConfigReader::dispatch(Handler &handler, std::string_view const &buffer) {
         connection_ = {};
       } else if (name.compare("channel"sv) == 0) {
         assert(!std::empty(channel_id_));
-        handler_(channel_id_, channel_);
+        auto channel_id_2 = utils::from_chars<uint16_t>(channel_id_);
+        handler_(channel_id_2, channel_);
         channel_id_.clear();
         channel_ = {};
       } else {

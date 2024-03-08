@@ -92,14 +92,16 @@ struct Incremental final : public mdp::Parser::Handler {
 
   void publish_stream_status(TraceInfo const &, ConnectionStatus);
 
+ public:
+  Priority const priority;
+  uint16_t const stream_id;
+  std::string const name;
+
  private:
   Shared &shared_;
   Channel &channel_;
-  uint16_t const stream_id_;
-  std::string const name_;
-  Priority const priority_;
-  bool const market_by_order_ = true;                // XXX settings
-  bool const mbp_to_mbo_clear_price_level_ = false;  // XXX settings
+  // bool const market_by_order_ = true;                // XXX settings
+  // bool const mbp_to_mbo_clear_price_level_ = false;  // XXX settings
   ConnectionStatus connection_status_ = {};
   std::chrono::nanoseconds last_update_time_ = {};
   // - refresh book

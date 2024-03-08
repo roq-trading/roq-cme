@@ -18,6 +18,14 @@ namespace market_data {
 // === CONSTANTS ===
 
 namespace {
+auto const CONNECTION_TYPE = mdp::ConnectionType::MBP_MARKET_RECOVERY;
+
+auto const TRANSPORT = Transport::UDP;
+auto const PROTOCOL = Protocol::SBE;
+auto const ENCODING = {
+    Encoding::SBE,
+};
+
 auto const SUPPORTS = Mask{
     SupportType::MARKET_BY_PRICE,
     SupportType::STATISTICS,
@@ -127,8 +135,8 @@ MBPMarketRecovery::MBPMarketRecovery(
     mdp::Config const &config,
     uint16_t channel_id,
     Priority priority)
-    : shared_{shared}, channel_{channel}, stream_id_{stream_id},
-      name_{config.get_name(channel_id, mdp::ConnectionType::MBP_MARKET_RECOVERY, priority)}, priority_{priority} {
+    : priority{priority}, stream_id{stream_id}, name{config.get_name(channel_id, CONNECTION_TYPE, priority)},
+      shared_{shared}, channel_{channel} {
 }
 
 void MBPMarketRecovery::operator()(Event<Start> const &event) {
@@ -164,7 +172,7 @@ void MBPMarketRecovery::operator()(Trace<cme_mdp::AdminHeartbeat12> const &event
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("admin_heartbeat_12={}, frame={}"sv, value, frame);
   auto external_latency = ExternalLatency{
-      .stream_id = stream_id_,
+      .stream_id = stream_id,
       .account = {},
       .latency = trace_info.origin_create_time_utc - frame.sending_time,
   };
@@ -396,7 +404,7 @@ void MBPMarketRecovery::dispatch_market_by_price(
           retries,
           std::chrono::duration_cast<std::chrono::milliseconds>(delay));
       auto market_by_price_update = MarketByPriceUpdate{
-          .stream_id = stream_id_,
+          .stream_id = stream_id,
           .exchange = security.exchange,
           .symbol = security.symbol,
           .bids = bids,
@@ -456,17 +464,17 @@ void MBPMarketRecovery::publish_stream_status(TraceInfo const &trace_info, Conne
   if (!utils::update(connection_status_, connection_status))
     return;
   auto stream_status = StreamStatus{
-      .stream_id = stream_id_,
+      .stream_id = stream_id,
       .account = {},
       .supports = SUPPORTS,
-      .transport = Transport::UDP,
-      .protocol = Protocol::SBE,
-      .encoding = {Encoding::SBE},
-      .priority = priority_,
+      .transport = TRANSPORT,
+      .protocol = PROTOCOL,
+      .encoding = ENCODING,
+      .priority = priority,
       .connection_status = connection_status_,
       .interface = shared_.options.local_interface,
       .authority = {},
-      .path = name_,
+      .path = name,
       .proxy = {},
   };
   log::info("stream_status={}"sv, stream_status);

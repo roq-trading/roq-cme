@@ -30,7 +30,7 @@ struct ConfigReader final {
   };
 
   struct Handler {
-    virtual void operator()(std::string_view const &channel_id, Channel const &) = 0;
+    virtual void operator()(uint16_t channel_id, Channel const &) = 0;
   };
 
   static void read(Handler &, std::string_view const &filename);

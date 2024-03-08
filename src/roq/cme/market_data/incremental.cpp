@@ -19,7 +19,15 @@ namespace market_data {
 // === CONSTANTS ===
 
 namespace {
-auto const SUPPORTS = Mask{
+auto const CONNECTION_TYPE = mdp::ConnectionType::INCREMENTAL;
+
+auto const TRANSPORT = Transport::UDP;
+auto const PROTOCOL = Protocol::SBE;
+auto const ENCODING = Mask{
+    Encoding::SBE,
+};
+
+auto const SUPPORTS_1 = Mask{
     SupportType::REFERENCE_DATA,
     SupportType::MARKET_STATUS,
     SupportType::TOP_OF_BOOK,
@@ -29,12 +37,25 @@ auto const SUPPORTS = Mask{
     SupportType::STATISTICS,
 };
 
-auto const FILTER_SNAPSHOT_FROM_INCREMENTAL = 1024uz;
+auto const SUPPORTS_2 = Mask{
+    SupportType::REFERENCE_DATA,
+    SupportType::MARKET_STATUS,
+    SupportType::TOP_OF_BOOK,
+    SupportType::MARKET_BY_PRICE,
+    SupportType::MARKET_BY_ORDER,
+    SupportType::TRADE_SUMMARY,
+    SupportType::STATISTICS,
+    SupportType::MARKET_BY_ORDER,
+};
 }  // namespace
 
 // === HELPERS ===
 
 namespace {
+auto get_supports(auto enable_market_by_order) {
+  return enable_market_by_order ? SUPPORTS_2 : SUPPORTS_1;
+}
+
 struct SecurityIterator final {
   SecurityIterator(Shared &shared) : shared_(shared) {}
 
@@ -261,8 +282,8 @@ Incremental::Incremental(
     mdp::Config const &config,
     uint16_t channel_id,
     Priority priority)
-    : shared_{shared}, channel_{channel}, stream_id_{stream_id},
-      name_{config.get_name(channel_id, mdp::ConnectionType::INCREMENTAL, priority)}, priority_{priority} {
+    : priority{priority}, stream_id{stream_id}, name{config.get_name(channel_id, CONNECTION_TYPE, priority)},
+      shared_{shared}, channel_{channel} {
 }
 
 void Incremental::operator()(Event<Start> const &event) {
@@ -310,7 +331,7 @@ void Incremental::dispatch(std::span<std::byte const> const &payload, TraceInfo 
               log::info<5>("frame={}, last_sequence_number={}"sv, frame, channel_.sequence.last_sequence_number);
               // check sequence number
               sequence_number = frame.sequence_number;
-              if (sequence_number < FILTER_SNAPSHOT_FROM_INCREMENTAL) {
+              if (sequence_number < shared_.options.filter_snapshot_from_incremental) {
                 drop = true;
                 return;
               }
@@ -399,7 +420,7 @@ void Incremental::operator()(Trace<cme_mdp::AdminHeartbeat12> const &event, mdp:
   auto &[trace_info, value] = event;
   log::info<5>("admin_heartbeat_12={}, frame={}"sv, value, frame);
   auto external_latency = ExternalLatency{
-      .stream_id = stream_id_,
+      .stream_id = stream_id,
       .account = {},
       .latency = trace_info.origin_create_time_utc - frame.sending_time,
   };
@@ -423,7 +444,7 @@ void Incremental::operator()(Trace<cme_mdp::SecurityStatus30> const &event, mdp:
   auto dispatch = [&](auto security_id) {
     shared_.get_security(security_id, [&](auto &security) {
       auto market_status = MarketStatus{
-          .stream_id = stream_id_,
+          .stream_id = stream_id,
           .exchange = security.exchange,
           .symbol = security.symbol,
           .trading_status = trading_status,
@@ -450,11 +471,11 @@ void Incremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> cons
   value.sbeRewind();  // note!
   auto security_id = value.securityID();
   shared_.get_security_incl_discard(security_id, [&](auto &security) {
-    auto reference_data = mdp::create_reference_data(value, stream_id_, security);
+    auto reference_data = mdp::create_reference_data(value, stream_id, security);
     create_trace_and_dispatch(shared_, trace_info, reference_data, true);
     if (security.discard)
       return;
-    auto market_status = mdp::create_market_status(value, stream_id_, security);
+    auto market_status = mdp::create_market_status(value, stream_id, security);
     create_trace_and_dispatch(shared_, trace_info, market_status, true);
   });
 }
@@ -467,11 +488,11 @@ void Incremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionOption55> cons
   value.sbeRewind();  // note!
   auto security_id = value.securityID();
   shared_.get_security_incl_discard(security_id, [&](auto &security) {
-    auto reference_data = mdp::create_reference_data(value, stream_id_, security);
+    auto reference_data = mdp::create_reference_data(value, stream_id, security);
     create_trace_and_dispatch(shared_, trace_info, reference_data, true);
     if (security.discard)
       return;
-    auto market_status = mdp::create_market_status(value, stream_id_, security);
+    auto market_status = mdp::create_market_status(value, stream_id, security);
     create_trace_and_dispatch(shared_, trace_info, market_status, true);
   });
 }
@@ -484,11 +505,11 @@ void Incremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionSpread56> cons
   value.sbeRewind();  // note!
   auto security_id = value.securityID();
   shared_.get_security_incl_discard(security_id, [&](auto &security) {
-    auto reference_data = mdp::create_reference_data(value, stream_id_, security);
+    auto reference_data = mdp::create_reference_data(value, stream_id, security);
     create_trace_and_dispatch(shared_, trace_info, reference_data, true);
     if (security.discard)
       return;
-    auto market_status = mdp::create_market_status(value, stream_id_, security);
+    auto market_status = mdp::create_market_status(value, stream_id, security);
     create_trace_and_dispatch(shared_, trace_info, market_status, true);
   });
 }
@@ -502,11 +523,11 @@ void Incremental::operator()(
   value.sbeRewind();  // note!
   auto security_id = value.securityID();
   shared_.get_security_incl_discard(security_id, [&](auto &security) {
-    auto reference_data = mdp::create_reference_data(value, stream_id_, security);
+    auto reference_data = mdp::create_reference_data(value, stream_id, security);
     create_trace_and_dispatch(shared_, trace_info, reference_data, true);
     if (security.discard)
       return;
-    auto market_status = mdp::create_market_status(value, stream_id_, security);
+    auto market_status = mdp::create_market_status(value, stream_id, security);
     create_trace_and_dispatch(shared_, trace_info, market_status, true);
   });
 }
@@ -519,11 +540,11 @@ void Incremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionRepo58> const 
   value.sbeRewind();  // note!
   auto security_id = value.securityID();
   shared_.get_security_incl_discard(security_id, [&](auto &security) {
-    auto reference_data = mdp::create_reference_data(value, stream_id_, security);
+    auto reference_data = mdp::create_reference_data(value, stream_id, security);
     create_trace_and_dispatch(shared_, trace_info, reference_data, true);
     if (security.discard)
       return;
-    auto market_status = mdp::create_market_status(value, stream_id_, security);
+    auto market_status = mdp::create_market_status(value, stream_id, security);
     create_trace_and_dispatch(shared_, trace_info, market_status, true);
   });
 }
@@ -536,11 +557,11 @@ void Incremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionFX63> const &e
   value.sbeRewind();  // note!
   auto security_id = value.securityID();
   shared_.get_security_incl_discard(security_id, [&](auto &security) {
-    auto reference_data = mdp::create_reference_data(value, stream_id_, security);
+    auto reference_data = mdp::create_reference_data(value, stream_id, security);
     create_trace_and_dispatch(shared_, trace_info, reference_data, true);
     if (security.discard)
       return;
-    auto market_status = mdp::create_market_status(value, stream_id_, security);
+    auto market_status = mdp::create_market_status(value, stream_id, security);
     create_trace_and_dispatch(shared_, trace_info, market_status, true);
   });
 }
@@ -571,7 +592,7 @@ void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &e
     auto dispatch = [&](auto security_id, auto &security, auto is_last) {
       if (!(std::isnan(layer.bid_price) && std::isnan(layer.ask_price))) {
         auto top_of_book = TopOfBook{
-            .stream_id = stream_id_,
+            .stream_id = stream_id,
             .exchange = security.exchange,
             .symbol = security.symbol,
             .layer = layer,
@@ -623,12 +644,13 @@ void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &e
       auto side = mdp::map(item.mDEntryType());
       auto action = mdp::map(item.mDUpdateAction());
       // ... need these for MBO referencing
-      if (market_by_order_)
+      if (shared_.options.enable_market_by_order)
         md_entries_.emplace_back(security_id, side, price, action);
       if (security) {
         emplace_back(item, *security, layer, mbp.bids, mbp.asks);
-        if (market_by_order_) {
-          if (action == UpdateAction::DELETE && side != Side::UNDEFINED && mbp_to_mbo_clear_price_level_) {
+        if (shared_.options.enable_market_by_order) {
+          if (action == UpdateAction::DELETE && side != Side::UNDEFINED &&
+              shared_.options.mbp_to_mbo_clear_price_level) {
             auto update = MBOUpdate{
                 .price = price * (*security).display_factor,
                 .quantity = {},
@@ -646,7 +668,7 @@ void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &e
     if (security)
       dispatch(security_id, *security, true);
   }
-  if (market_by_order_) {
+  if (shared_.options.enable_market_by_order) {
     auto security_id = int32_t{};
     tools::Security *security = nullptr;
     auto &mbo = shared_.get_mbo();
@@ -703,7 +725,7 @@ void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshOrderBook47> con
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_incremental_refresh_order_book_47={}, frame={}"sv, value, frame);
-  if (!market_by_order_)
+  if (!shared_.options.enable_market_by_order)
     return;
   value.sbeRewind();  // note!
   auto exchange_sequence = frame.sequence_number;
@@ -810,7 +832,7 @@ void Incremental::dispatch_market_by_price(
     auto last_exchange_sequence = sequencer.last_sequence();  // note! the protocol doesn't tell us
     auto create_update = [&](auto &bids, auto &asks, auto update_type) -> MarketByPriceUpdate {
       return {
-          .stream_id = stream_id_,
+          .stream_id = stream_id,
           .exchange = security.exchange,
           .symbol = security.symbol,
           .bids = bids,
@@ -826,7 +848,9 @@ void Incremental::dispatch_market_by_price(
     };
     auto publish_update = [&](auto &bids, auto &asks) {
       auto market_by_price_update = create_update(bids, asks, UpdateType::INCREMENTAL);
-      create_trace_and_dispatch(shared_, trace_info, market_by_price_update, true);
+      auto callback = []([[maybe_unused]] auto &market_by_price) {};
+      create_trace_and_dispatch(
+          shared_, trace_info, market_by_price_update, true, shared_.cache.bids, shared_.cache.asks, callback);
     };
     auto publish_snapshot = [&](auto &bids, auto &asks, auto exchange_sequence, auto retries, auto delay) {
       log::info(
@@ -838,7 +862,9 @@ void Incremental::dispatch_market_by_price(
           retries,
           std::chrono::duration_cast<std::chrono::milliseconds>(delay));
       auto market_by_price_update = create_update(bids, asks, UpdateType::SNAPSHOT);
-      create_trace_and_dispatch(shared_, trace_info, market_by_price_update, true);
+      auto callback = []([[maybe_unused]] auto &market_by_price) {};
+      create_trace_and_dispatch(
+          shared_, trace_info, market_by_price_update, true, shared_.cache.bids, shared_.cache.asks, callback);
       security.mbp.resubscribe = {};
     };
     auto request_snapshot = [&]([[maybe_unused]] auto retries) {
@@ -885,7 +911,7 @@ void Incremental::dispatch_market_by_order(
     auto last_exchange_sequence = sequencer.last_sequence();  // note! the protocol doesn't tell us
     auto create_update = [&](auto &orders, auto update_type) -> MarketByOrderUpdate {
       return {
-          .stream_id = stream_id_,
+          .stream_id = stream_id,
           .exchange = security.exchange,
           .symbol = security.symbol,
           .orders = orders,
@@ -901,7 +927,8 @@ void Incremental::dispatch_market_by_order(
     };
     auto publish_update = [&](auto &orders) {
       auto market_by_order_update = create_update(orders, UpdateType::INCREMENTAL);
-      create_trace_and_dispatch(shared_, trace_info, market_by_order_update, true);
+      auto callback = []([[maybe_unused]] auto &market_by_order) {};
+      create_trace_and_dispatch(shared_, trace_info, market_by_order_update, true, shared_.cache.orders, callback);
     };
     auto publish_snapshot = [&](auto &orders, auto exchange_sequence, auto retries, auto delay) {
       log::info(
@@ -913,7 +940,8 @@ void Incremental::dispatch_market_by_order(
           retries,
           std::chrono::duration_cast<std::chrono::milliseconds>(delay));
       auto market_by_order_update = create_update(orders, UpdateType::SNAPSHOT);
-      create_trace_and_dispatch(shared_, trace_info, market_by_order_update, true);
+      auto callback = []([[maybe_unused]] auto &market_by_order) {};
+      create_trace_and_dispatch(shared_, trace_info, market_by_order_update, true, shared_.cache.orders, callback);
       security.mbo.resubscribe = {};
     };
     auto request_snapshot = [&]([[maybe_unused]] auto retries) {
@@ -1072,7 +1100,7 @@ void Incremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame const
       return;
     }
     auto trade_summary = TradeSummary{
-        .stream_id = stream_id_,
+        .stream_id = stream_id,
         .exchange = security.exchange,
         .symbol = security.symbol,
         .trades = trades,
@@ -1156,7 +1184,7 @@ void Incremental::dispatch_statistics(Trace<T> const &event, mdp::Frame const &f
     if (std::empty(statistics))
       return;
     auto statistics_update = StatisticsUpdate{
-        .stream_id = stream_id_,
+        .stream_id = stream_id,
         .exchange = security.exchange,
         .symbol = security.symbol,
         .statistics = statistics,
@@ -1207,17 +1235,17 @@ void Incremental::publish_stream_status(TraceInfo const &trace_info, ConnectionS
   if (!utils::update(connection_status_, connection_status))
     return;
   auto stream_status = StreamStatus{
-      .stream_id = stream_id_,
+      .stream_id = stream_id,
       .account = {},
-      .supports = SUPPORTS,
-      .transport = Transport::UDP,
-      .protocol = Protocol::SBE,
-      .encoding = {Encoding::SBE},
-      .priority = priority_,
+      .supports = get_supports(shared_.options.enable_market_by_order),
+      .transport = TRANSPORT,
+      .protocol = PROTOCOL,
+      .encoding = ENCODING,
+      .priority = priority,
       .connection_status = connection_status_,
       .interface = shared_.options.local_interface,
       .authority = {},
-      .path = name_,
+      .path = name,
       .proxy = {},
   };
   log::info("stream_status={}"sv, stream_status);

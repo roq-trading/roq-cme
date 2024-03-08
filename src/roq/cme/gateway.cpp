@@ -4,7 +4,7 @@
 
 #include <utility>
 
-#include "roq/core/charconv.hpp"
+#include "roq/utils/charconv.hpp"
 
 using namespace std::literals;
 
@@ -14,50 +14,59 @@ namespace cme {
 // === HELPERS ===
 
 namespace {
-auto create_channels(auto &settings) {
-  std::vector<Channel> result;
-  auto buffer_size = settings.multicast.buffer_size;
-  auto buffer_depth = settings.multicast.buffer_depth;
-  auto &channel_ids = settings.multicast.channel_ids;
-  for (auto &channel_id : channel_ids)
-    result.emplace_back(channel_id, buffer_size, buffer_depth);
-  return result;
+auto create_market_data_manager(auto &dispatcher, auto &settings, auto &shared, auto &stream_id) {
+  auto options = market_data::Options{
+      .cache_all_reference_data = settings.cache.all_reference_data,
+      .enable_market_by_order = settings.common.enable_market_by_order,
+      .mbp_to_mbo_clear_price_level = settings.test.mbp_to_mbo_clear_price_level,
+      .filter_snapshot_from_incremental = settings.common.filter_snapshot_from_incremental,
+      .local_interface = settings.multicast.local_interface,
+      .multicast_timeout = settings.multicast.timeout,
+  };
+  return market_data::Manager{dispatcher, options, settings.multicast.channel_ids, shared.mdp_config_, stream_id};
 }
 
-auto create_udp_incremental(auto &gateway, auto &context, auto &stream_id, auto &shared, auto &channels) {
-  std::vector<std::unique_ptr<UDPIncremental>> result;
-  for (auto &channel : channels) {
+auto create_udp_incremental(auto &settings, auto &context, auto &shared, auto &manager) {
+  std::vector<std::unique_ptr<MDPReceiver>> result;
+  auto const connection_type = mdp::ConnectionType::INCREMENTAL;
+  for (auto channel_id : settings.multicast.channel_ids) {
     result.emplace_back(
-        std::make_unique<UDPIncremental>(gateway, context, ++stream_id, shared, channel, Priority::PRIMARY));
+        std::make_unique<MDPReceiver>(context, shared, manager, channel_id, connection_type, Priority::PRIMARY));
     result.emplace_back(
-        std::make_unique<UDPIncremental>(gateway, context, ++stream_id, shared, channel, Priority::SECONDARY));
+        std::make_unique<MDPReceiver>(context, shared, manager, channel_id, connection_type, Priority::SECONDARY));
   }
   return result;
 }
 
-auto create_udp_instrument_definition(auto &gateway, auto &context, auto &stream_id, auto &shared, auto &channels) {
-  std::vector<std::unique_ptr<UDPInstrumentDefinition>> result;
+auto create_udp_instrument_definition(auto &settings, auto &context, auto &shared, auto &manager) {
+  std::vector<std::unique_ptr<MDPReceiver>> result;
+  auto const connection_type = mdp::ConnectionType::INSTRUMENT_DEFINITION;
   if (std::empty(shared.settings.common.secdef_config_file)) {
-    for (auto &channel : channels)
-      result.emplace_back(std::make_unique<UDPInstrumentDefinition>(gateway, context, ++stream_id, shared, channel));
+    for (auto channel_id : settings.multicast.channel_ids)
+      result.emplace_back(
+          std::make_unique<MDPReceiver>(context, shared, manager, channel_id, connection_type, Priority::PRIMARY));
   } else {
     log::warn("The instrument definitions channel is not used when the secdef file was chosen"sv);
   }
   return result;
 }
 
-auto create_udp_mbp_market_recovery(auto &gateway, auto &context, auto &stream_id, auto &shared, auto &channels) {
-  std::vector<std::unique_ptr<UDPMBPMarketRecovery>> result;
-  for (auto &channel : channels)
-    result.emplace_back(std::make_unique<UDPMBPMarketRecovery>(gateway, context, ++stream_id, shared, channel));
+auto create_udp_mbp_market_recovery(auto &settings, auto &context, auto &shared, auto &manager) {
+  std::vector<std::unique_ptr<MDPReceiver>> result;
+  auto const connection_type = mdp::ConnectionType::MBP_MARKET_RECOVERY;
+  for (auto channel_id : settings.multicast.channel_ids)
+    result.emplace_back(
+        std::make_unique<MDPReceiver>(context, shared, manager, channel_id, connection_type, Priority::PRIMARY));
   return result;
 }
 
-auto create_udp_mbofd_market_recovery(auto &gateway, auto &context, auto &stream_id, auto &shared, auto &channels) {
-  std::vector<std::unique_ptr<UDPMBOFDMarketRecovery>> result;
+auto create_udp_mbofd_market_recovery(auto &settings, auto &context, auto &shared, auto &manager) {
+  std::vector<std::unique_ptr<MDPReceiver>> result;
+  auto const connection_type = mdp::ConnectionType::MBOFD_MARKET_RECOVERY;
   if (shared.settings.common.enable_market_by_order) {
-    for (auto &channel : channels)
-      result.emplace_back(std::make_unique<UDPMBOFDMarketRecovery>(gateway, context, ++stream_id, shared, channel));
+    for (auto channel_id : settings.multicast.channel_ids)
+      result.emplace_back(
+          std::make_unique<MDPReceiver>(context, shared, manager, channel_id, connection_type, Priority::PRIMARY));
   }
   return result;
 }
@@ -81,7 +90,7 @@ R create_order_entry(auto &gateway, auto &context, auto &stream_id, auto &accoun
     if (std::empty(firm_id))
       log::fatal("Unexpected: --ilink_firm_id is required"sv);
     for (auto &item : market_segment_ids) {
-      auto market_segment_id = core::charconv::from_string<uint8_t>(item);
+      auto market_segment_id = utils::from_chars<uint16_t>(item);
       if (shared.get_market_segment(market_segment_id, [&](auto &market_segment) {
             auto uri = io::web::URI::create("tcp"sv, market_segment.primary_host_ip, shared.settings.ilink.port);
             log::info("DEBUG market_segment_id={}, uri={}"sv, market_segment_id, uri);
@@ -105,11 +114,11 @@ R create_order_entry(auto &gateway, auto &context, auto &stream_id, auto &accoun
 
 Gateway::Gateway(server::Dispatcher &dispatcher, Settings const &settings, Config const &config, io::Context &context)
     : dispatcher_{dispatcher}, accounts_{create_accounts<decltype(accounts_)>(config)}, context_{context},
-      shared_{dispatcher, settings}, channels_{create_channels(settings)},
-      udp_incremental_{create_udp_incremental(*this, context_, stream_id_, shared_, channels_)},
-      udp_instrument_definition_{create_udp_instrument_definition(*this, context_, stream_id_, shared_, channels_)},
-      udp_mbp_market_recovery_{create_udp_mbp_market_recovery(*this, context_, stream_id_, shared_, channels_)},
-      udp_mbofd_market_recovery_{create_udp_mbofd_market_recovery(*this, context_, stream_id_, shared_, channels_)},
+      shared_{dispatcher, settings}, manager_{create_market_data_manager(dispatcher_, settings, shared_, stream_id_)},
+      udp_incremental_{create_udp_incremental(settings, context_, shared_, manager_)},
+      udp_instrument_definition_{create_udp_instrument_definition(settings, context_, shared_, manager_)},
+      udp_mbp_market_recovery_{create_udp_mbp_market_recovery(settings, context_, shared_, manager_)},
+      udp_mbofd_market_recovery_{create_udp_mbofd_market_recovery(settings, context_, shared_, manager_)},
       order_entry_{create_order_entry<decltype(order_entry_)>(*this, context_, stream_id_, accounts_, shared_)} {
 }
 
@@ -176,47 +185,9 @@ void Gateway::operator()(Trace<ExternalLatency> const &event) {
   dispatcher_(event);
 }
 
-void Gateway::operator()(Trace<ReferenceData> const &event, bool is_last) {
-  dispatcher_(event, is_last);
-}
-
-void Gateway::operator()(Trace<MarketStatus> const &event, bool is_last) {
-  dispatcher_(event, is_last);
-}
-
-void Gateway::operator()(Trace<TopOfBook> const &event, bool is_last) {
-  dispatcher_(event, is_last);
-}
-
-void Gateway::operator()(Trace<MarketByPriceUpdate> const &event, bool is_last) {
-  auto callback = []([[maybe_unused]] auto &market_by_price) {};
-  dispatcher_(event, is_last, bids_, asks_, callback);
-}
-
-void Gateway::operator()(Trace<MarketByOrderUpdate> const &event, bool is_last) {
-  auto callback = []([[maybe_unused]] auto &market_by_price) {};
-  dispatcher_(event, is_last, orders_, callback);
-}
-
-void Gateway::operator()(Trace<TradeSummary> const &event, bool is_last) {
-  dispatcher_(event, is_last);
-}
-
-void Gateway::operator()(Trace<StatisticsUpdate> const &event, bool is_last) {
-  dispatcher_(event, is_last);
-}
-
 template <typename... Args>
 void Gateway::dispatch(Args &&...args) {
   auto helper = [&](auto &target) { target(std::forward<Args>(args)...); };
-  for (auto &item : udp_incremental_)
-    helper(*item);
-  for (auto &item : udp_instrument_definition_)
-    helper(*item);
-  for (auto &item : udp_mbp_market_recovery_)
-    helper(*item);
-  for (auto &item : udp_mbofd_market_recovery_)
-    helper(*item);
   for (auto &[_, item] : order_entry_)
     helper(*item);
 }

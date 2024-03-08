@@ -17,7 +17,7 @@ namespace pcap_filter {
 // === HELPERS ===
 
 namespace {
-auto find(auto &result, auto &config, auto &channel_id, auto type, auto priority) {
+auto find(auto &result, auto &config, auto channel_id, auto type, auto priority) {
   if (config.find(channel_id, type, priority, [&](auto &connection) {
         result.emplace_back(connection.multicast_address, connection.port);
       })) {
@@ -41,7 +41,7 @@ Controller::Controller(Settings const &settings) : settings_{settings} {
 void Controller::dispatch() {
   mdp::Config config{settings_.config_file, false};
   std::vector<std::pair<std::string, uint16_t>> filter;
-  for (auto &channel_id : settings_.channel_ids) {
+  for (auto channel_id : settings_.channel_ids) {
     find(filter, config, channel_id, mdp::ConnectionType::INSTRUMENT_DEFINITION, Priority::PRIMARY);
     find(filter, config, channel_id, mdp::ConnectionType::INSTRUMENT_DEFINITION, Priority::SECONDARY);
     find(filter, config, channel_id, mdp::ConnectionType::INCREMENTAL, Priority::PRIMARY);

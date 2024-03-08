@@ -26,7 +26,7 @@ struct Config final {
   Config(std::string_view const &filename, bool verbose);
 
   template <typename Callback>
-  bool find(std::string_view const &channel_id, ConnectionType type, Priority priority, Callback callback) const {
+  bool find(uint16_t channel_id, ConnectionType type, Priority priority, Callback callback) const {
     auto iter_1 = connections_.find(channel_id);
     if (iter_1 == std::end(connections_))
       return false;
@@ -60,8 +60,8 @@ struct Config final {
   std::string_view get_name(uint16_t channel_id, ConnectionType, Priority) const;
 
  private:
-  // channel_id(string) => type => feed => connection
-  utils::unordered_map<std::string, utils::unordered_map<ConnectionType, utils::unordered_map<Priority, Connection>>>
+  // channel_id => type => feed => connection
+  utils::unordered_map<uint16_t, utils::unordered_map<ConnectionType, utils::unordered_map<Priority, Connection>>>
       connections_;
 
   // address ==> port ==> {channel_id, connection type, priority}

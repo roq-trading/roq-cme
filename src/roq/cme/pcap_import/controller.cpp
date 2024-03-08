@@ -35,7 +35,11 @@ namespace pcap_import {
 // === CONSTANTS ===
 
 namespace {
+auto const ENABLE_MARKET_BY_ORDER = true;
+auto const MBP_TO_MBO_CLEAR_PRICE_LEVEL = true;
+auto const FILTER_SNAPSHOT_FROM_INCREMENTAL = 1024uz;
 auto const LOCAL_INTERFACE = "pcap"sv;
+auto const MULTICAST_TIMEOUT = 10s;
 std::vector<core::event_log::User> const USERS;
 auto const TIMER_FREQUENCY = 100ms;
 }  // namespace
@@ -46,8 +50,11 @@ namespace {
 auto create_market_data(auto &handler, auto &settings, auto &config) {
   auto options = market_data::Options{
       .cache_all_reference_data = settings.cache_all_reference_data,
+      .enable_market_by_order = ENABLE_MARKET_BY_ORDER,
+      .mbp_to_mbo_clear_price_level = MBP_TO_MBO_CLEAR_PRICE_LEVEL,
+      .filter_snapshot_from_incremental = FILTER_SNAPSHOT_FROM_INCREMENTAL,
       .local_interface = LOCAL_INTERFACE,
-      .multicast_timeout = 10s,
+      .multicast_timeout = MULTICAST_TIMEOUT,
   };
   uint16_t stream_id = {};
   return market_data::Manager{handler, options, settings.channel_ids, config, stream_id};
@@ -114,10 +121,10 @@ void Controller::dispatch(std::string_view const &path) {
         auto udp_header =
             reinterpret_cast<struct udphdr const *>(packet + sizeof(struct ether_header) + sizeof(struct ip));
 #if __APPLE__
-        auto src_port = ntohs((*udp_header).uh_sport);
+        // auto src_port = ntohs((*udp_header).uh_sport);
         auto dst_port = ntohs((*udp_header).uh_dport);
 #else
-        auto src_port = ntohs((*udp_header).source);
+        // auto src_port = ntohs((*udp_header).source);
         auto dst_port = ntohs((*udp_header).dest);
 #endif
         auto offset = sizeof(struct ether_header) + sizeof(struct ip) + sizeof(struct udphdr);

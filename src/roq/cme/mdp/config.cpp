@@ -44,7 +44,7 @@ auto get_priority(auto &value) {
 template <typename T>
 struct Handler final : public ConfigReader::Handler {
   explicit Handler(T &connections) : connections_{connections} {}
-  void operator()(std::string_view const &channel_id, ConfigReader::Channel const &channel) override {
+  void operator()(uint16_t channel_id, ConfigReader::Channel const &channel) override {
     for (auto &[connection_id, connection] : channel.connections) {
       try {
         auto type = get_type(connection.feed_type);
@@ -81,10 +81,8 @@ R create_connection_types(auto &connections) {
   result_type result;
   for (auto &[channel_id, tmp_1] : connections)
     for (auto &[connection_type, tmp_2] : tmp_1)
-      for (auto &[priority, connection] : tmp_2) {
-        auto channel_id_2 = utils::from_chars<uint16_t>(channel_id);
-        result[connection.multicast_address][connection.port] = {channel_id_2, connection_type, priority};
-      }
+      for (auto &[priority, connection] : tmp_2)
+        result[connection.multicast_address][connection.port] = {channel_id, connection_type, priority};
   return result;
 }
 
@@ -94,10 +92,8 @@ R create_names(auto &connections) {
   result_type result;
   for (auto &[channel_id, tmp_1] : connections)
     for (auto &[connection_type, tmp_2] : tmp_1)
-      for (auto &[priority, connection] : tmp_2) {
-        auto channel_id_2 = utils::from_chars<uint16_t>(channel_id);
-        result[channel_id_2][connection_type][priority] = connection.name;
-      }
+      for (auto &[priority, connection] : tmp_2)
+        result[channel_id][connection_type][priority] = connection.name;
   return result;
 }
 }  // namespace

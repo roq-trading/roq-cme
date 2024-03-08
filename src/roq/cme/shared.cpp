@@ -116,7 +116,7 @@ Shared::Shared(server::Dispatcher &dispatcher, Settings const &settings)
 }
 
 std::pair<std::string, uint16_t> Shared::get_multicast_config(
-    std::string_view const &channel_id, mdp::ConnectionType type, Priority priority) const {
+    uint16_t channel_id, mdp::ConnectionType type, Priority priority) const {
   std::pair<std::string, uint16_t> result;
   if (mdp_config_.find(channel_id, type, priority, [&](auto &connection) {
         result = {connection.multicast_address, connection.port};

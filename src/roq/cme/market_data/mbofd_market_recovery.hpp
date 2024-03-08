@@ -62,12 +62,14 @@ struct MBOFDMarketRecovery final : public mdp::Parser::Handler {
 
   void publish_stream_status(TraceInfo const &, ConnectionStatus);
 
+ public:
+  Priority const priority;
+  uint16_t const stream_id;
+  std::string const name;
+
  private:
   Shared &shared_;
   Channel &channel_;
-  uint16_t const stream_id_;
-  std::string const name_;
-  Priority const priority_;
   ConnectionStatus connection_status_ = {};
   std::chrono::nanoseconds last_update_time_ = {};
 };

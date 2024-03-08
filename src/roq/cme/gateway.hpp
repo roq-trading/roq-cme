@@ -12,28 +12,21 @@
 
 #include "roq/io/context.hpp"
 
+#include "roq/cme/market_data/manager.hpp"
+
 #include "roq/cme/account.hpp"
-#include "roq/cme/channel.hpp"
 #include "roq/cme/config.hpp"
 #include "roq/cme/settings.hpp"
 #include "roq/cme/shared.hpp"
 
-#include "roq/cme/udp_incremental.hpp"
-#include "roq/cme/udp_instrument_definition.hpp"
-#include "roq/cme/udp_mbofd_market_recovery.hpp"
-#include "roq/cme/udp_mbp_market_recovery.hpp"
+#include "roq/cme/mdp_receiver.hpp"
 
 #include "roq/cme/order_entry.hpp"
 
 namespace roq {
 namespace cme {
 
-struct Gateway final : public server::Handler,
-                       public UDPIncremental::Handler,
-                       public UDPInstrumentDefinition::Handler,
-                       public UDPMBPMarketRecovery::Handler,
-                       public UDPMBOFDMarketRecovery::Handler,
-                       public OrderEntry::Handler {
+struct Gateway final : public server::Handler, public OrderEntry::Handler {
   Gateway(server::Dispatcher &, Settings const &, Config const &, io::Context &);
 
   Gateway(Gateway &&) = delete;
@@ -69,13 +62,6 @@ struct Gateway final : public server::Handler,
 
   void operator()(Trace<StreamStatus> const &) override;
   void operator()(Trace<ExternalLatency> const &) override;
-  void operator()(Trace<ReferenceData> const &, bool is_last) override;
-  void operator()(Trace<MarketStatus> const &, bool is_last) override;
-  void operator()(Trace<TopOfBook> const &, bool is_last) override;
-  void operator()(Trace<MarketByPriceUpdate> const &, bool is_last) override;
-  void operator()(Trace<MarketByOrderUpdate> const &, bool is_last) override;
-  void operator()(Trace<TradeSummary> const &, bool is_last) override;
-  void operator()(Trace<StatisticsUpdate> const &, bool is_last) override;
 
   // utilities
 
@@ -92,14 +78,15 @@ struct Gateway final : public server::Handler,
   io::Context &context_;
   // shared
   Shared shared_;
-  std::vector<Channel> channels_;
   // seed
   uint16_t stream_id_ = {};
+  // mdp
+  market_data::Manager manager_;
   // streams
-  std::vector<std::unique_ptr<UDPIncremental>> udp_incremental_;
-  std::vector<std::unique_ptr<UDPInstrumentDefinition>> udp_instrument_definition_;
-  std::vector<std::unique_ptr<UDPMBPMarketRecovery>> udp_mbp_market_recovery_;
-  std::vector<std::unique_ptr<UDPMBOFDMarketRecovery>> udp_mbofd_market_recovery_;
+  std::vector<std::unique_ptr<MDPReceiver>> udp_incremental_;
+  std::vector<std::unique_ptr<MDPReceiver>> udp_instrument_definition_;
+  std::vector<std::unique_ptr<MDPReceiver>> udp_mbp_market_recovery_;
+  std::vector<std::unique_ptr<MDPReceiver>> udp_mbofd_market_recovery_;
   utils::unordered_map<std::string, std::unique_ptr<OrderEntry>> order_entry_;
   // cache
   std::vector<MBPUpdate> bids_, asks_;

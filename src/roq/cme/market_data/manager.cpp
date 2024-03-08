@@ -42,6 +42,53 @@ Manager::Manager(
       channels_{create_channels<decltype(channels_)>(shared_, channel_ids, config, stream_id)} {
 }
 
+std::string_view const Manager::get_name(
+    uint16_t channel_id, mdp::ConnectionType connection_type, Priority priority) const {
+  auto iter = channels_.find(channel_id);
+  if (iter != std::end(channels_)) {
+    auto &channel = (*iter).second;
+    switch (connection_type) {
+      using enum mdp::ConnectionType;
+      case HISTORICAL_REPLAY:
+        log::fatal("Unexpected"sv);
+        break;
+      case INSTRUMENT_DEFINITION:
+        if (priority == Priority::PRIMARY) {
+          return channel.instrument_definition_1.name;
+        } else {
+          return channel.instrument_definition_2.name;
+        }
+        break;
+      case MBP_MARKET_RECOVERY:
+        if (priority == Priority::PRIMARY) {
+          return channel.mbp_market_recovery_1.name;
+        } else {
+          return channel.mbp_market_recovery_2.name;
+        }
+        break;
+      case MBOFD_MARKET_RECOVERY:
+        if (priority == Priority::PRIMARY) {
+          return channel.mbofd_market_recovery_1.name;
+        } else {
+          return channel.mbofd_market_recovery_2.name;
+        }
+        break;
+      case INCREMENTAL:
+        if (priority == Priority::PRIMARY) {
+          return channel.incremental_1.name;
+        } else {
+          return channel.incremental_2.name;
+        }
+        break;
+    }
+  }
+  log::fatal(
+      "Unexpected: channel_id={}, connection_type={}, priority={}"sv,
+      channel_id,
+      magic_enum::enum_name(connection_type),
+      priority);
+}
+
 void Manager::operator()(Event<Start> const &event) {
   dispatch(event);
 }

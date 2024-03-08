@@ -48,10 +48,10 @@ TEST_CASE("simple", "[mdp_config_reader]") {
                  R"(</configuration>)"sv;
   struct MyHandler final : public mdp::ConfigReader::Handler {
     int counter = 0;
-    void operator()(std::string_view const &channel_id, mdp::ConfigReader::Channel const &channel) override {
+    void operator()(uint16_t channel_id, mdp::ConfigReader::Channel const &channel) override {
       switch (++counter) {
         case 1: {
-          CHECK(channel_id == "310"sv);
+          CHECK(channel_id == 310);
           CHECK(channel.label == "CME Globex Equity Futures"sv);
           REQUIRE(std::size(channel.products) == 2);
           CHECK(channel.products.find("ES"sv) != std::end(channel.products));

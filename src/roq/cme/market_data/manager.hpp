@@ -32,6 +32,8 @@ struct Manager final {
       mdp::Config const &,
       uint16_t &stream_id);
 
+  std::string_view const get_name(uint16_t channel_id, mdp::ConnectionType, Priority) const;
+
   void operator()(Event<Start> const &);
   void operator()(Event<Stop> const &);
   void operator()(Event<Timer> const &);
