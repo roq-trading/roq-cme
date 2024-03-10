@@ -1,6 +1,6 @@
 /* Copyright (c) 2017-2024, Hans Erik Thrane */
 
-#include "roq/cme/pcap_import/controller.hpp"
+#include "roq/cme/import/controller.hpp"
 
 #include <arpa/inet.h>
 #include <net/ethernet.h>
@@ -24,13 +24,13 @@
 
 #include "roq/core/codec/encoder.hpp"
 
-#include "roq/cme/pcap_import/pcap.hpp"
+#include "roq/cme/import/pcap.hpp"
 
 using namespace std::literals;
 
 namespace roq {
 namespace cme {
-namespace pcap_import {
+namespace import {
 
 // === CONSTANTS ===
 
@@ -330,6 +330,6 @@ MessageInfo Controller::create_message_info(TraceInfo const &trace_info) {
   };
 }
 
-}  // namespace pcap_import
+}  // namespace import
 }  // namespace cme
 }  // namespace roq

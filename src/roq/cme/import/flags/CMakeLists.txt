@@ -1,4 +1,4 @@
-set(TARGET_NAME ${PROJECT_NAME}-pcap-filter-flags)
+set(TARGET_NAME ${PROJECT_NAME}-import-flags)
 
 include(RoqAutogen)
 
@@ -8,7 +8,7 @@ roq_autogen(
   OUTPUT
   AUTOGEN_HEADERS
   NAMESPACE
-  "roq/cme/pcap_filter/flags"
+  "roq/cme/import/flags"
   OUTPUT_TYPE
   "state"
   FILE_TYPE
@@ -16,13 +16,13 @@ roq_autogen(
   SOURCES
   ${AUTOGEN_SCHEMAS})
 
-add_custom_target(pcap-filter-autogen-headers ALL DEPENDS ${AUTOGEN_HEADERS})
+add_custom_target(import-autogen-headers ALL DEPENDS ${AUTOGEN_HEADERS})
 
 roq_autogen(
   OUTPUT
   AUTOGEN_SOURCES
   NAMESPACE
-  "roq/cme/pcap_filter/flags"
+  "roq/cme/import/flags"
   OUTPUT_TYPE
   "state"
   FILE_TYPE
@@ -34,6 +34,6 @@ roq_gitignore(OUTPUT .gitignore SOURCES ${TARGET_NAME} ${AUTOGEN_HEADERS} ${AUTO
 
 add_library(${TARGET_NAME} OBJECT ${AUTOGEN_SOURCES})
 
-add_dependencies(${TARGET_NAME} pcap-filter-autogen-headers)
+add_dependencies(${TARGET_NAME} import-autogen-headers)
 
 target_link_libraries(${TARGET_NAME} PRIVATE roq-api::roq-api absl::flags)

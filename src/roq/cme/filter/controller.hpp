@@ -2,11 +2,11 @@
 
 #pragma once
 
-#include "roq/cme/pcap_filter/settings.hpp"
+#include "roq/cme/filter/settings.hpp"
 
 namespace roq {
 namespace cme {
-namespace pcap_filter {
+namespace filter {
 
 struct Controller final {
   explicit Controller(Settings const &);
@@ -20,6 +20,6 @@ struct Controller final {
   Settings const &settings_;
 };
 
-}  // namespace pcap_filter
+}  // namespace filter
 }  // namespace cme
 }  // namespace roq

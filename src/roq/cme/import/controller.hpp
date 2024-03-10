@@ -23,11 +23,11 @@
 
 #include "roq/cme/market_data/manager.hpp"
 
-#include "roq/cme/pcap_import/settings.hpp"
+#include "roq/cme/import/settings.hpp"
 
 namespace roq {
 namespace cme {
-namespace pcap_import {
+namespace import {
 
 struct Controller final : public server::md::Dispatcher {
   explicit Controller(Settings const &);
@@ -78,6 +78,6 @@ struct Controller final : public server::md::Dispatcher {
   utils::unordered_map<std::string, std::unique_ptr<cache::MarketByOrder>> market_by_order_;
 };
 
-}  // namespace pcap_import
+}  // namespace import
 }  // namespace cme
 }  // namespace roq

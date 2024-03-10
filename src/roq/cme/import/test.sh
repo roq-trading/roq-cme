@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 
+CONFIG_FILE="../config/config.xml"
 SYMBOLS="^Z[TFNB][FGHJKMNQUVXZ][0-9]$"
 
-./roq-cme-pcap-import \
-  --name cme \
-  --config_file ../config/config.xml \
+./roq-cme-import \
+  --type pcap \
+  --config_file $CONFIG_FILE \
   --channel_ids 344 \
+  --name cme \
   --symbols $SYMBOLS \
   --output_file test.roq \
   $@

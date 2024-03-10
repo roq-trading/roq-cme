@@ -3,6 +3,12 @@
   "type": "flags",
   "values": [
     {
+      "name": "type",
+      "type": "std::string",
+      "required": true,
+      "description": "type of file, e.g. pcap"
+    },
+    {
       "name": "name",
       "type": "std::string",
       "required": true,

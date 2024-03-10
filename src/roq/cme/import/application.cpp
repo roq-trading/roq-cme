@@ -1,17 +1,17 @@
 /* Copyright (c) 2017-2024, Hans Erik Thrane */
 
-#include "roq/cme/pcap_import/application.hpp"
+#include "roq/cme/import/application.hpp"
 
 #include "roq/logging.hpp"
 
-#include "roq/cme/pcap_import/controller.hpp"
-#include "roq/cme/pcap_import/settings.hpp"
+#include "roq/cme/import/controller.hpp"
+#include "roq/cme/import/settings.hpp"
 
 using namespace std::literals;
 
 namespace roq {
 namespace cme {
-namespace pcap_import {
+namespace import {
 
 // === IMPLEMENTATION ===
 
@@ -24,6 +24,6 @@ int Application::main(args::Parser const &args) {
   return EXIT_SUCCESS;
 }
 
-}  // namespace pcap_import
+}  // namespace import
 }  // namespace cme
 }  // namespace roq

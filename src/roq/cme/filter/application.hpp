@@ -6,7 +6,7 @@
 
 namespace roq {
 namespace cme {
-namespace pcap_import {
+namespace filter {
 
 struct Application final : public roq::Tool {
   using roq::Tool::Tool;
@@ -15,6 +15,6 @@ struct Application final : public roq::Tool {
   int main(args::Parser const &) override;
 };
 
-}  // namespace pcap_import
+}  // namespace filter
 }  // namespace cme
 }  // namespace roq

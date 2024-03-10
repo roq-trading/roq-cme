@@ -16,8 +16,8 @@ add_subdirectory(secdef)
 add_subdirectory(market_data)
 
 add_subdirectory(channel_tester)
-add_subdirectory(pcap_filter)
-add_subdirectory(pcap_import)
+add_subdirectory(filter)
+add_subdirectory(import)
 
 set(SOURCES
     account.cpp

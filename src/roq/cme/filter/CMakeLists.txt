@@ -1,25 +1,22 @@
-set(TARGET_NAME ${PROJECT_NAME}-pcap-import)
+set(TARGET_NAME ${PROJECT_NAME}-filter)
 
 add_subdirectory(flags)
 
-set(SOURCES application.cpp controller.cpp pcap.cpp settings.cpp main.cpp)
+set(SOURCES application.cpp controller.cpp settings.cpp main.cpp)
 
 add_executable(${TARGET_NAME} ${SOURCES})
 
 target_link_libraries(
   ${TARGET_NAME}
-  PRIVATE ${PROJECT_NAME}-pcap-import-flags
-          ${PROJECT_NAME}-tools
+  PRIVATE ${PROJECT_NAME}-filter-flags
           ${PROJECT_NAME}-mdp
-          ${PROJECT_NAME}-market_data
+          roq-io::roq-io
           roq-core::roq-core
           roq-logging::roq-logging
           roq-logging::roq-logging-flags
           roq-flags::roq-flags
           roq-api::roq-api
           fmt::fmt
-          EXPAT::EXPAT
-          ${LIBPCAP_LIBRARIES}
           ${RT_LIBRARIES})
 
 if(ROQ_BUILD_TYPE STREQUAL "Release")
