@@ -1,17 +1,17 @@
 !!! THIS FILE HAS BEEN AUTO-GENERATED !!!
 roq-cme-flags
-common.rstinc
-ilink.rstinc
-multicast.rstinc
-test.rstinc
-flags.rstinc
+flags_.rstinc
+common_.rstinc
+ilink_.rstinc
+multicast_.rstinc
+test_.rstinc
+flags.hpp
 common.hpp
 ilink.hpp
 multicast.hpp
 test.hpp
-flags.hpp
+flags.cpp
 common.cpp
 ilink.cpp
 multicast.cpp
 test.cpp
-flags.cpp
