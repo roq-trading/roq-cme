@@ -8,7 +8,7 @@
       "type": "std::string",
       "validator": "roq::flags::validators::Path",
       "required": true,
-      "description": "config file (path)"
+      "description": "Config file (path)"
     },
     {
       "name": "channel_ids",

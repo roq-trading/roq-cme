@@ -6,23 +6,23 @@
     {
       "name": "firm_id",
       "type": "std::string",
-      "description": "firm id"
+      "description": "Firm Id"
     },
     {
       "name": "port",
       "type": "uint16_t",
-      "description": "port"
+      "description": "Port"
     },
     {
       "name": "location",
       "type": "std::string",
-      "description": "location"
+      "description": "Location"
     },
     {
       "name": "config_file",
       "type": "std::string",
       "validator": "roq::flags::validators::Path",
-      "description": "config file (path)"
+      "description": "Config file (path)"
     },
     {
       "name": "market_segment_ids",

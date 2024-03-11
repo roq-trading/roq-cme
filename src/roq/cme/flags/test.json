@@ -7,19 +7,19 @@
       "name": "mbp_to_mbo_clear_price_level",
       "type": "bool",
       "default": false,
-      "description": "use mbp to delete mbo price levels?"
+      "description": "Use MbP to delete MbO price levels?"
     },
     {
       "name": "reordering",
       "type": "uint32_t",
       "default": 0,
-      "description": "test"
+      "description": "Test"
     },
     {
       "name": "drop",
       "type": "uint32_t",
       "default": 0,
-      "description": "test"
+      "description": "Test"
     }
   ]
 }
