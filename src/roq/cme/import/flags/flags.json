@@ -75,6 +75,19 @@
       "required": true,
       "default": 16777216,
       "description": "Encode buffer size"
+    },
+    {
+      "name": "test_mbp_mbo",
+      "type": "bool",
+      "default": false,
+      "description": "Test"
+    },
+    {
+      "name": "test_depth",
+      "type": "uint32_t",
+      "required": true,
+      "default": 10,
+      "description": "Test"
     }
   ]
 }

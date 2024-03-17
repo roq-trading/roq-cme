@@ -1048,6 +1048,54 @@ void Incremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame const
         std::size(orders_),
         total_number_of_orders_);
   }
+  // mbp
+  auto &mbp = shared_.get_mbp();
+  auto dispatch_market_by_price_2 = [&](auto security_id, auto &security) {
+    if (std::empty(mbp))
+      return;
+    dispatch_market_by_price(
+        trace_info,
+        security_id,
+        security,
+        exchange_sequence,
+        exchange_time_utc,
+        frame.sending_time,
+        mbp.bids,
+        mbp.asks);
+    mbp.clear();
+  };
+  for (auto security_id : security_ids_) {
+    shared_.get_security(security_id, [&](auto &security) {
+      size_t offset = 0;
+      for (auto [security_id_2, aggressor_side, price, size, number_of_orders, trade_id] : trade_summary_) {
+        auto side = aggressor_side;
+        if (security_id == security_id_2) {
+          auto result = MBPUpdate{
+              .price = price,
+              .quantity = static_cast<double>(size),
+              .implied_quantity = NaN,
+              .number_of_orders = utils::safe_cast(number_of_orders),
+              .update_action = UpdateAction::TRADE,
+              .price_level = {},
+          };
+          switch (side) {
+            using enum Side;
+            case UNDEFINED:
+              assert(false);
+              break;
+            case BUY:
+              mbp.asks.emplace_back(std::move(result));
+              break;
+            case SELL:
+              mbp.bids.emplace_back(std::move(result));
+              break;
+          }
+        }
+        offset += number_of_orders;
+      }
+      dispatch_market_by_price_2(security_id, security);
+    });
+  }
   // mbo
   auto &mbo = shared_.get_mbo();
   auto dispatch_market_by_order_2 = [&](auto security_id, auto &security) {

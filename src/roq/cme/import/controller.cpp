@@ -16,6 +16,8 @@
 #include "roq/exceptions.hpp"
 #include "roq/logging.hpp"
 
+#include "roq/utils/compare.hpp"
+
 #include "roq/utils/debug/hex/message.hpp"
 
 #include "roq/market/mbp/factory.hpp"
@@ -80,7 +82,8 @@ Controller::Controller(Settings const &settings)
     : settings_{settings}, config_{settings.config_file, false},
       market_data_{create_market_data(*this, settings, config_)},
       symbols_regex_{create_symbols_regex<decltype(symbols_regex_)>(settings.symbols)},
-      encode_buffer_(settings.encode_buffer_size) {
+      encode_buffer_(settings.encode_buffer_size), mbp_depth_(settings.test_depth), mbo_depth_(settings.test_depth) {
+  log::info("test={}"sv, settings_.test_mbp_mbo);
 }
 
 void Controller::dispatch(std::string_view const &path) {
@@ -197,12 +200,10 @@ void Controller::operator()(Trace<ReferenceData> const &event, [[maybe_unused]] 
   auto &[trace_info, reference_data] = event;
   if (settings_.cache_all_reference_data || !reference_data.discard)
     append(event);
-  /*
-  // ...
-  auto &reference_data = event.value;
-  auto &market_by_price = get_market_by_price(reference_data.exchange, reference_data.symbol);
-  market_by_price(reference_data);
-  */
+  auto &exchange = event.value.exchange;
+  auto &symbol = event.value.symbol;
+  get_market_by_price(exchange, symbol)(event.value);
+  get_market_by_order(exchange, symbol)(event.value);
 }
 
 void Controller::operator()(Trace<MarketStatus> const &event, [[maybe_unused]] bool is_last) {
@@ -223,6 +224,8 @@ void Controller::operator()(Trace<MarketByPriceUpdate> const &event, [[maybe_unu
 void Controller::operator()(Trace<MarketByOrderUpdate> const &event, [[maybe_unused]] bool is_last) {
   // log::info("event={}"sv, event);
   append(event);
+  if (settings_.test_mbp_mbo)
+    DEBUG_compare(event.value.exchange, event.value.symbol);
 }
 
 void Controller::operator()(Trace<TradeSummary> const &event, [[maybe_unused]] bool is_last) {
@@ -328,6 +331,34 @@ MessageInfo Controller::create_message_info(TraceInfo const &trace_info) {
       .is_last = true,
       .opaque = {},
   };
+}
+
+void Controller::DEBUG_compare(std::string_view const &exchange, std::string_view const &symbol) {
+  auto &market_by_price = get_market_by_price(exchange, symbol);
+  auto &market_by_order = get_market_by_order(exchange, symbol);
+  auto mbp_depth = market_by_price.extract(mbp_depth_);
+  market_by_order.extract(mbo_depth_, settings_.test_depth);
+  auto length = std::min(std::size(mbp_depth_), std::size(mbo_depth_));
+  auto print = [](std::string_view prefix, auto lhs, auto rhs) {
+    auto same = utils::compare(lhs, rhs) == 0;
+    fmt::print(" {}={{"sv, prefix);
+    fmt::print("{:10}|{:10}"sv, lhs, rhs);
+    fmt::print("}}"sv);
+    return same;
+  };
+  for (size_t i = 0; i < length; ++i) {
+    auto &lhs = mbp_depth_[i];
+    auto &rhs = mbo_depth_[i];
+    fmt::print("{} [{:2}]"sv, symbol, i);
+    auto same = true;
+    same &= print("bp"sv, lhs.bid_price, rhs.bid_price);
+    same &= print("bq"sv, lhs.bid_quantity, rhs.bid_quantity);
+    same &= print("ap"sv, lhs.ask_price, rhs.ask_price);
+    same &= print("aq"sv, lhs.ask_quantity, rhs.ask_quantity);
+    if (!same)
+      fmt::print(" WRONG"sv);
+    fmt::print("\n"sv);
+  }
 }
 
 }  // namespace import

@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 CONFIG_FILE="../config/config.xml"
-SYMBOLS="^Z[TFNB][FGHJKMNQUVXZ][0-9]$"
+#SYMBOLS="^Z[TFNB][FGHJKMNQUVXZ][0-9]$"
+SYMBOLS="ZNU3"
 
 ./roq-cme-import \
   --type pcap \

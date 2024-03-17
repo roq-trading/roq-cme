@@ -64,6 +64,8 @@ struct Controller final : public server::md::Dispatcher {
 
   MessageInfo create_message_info(TraceInfo const &);
 
+  void DEBUG_compare(std::string_view const &exchange, std::string_view const &symbol);
+
  private:
   Settings const &settings_;
   mdp::Config config_;
@@ -76,6 +78,8 @@ struct Controller final : public server::md::Dispatcher {
   uint64_t source_seqno_ = {};
   utils::unordered_map<std::string, std::unique_ptr<cache::MarketByPrice>> market_by_price_;
   utils::unordered_map<std::string, std::unique_ptr<cache::MarketByOrder>> market_by_order_;
+  // TEST
+  std::vector<Layer> mbp_depth_, mbo_depth_;
 };
 
 }  // namespace import
