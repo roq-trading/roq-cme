@@ -71,6 +71,9 @@ struct Incremental final : public mdp::Parser::Handler {
       auto &bids,
       auto &asks);
 
+  void dispatch_market_by_price_stale(
+      auto &trace_info, auto &security, auto exchange_sequence, auto exchange_time_utc, auto sending_time_utc);
+
   void dispatch_market_by_order(
       auto &trace_info,
       auto security_id,
@@ -79,6 +82,9 @@ struct Incremental final : public mdp::Parser::Handler {
       auto exchange_time_utc,
       auto sending_time_utc,
       auto &orders);
+
+  void dispatch_market_by_order_stale(
+      auto &trace_info, auto &security, auto exchange_sequence, auto exchange_time_utc, auto sending_time_utc);
 
   template <typename T>
   void dispatch_trade_summary(Trace<T> const &, mdp::Frame const &);

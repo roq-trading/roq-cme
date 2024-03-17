@@ -18,7 +18,7 @@ bool Security::update_rpt_seq(uint32_t rpt_seq) {
   auto result = rpt_seq != next;
   if (result) {
     log::warn(
-        R"(*** RESUBSCRIBE *** exchange="{}", sybmol="{}", rpt_seq={}, prev={})"sv,
+        R"(*** RESUBSCRIBE *** exchange="{}", symbol="{}", rpt_seq={}, prev={})"sv,
         exchange,
         symbol,
         rpt_seq,

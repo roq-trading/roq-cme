@@ -898,6 +898,27 @@ void Incremental::dispatch_market_by_price(
   }
 }
 
+void Incremental::dispatch_market_by_price_stale(
+    auto &trace_info, auto &security, auto exchange_sequence, auto exchange_time_utc, auto sending_time_utc) {
+  auto market_by_price_update = MarketByPriceUpdate{
+      .stream_id = stream_id,
+      .exchange = security.exchange,
+      .symbol = security.symbol,
+      .bids = {},
+      .asks = {},
+      .update_type = UpdateType::STALE,
+      .exchange_time_utc = exchange_time_utc,
+      .exchange_sequence = exchange_sequence,
+      .sending_time_utc = sending_time_utc,
+      .price_precision = {},
+      .quantity_precision = {},
+      .checksum = {},
+  };
+  auto callback = []([[maybe_unused]] auto &market_by_price) {};
+  create_trace_and_dispatch(
+      shared_, trace_info, market_by_price_update, true, shared_.cache.bids, shared_.cache.asks, callback);
+}
+
 void Incremental::dispatch_market_by_order(
     auto &trace_info,
     auto security_id,
@@ -981,6 +1002,26 @@ void Incremental::dispatch_market_by_order(
     sequencer.clear();
     security.mbo.resubscribe = exchange_sequence;
   }
+}
+
+void Incremental::dispatch_market_by_order_stale(
+    auto &trace_info, auto &security, auto exchange_sequence, auto exchange_time_utc, auto sending_time_utc) {
+  auto market_by_order_update = MarketByOrderUpdate{
+      .stream_id = stream_id,
+      .exchange = security.exchange,
+      .symbol = security.symbol,
+      .orders = {},
+      .update_type = UpdateType::STALE,
+      .exchange_time_utc = exchange_time_utc,
+      .exchange_sequence = exchange_sequence,
+      .sending_time_utc = sending_time_utc,
+      .price_precision = {},
+      .quantity_precision = {},
+      .max_depth = {},
+      .checksum = {},
+  };
+  auto callback = []([[maybe_unused]] auto &market_by_order) {};
+  create_trace_and_dispatch(shared_, trace_info, market_by_order_update, true, shared_.cache.orders, callback);
 }
 
 template <typename T>
@@ -1267,10 +1308,15 @@ void Incremental::check_report_sequence(tools::Security &security, auto const &v
   if (!security.update_rpt_seq(rpt_seq))
     return;
   log::warn(R"(RESUBSCRIBE exchange="{}", symbol="{}", rpt_seq={})"sv, security.exchange, security.symbol, rpt_seq);
+  TraceInfo trace_info;
   security.mbp.sequencer.clear();
   security.mbp.resubscribe = frame.sequence_number;
+  dispatch_market_by_price_stale(
+      trace_info, security, frame.sequence_number, std::chrono::nanoseconds{}, frame.sending_time);
   security.mbo.sequencer.clear();
   security.mbo.resubscribe = frame.sequence_number;
+  dispatch_market_by_order_stale(
+      trace_info, security, frame.sequence_number, std::chrono::nanoseconds{}, frame.sending_time);
 }
 
 void Incremental::on_sequence_reset() {
