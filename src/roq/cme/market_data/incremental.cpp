@@ -1090,6 +1090,7 @@ void Incremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame const
         total_number_of_orders_);
   }
   // mbp
+  /*
   auto &mbp = shared_.get_mbp();
   auto dispatch_market_by_price_2 = [&](auto security_id, auto &security) {
     if (std::empty(mbp))
@@ -1111,32 +1112,39 @@ void Incremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame const
       for (auto [security_id_2, aggressor_side, price, size, number_of_orders, trade_id] : trade_summary_) {
         auto side = aggressor_side;
         if (security_id == security_id_2) {
-          auto result = MBPUpdate{
-              .price = price,
-              .quantity = static_cast<double>(size),
-              .implied_quantity = NaN,
-              .number_of_orders = utils::safe_cast(number_of_orders),
-              .update_action = UpdateAction::TRADE,
-              .price_level = {},
-          };
-          switch (side) {
-            using enum Side;
-            case UNDEFINED:
-              assert(false);
-              break;
-            case BUY:
-              mbp.asks.emplace_back(std::move(result));
-              break;
-            case SELL:
-              mbp.bids.emplace_back(std::move(result));
-              break;
+          if (aggressor_side != Side::UNDEFINED) {
+            auto &[order_id, last_qty] = orders_[offset];
+            if (last_qty == size) {
+              side = utils::invert(side);
+              auto result = MBPUpdate{
+                  .price = price,
+                  .quantity = static_cast<double>(size),
+                  .implied_quantity = NaN,
+                  .number_of_orders = utils::safe_cast(number_of_orders),
+                  .update_action = UpdateAction::TRADE,
+                  .price_level = {},
+              };
+              switch (side) {
+                using enum Side;
+                case UNDEFINED:
+                  assert(false);
+                  break;
+                case BUY:
+                  mbp.asks.emplace_back(std::move(result));
+                  break;
+                case SELL:
+                  mbp.bids.emplace_back(std::move(result));
+                  break;
+              }
+            }
           }
+          offset += number_of_orders;
         }
-        offset += number_of_orders;
       }
       dispatch_market_by_price_2(security_id, security);
     });
   }
+  */
   // mbo
   auto &mbo = shared_.get_mbo();
   auto dispatch_market_by_order_2 = [&](auto security_id, auto &security) {
@@ -1155,8 +1163,10 @@ void Incremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame const
           size_t offset_2 = 0;
           if (aggressor_side != Side::UNDEFINED) {
             auto &[order_id, last_qty] = orders_[offset + offset_2];
-            if (last_qty == size)
+            if (last_qty == size) {
               side = utils::invert(side);
+              // XXX HANS are we missing the part of an aggressive order that remains in the book?
+            }
             ++offset_2;
           }
           for (; offset_2 < number_of_orders; ++offset_2) {
