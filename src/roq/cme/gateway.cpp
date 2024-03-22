@@ -16,7 +16,7 @@ namespace cme {
 namespace {
 auto create_market_data_manager(auto &dispatcher, auto &settings, auto &shared, auto &stream_id) {
   auto options = market_data::Options{
-      .cache_all_reference_data = settings.cache.all_reference_data,
+      .cache_all_reference_data = settings.filter.all_reference_data,
       .enable_market_by_order = settings.common.enable_market_by_order,
       .mbp_to_mbo_clear_price_level = settings.test.mbp_to_mbo_clear_price_level,
       .filter_snapshot_from_incremental = settings.common.filter_snapshot_from_incremental,

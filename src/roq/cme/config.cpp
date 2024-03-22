@@ -39,7 +39,7 @@ auto create_gateway_settings(auto &settings) -> GatewaySettings {
       .mbp_min_trade_vol_multiplier = NaN,
       .mbp_allow_remove_non_existing = MBP_ALLOW_REMOVE_NON_EXISTING,
       .mbp_allow_price_inversion = settings.common.mbp_allow_price_inversion,
-      .mbp_checksum = settings.cache.mbp_checksum,
+      .mbp_checksum = settings.experimental.mbp_checksum,
       .oms_download_has_state = {},
       .oms_download_has_routing_id = {},
       .oms_request_id_type = OMS_REQUEST_ID_TYPE,
