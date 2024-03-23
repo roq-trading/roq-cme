@@ -14,16 +14,7 @@ Links
 * `iLink Documentation <https://www.cmegroup.com/confluence/display/EPICSANDBOX/iLink+3+Binary+Order+Entry/>`__
 
 
-Purpose
--------
-
-* Maintain network connectivity with the CME exchange
-* Route exchange updates to connected clients
-* Route client requests to the relevant exchange accounts
-* Stream all messages to an event-log
-
-
-Overview
+Supports
 --------
 
 .. grid::  2
@@ -40,6 +31,8 @@ Overview
         - |checkmark|
       * - Options
         -
+      * - Combos
+        -
 
   .. grid-item-card::  Market Data
 
@@ -52,9 +45,9 @@ Overview
         - |checkmark|
       * - Top of Book
         - |checkmark|
-      * - Market by Price (L2)
+      * - Market by Price
         - |checkmark|
-      * - Market by Order (L3)
+      * - Market by Order
         - |checkmark|
       * - Trade Summary
         - |checkmark|
@@ -87,65 +80,56 @@ Overview
       * - Funds
         -
 
-* Data center located in: Chicago, US
 
-
-Conda
------
+Installing
+----------
 
 * :ref:`Using Conda <tutorial-conda>`
 
-.. tab:: Install
+.. tab:: Stable
 
-  .. code-block:: bash
+  .. code-block:: shell
 
-    $ mamba install \
-      --channel https://roq-trading.com/conda/stable \
-      roq-cme
+     $ mamba install \
+           --channel https://roq-trading.com/conda/stable \
+           roq-cme
 
-.. tab:: Configure
+.. tab:: Unstable
 
-  .. code-block:: bash
+  .. code-block:: shell
 
-    $ cp $CONDA_PREFIX/share/roq-cme/config.toml $CONFIG_FILE_PATH
-
-    # Then modify $CONFIG_FILE_PATH to match your specific configuration
-
-.. tab:: Run
-
-  .. code-block:: bash
-
-    $ roq-cme \
-          --name "cme" \
-          --config_file "$CONFIG_FILE_PATH" \
-          --client_listen_address "$UNIX_SOCKET_PATH" \
-          --service_listen_address "$TCP_LISTEN_PORT" \
-          --flagfile "$FLAG_FILE"
+     $ mamba install \
+           --channel https://roq-trading.com/conda/unstable \
+           roq-cme
 
 
-Config
-------
+Using
+-----
 
-* :ref:`Common Config <gateway-config>`
+.. code-block:: shell
 
+   $ roq-cme \
+         --name "cme" \
+         --config_file $CONFIG_FILE_PATH \
+         --client_listen_address $UNIX_SOCKET_PATH \
+         --flagfile $ENVIRONMENT_FLAGFILE
+
+
+.. _roq-cme-flags:
 
 Flags
 -----
 
 * :ref:`Using Flags <abseil-cpp>`
-* :ref:`Common Flags <gateway-flags>`
+* :ref:`Gateway Flags <gateway-flags>`
 
-.. code-block:: bash
+.. code-block:: shell
 
    $ roq-cme --help
 
 .. tab:: Flags
 
    .. include:: flags/flags.rstinc
-
-.. tab:: Common
-
-   .. include:: flags/common.rstinc
 
 .. tab:: iLink
 
@@ -155,6 +139,10 @@ Flags
 
    .. include:: flags/multicast.rstinc
 
+.. tab:: Misc
+
+   .. include:: flags/misc.rstinc
+
 .. tab:: Test
 
    .. include:: flags/test.rstinc
@@ -163,7 +151,7 @@ Flags
 Environments
 ------------
 
-.. code-block:: bash
+.. code-block:: shell
 
   $ $CONDA_PREFIX/share/roq-cme/flags
 
@@ -177,6 +165,25 @@ join multicast streams and connect to specific MSGW end-points.
 
 The multicast addresses must be made available from a local network interface.
 The actual IP address of that interface must be provided with the :code:`--multicast_local_interface` flag.
+
+
+Configuration
+-------------
+
+* :ref:`Gateway Config <gateway-config>`
+
+.. code-block:: shell
+
+   $ $CONDA_PREFIX/share/roq-cme/config.toml
+
+.. important::
+
+   The template will be replaced when the software is upgraded.
+   Make a copy and modify to your needs.
+
+.. include:: config.toml
+   :code: toml
+
 
 
 Market Data
@@ -596,7 +603,7 @@ Tools
 roq-cme-import
 ~~~~~~~~~~~~~~
 
-.. code-block:: bash
+.. code-block:: shell
 
    roq-cme-pcap-import \
      --type pcap \
@@ -615,7 +622,7 @@ symbols matching the regex.
 roq-cme-filter
 ~~~~~~~~~~~~~~
 
-.. code-block:: bash
+.. code-block:: shell
 
    roq-cme-pcap-filter \
      --type tcpdump \

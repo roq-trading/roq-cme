@@ -13,7 +13,7 @@ namespace cme {
 
 Settings::Settings(args::Parser const &args)
     : server::flags::Settings{args, ROQ_PACKAGE_NAME, ROQ_BUILD_NUMBER}, flags::Flags{flags::Flags::create()},
-      common{flags::Common::create()}, multicast{flags::Multicast::create()}, ilink{flags::iLink::create()},
+      misc{flags::Misc::create()}, multicast{flags::Multicast::create()}, ilink{flags::iLink::create()},
       test{flags::Test::create()} {
   log::info("settings={}"sv, *this);
 }

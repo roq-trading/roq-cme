@@ -17,9 +17,9 @@ namespace {
 auto create_market_data_manager(auto &dispatcher, auto &settings, auto &shared, auto &stream_id) {
   auto options = market_data::Options{
       .cache_all_reference_data = settings.filter.all_reference_data,
-      .enable_market_by_order = settings.common.enable_market_by_order,
+      .enable_market_by_order = settings.misc.enable_market_by_order,
       .mbp_to_mbo_clear_price_level = settings.test.mbp_to_mbo_clear_price_level,
-      .filter_snapshot_from_incremental = settings.common.filter_snapshot_from_incremental,
+      .filter_snapshot_from_incremental = settings.misc.filter_snapshot_from_incremental,
       .local_interface = settings.multicast.local_interface,
       .multicast_timeout = settings.multicast.timeout,
   };
@@ -41,7 +41,7 @@ auto create_mdp_receivers(auto &settings, auto &context, auto &shared, auto &man
         std::make_unique<MDPReceiver>(context, shared, manager, channel_id, connection_type, Priority::SECONDARY));
   };
   for (auto channel_id : settings.multicast.channel_ids) {
-    if (std::empty(shared.settings.common.secdef_config_file)) {
+    if (std::empty(shared.settings.misc.secdef_config_file)) {
       helper_1(channel_id, mdp::ConnectionType::INSTRUMENT_DEFINITION);
     } else {
       log::warn("The instrument definitions channel is not used when the secdef file was chosen"sv);

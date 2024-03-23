@@ -44,7 +44,7 @@ R read_ilink_config(auto const &filename) {
 
 template <typename T, typename MS, typename D>
 void read_secdef(T &securities, MS &market_segments, D &dispatcher, auto &settings) {
-  auto config_file = settings.common.secdef_config_file;
+  auto config_file = settings.misc.secdef_config_file;
   if (std::empty(config_file))
     return;
   log::info(R"(Reading instrument definitions from "{}"... (*** can be very slow ***))"sv, config_file);

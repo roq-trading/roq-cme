@@ -47,7 +47,7 @@ return result;
 /*
 template <typename T, typename MS, typename D>
 void read_secdef(T &securities, MS &market_segments, D &dispatcher, auto &options) {
-  auto config_file = options.common.secdef_config_file;
+  auto config_file = options.misc.secdef_config_file;
   if (std::empty(config_file))
     return;
   log::info(R"(Reading instrument definitions from "{}"... (*** can be very slow ***))"sv, config_file);

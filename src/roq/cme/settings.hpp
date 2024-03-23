@@ -6,9 +6,9 @@
 
 #include "roq/server/flags/settings.hpp"
 
-#include "roq/cme/flags/common.hpp"
 #include "roq/cme/flags/flags.hpp"
 #include "roq/cme/flags/ilink.hpp"
+#include "roq/cme/flags/misc.hpp"
 #include "roq/cme/flags/multicast.hpp"
 #include "roq/cme/flags/test.hpp"
 
@@ -18,7 +18,7 @@ namespace cme {
 struct Settings final : public server::flags::Settings, public flags::Flags {
   explicit Settings(args::Parser const &);
 
-  flags::Common common;
+  flags::Misc misc;
   flags::Multicast multicast;
   flags::iLink ilink;
   flags::Test test;
@@ -35,13 +35,13 @@ struct fmt::formatter<roq::cme::Settings> {
     return fmt::format_to(
         context.out(),
         R"({{)"
-        R"(common={}, )"
+        R"(misc={}, )"
         R"(multicast={}, )"
         R"(ilink={}, )"
         R"(test={}, )"
         R"(server={})"
         R"(}})"sv,
-        value.common,
+        value.misc,
         value.multicast,
         value.ilink,
         value.test,
