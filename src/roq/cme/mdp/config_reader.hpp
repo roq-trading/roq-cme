@@ -27,6 +27,12 @@ struct ConfigReader final {
     std::string label;
     utils::unordered_set<std::string> products;
     utils::unordered_map<std::string, Connection> connections;
+
+    void clear() {
+      label.clear();
+      products.clear();
+      connections.clear();
+    }
   };
 
   struct Handler {

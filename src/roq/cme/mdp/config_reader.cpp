@@ -107,7 +107,7 @@ void ConfigReader::dispatch(Handler &handler, std::string_view const &buffer) {
         auto channel_id_2 = utils::from_chars<uint16_t>(channel_id_);
         handler_(channel_id_2, channel_);
         channel_id_.clear();
-        channel_ = {};
+        channel_.clear();
       } else {
         switch (connection_field_) {
           using enum ConnectionField;
