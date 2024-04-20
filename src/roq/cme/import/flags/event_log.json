@@ -1,0 +1,32 @@
+{
+  "name": "EventLog",
+  "type": "flags",
+  "prefix": "event_log_",
+  "values": [
+    {
+      "name": "output_file",
+      "type": "std::string",
+      "required": true,
+      "description": "Event-log output file."
+    },
+    {
+      "name": "dir",
+      "type": "std::string",
+      "description": "Event-log directory (optional)."
+    },
+    {
+      "name": "buffer_size",
+      "type": "uint32_t",
+      "required": true,
+      "default": 134217728,
+      "description": "Event-log output buffer size."
+    },
+    {
+      "name": "compression_level",
+      "type": "uint32_t",
+      "required": true,
+      "default": 4,
+      "description": "Event-log compression level."
+    }
+  ]
+}

@@ -2,13 +2,31 @@ set(TARGET_NAME ${PROJECT_NAME}-filter-flags)
 
 include(RoqAutogen)
 
+set(NAMESPACE "roq/cme/filter/flags")
+
 set(AUTOGEN_SCHEMAS flags.json)
+
+if(BUILD_DOCS)
+
+  roq_autodoc(
+    OUTPUT
+    AUTOGEN_DOCS
+    NAMESPACE
+    ${NAMESPACE}
+    OUTPUT_TYPE
+    "doc"
+    SOURCES
+    ${AUTOGEN_SCHEMAS})
+
+  add_custom_target(filter-autogen-docs ALL DEPENDS ${AUTOGEN_DOCS})
+
+endif()
 
 roq_autogen(
   OUTPUT
   AUTOGEN_HEADERS
   NAMESPACE
-  "roq/cme/filter/flags"
+  ${NAMESPACE}
   OUTPUT_TYPE
   "state"
   FILE_TYPE
@@ -16,13 +34,13 @@ roq_autogen(
   SOURCES
   ${AUTOGEN_SCHEMAS})
 
-add_custom_target(pcap-filter-autogen-headers ALL DEPENDS ${AUTOGEN_HEADERS})
+add_custom_target(filter-autogen-headers ALL DEPENDS ${AUTOGEN_HEADERS})
 
 roq_autogen(
   OUTPUT
   AUTOGEN_SOURCES
   NAMESPACE
-  "roq/cme/filter/flags"
+  ${NAMESPACE}
   OUTPUT_TYPE
   "state"
   FILE_TYPE
@@ -30,10 +48,17 @@ roq_autogen(
   SOURCES
   ${AUTOGEN_SCHEMAS})
 
-roq_gitignore(OUTPUT .gitignore SOURCES ${TARGET_NAME} ${AUTOGEN_HEADERS} ${AUTOGEN_SOURCES})
+roq_gitignore(
+  OUTPUT
+  .gitignore
+  SOURCES
+  ${TARGET_NAME}
+  ${AUTOGEN_DOCS}
+  ${AUTOGEN_HEADERS}
+  ${AUTOGEN_SOURCES})
 
 add_library(${TARGET_NAME} OBJECT ${AUTOGEN_SOURCES})
 
-add_dependencies(${TARGET_NAME} pcap-filter-autogen-headers)
+add_dependencies(${TARGET_NAME} filter-autogen-headers)
 
 target_link_libraries(${TARGET_NAME} PRIVATE roq-api::roq-api absl::flags)

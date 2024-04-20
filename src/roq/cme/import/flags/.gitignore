@@ -1,5 +1,17 @@
 !!! THIS FILE HAS BEEN AUTO-GENERATED !!!
 roq-cme-import-flags
 flags.rstinc
+cme.rstinc
+event_log.rstinc
+misc.rstinc
+test.rstinc
 flags.hpp
+cme.hpp
+event_log.hpp
+misc.hpp
+test.hpp
 flags.cpp
+cme.cpp
+event_log.cpp
+misc.cpp
+test.cpp

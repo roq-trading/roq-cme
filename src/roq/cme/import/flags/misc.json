@@ -1,0 +1,13 @@
+{
+  "name": "Misc",
+  "type": "flags",
+  "values": [
+    {
+      "name": "encode_buffer_size",
+      "type": "uint32_t",
+      "required": true,
+      "default": 16777216,
+      "description": "Encode buffer size."
+    }
+  ]
+}

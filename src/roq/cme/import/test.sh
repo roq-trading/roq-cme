@@ -24,11 +24,11 @@ fi
 # launch
 
 $PREFIX ./roq-cme-import \
-  --type pcap \
-  --config_file $CONFIG_FILE \
-  --channel_ids 344 \
   --name cme \
+  --type pcap \
+  --channel_ids 344 \
   --symbols $SYMBOLS \
-  --output_file test.roq \
-  --secdef_config_file $HOME/secdef.dat \
+  --cme_config_file $CONFIG_FILE \
+  --cme_secdef_file $HOME/secdef.dat \
+  --event_log_output_file test.roq \
   $@

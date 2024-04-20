@@ -71,7 +71,7 @@ auto create_market_data(auto &handler, auto &settings, auto &config, auto &secur
       .filter_snapshot_from_incremental = FILTER_SNAPSHOT_FROM_INCREMENTAL,
       .local_interface = LOCAL_INTERFACE,
       .multicast_timeout = MULTICAST_TIMEOUT,
-      .secdef_config_file = settings.secdef_config_file,
+      .secdef_config_file = settings.cme.secdef_file,
   };
   uint16_t stream_id = {};
   return market_data::Manager{handler, options, security_definitions, settings.channel_ids, config, stream_id};
@@ -94,12 +94,13 @@ auto convert(timeval ts) {
 // === IMPLEMENTATION ===
 
 Controller::Controller(Settings const &settings)
-    : settings_{settings}, config_{settings.config_file, false},
+    : settings_{settings}, config_{settings.cme.config_file, false},
       symbols_regex_{create_symbols_regex<decltype(symbols_regex_)>(settings.symbols)},
-      security_definitions_{*this, settings.secdef_config_file},
+      security_definitions_{*this, settings.cme.secdef_file},
       market_data_{create_market_data(*this, settings, config_, security_definitions_)},
-      encode_buffer_(settings.encode_buffer_size), mbp_depth_(settings.test_depth), mbo_depth_(settings.test_depth) {
-  log::info("test={}"sv, settings_.test_mbp_mbo);
+      encode_buffer_(settings.misc.encode_buffer_size), mbp_depth_(settings.test.depth),
+      mbo_depth_(settings.test.depth) {
+  log::info("test={}"sv, settings_.test.mbp_mbo);
 }
 
 void Controller::dispatch(std::string_view const &path) {
@@ -240,7 +241,7 @@ void Controller::operator()(Trace<MarketByPriceUpdate> const &event, [[maybe_unu
 void Controller::operator()(Trace<MarketByOrderUpdate> const &event, [[maybe_unused]] bool is_last) {
   // log::info("event={}"sv, event);
   append(event);
-  if (settings_.test_mbp_mbo)
+  if (settings_.test.mbp_mbo)
     DEBUG_compare(event.value.exchange, event.value.symbol);
 }
 
@@ -279,13 +280,13 @@ roq::cache::MarketByOrder &Controller::get_market_by_order(
 // helpers
 
 void Controller::create_producer(std::chrono::nanoseconds timestamp_utc) {
-  auto path = settings_.output_file;
+  auto path = settings_.event_log.output_file;
   auto paths = std::make_tuple<std::string, std::string, std::string>(std::string{path}, {}, {});
   if (std::empty(std::get<0>(paths))) {
     auto create_directories = true;
     auto create_symlink = false;
     paths = core::event_log::Producer::create_paths(
-        settings_.event_log_dir,
+        settings_.event_log.dir,
         Category::PUBLIC,
         settings_.name,
         timestamp_utc,
@@ -294,9 +295,9 @@ void Controller::create_producer(std::chrono::nanoseconds timestamp_utc) {
         create_symlink);
   }
   auto config = core::event_log::Producer::Config{
-      .input_buffer_size = settings_.event_log_buffer_size,
-      .output_buffer_size = settings_.event_log_buffer_size,
-      .compression_level = static_cast<uint8_t>(settings_.event_log_compression_level),
+      .input_buffer_size = settings_.event_log.buffer_size,
+      .output_buffer_size = settings_.event_log.buffer_size,
+      .compression_level = static_cast<uint8_t>(settings_.event_log.compression_level),
       .encoding = core::event_log::Encoding::FLATBUFFERS,
       .utimes_on_sync = false,
   };
@@ -351,7 +352,7 @@ void Controller::DEBUG_compare(std::string_view const &exchange, std::string_vie
   auto &market_by_price = get_market_by_price(exchange, symbol);
   auto &market_by_order = get_market_by_order(exchange, symbol);
   auto mbp_depth = market_by_price.extract(mbp_depth_);
-  market_by_order.extract(mbo_depth_, settings_.test_depth);
+  market_by_order.extract(mbo_depth_, settings_.test.depth);
   auto length = std::min(std::size(mbp_depth_), std::size(mbo_depth_));
   auto print = [](std::string_view prefix, auto lhs, auto rhs) {
     auto same = utils::compare(lhs, rhs) == 0;

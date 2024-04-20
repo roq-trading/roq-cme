@@ -5,17 +5,44 @@
 roq-cme
 =======
 
+.. tab:: Stable
 
-Links
------
+  .. code-block:: shell
 
-* `Website <https://www.cmegroup.com/>`__
-* `MDP Documentation <https://www.cmegroup.com/confluence/display/EPICSANDBOX/CME+MDP+3.0+Market+Data/>`__
-* `iLink Documentation <https://www.cmegroup.com/confluence/display/EPICSANDBOX/iLink+3+Binary+Order+Entry/>`__
+     $ mamba install \
+           --channel https://roq-trading.com/conda/stable \
+           roq-cme
 
+.. tab:: Unstable
+
+  .. code-block:: shell
+
+     $ mamba install \
+           --channel https://roq-trading.com/conda/unstable \
+           roq-cme
+
+
+:code:`roq-cme`
+---------------
+
+.. code-block:: shell
+
+   $ roq-cme [FLAGS]
+
+Description
+~~~~~~~~~~~
+
+:code:`roq-cme` is a gateway
+
+* Using the MDP3 (SBE/multicast) interface for market data.
+
+  * Supports MBOFD (Market by Order).
+  * Using both A and B channels for fastest access and to lower the probability of packet loss.
+
+* Using the iLink3 (SBE/TCP) interface for order management.
 
 Supports
---------
+~~~~~~~~
 
 .. grid::  2
   :gutter: 2
@@ -81,47 +108,10 @@ Supports
         -
 
 
-Installing
-----------
-
-* :ref:`Using Conda <tutorial-conda>`
-
-.. tab:: Stable
-
-  .. code-block:: shell
-
-     $ mamba install \
-           --channel https://roq-trading.com/conda/stable \
-           roq-cme
-
-.. tab:: Unstable
-
-  .. code-block:: shell
-
-     $ mamba install \
-           --channel https://roq-trading.com/conda/unstable \
-           roq-cme
-
-
-Using
------
-
-.. code-block:: shell
-
-   $ roq-cme \
-         --name "cme" \
-         --config_file $CONFIG_FILE_PATH \
-         --client_listen_address $UNIX_SOCKET_PATH \
-         --flagfile $ENVIRONMENT_FLAGFILE
-
-
 .. _roq-cme-flags:
 
 Flags
------
-
-* :ref:`Using Flags <abseil-cpp>`
-* :ref:`Gateway Flags <gateway-flags>`
+~~~~~
 
 .. code-block:: shell
 
@@ -149,7 +139,7 @@ Flags
 
 
 Environments
-------------
+~~~~~~~~~~~~
 
 .. code-block:: shell
 
@@ -168,9 +158,7 @@ The actual IP address of that interface must be provided with the :code:`--multi
 
 
 Configuration
--------------
-
-* :ref:`Gateway Config <gateway-config>`
+~~~~~~~~~~~~~
 
 .. code-block:: shell
 
@@ -187,7 +175,7 @@ Configuration
 
 
 Market Data
------------
+~~~~~~~~~~~
 
 .. tab:: Live
 
@@ -289,13 +277,13 @@ Market Data
 
 
 Statistics
-~~~~~~~~~~
+^^^^^^^^^^
 
 TBD
 
 
 Order Management
-----------------
+~~~~~~~~~~~~~~~~
 
 .. tab:: Live
 
@@ -387,7 +375,7 @@ Order Management
       -
 
 Order Types
-~~~~~~~~~~~
+^^^^^^^^^^^
 
 .. list-table::
   :header-rows: 1
@@ -404,7 +392,7 @@ Order Types
 
 
 Time in Force
-~~~~~~~~~~~~~
+^^^^^^^^^^^^^
 
 .. list-table::
   :header-rows: 1
@@ -427,7 +415,7 @@ Time in Force
 
 
 Position Effect
-~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^
 
 .. note::
 
@@ -435,7 +423,7 @@ Position Effect
 
 
 Execution Instructions
-~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^
 
 .. note::
 
@@ -443,7 +431,7 @@ Execution Instructions
 
 
 Templates
-~~~~~~~~~
+^^^^^^^^^
 
 .. note::
 
@@ -451,7 +439,7 @@ Templates
 
 
 Account Management
-------------------
+~~~~~~~~~~~~~~~~~~
 
 .. tab:: Live
 
@@ -497,7 +485,7 @@ Account Management
 
 
 Streams
--------
+~~~~~~~
 
 .. tab:: Instrument Definition
 
@@ -571,7 +559,7 @@ Streams
 
 
 Constraints
------------
+~~~~~~~~~~~
 
 * The OrderEntry (iLink) connections are established based on the provided list
   of market segments.
@@ -587,7 +575,7 @@ Constraints
 
 
 Comments
---------
+~~~~~~~~
 
 * :code:`ExternalLatency` is currently only published when receiving a heartbeat from the exchange.
 
@@ -597,55 +585,114 @@ Comments
   This should normally be expected to be the (average) price of the fill(s).
 
 
-Tools
------
-
-roq-cme-import
-~~~~~~~~~~~~~~
+:code:`roq-cme-import`
+----------------------
 
 .. code-block:: shell
 
-   roq-cme-pcap-import \
-     --type pcap \
-     --config_file config.xml \
-     --channel_ids 344 \
-     --name cme \
-     --symbols "^ZN[FGHJKMNQUVXZ][0-9]$" \
-     --output_file test.roq \
-     test.pcap
+   $ roq-cme-import [FLAGS] PCAP_FILE
 
-This will use :code:`config.xml` (from CME) and the :code:`channel_ids` to filter
-the :code:`test.pcap` file.
-The :codE:`test.roq` evnet-log will use gateway name :code:`cme` and include the
-symbols matching the regex.
+Description
+~~~~~~~~~~~
+
+:code:`roq-cme-import` is a tool to create a :code:`.roq` event-log by importing a :code:`.pcap` file.
+
+* Requires the :code:`config.xml` file (from CME's FTP site) to map IP addresses to channels.
+* Requires the :code:`secdef.dat` file (from CME's FTP site) if the :code:`.pcap` file does **not** contain the relevant instrument definitions.
+* Requires the :code:`.pcap` file to contain all incremental messages from CME's start-up (Sunday) if the recovery channels are **not** available.
+* Will not work if the :code:`.pcap` file has gaps and the recovery channels are **not** available.
 
 Flags
------
-
-* :ref:`Using Flags <abseil-cpp>`
-* :ref:`Gateway Flags <gateway-flags>`
+~~~~~
 
 .. code-block:: shell
 
-   $ roq-cme --help
+   $ roq-cme-import --help
 
 .. tab:: Flags
 
    .. include:: import/flags/flags.rstinc
 
+.. tab:: CME
+
+   .. include:: import/flags/cme.rstinc
+
+.. tab:: EventLog
+
+   .. include:: import/flags/event_log.rstinc
+
+.. tab:: Misc
+
+   .. include:: import/flags/misc.rstinc
+
+.. tab:: Test
+
+   .. include:: import/flags/test.rstinc
 
 
-roq-cme-filter
-~~~~~~~~~~~~~~
+Example
+~~~~~~~
 
 .. code-block:: shell
 
-   roq-cme-pcap-filter \
-     --type tcpdump \
-     --config_file config.xml \
-     --channel_ids 344
+   $ roq-cme-import \
+       --name "cme" \
+       --type "pcap" \
+       --channel_ids 344 \
+       --symbols "ZN[HMUZ][0-9]" \
+       --cme_config_file "config.xml" \
+       --cme_secdef_file "secdef.dat" \
+       --event_log_output_file "test.roq" \
+       all.pcap
+
+
+:code:`roq-cme-filter`
+----------------------
+
+.. code-block:: shell
+
+   $ roq-cme-filter [FLAGS]
+
+Description
+~~~~~~~~~~~
+
+:code:`roq-cme-filter` is a tool to generate the PCAP filter required to capture specific channels.
+
+Flags
+~~~~~
+
+.. code-block:: shell
+
+   $ roq-cme-filter --help
+
+.. tab:: Flags
+
+   .. include:: filter/flags/flags.rstinc
+
+Example
+~~~~~~~
+
+.. code-block:: shell
+
+   $ roq-cme-filter \
+       --type "tcpdump" \
+       --config_file "config.xml" \
+       --channel_ids 344
 
    (host 224.0.31.110 and port 14344) or (host 224.0.32.110 and port 15344) or (host 224.0.31.68 and port 14344) or (host 224.0.32.68 and port 15344) or (host 224.0.31.89 and port 14344) or (host 224.0.32.89 and port 15344) or (host 233.72.75.33 and port 23344) or (host 233.72.75.96 and port 22344)(dev)
 
 
 This will output a :code:`tcpdump` filter for :code:`channel_ids`.
+
+
+References
+----------
+
+* :ref:`Using Conda <tutorial-conda>`
+* :ref:`Using Flags <abseil-cpp>`
+* :ref:`Gateway Flags <gateway-flags>`
+* :ref:`Gateway Config <gateway-config>`
+* `CME's Website <https://www.cmegroup.com/>`__
+* `CME's FTP site <https://www.cmegroup.com/ftp/>`__
+* `CME's MDP3 Documentation <https://www.cmegroup.com/confluence/display/EPICSANDBOX/CME+MDP+3.0+Market+Data/>`__
+* `CME's iLink3 Documentation <https://www.cmegroup.com/confluence/display/EPICSANDBOX/iLink+3+Binary+Order+Entry/>`__

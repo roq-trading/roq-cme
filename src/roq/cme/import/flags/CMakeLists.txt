@@ -4,7 +4,7 @@ include(RoqAutogen)
 
 set(NAMESPACE "roq/cme/import/flags")
 
-set(AUTOGEN_SCHEMAS flags.json)
+set(AUTOGEN_SCHEMAS flags.json cme.json event_log.json misc.json test.json)
 
 if(BUILD_DOCS)
 

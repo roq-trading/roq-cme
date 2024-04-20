@@ -3,91 +3,35 @@
   "type": "flags",
   "values": [
     {
-      "name": "type",
-      "type": "std::string",
-      "required": true,
-      "description": "type of file, e.g. pcap"
-    },
-    {
       "name": "name",
       "type": "std::string",
       "required": true,
-      "description": "gateway name"
+      "description": "A name used to identify the service."
     },
     {
-      "name": "config_file",
+      "name": "type",
       "type": "std::string",
-      "validator": "roq::flags::validators::Path",
       "required": true,
-      "description": "config file (path)"
+      "default": "pcap",
+      "description": "Type of input file (only support type is :code:`pcap`)."
     },
     {
       "name": "channel_ids",
       "type": "std::vector<uint16_t>",
       "required": true,
-      "description": "Comma-separated list of multicast channels, e.g. 310"
-    },
-    {
-      "name": "secdef_config_file",
-      "type": "std::string",
-      "validator": "roq::flags::validators::Path",
-      "description": "config file (path)"
+      "description": "Comma-separated list of multicast channels to include."
     },
     {
       "name": "symbols",
       "type": "std::vector<std::string>",
-      "description": "Comma-separated list of symbols (regex)"
+      "description": "Comma-separated list of symbols (regex) to include."
     },
     {
       "name": "cache_all_reference_data",
       "type": "bool",
       "default": false,
-      "description": "Cache all reference data?"
-    },
-    {
-      "name": "event_log_dir",
-      "type": "std::string",
-      "description": "event-log directory"
-    },
-    {
-      "name": "output_file",
-      "type": "std::string",
-      "required": true,
-      "description": "output file"
-    },
-    {
-      "name": "event_log_buffer_size",
-      "type": "uint32_t",
-      "required": true,
-      "default": 134217728,
-      "description": "event-log output buffer size (bytes)"
-    },
-    {
-      "name": "event_log_compression_level",
-      "type": "uint32_t",
-      "required": true,
-      "default": 4,
-      "description": "event-log compression level"
-    },
-    {
-      "name": "encode_buffer_size",
-      "type": "uint32_t",
-      "required": true,
-      "default": 16777216,
-      "description": "Encode buffer size"
-    },
-    {
-      "name": "test_mbp_mbo",
-      "type": "bool",
-      "default": false,
-      "description": "Test"
-    },
-    {
-      "name": "test_depth",
-      "type": "uint32_t",
-      "required": true,
-      "default": 10,
-      "description": "Test"
+      "description":
+          "This flag allows you (opt-in) to cache all reference data including symbols that would normally be discarded due to regex matching."
     }
   ]
 }

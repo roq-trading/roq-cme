@@ -10,7 +10,9 @@ namespace import {
 
 // === IMPLEMENTATION ===
 
-Settings::Settings(args::Parser const &) : flags::Flags{flags::Flags::create()} {
+Settings::Settings(args::Parser const &)
+    : flags::Flags{flags::Flags::create()}, cme{flags::CME::create()}, event_log{flags::EventLog::create()},
+      misc{flags::Misc::create()}, test{flags::Test::create()} {
 }
 
 }  // namespace import
