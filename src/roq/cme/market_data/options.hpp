@@ -19,6 +19,8 @@ struct Options final {
   // network
   std::string_view local_interface;
   std::chrono::nanoseconds multicast_timeout = {};
+  // misc
+  std::string_view secdef_config_file;
 };
 
 }  // namespace market_data

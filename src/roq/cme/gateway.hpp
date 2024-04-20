@@ -12,6 +12,7 @@
 #include "roq/io/context.hpp"
 
 #include "roq/cme/market_data/manager.hpp"
+#include "roq/cme/market_data/security_definitions.hpp"
 
 #include "roq/cme/account.hpp"
 #include "roq/cme/config.hpp"
@@ -25,7 +26,9 @@
 namespace roq {
 namespace cme {
 
-struct Gateway final : public server::Handler, public OrderEntry::Handler {
+struct Gateway final : public server::Handler,
+                       public market_data::SecurityDefinitions::Dispatcher,
+                       public OrderEntry::Handler {
   Gateway(server::Dispatcher &, Settings const &, Config const &, io::Context &);
 
   Gateway(Gateway &&) = delete;
@@ -62,6 +65,9 @@ struct Gateway final : public server::Handler, public OrderEntry::Handler {
   void operator()(Trace<StreamStatus> const &) override;
   void operator()(Trace<ExternalLatency> const &) override;
 
+  // market_data::SecurityDefinitions::Dispatcher
+  bool discard_symbol(std::string_view const &name) override { return dispatcher_.discard_symbol(name); }
+
   // utilities
 
   template <typename... Args>
@@ -76,11 +82,12 @@ struct Gateway final : public server::Handler, public OrderEntry::Handler {
   // io
   io::Context &context_;
   // shared
+  market_data::SecurityDefinitions security_definitions_;
   Shared shared_;
   // seed
   uint16_t stream_id_ = {};
   // mdp
-  market_data::Manager manager_;
+  market_data::Manager market_data_;
   // streams
   std::vector<std::unique_ptr<MDPReceiver>> mdp_receivers_;
   utils::unordered_map<std::string, std::unique_ptr<OrderEntry>> order_entry_;

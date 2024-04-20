@@ -213,7 +213,7 @@ void MBOFDMarketRecovery::operator()(
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("snapshot_full_refresh_order_book_53={}, frame={}"sv, value, frame);
   auto security_id = value.securityID();
-  shared_.get_security(security_id, [&](auto &security) {
+  shared_.security_definitions.get_security(security_id, [&](auto &security) {
     if (!security.mbo.resubscribe)
       return;
     auto last_msg_seq_num_processed = value.lastMsgSeqNumProcessed();

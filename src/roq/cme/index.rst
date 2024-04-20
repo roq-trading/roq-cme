@@ -619,6 +619,22 @@ the :code:`test.pcap` file.
 The :codE:`test.roq` evnet-log will use gateway name :code:`cme` and include the
 symbols matching the regex.
 
+Flags
+-----
+
+* :ref:`Using Flags <abseil-cpp>`
+* :ref:`Gateway Flags <gateway-flags>`
+
+.. code-block:: shell
+
+   $ roq-cme --help
+
+.. tab:: Flags
+
+   .. include:: import/flags/flags.rstinc
+
+
+
 roq-cme-filter
 ~~~~~~~~~~~~~~
 

@@ -35,7 +35,7 @@ namespace {
 template <typename Callback>
 void create_security(auto &shared, auto &value, Callback callback) {
   auto security_id = value.securityID();
-  if (shared.has_security(security_id))
+  if (shared.security_definitions.has_security(security_id))
     return;
   auto market_segment_id = value.marketSegmentID();
   auto security_exchange = mdp::get_string_view(value.securityExchange(), value.securityExchangeLength());
@@ -49,7 +49,7 @@ void create_security(auto &shared, auto &value, Callback callback) {
       .display_factor = display_factor,
       .discard = discard,
   };
-  shared.create_security(
+  shared.security_definitions.create_security(
       security_group, market_segment_id, security_id, std::move(security), [&](auto &security) { callback(security); });
 }
 }  // namespace

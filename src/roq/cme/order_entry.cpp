@@ -793,7 +793,7 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportNew522> const &event
     if (order_id) {
       auto external_order_id = fmt::format("{}"sv, order_id);
       auto security_id = get_security_id(value);
-      if (shared_.get_security(security_id, [&](auto &security) {
+      if (shared_.security_definitions.get_security(security_id, [&](auto &security) {
             auto [type, user_id, order_id] = decode_order_request_id(value.orderRequestID());
             log::info("DEBUG type={}, user_id={}, order_id={}"sv, type, user_id, order_id);
             if (type != RequestType::CREATE_ORDER) [[unlikely]]
@@ -860,7 +860,7 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportTradeOutright525> co
     if (order_id) {
       auto external_order_id = fmt::format("{}"sv, order_id);
       auto security_id = get_security_id(value);
-      if (shared_.get_security(security_id, [&](auto &security) {
+      if (shared_.security_definitions.get_security(security_id, [&](auto &security) {
             auto order_update = order_update_from_execution_report(value, security, external_order_id);
             auto user_id = SOURCE_NONE;
             auto order_id = ORDER_ID_NONE;
@@ -955,7 +955,7 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportModify531> const &ev
     if (order_id) {
       auto external_order_id = fmt::format("{}"sv, order_id);
       auto security_id = get_security_id(value);
-      if (shared_.get_security(security_id, [&](auto &security) {
+      if (shared_.security_definitions.get_security(security_id, [&](auto &security) {
             auto [type, user_id, order_id] = decode_order_request_id(value.orderRequestID());
             log::info("DEBUG type={}, user_id={}, order_id={}"sv, type, user_id, order_id);
             if (type != RequestType::MODIFY_ORDER) [[unlikely]]
@@ -994,7 +994,7 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportStatus532> const &ev
     if (order_id) {
       auto external_order_id = fmt::format("{}"sv, order_id);
       auto security_id = get_security_id(value);
-      if (shared_.get_security(security_id, [&](auto &security) {
+      if (shared_.security_definitions.get_security(security_id, [&](auto &security) {
             auto order_update = order_update_from_execution_report(value, security, external_order_id);
             auto callback = []([[maybe_unused]] auto &order) {};
             Trace event_2{trace_info, order_update};
@@ -1021,7 +1021,7 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportCancel534> const &ev
     if (order_id) {
       auto external_order_id = fmt::format("{}"sv, order_id);
       auto security_id = get_security_id(value);
-      if (shared_.get_security(security_id, [&](auto &security) {
+      if (shared_.security_definitions.get_security(security_id, [&](auto &security) {
             auto [type, user_id, order_id] = decode_order_request_id(value.orderRequestID());
             log::info("DEBUG type={}, user_id={}, order_id={}"sv, type, user_id, order_id);
             if (type != RequestType::CANCEL_ORDER) [[unlikely]]
@@ -1527,9 +1527,9 @@ void OrderEntry::send_order_mass_status_request() {
 //   undoc: execution mode must be x0 (NULL results in reject reason 109)
 void OrderEntry::send_new_order_single(
     CreateOrder const &create_order, server::oms::Order const &order, std::string_view const &request_id) {
-  if (shared_.find_security_id(market_segment_id_, order.symbol, [&](auto security_id) {
+  if (shared_.security_definitions.find_security_id(market_segment_id_, order.symbol, [&](auto security_id) {
         log::info("DEBUG found security_id={}"sv, security_id);
-        if (shared_.get_security(security_id, [&](auto &security) {
+        if (shared_.security_definitions.get_security(security_id, [&](auto &security) {
               if (create_order.exchange != security.exchange) [[unlikely]] {
                 throw server::oms::Rejected{
                     Origin::GATEWAY, Error::INVALID_EXCHANGE, "Expected: {}"sv, security.exchange};
@@ -1592,7 +1592,7 @@ void OrderEntry::send_new_order_single(
 void OrderEntry::send_order_cancel_replace_request(ModifyOrder const &modify_order, server::oms::Order const &order) {
   log::info("DEBUG modify_order={}"sv, modify_order);
   log::info("DEBUG order={}"sv, order);
-  if (shared_.find_security_id(market_segment_id_, order.symbol, [&](auto security_id) {
+  if (shared_.security_definitions.find_security_id(market_segment_id_, order.symbol, [&](auto security_id) {
         log::info("DEBUG found security_id={}"sv, security_id);
         auto order_qty = get_quantity(modify_order.quantity);
         auto side = map(order.side);
@@ -1646,7 +1646,7 @@ void OrderEntry::send_order_cancel_replace_request(ModifyOrder const &modify_ord
 void OrderEntry::send_order_cancel_request(CancelOrder const &cancel_order, server::oms::Order const &order) {
   log::info("DEBUG cancel_order={}"sv, cancel_order);
   log::info("DEBUG order={}"sv, order);
-  if (shared_.find_security_id(market_segment_id_, order.symbol, [&](auto security_id) {
+  if (shared_.security_definitions.find_security_id(market_segment_id_, order.symbol, [&](auto security_id) {
         log::info("DEBUG found security_id={}"sv, security_id);
         auto order_request_id = encode_order_request_id(RequestType::CANCEL_ORDER, order.user_id, order.order_id);
         auto side = map(order.side);

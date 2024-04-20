@@ -7,6 +7,7 @@ set(SOURCES
     manager.cpp
     mbofd_market_recovery.cpp
     mbp_market_recovery.cpp
+    security_definitions.cpp
     shared.cpp)
 
 add_library(${TARGET_NAME} OBJECT ${SOURCES})

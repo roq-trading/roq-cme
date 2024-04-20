@@ -19,19 +19,18 @@
 
 #include "roq/cme/ilink/config_reader.hpp"
 
+#include "roq/cme/market_data/security_definitions.hpp"
+
 namespace roq {
 namespace cme {
 
 struct Shared final {
-  server::Dispatcher &dispatcher_;
-  Settings const &settings;
-
-  mdp::Config mdp_config_;
-
- private:
-  utils::unordered_map<uint8_t, ilink::ConfigReader::MarketSegment> ilink_config_;
-
  public:
+  Shared(server::Dispatcher &, Settings const &, market_data::SecurityDefinitions &);
+
+  Shared(Shared &&) = default;
+  Shared(Shared const &) = delete;
+
   template <typename Callback>
   bool get_market_segment(uint8_t market_segment_id, Callback callback) {
     auto iter = ilink_config_.find(market_segment_id);
@@ -41,41 +40,7 @@ struct Shared final {
     return true;
   }
 
-  utils::unordered_map<int32_t, tools::Security> securities;
-  utils::unordered_map<std::string, utils::unordered_set<int32_t>> security_groups;
-  utils::unordered_map<uint8_t, utils::unordered_map<std::string, int32_t>> market_segments;
-
- private:
-  struct {
-    std::vector<MBPUpdate> bids, asks;
-    auto &clear() {
-      bids.clear();
-      asks.clear();
-      return *this;
-    }
-    bool empty() const { return std::empty(bids) && std::empty(asks); }
-  } mbp;
-  struct {
-    std::vector<MBOUpdate> orders;
-    auto &clear() {
-      orders.clear();
-      return *this;
-    }
-    bool empty() const { return std::empty(orders); }
-  } mbo;
-  std::vector<Trade> trades;
-  std::vector<Statistics> statistics;
-  std::vector<Fill> fills;
-
- public:
-  Shared(server::Dispatcher &, Settings const &);
-
-  Shared(Shared &&) = default;
-  Shared(Shared const &) = delete;
-
   std::pair<std::string, uint16_t> get_multicast_config(uint16_t channel_id, mdp::ConnectionType, Priority) const;
-
-  auto discard_symbol(std::string_view const &name) const { return dispatcher_.discard_symbol(name); }
 
   template <typename... Args>
   auto update_order(Args &&...args) {
@@ -87,105 +52,23 @@ struct Shared final {
     return dispatcher_(std::forward<Args>(args)...);
   }
 
-  // security
-
-  bool has_security(int32_t security_id) { return securities.find(security_id) != std::end(securities); }
-
-  template <typename Callback>
-  void create_security(
-      std::string_view const &security_group,
-      uint8_t market_segment_id,
-      int32_t security_id,
-      tools::Security &&security,
-      Callback callback) {
-    if (!security.discard) {
-      security_groups[security_group].insert(security_id);
-      market_segments[market_segment_id].try_emplace(static_cast<std::string_view>(security.symbol), security_id);
-    }
-    auto iter = securities.try_emplace(security_id, std::move(security)).first;
-    callback((*iter).second);
-  }
-
-  template <typename Callback>
-  bool get_security(int32_t security_id, Callback callback) {
-    auto iter = securities.find(security_id);
-    if (iter == std::end(securities))
-      return false;
-    auto &security = (*iter).second;
-    if (security.discard)
-      return false;
-    callback(security);
-    return true;
-  }
-
-  template <typename Callback>
-  bool get_security_incl_discard(int32_t security_id, Callback callback) {
-    auto iter = securities.find(security_id);
-    if (iter == std::end(securities))
-      return false;
-    auto &security = (*iter).second;
-    callback(security);
-    return true;
-  }
-
-  template <typename Callback>
-  void get_securities(Callback callback) {
-    for (auto &[security_id, security] : securities)
-      if (!security.discard)
-        callback(security);
-  }
-
-  // security group
-
-  template <typename Callback>
-  bool get_security_group(std::string_view const &security_group, Callback callback) {
-    auto iter = security_groups.find(security_group);
-    if (iter == std::end(security_groups))
-      return false;
-    auto &security_ids = (*iter).second;
-    for (auto &security_id : security_ids)
-      callback(security_id);
-    return true;
-  }
-
-  // symbol
-
-  template <typename Callback>
-  bool find_security_id(uint8_t market_segment_id, std::string_view const &symbol, Callback callback) {
-    auto iter_1 = market_segments.find(market_segment_id);
-    if (iter_1 == std::end(market_segments))
-      return false;
-    auto &symbols = (*iter_1).second;
-    auto iter_2 = symbols.find(symbol);
-    if (iter_2 == std::end(symbols))
-      return false;
-    callback((*iter_2).second);
-    return true;
-  }
-
-  // cache
-
-  auto &get_mbp() { return mbp.clear(); }
-
-  auto &get_mbo() { return mbo.clear(); }
-
-  auto &get_trades() {
-    trades.clear();
-    return trades;
-  }
-
-  auto &get_statistics() {
-    statistics.clear();
-    return statistics;
-  }
-
   auto &get_fills() {
-    fills.clear();
-    return fills;
+    fills_.clear();
+    return fills_;
   }
 
-  // buffer
+ private:
+  server::Dispatcher &dispatcher_;
+
+ public:
+  Settings const &settings;
+  market_data::SecurityDefinitions &security_definitions;
   std::vector<std::byte> buffer;
+  mdp::Config mdp_config;
+
+ private:
+  utils::unordered_map<uint8_t, ilink::ConfigReader::MarketSegment> ilink_config_;
+  std::vector<Fill> fills_;
 };
 
 }  // namespace cme

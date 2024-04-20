@@ -12,6 +12,7 @@ target_link_libraries(
           ${PROJECT_NAME}-tools
           ${PROJECT_NAME}-mdp
           ${PROJECT_NAME}-market_data
+          ${PROJECT_NAME}-secdef
           roq-core::roq-core
           roq-logging::roq-logging
           roq-logging::roq-logging-flags

@@ -22,6 +22,7 @@
 #include "roq/cme/mdp/connection_type.hpp"
 
 #include "roq/cme/market_data/manager.hpp"
+#include "roq/cme/market_data/security_definitions.hpp"
 
 #include "roq/cme/import/settings.hpp"
 
@@ -29,7 +30,7 @@ namespace roq {
 namespace cme {
 namespace import {
 
-struct Controller final : public server::md::Dispatcher {
+struct Controller final : public server::md::Dispatcher, public market_data::SecurityDefinitions::Dispatcher {
   explicit Controller(Settings const &);
 
   Controller(Controller const &) = delete;
@@ -39,7 +40,7 @@ struct Controller final : public server::md::Dispatcher {
 
  protected:
   // market_data::Dispatcher
-  bool discard_symbol(std::string_view const &symbol) override;
+  bool discard_symbol(std::string_view const &symbol) override;  // note! multiple
   void operator()(Trace<StreamStatus> const &) override;
   void operator()(Trace<ExternalLatency> const &) override;
   void operator()(Trace<RateLimitsUpdate> const &) override;
@@ -69,9 +70,10 @@ struct Controller final : public server::md::Dispatcher {
  private:
   Settings const &settings_;
   mdp::Config config_;
-  market_data::Manager market_data_;
   std::vector<utils::regex::Pattern> const symbols_regex_;
   utils::unordered_map<std::string, bool> discard_symbol_;
+  market_data::SecurityDefinitions security_definitions_;
+  market_data::Manager market_data_;
   std::unique_ptr<core::event_log::Producer> producer_;
   std::vector<std::byte> encode_buffer_;
   UUID const source_session_id_ = {};

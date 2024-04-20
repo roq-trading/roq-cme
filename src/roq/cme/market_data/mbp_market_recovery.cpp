@@ -237,7 +237,7 @@ void MBPMarketRecovery::operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("snapshot_full_refresh_52={}, frame={}"sv, value, frame);
   auto security_id = value.securityID();
-  shared_.get_security(security_id, [&](auto &security) {
+  shared_.security_definitions.get_security(security_id, [&](auto &security) {
     if (!security.mbp.resubscribe)
       return;
     auto last_msg_seq_num_processed = value.lastMsgSeqNumProcessed();
@@ -267,7 +267,7 @@ void MBPMarketRecovery::operator()(Trace<cme_mdp::SnapshotFullRefreshLongQty69> 
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("snapshot_full_refresh_long_qty_69={}, frame={}"sv, value, frame);
   auto security_id = value.securityID();
-  shared_.get_security(security_id, [&](auto &security) {
+  shared_.security_definitions.get_security(security_id, [&](auto &security) {
     if (!security.mbp.resubscribe)
       return;
     auto last_msg_seq_num_processed = value.lastMsgSeqNumProcessed();

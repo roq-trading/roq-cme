@@ -44,12 +44,26 @@ auto const LOCAL_INTERFACE = "pcap"sv;
 auto const MULTICAST_TIMEOUT = 10s;
 std::vector<core::event_log::User> const USERS;
 auto const TIMER_FREQUENCY = 100ms;
+
+auto const GATEWAY_SETTINGS = GatewaySettings{
+    .supports = {},
+    .mbp_max_depth = 10,
+    .mbp_tick_size_multiplier = NaN,
+    .mbp_min_trade_vol_multiplier = NaN,
+    .mbp_allow_remove_non_existing = false,
+    .mbp_allow_price_inversion = false,
+    .mbp_checksum = {},
+    .oms_download_has_state = {},
+    .oms_download_has_routing_id = {},
+    .oms_request_id_type = {},
+    .oms_cancel_all_orders = {},
+};
 }  // namespace
 
 // === HELPERS ===
 
 namespace {
-auto create_market_data(auto &handler, auto &settings, auto &config) {
+auto create_market_data(auto &handler, auto &settings, auto &config, auto &security_definitions) {
   auto options = market_data::Options{
       .cache_all_reference_data = settings.cache_all_reference_data,
       .enable_market_by_order = ENABLE_MARKET_BY_ORDER,
@@ -57,9 +71,10 @@ auto create_market_data(auto &handler, auto &settings, auto &config) {
       .filter_snapshot_from_incremental = FILTER_SNAPSHOT_FROM_INCREMENTAL,
       .local_interface = LOCAL_INTERFACE,
       .multicast_timeout = MULTICAST_TIMEOUT,
+      .secdef_config_file = settings.secdef_config_file,
   };
   uint16_t stream_id = {};
-  return market_data::Manager{handler, options, settings.channel_ids, config, stream_id};
+  return market_data::Manager{handler, options, security_definitions, settings.channel_ids, config, stream_id};
 }
 
 template <typename R>
@@ -80,8 +95,9 @@ auto convert(timeval ts) {
 
 Controller::Controller(Settings const &settings)
     : settings_{settings}, config_{settings.config_file, false},
-      market_data_{create_market_data(*this, settings, config_)},
       symbols_regex_{create_symbols_regex<decltype(symbols_regex_)>(settings.symbols)},
+      security_definitions_{*this, settings.secdef_config_file},
+      market_data_{create_market_data(*this, settings, config_, security_definitions_)},
       encode_buffer_(settings.encode_buffer_size), mbp_depth_(settings.test_depth), mbo_depth_(settings.test_depth) {
   log::info("test={}"sv, settings_.test_mbp_mbo);
 }
@@ -242,8 +258,7 @@ roq::cache::MarketByPrice &Controller::get_market_by_price(
     [[maybe_unused]] std::string_view const &exchange, std::string_view const &symbol) {
   auto iter = market_by_price_.find(symbol);
   if (iter == std::end(market_by_price_)) {
-    GatewaySettings gateway_settings;  // XXX
-    auto market_by_price = market::mbp::Factory::create(exchange, symbol, gateway_settings);
+    auto market_by_price = market::mbp::Factory::create(exchange, symbol, GATEWAY_SETTINGS);
     auto res = market_by_price_.emplace(symbol, std::move(market_by_price));
     iter = res.first;
   }
@@ -254,8 +269,7 @@ roq::cache::MarketByOrder &Controller::get_market_by_order(
     [[maybe_unused]] std::string_view const &exchange, std::string_view const &symbol) {
   auto iter = market_by_order_.find(symbol);
   if (iter == std::end(market_by_order_)) {
-    GatewaySettings gateway_settings;  // XXX
-    auto market_by_order = market::mbo::Factory::create(exchange, symbol, gateway_settings);
+    auto market_by_order = market::mbo::Factory::create(exchange, symbol, GATEWAY_SETTINGS);
     auto res = market_by_order_.emplace(symbol, std::move(market_by_order));
     iter = res.first;
   }

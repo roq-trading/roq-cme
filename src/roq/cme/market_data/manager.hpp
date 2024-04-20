@@ -6,6 +6,8 @@
 
 #include "roq/api.hpp"
 
+#include "roq/metrics/writer.hpp"
+
 #include "roq/server/md/dispatcher.hpp"
 
 #include "roq/cme/mdp/config.hpp"
@@ -19,6 +21,7 @@
 #include "roq/cme/market_data/instrument_definition.hpp"
 #include "roq/cme/market_data/mbofd_market_recovery.hpp"
 #include "roq/cme/market_data/mbp_market_recovery.hpp"
+#include "roq/cme/market_data/security_definitions.hpp"
 
 namespace roq {
 namespace cme {
@@ -28,6 +31,7 @@ struct Manager final {
   Manager(
       server::md::Dispatcher &,
       Options const &,
+      SecurityDefinitions &,
       std::span<uint16_t const> const &channel_ids,
       mdp::Config const &,
       uint16_t &stream_id);
@@ -37,6 +41,8 @@ struct Manager final {
   void operator()(Event<Start> const &);
   void operator()(Event<Stop> const &);
   void operator()(Event<Timer> const &);
+
+  void operator()(metrics::Writer &);
 
   void dispatch(
       uint16_t channel_id, mdp::ConnectionType, Priority, std::span<std::byte const> const &payload, TraceInfo const &);
@@ -59,10 +65,12 @@ struct Manager final {
     MBPMarketRecovery mbp_market_recovery_2;
     MBOFDMarketRecovery mbofd_market_recovery_1;
     MBOFDMarketRecovery mbofd_market_recovery_2;
+    Incremental::Cache incremental_cache;
     Incremental incremental_1;
     Incremental incremental_2;
   };
   utils::unordered_map<uint16_t, Channel2> channels_;
+  std::string const secdef_config_file_;
 };
 
 }  // namespace market_data

@@ -14,7 +14,8 @@ namespace cme {
 // === HELPERS ===
 
 namespace {
-auto create_market_data_manager(auto &dispatcher, auto &settings, auto &shared, auto &stream_id) {
+auto create_market_data_manager(
+    auto &dispatcher, auto &settings, auto &security_definitions, auto &shared, auto &stream_id) {
   auto options = market_data::Options{
       .cache_all_reference_data = settings.filter.all_reference_data,
       .enable_market_by_order = settings.misc.enable_market_by_order,
@@ -22,8 +23,10 @@ auto create_market_data_manager(auto &dispatcher, auto &settings, auto &shared, 
       .filter_snapshot_from_incremental = settings.misc.filter_snapshot_from_incremental,
       .local_interface = settings.multicast.local_interface,
       .multicast_timeout = settings.multicast.timeout,
+      .secdef_config_file = settings.misc.secdef_config_file,
   };
-  return market_data::Manager{dispatcher, options, settings.multicast.channel_ids, shared.mdp_config_, stream_id};
+  return market_data::Manager{
+      dispatcher, options, security_definitions, settings.multicast.channel_ids, shared.mdp_config, stream_id};
 }
 
 template <typename R>
@@ -77,11 +80,11 @@ R create_order_entry(auto &gateway, auto &context, auto &stream_id, auto &accoun
             auto uri = io::web::URI::create("tcp"sv, market_segment.primary_host_ip, shared.settings.ilink.port);
             log::info("DEBUG market_segment_id={}, uri={}"sv, market_segment_id, uri);
             // XXX **not** by account
-            for (auto &[name, account] : accounts)
-              result.try_emplace(
-                  name,
-                  std::make_unique<OrderEntry>(
-                      gateway, context, ++stream_id, *account, shared, market_segment_id, uri));
+            for (auto &[name, account] : accounts) {
+              auto obj =
+                  std::make_unique<OrderEntry>(gateway, context, ++stream_id, *account, shared, market_segment_id, uri);
+              result.try_emplace(name, std::move(obj));
+            }
           })) {
       } else {
         log::fatal("Unexpected: can't find market_segment_id={}"sv, market_segment_id);
@@ -96,8 +99,10 @@ R create_order_entry(auto &gateway, auto &context, auto &stream_id, auto &accoun
 
 Gateway::Gateway(server::Dispatcher &dispatcher, Settings const &settings, Config const &config, io::Context &context)
     : dispatcher_{dispatcher}, accounts_{create_accounts<decltype(accounts_)>(config)}, context_{context},
-      shared_{dispatcher, settings}, manager_{create_market_data_manager(dispatcher_, settings, shared_, stream_id_)},
-      mdp_receivers_{create_mdp_receivers<decltype(mdp_receivers_)>(settings, context_, shared_, manager_)},
+      security_definitions_{*this, settings.misc.secdef_config_file},
+      shared_{dispatcher, settings, security_definitions_},
+      market_data_{create_market_data_manager(dispatcher_, settings, security_definitions_, shared_, stream_id_)},
+      mdp_receivers_{create_mdp_receivers<decltype(mdp_receivers_)>(settings, context_, shared_, market_data_)},
       order_entry_{create_order_entry<decltype(order_entry_)>(*this, context_, stream_id_, accounts_, shared_)} {
 }
 
@@ -167,6 +172,7 @@ void Gateway::operator()(Trace<ExternalLatency> const &event) {
 template <typename... Args>
 void Gateway::dispatch(Args &&...args) {
   auto helper = [&](auto &target) { target(std::forward<Args>(args)...); };
+  helper(market_data_);
   for (auto &[_, item] : order_entry_)
     helper(*item);
 }

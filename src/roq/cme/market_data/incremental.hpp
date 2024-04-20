@@ -15,7 +15,12 @@ namespace cme {
 namespace market_data {
 
 struct Incremental final : public mdp::Parser::Handler {
-  Incremental(Shared &, Channel &, uint16_t stream_id, mdp::Config const &, uint16_t channel_id, Priority);
+  struct Cache final {
+    std::vector<MBPUpdate> bids, asks;
+    std::vector<MBOUpdate> orders;
+  };
+
+  Incremental(Shared &, Cache &, Channel &, uint16_t stream_id, mdp::Config const &, uint16_t channel_id, Priority);
 
   void operator()(Event<Start> const &);
   void operator()(Event<Stop> const &);
@@ -69,7 +74,8 @@ struct Incremental final : public mdp::Parser::Handler {
       auto exchange_time_utc,
       auto sending_time_utc,
       auto &bids,
-      auto &asks);
+      auto &asks,
+      bool is_snapshot);
 
   void dispatch_market_by_price_stale(
       auto &trace_info, auto &security, auto exchange_sequence, auto exchange_time_utc, auto sending_time_utc);
@@ -81,7 +87,8 @@ struct Incremental final : public mdp::Parser::Handler {
       auto exchange_sequence,
       auto exchange_time_utc,
       auto sending_time_utc,
-      auto &orders);
+      auto &orders,
+      bool is_snapshot);
 
   void dispatch_market_by_order_stale(
       auto &trace_info, auto &security, auto exchange_sequence, auto exchange_time_utc, auto sending_time_utc);
@@ -105,6 +112,7 @@ struct Incremental final : public mdp::Parser::Handler {
 
  private:
   Shared &shared_;
+  Cache &cache_;
   Channel &channel_;
   // bool const market_by_order_ = true;                // XXX settings
   // bool const mbp_to_mbo_clear_price_level_ = false;  // XXX settings

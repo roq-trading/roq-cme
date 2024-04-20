@@ -2,13 +2,31 @@ set(TARGET_NAME ${PROJECT_NAME}-import-flags)
 
 include(RoqAutogen)
 
+set(NAMESPACE "roq/cme/import/flags")
+
 set(AUTOGEN_SCHEMAS flags.json)
+
+if(BUILD_DOCS)
+
+  roq_autodoc(
+    OUTPUT
+    AUTOGEN_DOCS
+    NAMESPACE
+    ${NAMESPACE}
+    OUTPUT_TYPE
+    "doc"
+    SOURCES
+    ${AUTOGEN_SCHEMAS})
+
+  add_custom_target(import-autogen-docs ALL DEPENDS ${AUTOGEN_DOCS})
+
+endif()
 
 roq_autogen(
   OUTPUT
   AUTOGEN_HEADERS
   NAMESPACE
-  "roq/cme/import/flags"
+  ${NAMESPACE}
   OUTPUT_TYPE
   "state"
   FILE_TYPE
@@ -22,7 +40,7 @@ roq_autogen(
   OUTPUT
   AUTOGEN_SOURCES
   NAMESPACE
-  "roq/cme/import/flags"
+  ${NAMESPACE}
   OUTPUT_TYPE
   "state"
   FILE_TYPE
@@ -30,7 +48,14 @@ roq_autogen(
   SOURCES
   ${AUTOGEN_SCHEMAS})
 
-roq_gitignore(OUTPUT .gitignore SOURCES ${TARGET_NAME} ${AUTOGEN_HEADERS} ${AUTOGEN_SOURCES})
+roq_gitignore(
+  OUTPUT
+  .gitignore
+  SOURCES
+  ${TARGET_NAME}
+  ${AUTOGEN_DOCS}
+  ${AUTOGEN_HEADERS}
+  ${AUTOGEN_SOURCES})
 
 add_library(${TARGET_NAME} OBJECT ${AUTOGEN_SOURCES})
 

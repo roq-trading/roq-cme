@@ -4,6 +4,8 @@
 
 #include "roq/logging.hpp"
 
+#include "roq/utils/safe_cast.hpp"
+
 using namespace std::literals;
 
 namespace roq {
@@ -35,11 +37,13 @@ R create_channels(auto &shared, auto &channel_ids, auto &config, auto &stream_id
 Manager::Manager(
     server::md::Dispatcher &dispatcher,
     Options const &options,
+    SecurityDefinitions &security_definitions,
     std::span<uint16_t const> const &channel_ids,
     mdp::Config const &config,
     uint16_t &stream_id)
-    : dispatcher_{dispatcher}, options_{options}, shared_{dispatcher, options},
-      channels_{create_channels<decltype(channels_)>(shared_, channel_ids, config, stream_id)} {
+    : dispatcher_{dispatcher}, options_{options}, shared_{dispatcher, options, security_definitions},
+      channels_{create_channels<decltype(channels_)>(shared_, channel_ids, config, stream_id)},
+      secdef_config_file_{options.secdef_config_file} {
 }
 
 std::string_view const Manager::get_name(
@@ -91,6 +95,7 @@ std::string_view const Manager::get_name(
 
 void Manager::operator()(Event<Start> const &event) {
   dispatch(event);
+  shared_.read_secdef(secdef_config_file_);  // note!
 }
 
 void Manager::operator()(Event<Stop> const &event) {
@@ -99,6 +104,9 @@ void Manager::operator()(Event<Stop> const &event) {
 
 void Manager::operator()(Event<Timer> const &event) {
   dispatch(event);
+}
+
+void Manager::operator()(metrics::Writer &) {
 }
 
 template <typename T>
@@ -169,8 +177,8 @@ Manager::Channel2::Channel2(Shared &shared, mdp::Config const &config, uint16_t 
       mbp_market_recovery_2{shared, channel, ++stream_id, config, channel_id, Priority::SECONDARY},
       mbofd_market_recovery_1{shared, channel, ++stream_id, config, channel_id, Priority::PRIMARY},
       mbofd_market_recovery_2{shared, channel, ++stream_id, config, channel_id, Priority::SECONDARY},
-      incremental_1{shared, channel, ++stream_id, config, channel_id, Priority::PRIMARY},
-      incremental_2{shared, channel, ++stream_id, config, channel_id, Priority::SECONDARY} {
+      incremental_1{shared, incremental_cache, channel, ++stream_id, config, channel_id, Priority::PRIMARY},
+      incremental_2{shared, incremental_cache, channel, ++stream_id, config, channel_id, Priority::SECONDARY} {
 }
 
 }  // namespace market_data
