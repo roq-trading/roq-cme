@@ -8,6 +8,19 @@
       "required": true,
       "default": 16777216,
       "description": "Encode buffer size."
+    },
+    {
+      "name": "mbp_allow_price_inversion",
+      "type": "bool",
+      "default": true,
+      "description": "Allow price inversion?"
+    },
+    {
+      "name": "mbp_max_depth",
+      "type": "uint16_t",
+      "required": true,
+      "default": 10,
+      "description": "Max depth."
     }
   ]
 }

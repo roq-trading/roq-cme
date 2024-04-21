@@ -717,8 +717,8 @@ void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &e
         }
       }
       if (security) {
-        if (action != UpdateAction::DELETE)
-          emplace_back(item, *security, side, price, orders);
+        // if (action != UpdateAction::DELETE)
+        emplace_back(item, *security, side, price, orders);
       }
     };
     value.noOrderIDEntries().forEach(process);

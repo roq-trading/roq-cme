@@ -6,20 +6,13 @@
       "name": "type",
       "type": "std::string",
       "required": true,
-      "description": "type of output, e.g. tcpdump"
-    },
-    {
-      "name": "config_file",
-      "type": "std::string",
-      "validator": "roq::flags::validators::Path",
-      "required": true,
-      "description": "config file (path)"
+      "description": "Type of output, e.g. :code:`tcpdump`."
     },
     {
       "name": "channel_ids",
       "type": "std::vector<uint16_t>",
       "required": true,
-      "description": "Comma-separated list of multicast channels, e.g. 310"
+      "description": "Comma-separated list of multicast channels to include."
     }
   ]
 }

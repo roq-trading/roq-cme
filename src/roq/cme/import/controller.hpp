@@ -65,10 +65,12 @@ struct Controller final : public server::md::Dispatcher, public market_data::Sec
 
   MessageInfo create_message_info(TraceInfo const &);
 
-  void DEBUG_compare(std::string_view const &exchange, std::string_view const &symbol);
+  void DEBUG_compare(
+      std::string_view const &exchange, std::string_view const &symbol, std::chrono::nanoseconds exchange_time_utc);
 
  private:
   Settings const &settings_;
+  GatewaySettings const gateway_settings_;
   mdp::Config config_;
   std::vector<utils::regex::Pattern> const symbols_regex_;
   utils::unordered_map<std::string, bool> discard_symbol_;

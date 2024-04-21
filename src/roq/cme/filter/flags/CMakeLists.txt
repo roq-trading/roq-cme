@@ -4,7 +4,7 @@ include(RoqAutogen)
 
 set(NAMESPACE "roq/cme/filter/flags")
 
-set(AUTOGEN_SCHEMAS flags.json)
+set(AUTOGEN_SCHEMAS flags.json cme.json)
 
 if(BUILD_DOCS)
 

@@ -17,6 +17,7 @@
 #include "roq/logging.hpp"
 
 #include "roq/utils/compare.hpp"
+#include "roq/utils/datetime.hpp"
 
 #include "roq/utils/debug/hex/message.hpp"
 
@@ -44,30 +45,32 @@ auto const LOCAL_INTERFACE = "pcap"sv;
 auto const MULTICAST_TIMEOUT = 10s;
 std::vector<core::event_log::User> const USERS;
 auto const TIMER_FREQUENCY = 100ms;
-
-auto const GATEWAY_SETTINGS = GatewaySettings{
-    .supports = {},
-    .mbp_max_depth = 10,
-    .mbp_tick_size_multiplier = NaN,
-    .mbp_min_trade_vol_multiplier = NaN,
-    .mbp_allow_remove_non_existing = false,
-    .mbp_allow_price_inversion = false,
-    .mbp_checksum = {},
-    .oms_download_has_state = {},
-    .oms_download_has_routing_id = {},
-    .oms_request_id_type = {},
-    .oms_cancel_all_orders = {},
-};
 }  // namespace
 
 // === HELPERS ===
 
 namespace {
+auto create_gateway_settings(auto &settings) -> GatewaySettings {
+  return {
+      .supports = {},
+      .mbp_max_depth = settings.misc.mbp_max_depth,
+      .mbp_tick_size_multiplier = NaN,
+      .mbp_min_trade_vol_multiplier = NaN,
+      .mbp_allow_remove_non_existing = false,
+      .mbp_allow_price_inversion = settings.misc.mbp_allow_price_inversion,
+      .mbp_checksum = {},
+      .oms_download_has_state = {},
+      .oms_download_has_routing_id = {},
+      .oms_request_id_type = {},
+      .oms_cancel_all_orders = {},
+  };
+}
+
 auto create_market_data(auto &handler, auto &settings, auto &config, auto &security_definitions) {
   auto options = market_data::Options{
       .cache_all_reference_data = settings.cache_all_reference_data,
       .enable_market_by_order = ENABLE_MARKET_BY_ORDER,
-      .mbp_to_mbo_clear_price_level = MBP_TO_MBO_CLEAR_PRICE_LEVEL,
+      .mbp_to_mbo_clear_price_level = settings.test.mbp_to_mbo_clear_price_level,
       .filter_snapshot_from_incremental = FILTER_SNAPSHOT_FROM_INCREMENTAL,
       .local_interface = LOCAL_INTERFACE,
       .multicast_timeout = MULTICAST_TIMEOUT,
@@ -94,13 +97,15 @@ auto convert(timeval ts) {
 // === IMPLEMENTATION ===
 
 Controller::Controller(Settings const &settings)
-    : settings_{settings}, config_{settings.cme.config_file, false},
+    : settings_{settings}, gateway_settings_{create_gateway_settings(settings)},
+      config_{settings.cme.config_file, false},
       symbols_regex_{create_symbols_regex<decltype(symbols_regex_)>(settings.symbols)},
       security_definitions_{*this, settings.cme.secdef_file},
       market_data_{create_market_data(*this, settings, config_, security_definitions_)},
       encode_buffer_(settings.misc.encode_buffer_size), mbp_depth_(settings.test.depth),
       mbo_depth_(settings.test.depth) {
   log::info("test={}"sv, settings_.test.mbp_mbo);
+  log::info("gateway_settings={}"sv, gateway_settings_);
 }
 
 void Controller::dispatch(std::string_view const &path) {
@@ -238,11 +243,13 @@ void Controller::operator()(Trace<MarketByPriceUpdate> const &event, [[maybe_unu
   append(event);
 }
 
+// static bool test = false;
+
 void Controller::operator()(Trace<MarketByOrderUpdate> const &event, [[maybe_unused]] bool is_last) {
-  // log::info("event={}"sv, event);
+  log::info<5>("event={}"sv, event);
   append(event);
   if (settings_.test.mbp_mbo)
-    DEBUG_compare(event.value.exchange, event.value.symbol);
+    DEBUG_compare(event.value.exchange, event.value.symbol, event.value.exchange_time_utc);
 }
 
 void Controller::operator()(Trace<TradeSummary> const &event, [[maybe_unused]] bool is_last) {
@@ -259,7 +266,7 @@ roq::cache::MarketByPrice &Controller::get_market_by_price(
     [[maybe_unused]] std::string_view const &exchange, std::string_view const &symbol) {
   auto iter = market_by_price_.find(symbol);
   if (iter == std::end(market_by_price_)) {
-    auto market_by_price = market::mbp::Factory::create(exchange, symbol, GATEWAY_SETTINGS);
+    auto market_by_price = market::mbp::Factory::create(exchange, symbol, gateway_settings_);
     auto res = market_by_price_.emplace(symbol, std::move(market_by_price));
     iter = res.first;
   }
@@ -270,7 +277,7 @@ roq::cache::MarketByOrder &Controller::get_market_by_order(
     [[maybe_unused]] std::string_view const &exchange, std::string_view const &symbol) {
   auto iter = market_by_order_.find(symbol);
   if (iter == std::end(market_by_order_)) {
-    auto market_by_order = market::mbo::Factory::create(exchange, symbol, GATEWAY_SETTINGS);
+    auto market_by_order = market::mbo::Factory::create(exchange, symbol, gateway_settings_);
     auto res = market_by_order_.emplace(symbol, std::move(market_by_order));
     iter = res.first;
   }
@@ -348,11 +355,13 @@ MessageInfo Controller::create_message_info(TraceInfo const &trace_info) {
   };
 }
 
-void Controller::DEBUG_compare(std::string_view const &exchange, std::string_view const &symbol) {
+void Controller::DEBUG_compare(
+    std::string_view const &exchange, std::string_view const &symbol, std::chrono::nanoseconds exchange_time_utc) {
   auto &market_by_price = get_market_by_price(exchange, symbol);
   auto &market_by_order = get_market_by_order(exchange, symbol);
   auto mbp_depth = market_by_price.extract(mbp_depth_);
   market_by_order.extract(mbo_depth_, settings_.test.depth);
+  print("{} {} {}\n"sv, symbol, utils::DateTime_iso8601{exchange_time_utc}, exchange_time_utc);
   auto length = std::min(std::size(mbp_depth_), std::size(mbo_depth_));
   auto print = [](std::string_view prefix, auto lhs, auto rhs) {
     auto same = utils::compare(lhs, rhs) == 0;

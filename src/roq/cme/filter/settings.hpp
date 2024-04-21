@@ -4,6 +4,7 @@
 
 #include "roq/flags/args.hpp"
 
+#include "roq/cme/filter/flags/cme.hpp"
 #include "roq/cme/filter/flags/flags.hpp"
 
 namespace roq {
@@ -12,6 +13,8 @@ namespace filter {
 
 struct Settings final : public flags::Flags {
   explicit Settings(args::Parser const &);
+
+  flags::CME cme;
 };
 
 }  // namespace filter

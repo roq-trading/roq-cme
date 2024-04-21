@@ -10,7 +10,7 @@ namespace filter {
 
 // === IMPLEMENTATION ===
 
-Settings::Settings(args::Parser const &) : flags::Flags{flags::Flags::create()} {
+Settings::Settings(args::Parser const &) : flags::Flags{flags::Flags::create()}, cme{flags::CME::create()} {
 }
 
 }  // namespace filter

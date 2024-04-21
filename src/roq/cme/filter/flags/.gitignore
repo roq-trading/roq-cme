@@ -1,5 +1,8 @@
 !!! THIS FILE HAS BEEN AUTO-GENERATED !!!
 roq-cme-filter-flags
 flags.rstinc
+cme.rstinc
 flags.hpp
+cme.hpp
 flags.cpp
+cme.cpp

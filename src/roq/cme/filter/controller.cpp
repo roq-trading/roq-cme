@@ -39,7 +39,7 @@ Controller::Controller(Settings const &settings) : settings_{settings} {
 }
 
 void Controller::dispatch() {
-  mdp::Config config{settings_.config_file, false};
+  mdp::Config config{settings_.cme.config_file, false};
   std::vector<std::pair<std::string, uint16_t>> filter;
   for (auto channel_id : settings_.channel_ids) {
     find(filter, config, channel_id, mdp::ConnectionType::INSTRUMENT_DEFINITION, Priority::PRIMARY);

@@ -15,6 +15,12 @@
       "required": true,
       "default": 10,
       "description": "Depth to compare."
+    },
+    {
+      "name": "mbp_to_mbo_clear_price_level",
+      "type": "bool",
+      "default": false,
+      "description": "DEPRECATED"
     }
   ]
 }

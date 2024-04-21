@@ -669,6 +669,10 @@ Flags
 
    .. include:: filter/flags/flags.rstinc
 
+.. tab:: CME
+
+   .. include:: filter/flags/cme.rstinc
+
 Example
 ~~~~~~~
 
@@ -676,8 +680,8 @@ Example
 
    $ roq-cme-filter \
        --type "tcpdump" \
-       --config_file "config.xml" \
-       --channel_ids 344
+       --channel_ids 344 \
+       --cme_config_file "config.xml"
 
    (host 224.0.31.110 and port 14344) or (host 224.0.32.110 and port 15344) or (host 224.0.31.68 and port 14344) or (host 224.0.32.68 and port 15344) or (host 224.0.31.89 and port 14344) or (host 224.0.32.89 and port 15344) or (host 233.72.75.33 and port 23344) or (host 233.72.75.96 and port 22344)(dev)
 
