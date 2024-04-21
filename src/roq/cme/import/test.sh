@@ -2,7 +2,7 @@
 
 CONFIG_FILE="../config/config.xml"
 #SYMBOLS="^Z[TFNB][FGHJKMNQUVXZ][0-9]$"
-SYMBOLS="ZTM4"
+SYMBOLS="ZMM4"
 
 # debug?
 
