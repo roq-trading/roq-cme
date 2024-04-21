@@ -18,6 +18,18 @@ struct Incremental final : public mdp::Parser::Handler {
   struct Cache final {
     std::vector<MBPUpdate> bids, asks;
     std::vector<MBOUpdate> orders;
+    // 47
+    struct Order final {
+      int32_t security_id = {};
+      double price = NaN;
+      double quantity = NaN;
+      uint64_t priority = {};
+      uint64_t order_id = {};
+      Side side = {};
+      UpdateAction action = {};
+    };
+    std::vector<Order> orders_47;
+    utils::unordered_set<int32_t> security_ids_47;
   };
 
   Incremental(Shared &, Cache &, Channel &, uint16_t stream_id, mdp::Config const &, uint16_t channel_id, Priority);

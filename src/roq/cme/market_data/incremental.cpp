@@ -222,26 +222,26 @@ void emplace_back(
   orders.emplace_back(std::move(order));
 }
 
-void emplace_back(cme_mdp::MDIncrementalRefreshOrderBook47::NoMDEntries const &item, auto &security, auto &orders) {
+template <typename T>
+void emplace_back(
+    cme_mdp::MDIncrementalRefreshOrderBook47::NoMDEntries const &item, auto &security, auto security_id, T &orders) {
   using value_type = typename std::remove_cvref<decltype(item)>::type;
+  using result_type = typename T::value_type;
   auto create_update = [&](auto side) {
     auto price = mdp::get_double(const_cast<value_type &>(item).mDEntryPx());
     auto quantity = mdp::get_int(item.mDDisplayQty(), item.mDDisplayQtyNullValue());
     auto priority = mdp::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue());
     auto order_id = mdp::get_int(item.orderID(), item.orderIDNullValue());
     auto action = mdp::map(item.mDUpdateAction());
-    auto result = MBOUpdate{
+    auto result = result_type{
+        .security_id = security_id,
         .price = price * security.display_factor,
         .quantity = static_cast<double>(quantity),
         .priority = priority,
-        .order_id = {},
+        .order_id = order_id,
         .side = side,
         .action = action,
-        .reason = {},
     };
-    fmt::format_to(std::back_inserter(result.order_id), "{}"sv, order_id);
-    if (action != UpdateAction::DELETE && !quantity) [[unlikely]]  // DEBUG
-      log::warn("Unexpected: update={}"sv, result);
     return result;
   };
   using value_type = typename std::remove_cvref<decltype(item)>::type;
@@ -748,23 +748,64 @@ void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshOrderBook47> con
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   value.sbeRewind();                                    // note!
   // ---
-  // XXX TODO cache noMDEntries (as they are) and only process when receiving last
   // note! not possible to detect first message -- this is an issue after packet loss
   auto exchange_sequence = frame.sequence_number;
   auto exchange_time_utc = std::chrono::nanoseconds{value.transactTime()};
   auto &match_event_indicator = value.matchEventIndicator();
   auto last = !match_event_indicator.isEmpty();
-  auto &orders = cache_.orders;
-  auto dispatch = [&](auto security_id, auto &security) {
-    if (std::empty(orders))
-      return;
-    auto snapshot = !security.rpt_seq;
-    dispatch_market_by_order(
-        trace_info, security_id, security, exchange_sequence, exchange_time_utc, frame.sending_time, orders, snapshot);
-    orders.clear();
+  int32_t security_id = {};
+  tools::Security *security = nullptr;
+  auto process = [&](auto &item) {
+    auto current_security_id = item.securityID();
+    if (current_security_id != security_id) {
+      security_id = current_security_id;
+      if (shared_.security_definitions.get_security(
+              security_id, [&security](auto &security_2) { security = &security_2; })) {
+      } else {
+        security = nullptr;
+      }
+      if (security)
+        cache_.security_ids_47.insert(security_id);
+    }
+    if (security)
+      emplace_back(item, *security, security_id, cache_.orders_47);
   };
-  auto update = [&](auto &security, auto &item) { emplace_back(item, security, orders); };
-  SecurityIterator{shared_}(value.noMDEntries(), dispatch, update);
+  value.noMDEntries().forEach(process);
+  if (!last)
+    return;
+  for (auto security_id : cache_.security_ids_47) {
+    assert(std::empty(cache_.orders));
+    auto dispatch = [&](auto &security) {
+      for (auto &item : cache_.orders_47)
+        if (item.security_id == security_id) {
+          auto result = MBOUpdate{
+              .price = item.price,
+              .quantity = item.quantity,
+              .priority = item.priority,
+              .order_id = {},
+              .side = item.side,
+              .action = item.action,
+              .reason = {},
+          };
+          fmt::format_to(std::back_inserter(result.order_id), "{}"sv, item.order_id);
+          cache_.orders.emplace_back(std::move(result));
+        }
+      auto snapshot = !security.rpt_seq;
+      dispatch_market_by_order(
+          trace_info,
+          security_id,
+          security,
+          exchange_sequence,
+          exchange_time_utc,
+          frame.sending_time,
+          cache_.orders,
+          snapshot);
+      cache_.orders.clear();
+    };
+    shared_.security_definitions.get_security(security_id, dispatch);
+  }
+  cache_.orders_47.clear();
+  cache_.security_ids_47.clear();
 }
 
 void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshTradeSummary48> const &event, mdp::Frame const &frame) {
@@ -1373,9 +1414,12 @@ void Incremental::on_sequence_reset() {
   log::warn<0>("*** SEQUENCE RESET ***"sv);  // XXX should be log level 1
   // ++counter_.sequence_reset;
   channel_.sequence = {};
+  // cache
   cache_.bids.clear();
   cache_.asks.clear();
   cache_.orders.clear();
+  cache_.orders_47.clear();
+  cache_.security_ids_47.clear();
 }
 
 void Incremental::publish_stream_status(TraceInfo const &trace_info, ConnectionStatus connection_status) {
