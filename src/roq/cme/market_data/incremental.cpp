@@ -60,7 +60,7 @@ struct SecurityIterator final {
   SecurityIterator(Shared &shared) : shared_{shared} {}
 
   template <typename T, typename Dispatch, typename Callback>
-  void operator()(T &value, bool last, Dispatch dispatch, Callback callback) {
+  void operator()(T &value, Dispatch dispatch, Callback callback) {
     value.forEach([&](auto &item) {
       auto security_id = item.securityID();
       if (security_id != security_id_) {
@@ -75,7 +75,7 @@ struct SecurityIterator final {
       if (security_)
         callback(*security_, item);
     });
-    if (last && security_)
+    if (security_)
       dispatch(security_id_, *security_);
   }
 
@@ -690,11 +690,11 @@ void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &e
     tools::Security *security = nullptr;
     auto &orders = cache_.orders;
     auto dispatch = [&](auto security_id, auto &security) {
-      if (!std::empty(orders)) {
-        dispatch_market_by_order(
-            trace_info, security_id, security, exchange_sequence, exchange_time_utc, frame.sending_time, orders, false);
-        orders.clear();
-      }
+      if (std::empty(orders))
+        return;
+      dispatch_market_by_order(
+          trace_info, security_id, security, exchange_sequence, exchange_time_utc, frame.sending_time, orders, false);
+      orders.clear();
     };
     auto process = [&](auto &item) {
       auto reference_id = mdp::get_int(item.referenceID(), item.referenceIDNullValue());
@@ -724,6 +724,7 @@ void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &e
     value.noOrderIDEntries().forEach(process);
     if (security)
       dispatch(security_id, *security);
+    assert(std::empty(orders));
   }
 }
 
@@ -733,7 +734,7 @@ void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBookLongQty64> c
   log::info<5>("md_incremental_refresh_book_long_qty_64={}, frame={}"sv, value, frame);
   auto dispatch = []([[maybe_unused]] auto security_id, [[maybe_unused]] auto &security) {};
   auto update = [&](auto &security, auto &item) { check_report_sequence(security, item, frame); };
-  SecurityIterator{shared_}(value.noMDEntries(), true, dispatch, update);
+  SecurityIterator{shared_}(value.noMDEntries(), dispatch, update);
 }
 
 void Incremental::operator()(Trace<cme_mdp::SnapshotFullRefreshOrderBook53> const &, mdp::Frame const &) {
@@ -747,6 +748,7 @@ void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshOrderBook47> con
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   value.sbeRewind();                                    // note!
   // ---
+  // XXX TODO cache noMDEntries (as they are) and only process when receiving last
   // note! not possible to detect first message -- this is an issue after packet loss
   auto exchange_sequence = frame.sequence_number;
   auto exchange_time_utc = std::chrono::nanoseconds{value.transactTime()};
@@ -762,7 +764,7 @@ void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshOrderBook47> con
     orders.clear();
   };
   auto update = [&](auto &security, auto &item) { emplace_back(item, security, orders); };
-  SecurityIterator{shared_}(value.noMDEntries(), last, dispatch, update);
+  SecurityIterator{shared_}(value.noMDEntries(), dispatch, update);
 }
 
 void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshTradeSummary48> const &event, mdp::Frame const &frame) {
@@ -826,7 +828,7 @@ void Incremental::operator()(
   log::info<5>("md_incremental_refresh_volume_long_qty_66={}, frame={}"sv, value, frame);
   auto dispatch = []([[maybe_unused]] auto security_id, [[maybe_unused]] auto &security) {};
   auto update = [&](auto &security, auto &item) { check_report_sequence(security, item, frame); };
-  SecurityIterator{shared_}(value.noMDEntries(), true, dispatch, update);
+  SecurityIterator{shared_}(value.noMDEntries(), dispatch, update);
 }
 
 void Incremental::operator()(
@@ -837,7 +839,7 @@ void Incremental::operator()(
   value.sbeRewind();  // note!
   auto dispatch = []([[maybe_unused]] auto security_id, [[maybe_unused]] auto &security) {};
   auto update = [&](auto &security, auto &item) { check_report_sequence(security, item, frame); };
-  SecurityIterator{shared_}(value.noMDEntries(), true, dispatch, update);
+  SecurityIterator{shared_}(value.noMDEntries(), dispatch, update);
 }
 
 // helpers
@@ -1338,7 +1340,7 @@ void Incremental::dispatch_statistics(Trace<T> const &event, mdp::Frame const &f
     check_report_sequence(security, item, frame);
     callback(statistics, item, security);
   };
-  SecurityIterator{shared_}(value.noMDEntries(), true, dispatch, update);
+  SecurityIterator{shared_}(value.noMDEntries(), dispatch, update);
 }
 
 void Incremental::check_report_sequence(tools::Security &security, auto const &value, mdp::Frame const &frame) {

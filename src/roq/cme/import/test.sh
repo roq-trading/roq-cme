@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 CONFIG_FILE="../config/config.xml"
-#SYMBOLS="^Z[TFNB][FGHJKMNQUVXZ][0-9]$"
-SYMBOLS="ZNM4"
+SYMBOLS="^Z[TFNB][FGHJKMNQUVXZ][0-9]$"
+#SYMBOLS="ZNM4"
 
 # debug?
 
