@@ -29,6 +29,7 @@ roq-cme
 
    $ roq-cme [FLAGS]
 
+
 Description
 ~~~~~~~~~~~
 
@@ -40,6 +41,7 @@ Description
   * Using both A and B channels for fastest access and to lower the probability of packet loss.
 
 * Using the iLink3 (SBE/TCP) interface for order management.
+
 
 Supports
 ~~~~~~~~
@@ -171,7 +173,6 @@ Configuration
 
 .. include:: config.toml
    :code: toml
-
 
 
 Market Data
@@ -373,6 +374,7 @@ Order Management
       - OrderUpdate
       - ExecutionReportNew522,  ExecutionReportReject523, ExecutionReportModify531, ExecutionReportCancel534, BusinessReject521
       -
+
 
 Order Types
 ^^^^^^^^^^^
@@ -592,6 +594,7 @@ Comments
 
    $ roq-cme-import [FLAGS] PCAP_FILE
 
+
 Description
 ~~~~~~~~~~~
 
@@ -601,6 +604,7 @@ Description
 * Requires the :code:`secdef.dat` file (from CME's FTP site) if the :code:`.pcap` file does **not** contain the relevant instrument definitions.
 * Requires the :code:`.pcap` file to contain all incremental messages from CME's start-up (Sunday) if the recovery channels are **not** available.
 * Will not work if the :code:`.pcap` file has gaps and the recovery channels are **not** available.
+
 
 Flags
 ~~~~~
@@ -653,10 +657,12 @@ Example
 
    $ roq-cme-filter [FLAGS]
 
+
 Description
 ~~~~~~~~~~~
 
 :code:`roq-cme-filter` is a tool to generate the PCAP filter required to capture specific channels.
+
 
 Flags
 ~~~~~
@@ -672,6 +678,7 @@ Flags
 .. tab:: CME
 
    .. include:: filter/flags/cme.rstinc
+
 
 Example
 ~~~~~~~
@@ -692,11 +699,18 @@ This will output a :code:`tcpdump` filter for :code:`channel_ids`.
 References
 ----------
 
+Common
+~~~~~~
+
 * :ref:`Using Conda <tutorial-conda>`
 * :ref:`Using Flags <abseil-cpp>`
 * :ref:`Gateway Flags <gateway-flags>`
 * :ref:`Gateway Config <gateway-config>`
-* `CME's Website <https://www.cmegroup.com/>`__
-* `CME's FTP site <https://www.cmegroup.com/ftp/>`__
-* `CME's MDP3 Documentation <https://www.cmegroup.com/confluence/display/EPICSANDBOX/CME+MDP+3.0+Market+Data/>`__
-* `CME's iLink3 Documentation <https://www.cmegroup.com/confluence/display/EPICSANDBOX/iLink+3+Binary+Order+Entry/>`__
+
+CME
+~~~
+
+* `Website <https://www.cmegroup.com/>`__
+* `FTP site <https://www.cmegroup.com/ftp/>`__
+* `MDP3 Documentation <https://www.cmegroup.com/confluence/display/EPICSANDBOX/CME+MDP+3.0+Market+Data/>`__
+* `iLink3 Documentation <https://www.cmegroup.com/confluence/display/EPICSANDBOX/iLink+3+Binary+Order+Entry/>`__
