@@ -39,7 +39,6 @@ namespace import {
 
 namespace {
 auto const ENABLE_MARKET_BY_ORDER = true;
-auto const MBP_TO_MBO_CLEAR_PRICE_LEVEL = true;
 auto const FILTER_SNAPSHOT_FROM_INCREMENTAL = 1024uz;
 auto const LOCAL_INTERFACE = "pcap"sv;
 auto const MULTICAST_TIMEOUT = 10s;
@@ -359,7 +358,7 @@ void Controller::DEBUG_compare(
     std::string_view const &exchange, std::string_view const &symbol, std::chrono::nanoseconds exchange_time_utc) {
   auto &market_by_price = get_market_by_price(exchange, symbol);
   auto &market_by_order = get_market_by_order(exchange, symbol);
-  auto mbp_depth = market_by_price.extract(mbp_depth_);
+  market_by_price.extract(mbp_depth_);
   market_by_order.extract(mbo_depth_, settings_.test.depth);
   print("{} {} {}\n"sv, symbol, utils::DateTime_iso8601{exchange_time_utc}, exchange_time_utc);
   auto length = std::min(std::size(mbp_depth_), std::size(mbo_depth_));
