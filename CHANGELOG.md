@@ -4,6 +4,10 @@ All notable changes will be documented in this file.
 
 ## Head
 
+### Added
+
+* Import tool to convert pcap files to event-logs (#457)
+
 ## 1.0.1 &ndash; 2024-04-14
 
 ## 1.0.0 &ndash; 2024-03-16
