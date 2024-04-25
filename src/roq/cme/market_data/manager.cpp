@@ -4,8 +4,6 @@
 
 #include "roq/logging.hpp"
 
-#include "roq/utils/safe_cast.hpp"
-
 using namespace std::literals;
 
 namespace roq {
@@ -130,42 +128,42 @@ void Manager::dispatch(
     std::span<std::byte const> const &payload,
     TraceInfo const &trace_info) {
   auto iter = channels_.find(channel_id);
-  if (iter != std::end(channels_)) {
-    auto &channel = (*iter).second;
-    switch (connection_type) {
-      using enum mdp::ConnectionType;
-      case HISTORICAL_REPLAY:
-        log::fatal("Unexpected"sv);
-        break;
-      case INSTRUMENT_DEFINITION:
-        if (priority == Priority::PRIMARY) {
-          channel.instrument_definition_1.dispatch(payload, trace_info);
-        } else {
-          channel.instrument_definition_2.dispatch(payload, trace_info);
-        }
-        break;
-      case MBP_MARKET_RECOVERY:
-        if (priority == Priority::PRIMARY) {
-          channel.mbp_market_recovery_1.dispatch(payload, trace_info);
-        } else {
-          channel.mbp_market_recovery_2.dispatch(payload, trace_info);
-        }
-        break;
-      case MBOFD_MARKET_RECOVERY:
-        if (priority == Priority::PRIMARY) {
-          channel.mbofd_market_recovery_1.dispatch(payload, trace_info);
-        } else {
-          channel.mbofd_market_recovery_2.dispatch(payload, trace_info);
-        }
-        break;
-      case INCREMENTAL:
-        if (priority == Priority::PRIMARY) {
-          channel.incremental_1.dispatch(payload, trace_info);
-        } else {
-          channel.incremental_2.dispatch(payload, trace_info);
-        }
-        break;
-    }
+  if (iter == std::end(channels_)) [[unlikely]]
+    return;  // note!
+  auto &channel = (*iter).second;
+  switch (connection_type) {
+    using enum mdp::ConnectionType;
+    case HISTORICAL_REPLAY:
+      log::fatal("Unexpected"sv);
+      break;
+    case INSTRUMENT_DEFINITION:
+      if (priority == Priority::PRIMARY) {
+        channel.instrument_definition_1.dispatch(payload, trace_info);
+      } else {
+        channel.instrument_definition_2.dispatch(payload, trace_info);
+      }
+      break;
+    case MBP_MARKET_RECOVERY:
+      if (priority == Priority::PRIMARY) {
+        channel.mbp_market_recovery_1.dispatch(payload, trace_info);
+      } else {
+        channel.mbp_market_recovery_2.dispatch(payload, trace_info);
+      }
+      break;
+    case MBOFD_MARKET_RECOVERY:
+      if (priority == Priority::PRIMARY) {
+        channel.mbofd_market_recovery_1.dispatch(payload, trace_info);
+      } else {
+        channel.mbofd_market_recovery_2.dispatch(payload, trace_info);
+      }
+      break;
+    case INCREMENTAL:
+      if (priority == Priority::PRIMARY) {
+        channel.incremental_1.dispatch(payload, trace_info);
+      } else {
+        channel.incremental_2.dispatch(payload, trace_info);
+      }
+      break;
   }
 }
 
