@@ -65,7 +65,7 @@ struct Shared final {
   std::vector<Fill> fills;
 
  public:
-  void read_secdef(std::string_view const &config_file);
+  void read_secdef(std::string_view const &config_file, std::chrono::nanoseconds first_timestamp);
 
   Options const options;
 

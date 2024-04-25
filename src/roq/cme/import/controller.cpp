@@ -11,8 +11,6 @@
 #include <netinet/tcp.h>
 #include <netinet/udp.h>
 
-#include <pcap/pcap.h>
-
 #include "roq/exceptions.hpp"
 #include "roq/logging.hpp"
 
@@ -49,6 +47,24 @@ auto const TIMER_FREQUENCY = 100ms;
 // === HELPERS ===
 
 namespace {
+auto convert(timeval ts) {
+  return std::chrono::nanoseconds{std::chrono::seconds{ts.tv_sec} + std::chrono::microseconds{ts.tv_usec}};
+}
+
+auto get_first_timestamp(auto &path) {
+  log::info(R"(Fetching first timestamp... (path="{}"))"sv, path);
+  size_t count = {};
+  std::chrono::nanoseconds result = {};
+  auto callback = [&](struct pcap_pkthdr const *header, [[maybe_unused]] u_char const *packet) -> bool {
+    ++count;
+    result = convert((*header).ts);
+    return result.count() > 0;
+  };
+  PCAP{path}.dispatch(callback);
+  log::info("timestamp={}"sv, result);
+  return result;
+}
+
 auto create_gateway_settings(auto &settings) -> GatewaySettings {
   return {
       .supports = {},
@@ -65,7 +81,8 @@ auto create_gateway_settings(auto &settings) -> GatewaySettings {
   };
 }
 
-auto create_market_data(auto &handler, auto &settings, auto &config, auto &security_definitions) {
+auto create_market_data(
+    auto &handler, auto &settings, auto &config, auto &security_definitions, auto pcap_first_timestamp) {
   auto options = market_data::Options{
       .cache_all_reference_data = settings.cache_all_reference_data,
       .enable_market_by_order = ENABLE_MARKET_BY_ORDER,
@@ -74,6 +91,7 @@ auto create_market_data(auto &handler, auto &settings, auto &config, auto &secur
       .local_interface = LOCAL_INTERFACE,
       .multicast_timeout = MULTICAST_TIMEOUT,
       .secdef_config_file = settings.cme.secdef_file,
+      .pcap_first_timestamp = pcap_first_timestamp,
   };
   uint16_t stream_id = {};
   return market_data::Manager{handler, options, security_definitions, settings.channel_ids, config, stream_id};
@@ -87,27 +105,23 @@ R create_symbols_regex(auto &symbols) {
     result.emplace_back(item);
   return result;
 }
-
-auto convert(timeval ts) {
-  return std::chrono::nanoseconds{std::chrono::seconds{ts.tv_sec} + std::chrono::microseconds{ts.tv_usec}};
-}
 }  // namespace
 
 // === IMPLEMENTATION ===
 
-Controller::Controller(Settings const &settings)
-    : settings_{settings}, gateway_settings_{create_gateway_settings(settings)},
+Controller::Controller(Settings const &settings, std::string_view const &pcap_path)
+    : settings_{settings}, pcap_path_{pcap_path}, gateway_settings_{create_gateway_settings(settings)},
       config_{settings.cme.config_file, false},
       symbols_regex_{create_symbols_regex<decltype(symbols_regex_)>(settings.symbols)},
-      security_definitions_{*this, settings.cme.secdef_file},
-      market_data_{create_market_data(*this, settings, config_, security_definitions_)},
+      first_timestamp_{get_first_timestamp(pcap_path_)}, security_definitions_{*this, settings.cme.secdef_file},
+      market_data_{create_market_data(*this, settings, config_, security_definitions_, first_timestamp_)},
       encode_buffer_(settings.misc.encode_buffer_size), mbp_depth_(settings.test.depth),
       mbo_depth_(settings.test.depth) {
   log::info("test={}"sv, settings_.test.mbp_mbo);
   log::info("gateway_settings={}"sv, gateway_settings_);
 }
 
-void Controller::dispatch(std::string_view const &path) {
+void Controller::dispatch() {
   auto include = [](auto connection_type, auto priority) {
     if (connection_type == mdp::ConnectionType::INCREMENTAL)
       return true;
@@ -115,7 +129,7 @@ void Controller::dispatch(std::string_view const &path) {
   };
   auto initialized = false;
   std::chrono::nanoseconds last_timer_update = {};
-  auto callback = [&](struct pcap_pkthdr const *header, u_char const *packet) {
+  auto callback = [&](struct pcap_pkthdr const *header, u_char const *packet) -> bool {
     auto timestamp = convert((*header).ts);
     TraceInfo trace_info{timestamp, timestamp, timestamp};
     if (!initialized) {
@@ -175,9 +189,10 @@ void Controller::dispatch(std::string_view const &path) {
         }
       }
     }
+    return false;
   };
   // market_data_.start();
-  PCAP{path}.dispatch(callback);
+  PCAP{pcap_path_}.dispatch(callback);
   if (producer_)
     (*producer_).close();
 }
@@ -317,7 +332,7 @@ void Controller::append(Trace<T> const &event) {
   auto message_info = create_message_info(trace_info);
   auto message = core::codec::Encoder{encode_buffer_}.encode(value);
   if (!producer_)
-    create_producer(message_info.receive_time_utc);
+    create_producer(message_info.origin_create_time_utc);
   // XXX HANS -- this should be cleaned up -- why core::queue ???
   auto header = core::queue::Message::Header{
       .boundary = {},

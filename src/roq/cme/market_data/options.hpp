@@ -21,6 +21,7 @@ struct Options final {
   std::chrono::nanoseconds multicast_timeout = {};
   // misc
   std::string_view secdef_config_file;
+  std::chrono::nanoseconds pcap_first_timestamp = {};
 };
 
 }  // namespace market_data

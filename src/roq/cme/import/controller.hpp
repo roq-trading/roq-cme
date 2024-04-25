@@ -31,12 +31,12 @@ namespace cme {
 namespace import {
 
 struct Controller final : public server::md::Dispatcher, public market_data::SecurityDefinitions::Dispatcher {
-  explicit Controller(Settings const &);
+  Controller(Settings const &, std::string_view const &pcap_path);
 
   Controller(Controller const &) = delete;
   Controller(Controller &&) = delete;
 
-  void dispatch(std::string_view const &path);
+  void dispatch();
 
  protected:
   // market_data::Dispatcher
@@ -70,10 +70,12 @@ struct Controller final : public server::md::Dispatcher, public market_data::Sec
 
  private:
   Settings const &settings_;
+  std::string const pcap_path_;
   GatewaySettings const gateway_settings_;
   mdp::Config config_;
   std::vector<utils::regex::Pattern> const symbols_regex_;
   utils::unordered_map<std::string, bool> discard_symbol_;
+  std::chrono::nanoseconds const first_timestamp_;
   market_data::SecurityDefinitions security_definitions_;
   market_data::Manager market_data_;
   std::unique_ptr<core::event_log::Producer> producer_;

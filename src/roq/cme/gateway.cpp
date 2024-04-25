@@ -23,6 +23,7 @@ auto create_market_data_manager(
       .local_interface = settings.multicast.local_interface,
       .multicast_timeout = settings.multicast.timeout,
       .secdef_config_file = settings.misc.secdef_config_file,
+      .pcap_first_timestamp = {},
   };
   return market_data::Manager{
       dispatcher, options, security_definitions, settings.multicast.channel_ids, shared.mdp_config, stream_id};

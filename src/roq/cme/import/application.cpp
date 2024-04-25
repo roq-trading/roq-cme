@@ -20,7 +20,7 @@ int Application::main(args::Parser const &args) {
   auto params = args.params();
   if (std::size(params) != 1)
     log::fatal("Expected exactly one argument"sv);
-  Controller{settings}.dispatch(params[0]);
+  Controller{settings, params[0]}.dispatch();
   return EXIT_SUCCESS;
 }
 

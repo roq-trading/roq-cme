@@ -15,7 +15,7 @@ namespace import {
 
 struct PCAP final {
   using value_type = pcap_t;
-  using callback_type = std::function<void(struct pcap_pkthdr const *header, u_char const *packet)>;
+  using callback_type = std::function<bool(struct pcap_pkthdr const *header, u_char const *packet)>;
 
   explicit PCAP(std::string const &path);
   explicit PCAP(std::string_view const &path) : PCAP{std::string{path}} {}

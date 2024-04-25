@@ -46,8 +46,9 @@ return result;
 */
 template <typename SD, typename D>
 struct Handler final : public secdef::ConfigReader::Handler {
-  Handler(SD &security_definitions, D &dispatcher)
-      : security_definitions_{security_definitions}, dispatcher_{dispatcher} {}
+  Handler(SD &security_definitions, D &dispatcher, std::chrono::nanoseconds first_timestamp)
+      : security_definitions_{security_definitions}, dispatcher_{dispatcher},
+        origin_create_time_utc_{first_timestamp.count() ? first_timestamp : clock::get_realtime()} {}
 
   void operator()(secdef::ConfigReader::SecDef const &item) override {
     auto discard = dispatcher_.discard_symbol(item.symbol);
@@ -85,7 +86,8 @@ struct Handler final : public secdef::ConfigReader::Handler {
               .sending_time_utc = {},
               .discard = security.discard,
           };
-          TraceInfo trace_info;
+          auto now = clock::get_system();
+          TraceInfo trace_info{now, now, origin_create_time_utc_};
           create_trace_and_dispatch(dispatcher_, trace_info, reference_data, true);
         })) {
     } else {
@@ -96,6 +98,7 @@ struct Handler final : public secdef::ConfigReader::Handler {
  private:
   SD &security_definitions_;
   D &dispatcher_;
+  std::chrono::nanoseconds const origin_create_time_utc_;
 };
 }  // namespace
 
@@ -105,11 +108,11 @@ Shared::Shared(server::md::Dispatcher &dispatcher, Options const &options, Secur
     : dispatcher_{dispatcher}, options{options}, security_definitions{security_definitions}, buffer(BUFFER_SIZE) {
 }
 
-void Shared::read_secdef(std::string_view const &config_file) {
+void Shared::read_secdef(std::string_view const &config_file, std::chrono::nanoseconds first_timestamp) {
   if (std::empty(config_file))
     return;
   log::info(R"(Publishing instrument definitions from "{}"...)"sv, config_file);
-  Handler handler{security_definitions, dispatcher_};
+  Handler handler{security_definitions, dispatcher_, first_timestamp};
   secdef::ConfigReader::read(handler, config_file);
 }
 

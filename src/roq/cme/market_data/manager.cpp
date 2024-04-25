@@ -93,7 +93,7 @@ std::string_view const Manager::get_name(
 
 void Manager::operator()(Event<Start> const &event) {
   dispatch(event);
-  shared_.read_secdef(secdef_config_file_);  // note!
+  shared_.read_secdef(secdef_config_file_, options_.pcap_first_timestamp);  // note!
 }
 
 void Manager::operator()(Event<Stop> const &event) {
