@@ -436,6 +436,7 @@ void Incremental::operator()(Trace<cme_mdp::SecurityStatus30> const &event, mdp:
   log::info<5>("security_status_30={}, frame={}"sv, value, frame);
   value.sbeRewind();  // note!
   auto security_id = mdp::get_int(value.securityID(), value.securityIDNullValue());
+  auto security_group = mdp::get_string_view(value.securityGroup(), value.securityGroupLength());
   auto trading_status = mdp::map_security_trading_status(value.securityTradingStatus());
   auto exchange_time_utc = std::chrono::nanoseconds{value.transactTime()};
   auto dispatch = [&](auto security_id) {
@@ -452,12 +453,10 @@ void Incremental::operator()(Trace<cme_mdp::SecurityStatus30> const &event, mdp:
       create_trace_and_dispatch(shared_, trace_info, market_status, true);
     });
   };
-  if (security_id) {
+  if (security_id)
     dispatch(security_id);
-  } else {
-    auto security_group = mdp::get_string_view(value.securityGroup(), value.securityGroupLength());
+  if (!std::empty(security_group))
     shared_.security_definitions.get_security_group(security_group, [&](auto security_id) { dispatch(security_id); });
-  }
 }
 
 void Incremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &event, mdp::Frame const &frame) {

@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <fmt/format.h>
+
 #include "roq/api.hpp"
 
 #include "roq/market/mbp/sequencer.hpp"
@@ -81,3 +83,23 @@ struct Security final {
 }  // namespace tools
 }  // namespace cme
 }  // namespace roq
+
+template <>
+struct fmt::formatter<roq::cme::tools::Security> {
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(roq::cme::tools::Security const &value, format_context &context) const {
+    using namespace std::literals;
+    return fmt::format_to(
+        context.out(),
+        R"({{)"
+        R"(exchange="{}", )"
+        R"(symbol="{}", )"
+        R"(display_factor={}, )"
+        R"(discard={})"
+        R"(}})"sv,
+        value.exchange,
+        value.symbol,
+        value.display_factor,
+        value.discard);
+  }
+};
