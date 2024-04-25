@@ -287,14 +287,10 @@ Incremental::Incremental(
       shared_{shared}, cache_{cache}, channel_{channel} {
 }
 
-void Incremental::operator()(Event<Start> const &event) {
-  TraceInfo trace_info{event.message_info};
-  publish_stream_status(trace_info, ConnectionStatus::CONNECTING);
+void Incremental::operator()(Event<Start> const &) {
 }
 
-void Incremental::operator()(Event<Stop> const &event) {
-  TraceInfo trace_info{event.message_info};
-  publish_stream_status(trace_info, ConnectionStatus::DISCONNECTED);
+void Incremental::operator()(Event<Stop> const &) {
 }
 
 void Incremental::operator()(Event<Timer> const &event) {

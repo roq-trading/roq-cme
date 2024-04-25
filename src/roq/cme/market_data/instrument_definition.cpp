@@ -62,14 +62,10 @@ InstrumentDefinition::InstrumentDefinition(
       shared_{shared} {
 }
 
-void InstrumentDefinition::operator()(Event<Start> const &event) {
-  TraceInfo trace_info{event.message_info};
-  publish_stream_status(trace_info, ConnectionStatus::CONNECTING);
+void InstrumentDefinition::operator()(Event<Start> const &) {
 }
 
-void InstrumentDefinition::operator()(Event<Stop> const &event) {
-  TraceInfo trace_info{event.message_info};
-  publish_stream_status(trace_info, ConnectionStatus::DISCONNECTED);
+void InstrumentDefinition::operator()(Event<Stop> const &) {
 }
 
 void InstrumentDefinition::operator()(Event<Timer> const &event) {

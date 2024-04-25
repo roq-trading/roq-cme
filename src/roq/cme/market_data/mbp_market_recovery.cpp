@@ -139,14 +139,10 @@ MBPMarketRecovery::MBPMarketRecovery(
       shared_{shared}, channel_{channel} {
 }
 
-void MBPMarketRecovery::operator()(Event<Start> const &event) {
-  TraceInfo trace_info{event.message_info};
-  publish_stream_status(trace_info, ConnectionStatus::CONNECTING);
+void MBPMarketRecovery::operator()(Event<Start> const &) {
 }
 
-void MBPMarketRecovery::operator()(Event<Stop> const &event) {
-  TraceInfo trace_info{event.message_info};
-  publish_stream_status(trace_info, ConnectionStatus::DISCONNECTED);
+void MBPMarketRecovery::operator()(Event<Stop> const &) {
 }
 
 void MBPMarketRecovery::operator()(Event<Timer> const &event) {

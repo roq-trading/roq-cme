@@ -87,14 +87,10 @@ MBOFDMarketRecovery::MBOFDMarketRecovery(
       shared_{shared}, channel_{channel} {
 }
 
-void MBOFDMarketRecovery::operator()(Event<Start> const &event) {
-  TraceInfo trace_info{event.message_info};
-  publish_stream_status(trace_info, ConnectionStatus::CONNECTING);
+void MBOFDMarketRecovery::operator()(Event<Start> const &) {
 }
 
-void MBOFDMarketRecovery::operator()(Event<Stop> const &event) {
-  TraceInfo trace_info{event.message_info};
-  publish_stream_status(trace_info, ConnectionStatus::DISCONNECTED);
+void MBOFDMarketRecovery::operator()(Event<Stop> const &) {
 }
 
 void MBOFDMarketRecovery::operator()(Event<Timer> const &event) {
