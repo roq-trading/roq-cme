@@ -5,20 +5,20 @@
   "values": [
     {
       "name": "mbp_mbo",
-      "type": "bool",
+      "type": "std/bool",
       "default": false,
       "description": "Compare MBP and MBO updates?"
     },
     {
       "name": "depth",
-      "type": "uint32_t",
+      "type": "std/uint32",
       "required": true,
       "default": 10,
       "description": "Depth to compare."
     },
     {
       "name": "mbp_to_mbo_clear_price_level",
-      "type": "bool",
+      "type": "std/bool",
       "default": false,
       "description": "DEPRECATED"
     }

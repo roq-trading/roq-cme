@@ -4,25 +4,25 @@
   "values": [
     {
       "name": "multicast_address",
-      "type": "std::string",
+      "type": "std/string",
       "required": true,
       "description": "multicast address"
     },
     {
       "name": "multicast_port",
-      "type": "uint16_t",
+      "type": "std/uint16",
       "required": true,
       "description": "multicast port"
     },
     {
       "name": "local_interface",
-      "type": "std::string",
+      "type": "std/string",
       "required": true,
       "description": "local interface"
     },
     {
       "name": "filter_snapshot_from_incremental",
-      "type": "uint32_t",
+      "type": "std/uint32",
       "default": 1024,
       "description": "test"
     }

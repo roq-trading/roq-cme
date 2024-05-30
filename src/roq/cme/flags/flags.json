@@ -4,7 +4,8 @@
   "values": [
     {
       "name": "exchange",
-      "type": "std::vector<std::string>",
+      "type": "std/string",
+      "array": "std/vector",
       "default": [
         "XCBT",
         "XNYM"

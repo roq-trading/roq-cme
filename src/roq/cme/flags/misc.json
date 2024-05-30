@@ -4,38 +4,38 @@
   "values": [
     {
       "name": "enable_market_by_order",
-      "type": "bool",
+      "type": "std/bool",
       "default": false,
       "description": "Enable market by order updates?"
     },
     {
       "name": "filter_snapshot_from_incremental",
-      "type": "uint32_t",
+      "type": "std/uint32",
       "default": 1024,
       "description": "Used to remove low sequence number messages, e.g. snapshots"
     },
     {
       "name": "secdef_config_file",
-      "type": "std::string",
+      "type": "std/string",
       "validator": "roq::flags::validators::Path",
       "description": "Config file (path)"
     },
     {
       "name": "mbp_allow_price_inversion",
-      "type": "bool",
+      "type": "std/bool",
       "default": false,
       "description": "Allow price inversion?"
     },
     {
       "name": "decode_buffer_size",
-      "type": "uint32_t",
+      "type": "std/uint32",
       "required": true,
       "default": 10485760,
       "description": "Decode buffer size"
     },
     {
       "name": "encode_buffer_size",
-      "type": "uint32_t",
+      "type": "std/uint32",
       "required": true,
       "default": 4096,
       "description": "Encode buffer size"

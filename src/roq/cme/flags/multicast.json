@@ -5,40 +5,41 @@
   "values": [
     {
       "name": "config_file",
-      "type": "std::string",
+      "type": "std/string",
       "validator": "roq::flags::validators::Path",
       "required": true,
       "description": "Config file (path)"
     },
     {
       "name": "channel_ids",
-      "type": "std::vector<uint16_t>",
+      "type": "std/uint16",
+      "array": "std/vector",
       "required": true,
       "description": "Comma-separated list of multicast channels, e.g. 310"
     },
     {
       "name": "local_interface",
-      "type": "std::string",
+      "type": "std/string",
       "required": true,
       "description": "Multicast local interface"
     },
     {
       "name": "buffer_size",
-      "type": "uint32_t",
+      "type": "std/uint32",
       "default": "2048",
       "required": true,
       "description": "Buffer size (at least the maximum possible size of a datagram)"
     },
     {
       "name": "buffer_depth",
-      "type": "uint32_t",
+      "type": "std/uint32",
       "default": "8",
       "required": true,
       "description": "Multicast buffer depth (used for re-ordering)"
     },
     {
       "name": "timeout",
-      "type": "std::chrono::nanoseconds",
+      "type": "std/nanoseconds",
       "validator": "roq::flags::validators::TimePeriod",
       "default": "90s",
       "description": "Timeout when waiting for snapshot"

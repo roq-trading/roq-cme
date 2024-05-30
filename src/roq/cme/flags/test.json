@@ -5,13 +5,13 @@
   "values": [
     {
       "name": "reordering",
-      "type": "uint32_t",
+      "type": "std/uint32",
       "default": 0,
       "description": "Test"
     },
     {
       "name": "drop",
-      "type": "uint32_t",
+      "type": "std/uint32",
       "default": 0,
       "description": "Test"
     }

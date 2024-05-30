@@ -4,13 +4,14 @@
   "values": [
     {
       "name": "type",
-      "type": "std::string",
+      "type": "std/string",
       "required": true,
       "description": "Type of output, e.g. :code:`tcpdump`."
     },
     {
       "name": "channel_ids",
-      "type": "std::vector<uint16_t>",
+      "type": "std/uint16",
+      "array": "std/vector",
       "required": true,
       "description": "Comma-separated list of multicast channels to include."
     }

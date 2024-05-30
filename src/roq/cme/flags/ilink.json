@@ -5,28 +5,29 @@
   "values": [
     {
       "name": "firm_id",
-      "type": "std::string",
+      "type": "std/string",
       "description": "Firm Id"
     },
     {
       "name": "port",
-      "type": "uint16_t",
+      "type": "std/uint16",
       "description": "Port"
     },
     {
       "name": "location",
-      "type": "std::string",
+      "type": "std/string",
       "description": "Location"
     },
     {
       "name": "config_file",
-      "type": "std::string",
+      "type": "std/string",
       "validator": "roq::flags::validators::Path",
       "description": "Config file (path)"
     },
     {
       "name": "market_segment_ids",
-      "type": "std::vector<std::string>",
+      "type": "std/string",
+      "array": "std/vector",
       "description": "Comma-separated list of market segments, e.g. 70"
     }
   ]
