@@ -1,5 +1,5 @@
 {
-  "name": "Test",
+  "name": "roq/cme/import/flags/Test",
   "type": "flags",
   "prefix": "test_",
   "values": [

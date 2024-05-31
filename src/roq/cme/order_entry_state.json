@@ -1,5 +1,5 @@
 {
-  "name": "OrderEntryState",
+  "name": "roq/cme/OrderEntryState",
   "type": "enum",
   "values": [
     {

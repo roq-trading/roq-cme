@@ -1,5 +1,5 @@
 {
-  "name": "Multicast",
+  "name": "roq/cme/flags/Multicast",
   "type": "flags",
   "prefix": "multicast_",
   "values": [

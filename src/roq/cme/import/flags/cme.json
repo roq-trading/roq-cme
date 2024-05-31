@@ -1,5 +1,5 @@
 {
-  "name": "CME",
+  "name": "roq/cme/import/flags/CME",
   "type": "flags",
   "prefix": "cme_",
   "values": [

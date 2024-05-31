@@ -1,5 +1,5 @@
 {
-  "name": "EventLog",
+  "name": "roq/cme/import/flags/EventLog",
   "type": "flags",
   "prefix": "event_log_",
   "values": [

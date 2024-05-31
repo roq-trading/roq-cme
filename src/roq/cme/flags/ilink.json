@@ -1,5 +1,5 @@
 {
-  "name": "iLink",
+  "name": "roq/cme/flags/iLink",
   "type": "flags",
   "prefix": "ilink_",
   "values": [
