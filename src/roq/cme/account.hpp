@@ -24,9 +24,7 @@ struct Account final {
   std::string_view get_login() const { return login_; }
   std::string_view get_password() const { return password_; }
 
-  inline std::span<std::byte const> create_signature(tools::CanonicalMessage const &message) {
-    return crypto_.create_signature(encode_buffer_, message);
-  }
+  inline std::span<std::byte const> create_signature(tools::CanonicalMessage const &message) { return crypto_.create_signature(encode_buffer_, message); }
 
  private:
   std::string const name_;

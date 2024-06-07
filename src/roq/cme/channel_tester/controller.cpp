@@ -44,8 +44,8 @@ Controller::Controller(Settings const &settings)
     : settings_{settings}, context_{io::engine::ContextFactory::create_libevent()},
       terminate_{(*context_).create_signal(*this, io::sys::Signal::Type::TERMINATE)},
       interrupt_{(*context_).create_signal(*this, io::sys::Signal::Type::INTERRUPT)},
-      bus_error_{(*context_).create_signal(*this, io::sys::Signal::Type::BUS_ERROR)},
-      receiver_{create_receiver(*this, settings, *context_)}, buffer_(BUFFER_SIZE) {
+      bus_error_{(*context_).create_signal(*this, io::sys::Signal::Type::BUS_ERROR)}, receiver_{create_receiver(*this, settings, *context_)},
+      buffer_(BUFFER_SIZE) {
 }
 
 void Controller::dispatch() {

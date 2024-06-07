@@ -29,12 +29,7 @@ namespace market_data {
 
 struct Manager final {
   Manager(
-      server::md::Dispatcher &,
-      Options const &,
-      SecurityDefinitions &,
-      std::span<uint16_t const> const &channel_ids,
-      mdp::Config const &,
-      uint16_t &stream_id);
+      server::md::Dispatcher &, Options const &, SecurityDefinitions &, std::span<uint16_t const> const &channel_ids, mdp::Config const &, uint16_t &stream_id);
 
   std::string_view const get_name(uint16_t channel_id, mdp::ConnectionType, Priority) const;
 
@@ -44,8 +39,7 @@ struct Manager final {
 
   void operator()(metrics::Writer &);
 
-  void dispatch(
-      uint16_t channel_id, mdp::ConnectionType, Priority, std::span<std::byte const> const &payload, TraceInfo const &);
+  void dispatch(uint16_t channel_id, mdp::ConnectionType, Priority, std::span<std::byte const> const &payload, TraceInfo const &);
 
  protected:
   template <typename T>

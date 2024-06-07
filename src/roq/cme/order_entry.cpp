@@ -87,8 +87,7 @@ auto create_connection_manager(auto &handler, auto &settings, auto &connection_f
 }
 
 struct create_metrics final : public core::metrics::Factory {
-  explicit create_metrics(auto &settings, auto const &group, auto const &function)
-      : core::metrics::Factory(settings.app.name, group, function) {}
+  explicit create_metrics(auto &settings, auto const &group, auto const &function) : core::metrics::Factory(settings.app.name, group, function) {}
 };
 
 auto get_quantity(double value) -> uint32_t {
@@ -115,12 +114,8 @@ constexpr auto decode_order_request_id(uint64_t value) -> std::tuple<RequestType
 static_assert(encode_order_request_id(RequestType::CREATE_ORDER, 1, 1) == 0x0101000000000001);
 static_assert(encode_order_request_id(RequestType::CANCEL_ORDER, SOURCE_SELF, ORDER_ID_MAX) == 0x03ffffffffffffff);
 
-static_assert(
-    decode_order_request_id(0x0101000000000001) ==
-    std::tuple<RequestType, uint8_t, uint64_t>{RequestType::CREATE_ORDER, 1, 1});
-static_assert(
-    decode_order_request_id(0x03ffffffffffffff) ==
-    std::tuple<RequestType, uint8_t, uint64_t>{RequestType::CANCEL_ORDER, SOURCE_SELF, ORDER_ID_MAX});
+static_assert(decode_order_request_id(0x0101000000000001) == std::tuple<RequestType, uint8_t, uint64_t>{RequestType::CREATE_ORDER, 1, 1});
+static_assert(decode_order_request_id(0x03ffffffffffffff) == std::tuple<RequestType, uint8_t, uint64_t>{RequestType::CANCEL_ORDER, SOURCE_SELF, ORDER_ID_MAX});
 
 // side
 
@@ -492,18 +487,10 @@ auto order_update_from_execution_report(T &value, auto &security, auto &external
 // === IMPLEMENTATION ===
 
 OrderEntry::OrderEntry(
-    Handler &handler,
-    io::Context &context,
-    uint16_t stream_id,
-    Account &account,
-    Shared &shared,
-    uint8_t market_segment_id,
-    io::web::URI const &uri)
-    : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_, account.get_name())},
-      market_segment_id_{market_segment_id},
+    Handler &handler, io::Context &context, uint16_t stream_id, Account &account, Shared &shared, uint8_t market_segment_id, io::web::URI const &uri)
+    : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_, account.get_name())}, market_segment_id_{market_segment_id},
       connection_factory_{create_connection_factory(shared.settings, context, uri)},
-      connection_manager_{create_connection_manager(*this, shared.settings, *connection_factory_)},
-      decode_buffer_(shared.settings.misc.decode_buffer_size),
+      connection_manager_{create_connection_manager(*this, shared.settings, *connection_factory_)}, decode_buffer_(shared.settings.misc.decode_buffer_size),
       encode_buffer_2_(shared.settings.misc.encode_buffer_size),
       counter_{
           .disconnect = create_metrics(shared.settings, name_, "disconnect"sv),
@@ -519,23 +506,18 @@ OrderEntry::OrderEntry(
           .retransmission = create_metrics(shared.settings, name_, "retransmission"sv),
           .retransmission_reject = create_metrics(shared.settings, name_, "retransmission_reject"sv),
           .not_applied = create_metrics(shared.settings, name_, "not_applied"sv),
-          .party_details_definition_request_ack =
-              create_metrics(shared.settings, name_, "party_details_definition_request_ack"sv),
+          .party_details_definition_request_ack = create_metrics(shared.settings, name_, "party_details_definition_request_ack"sv),
           .business_reject = create_metrics(shared.settings, name_, "business_reject"sv),
           .execution_report_new = create_metrics(shared.settings, name_, "execution_report_new"sv),
           .execution_report_reject = create_metrics(shared.settings, name_, "execution_report_reject"sv),
-          .execution_report_trade_outright =
-              create_metrics(shared.settings, name_, "execution_report_trade_outright"sv),
+          .execution_report_trade_outright = create_metrics(shared.settings, name_, "execution_report_trade_outright"sv),
           .execution_report_trade_spread = create_metrics(shared.settings, name_, "execution_report_trade_spread"sv),
-          .execution_report_trade_spread_leg =
-              create_metrics(shared.settings, name_, "execution_report_trade_spread_leg"sv),
+          .execution_report_trade_spread_leg = create_metrics(shared.settings, name_, "execution_report_trade_spread_leg"sv),
           .execution_report_modify = create_metrics(shared.settings, name_, "execution_report_modify"sv),
           .execution_report_status = create_metrics(shared.settings, name_, "execution_report_status"sv),
           .execution_report_cancel = create_metrics(shared.settings, name_, "execution_report_cancel"sv),
-          .execution_report_pending_cancel =
-              create_metrics(shared.settings, name_, "execution_report_pending_cancel"sv),
-          .execution_report_pending_replace =
-              create_metrics(shared.settings, name_, "execution_report_pending_replace"sv),
+          .execution_report_pending_cancel = create_metrics(shared.settings, name_, "execution_report_pending_cancel"sv),
+          .execution_report_pending_replace = create_metrics(shared.settings, name_, "execution_report_pending_replace"sv),
           .order_cancel_reject = create_metrics(shared.settings, name_, "order_cancel_reject"sv),
           .order_cancel_replace_reject = create_metrics(shared.settings, name_, "order_cancel_replace_reject"sv),
           .order_mass_action_report = create_metrics(shared.settings, name_, "order_mass_action_report"sv),
@@ -564,8 +546,7 @@ void OrderEntry::operator()(Event<Timer> const &event) {
   send_sequence();  // note! send() updates next_heartbeat
 }
 
-uint16_t OrderEntry::operator()(
-    Event<CreateOrder> const &event, server::oms::Order const &order, std::string_view const &request_id) {
+uint16_t OrderEntry::operator()(Event<CreateOrder> const &event, server::oms::Order const &order, std::string_view const &request_id) {
   if (!ready()) [[unlikely]]
     throw server::oms::NotReady{"not ready"sv};
   send_new_order_single(event.value, order, request_id);
@@ -1117,11 +1098,7 @@ void OrderEntry::operator()(Trace<cme_ilink::OrderMassActionReport562> const &ev
           auto orig_cl_ord_id = item.getOrigCIOrdIDAsStringView();
           auto affected_order_id = item.affectedOrderID();
           auto cxl_quantity = item.cxlQuantity();
-          log::info(
-              R"(DEBUG orig_cl_ord_id="{}", affected_order_id={}, cxl_quantity={})"sv,
-              orig_cl_ord_id,
-              affected_order_id,
-              cxl_quantity);
+          log::info(R"(DEBUG orig_cl_ord_id="{}", affected_order_id={}, cxl_quantity={})"sv, orig_cl_ord_id, affected_order_id, cxl_quantity);
           auto external_order_id = fmt::format("{}"sv, affected_order_id);
           auto order_update = server::oms::OrderUpdate{
               .account = account,
@@ -1528,14 +1505,12 @@ void OrderEntry::send_order_mass_status_request() {
 
 // note!
 //   undoc: execution mode must be x0 (NULL results in reject reason 109)
-void OrderEntry::send_new_order_single(
-    CreateOrder const &create_order, server::oms::Order const &order, std::string_view const &request_id) {
+void OrderEntry::send_new_order_single(CreateOrder const &create_order, server::oms::Order const &order, std::string_view const &request_id) {
   if (shared_.security_definitions.find_security_id(market_segment_id_, order.symbol, [&](auto security_id) {
         log::info("DEBUG found security_id={}"sv, security_id);
         if (shared_.security_definitions.get_security(security_id, [&](auto &security) {
               if (create_order.exchange != security.exchange) [[unlikely]] {
-                throw server::oms::Rejected{
-                    Origin::GATEWAY, Error::INVALID_EXCHANGE, "Expected: {}"sv, security.exchange};
+                throw server::oms::Rejected{Origin::GATEWAY, Error::INVALID_EXCHANGE, "Expected: {}"sv, security.exchange};
               }
               auto order_qty = get_quantity(create_order.quantity);
               auto side = map(create_order.side);
@@ -1582,11 +1557,7 @@ void OrderEntry::send_new_order_single(
       })) {
   } else {
     throw server::oms::Rejected{
-        Origin::GATEWAY,
-        Error::INVALID_SYMBOL,
-        R"(No mapping for market_segment_id={} and symbol="{}")"sv,
-        market_segment_id_,
-        order.symbol};
+        Origin::GATEWAY, Error::INVALID_SYMBOL, R"(No mapping for market_segment_id={} and symbol="{}")"sv, market_segment_id_, order.symbol};
   }
 }
 
@@ -1638,11 +1609,7 @@ void OrderEntry::send_order_cancel_replace_request(ModifyOrder const &modify_ord
       })) {
   } else {
     throw server::oms::Rejected{
-        Origin::GATEWAY,
-        Error::INVALID_SYMBOL,
-        R"(No mapping for market_segment_id={} and symbol="{}")"sv,
-        market_segment_id_,
-        order.symbol};
+        Origin::GATEWAY, Error::INVALID_SYMBOL, R"(No mapping for market_segment_id={} and symbol="{}")"sv, market_segment_id_, order.symbol};
   }
 }
 
@@ -1676,11 +1643,7 @@ void OrderEntry::send_order_cancel_request(CancelOrder const &cancel_order, serv
       })) {
   } else {
     throw server::oms::Rejected{
-        Origin::GATEWAY,
-        Error::INVALID_SYMBOL,
-        R"(No mapping for market_segment_id={} and symbol="{}")"sv,
-        market_segment_id_,
-        order.symbol};
+        Origin::GATEWAY, Error::INVALID_SYMBOL, R"(No mapping for market_segment_id={} and symbol="{}")"sv, market_segment_id_, order.symbol};
   }
 }
 
@@ -1714,49 +1677,27 @@ void OrderEntry::send_order_mass_action_request(CancelAllOrders const &) {
 }
 
 template <typename Callback, typename... Args>
-void OrderEntry::operator()(
-    Callback callback,
-    Trace<server::oms::OrderUpdate> const &event,
-    std::string_view const &client_order_id,
-    Args &&...args) {
+void OrderEntry::operator()(Callback callback, Trace<server::oms::OrderUpdate> const &event, std::string_view const &client_order_id, Args &&...args) {
   auto &[trace_info, order_update] = event;
-  if (shared_.update_order(
-          client_order_id, stream_id_, trace_info, order_update, std::forward<Args>(args)..., [&](auto &order) {
-            callback(order);
-          })) {
+  if (shared_.update_order(client_order_id, stream_id_, trace_info, order_update, std::forward<Args>(args)..., [&](auto &order) { callback(order); })) {
   } else {
     log::warn("*** EXTERNAL ORDER ***"sv);
   }
 }
 
 template <typename... Args>
-void OrderEntry::operator()(
-    Trace<server::oms::Response> const &event, std::string_view const &client_order_id, Args &&...args) {
+void OrderEntry::operator()(Trace<server::oms::Response> const &event, std::string_view const &client_order_id, Args &&...args) {
   auto &[trace_info, response] = event;
-  if (shared_.update_order(
-          client_order_id,
-          stream_id_,
-          trace_info,
-          response,
-          std::forward<Args>(args)...,
-          [&]([[maybe_unused]] auto &order) {})) {
+  if (shared_.update_order(client_order_id, stream_id_, trace_info, response, std::forward<Args>(args)..., [&]([[maybe_unused]] auto &order) {})) {
   } else {
     log::warn("*** EXTERNAL ORDER ***"sv);
   }
 }
 
 template <typename... Args>
-void OrderEntry::operator()(
-    Trace<server::oms::Response> const &event, uint8_t user_id, uint64_t order_id, Args &&...args) {
+void OrderEntry::operator()(Trace<server::oms::Response> const &event, uint8_t user_id, uint64_t order_id, Args &&...args) {
   auto &[trace_info, response] = event;
-  if (shared_.update_order(
-          user_id,
-          order_id,
-          stream_id_,
-          trace_info,
-          response,
-          std::forward<Args>(args)...,
-          []([[maybe_unused]] auto &order) {})) {
+  if (shared_.update_order(user_id, order_id, stream_id_, trace_info, response, std::forward<Args>(args)..., []([[maybe_unused]] auto &order) {})) {
   } else {
     log::warn("Did not find order: user_id={}, order_id={}"sv, user_id, order_id);
   }

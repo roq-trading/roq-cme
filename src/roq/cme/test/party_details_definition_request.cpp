@@ -73,12 +73,12 @@ TEST_CASE("simple", "[party_details_definition_request]") {
       "\x47"                                                                              // cmta giveup cd G=giveup
       "\x01"                                                                              // cust order capacity
       "\x01"                                                                              // clearing account type
-      "\x4e"                              // self match prevention N=newest
-      "\x00"                              // avg px indicator
-      "\x00"                              // clearing trade price type
-      "\x48"                              // cust order handling inst H=algo
-      "\x00\x00\x00\x00\x00\x00\x00\x00"  // executor
-      "\x00\x00\x00\x00\x00\x00\x00\x00"  // idm short code
+      "\x4e"                                                                              // self match prevention N=newest
+      "\x00"                                                                              // avg px indicator
+      "\x00"                                                                              // clearing trade price type
+      "\x48"                                                                              // cust order handling inst H=algo
+      "\x00\x00\x00\x00\x00\x00\x00\x00"                                                  // executor
+      "\x00\x00\x00\x00\x00\x00\x00\x00"                                                  // idm short code
       // no party details
       "\x16\x00"                                                                          // block length 22
       "\x01"                                                                              // count

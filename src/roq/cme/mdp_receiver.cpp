@@ -43,20 +43,14 @@ auto create_receiver(auto &handler, auto &context, auto &shared, auto channel_id
 }
 
 struct create_metrics final : public core::metrics::Factory {
-  explicit create_metrics(auto &settings, auto const &group, auto const &function)
-      : core::metrics::Factory(settings.app.name, group, function) {}
+  explicit create_metrics(auto &settings, auto const &group, auto const &function) : core::metrics::Factory(settings.app.name, group, function) {}
 };
 }  // namespace
 
 // === IMPLEMENTATION ===
 
 MDPReceiver::MDPReceiver(
-    io::Context &context,
-    Shared &shared,
-    market_data::Manager &manager,
-    uint16_t channel_id,
-    mdp::ConnectionType connection_type,
-    Priority priority)
+    io::Context &context, Shared &shared, market_data::Manager &manager, uint16_t channel_id, mdp::ConnectionType connection_type, Priority priority)
     : channel_id{channel_id}, connection_type{connection_type}, priority{priority}, manager_{manager},
       name_{manager_.get_name(channel_id, connection_type, priority)},
       receiver_{create_receiver(*this, context, shared, channel_id, connection_type, priority)},

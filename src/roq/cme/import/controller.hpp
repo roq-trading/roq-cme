@@ -51,10 +51,8 @@ struct Controller final : public server::md::Dispatcher, public market_data::Sec
   void operator()(Trace<MarketByOrderUpdate> const &, bool is_last) override;
   void operator()(Trace<TradeSummary> const &, bool is_last) override;
   void operator()(Trace<StatisticsUpdate> const &, bool is_last) override;
-  roq::cache::MarketByPrice &get_market_by_price(
-      std::string_view const &exchange, std::string_view const &symbol) override;
-  roq::cache::MarketByOrder &get_market_by_order(
-      std::string_view const &exchange, std::string_view const &symbol) override;
+  roq::cache::MarketByPrice &get_market_by_price(std::string_view const &exchange, std::string_view const &symbol) override;
+  roq::cache::MarketByOrder &get_market_by_order(std::string_view const &exchange, std::string_view const &symbol) override;
 
   // helpers
 
@@ -65,8 +63,7 @@ struct Controller final : public server::md::Dispatcher, public market_data::Sec
 
   MessageInfo create_message_info(TraceInfo const &);
 
-  void DEBUG_compare(
-      std::string_view const &exchange, std::string_view const &symbol, std::chrono::nanoseconds exchange_time_utc);
+  void DEBUG_compare(std::string_view const &exchange, std::string_view const &symbol, std::chrono::nanoseconds exchange_time_utc);
 
  private:
   Settings const &settings_;

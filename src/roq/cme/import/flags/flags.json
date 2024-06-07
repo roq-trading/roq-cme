@@ -32,8 +32,7 @@
       "name": "cache_all_reference_data",
       "type": "std/bool",
       "default": false,
-      "description":
-          "This flag allows you (opt-in) to cache all reference data including symbols that would normally be discarded due to regex matching."
+      "description": "This flag allows you (opt-in) to cache all reference data including symbols that would normally be discarded due to regex matching."
     }
   ]
 }

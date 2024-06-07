@@ -45,11 +45,7 @@ struct Security final {
   template <typename Callback>
   bool update_mbo_snapshot(uint32_t current_chunk, uint32_t no_chunks, Callback callback) {
     using namespace std::literals;
-    log::info(
-        "DEBUG mbo={{no_chunks={}, last_chunk={}, len(orders)={}}}"sv,
-        mbo.no_chunks,
-        mbo.last_chunk,
-        std::size(mbo.orders));
+    log::info("DEBUG mbo={{no_chunks={}, last_chunk={}, len(orders)={}}}"sv, mbo.no_chunks, mbo.last_chunk, std::size(mbo.orders));
     auto reset = [&]() {
       mbo.no_chunks = {};
       mbo.last_chunk = {};

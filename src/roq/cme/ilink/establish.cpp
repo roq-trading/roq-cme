@@ -20,8 +20,7 @@ std::span<std::byte const> Establish::encode(std::span<std::byte> const &buffer)
   std::string_view tmp{reinterpret_cast<char const *>(std::data(hmac_signature)), std::size(hmac_signature)};
   auto &result = value.wrapAndApplyHeader(reinterpret_cast<char *>(std::data(buffer)), 0, std::size(buffer));
   result  //
-      .putHMACSignature(
-          std::string_view{reinterpret_cast<char const *>(std::data(hmac_signature)), std::size(hmac_signature)})
+      .putHMACSignature(std::string_view{reinterpret_cast<char const *>(std::data(hmac_signature)), std::size(hmac_signature)})
       .putAccessKeyID(access_key_id)
       .putTradingSystemName(trading_system_name)
       .putTradingSystemVersion(trading_system_version)

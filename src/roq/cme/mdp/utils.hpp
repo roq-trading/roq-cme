@@ -271,8 +271,7 @@ struct Group final {
   auto format_to(auto &context) {
     using namespace std::literals;
     if (value_.count())
-      fmt::format_to(
-          context.out(), "{}"sv, fmt::join(roq::core::sbe::iterator{value_}, roq::core::sbe::sentinel{}, ", "sv));
+      fmt::format_to(context.out(), "{}"sv, fmt::join(roq::core::sbe::iterator{value_}, roq::core::sbe::sentinel{}, ", "sv));
     return context.out();
   }
 

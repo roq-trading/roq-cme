@@ -41,8 +41,7 @@ R create_hmac(auto &access_secret) {
 Crypto::Crypto(std::string_view const &secret) : mac_{create_hmac<decltype(mac_)>(secret)} {
 }
 
-std::span<std::byte const> Crypto::create_signature(
-    std::span<std::byte> const &buffer, CanonicalMessage const &message) {
+std::span<std::byte const> Crypto::create_signature(std::span<std::byte> const &buffer, CanonicalMessage const &message) {
   utils::text::Writer writer{buffer};
   static_assert(std::is_same<decltype(message.request_timestamp)::rep, int64_t>::value);
   writer  //

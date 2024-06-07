@@ -14,8 +14,7 @@
       "name": "secdef_file",
       "type": "std/string",
       "validator": "roq::flags::validators::Path",
-      "description":
-          "CME's instrument definitions file (required when the .pcap file does not contain instrument definitions)."
+      "description": "CME's instrument definitions file (required when the .pcap file does not contain instrument definitions)."
     }
   ]
 }

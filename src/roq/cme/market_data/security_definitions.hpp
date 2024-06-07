@@ -28,12 +28,7 @@ struct SecurityDefinitions final {
   bool has_security(int32_t security_id) { return securities_.find(security_id) != std::end(securities_); }
 
   template <typename Callback>
-  void create_security(
-      std::string_view const &security_group,
-      uint8_t market_segment_id,
-      int32_t security_id,
-      tools::Security &&security,
-      Callback callback) {
+  void create_security(std::string_view const &security_group, uint8_t market_segment_id, int32_t security_id, tools::Security &&security, Callback callback) {
     if (!security.discard) {
       security_groups_[security_group].insert(security_id);
       market_segments_[market_segment_id].try_emplace(static_cast<std::string_view>(security.symbol), security_id);

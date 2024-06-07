@@ -81,8 +81,7 @@ auto create_gateway_settings(auto &settings) -> GatewaySettings {
   };
 }
 
-auto create_market_data(
-    auto &handler, auto &settings, auto &config, auto &security_definitions, auto pcap_first_timestamp) {
+auto create_market_data(auto &handler, auto &settings, auto &config, auto &security_definitions, auto pcap_first_timestamp) {
   auto options = market_data::Options{
       .cache_all_reference_data = settings.cache_all_reference_data,
       .enable_market_by_order = ENABLE_MARKET_BY_ORDER,
@@ -110,13 +109,11 @@ R create_symbols_regex(auto &symbols) {
 // === IMPLEMENTATION ===
 
 Controller::Controller(Settings const &settings, std::string_view const &pcap_path)
-    : settings_{settings}, pcap_path_{pcap_path}, gateway_settings_{create_gateway_settings(settings)},
-      config_{settings.cme.config_file, false},
-      symbols_regex_{create_symbols_regex<decltype(symbols_regex_)>(settings.symbols)},
-      first_timestamp_{get_first_timestamp(pcap_path_)}, security_definitions_{*this, settings.cme.secdef_file},
-      market_data_{create_market_data(*this, settings, config_, security_definitions_, first_timestamp_)},
-      encode_buffer_(settings.misc.encode_buffer_size), mbp_depth_(settings.test.depth),
-      mbo_depth_(settings.test.depth) {
+    : settings_{settings}, pcap_path_{pcap_path}, gateway_settings_{create_gateway_settings(settings)}, config_{settings.cme.config_file, false},
+      symbols_regex_{create_symbols_regex<decltype(symbols_regex_)>(settings.symbols)}, first_timestamp_{get_first_timestamp(pcap_path_)},
+      security_definitions_{*this, settings.cme.secdef_file},
+      market_data_{create_market_data(*this, settings, config_, security_definitions_, first_timestamp_)}, encode_buffer_(settings.misc.encode_buffer_size),
+      mbp_depth_(settings.test.depth), mbo_depth_(settings.test.depth) {
   log::info("test={}"sv, settings_.test.mbp_mbo);
   log::info("gateway_settings={}"sv, gateway_settings_);
 }
@@ -161,8 +158,7 @@ void Controller::dispatch() {
       char dst[INET_ADDRSTRLEN];
       inet_ntop(AF_INET, &((*ip_header).ip_dst), dst, INET_ADDRSTRLEN);
       if ((*ip_header).ip_p == IPPROTO_UDP) {
-        auto udp_header =
-            reinterpret_cast<struct udphdr const *>(packet + sizeof(struct ether_header) + sizeof(struct ip));
+        auto udp_header = reinterpret_cast<struct udphdr const *>(packet + sizeof(struct ether_header) + sizeof(struct ip));
 #if __APPLE__
         // auto src_port = ntohs((*udp_header).uh_sport);
         auto dst_port = ntohs((*udp_header).uh_dport);
@@ -172,12 +168,7 @@ void Controller::dispatch() {
 #endif
         auto offset = sizeof(struct ether_header) + sizeof(struct ip) + sizeof(struct udphdr);
         std::span payload{reinterpret_cast<std::byte const *>(packet + offset), (*header).len - offset};
-        log::info<5>(
-            "timestamp={}, address={}, port={}, payload={}"sv,
-            timestamp,
-            dst,
-            dst_port,
-            utils::debug::hex::Message{payload});
+        log::info<5>("timestamp={}, address={}, port={}, payload={}"sv, timestamp, dst, dst_port, utils::debug::hex::Message{payload});
         if (config_.find(dst, dst_port, [&](auto channel_id, auto connection_type, auto priority) {
               if (include(connection_type, priority)) {
                 TraceInfo trace_info{timestamp, timestamp, timestamp};
@@ -276,8 +267,7 @@ void Controller::operator()(Trace<StatisticsUpdate> const &event, [[maybe_unused
   append(event);
 }
 
-roq::cache::MarketByPrice &Controller::get_market_by_price(
-    [[maybe_unused]] std::string_view const &exchange, std::string_view const &symbol) {
+roq::cache::MarketByPrice &Controller::get_market_by_price([[maybe_unused]] std::string_view const &exchange, std::string_view const &symbol) {
   auto iter = market_by_price_.find(symbol);
   if (iter == std::end(market_by_price_)) {
     auto market_by_price = market::mbp::Factory::create(exchange, symbol, gateway_settings_);
@@ -287,8 +277,7 @@ roq::cache::MarketByPrice &Controller::get_market_by_price(
   return *(*iter).second;
 }
 
-roq::cache::MarketByOrder &Controller::get_market_by_order(
-    [[maybe_unused]] std::string_view const &exchange, std::string_view const &symbol) {
+roq::cache::MarketByOrder &Controller::get_market_by_order([[maybe_unused]] std::string_view const &exchange, std::string_view const &symbol) {
   auto iter = market_by_order_.find(symbol);
   if (iter == std::end(market_by_order_)) {
     auto market_by_order = market::mbo::Factory::create(exchange, symbol, gateway_settings_);
@@ -322,8 +311,7 @@ void Controller::create_producer(std::chrono::nanoseconds timestamp_utc) {
       .encoding = core::event_log::Encoding::FLATBUFFERS,
       .utimes_on_sync = false,
   };
-  producer_ = std::make_unique<core::event_log::Producer>(
-      ROQ_PACKAGE_NAME, settings_.name, source_session_id_, paths, USERS, config);
+  producer_ = std::make_unique<core::event_log::Producer>(ROQ_PACKAGE_NAME, settings_.name, source_session_id_, paths, USERS, config);
 }
 
 template <typename T>
@@ -369,8 +357,7 @@ MessageInfo Controller::create_message_info(TraceInfo const &trace_info) {
   };
 }
 
-void Controller::DEBUG_compare(
-    std::string_view const &exchange, std::string_view const &symbol, std::chrono::nanoseconds exchange_time_utc) {
+void Controller::DEBUG_compare(std::string_view const &exchange, std::string_view const &symbol, std::chrono::nanoseconds exchange_time_utc) {
   auto &market_by_price = get_market_by_price(exchange, symbol);
   auto &market_by_order = get_market_by_order(exchange, symbol);
   market_by_price.extract(mbp_depth_);

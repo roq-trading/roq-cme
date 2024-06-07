@@ -62,10 +62,7 @@ TEST_CASE("simple", "[new_order_single]") {
       .timeInForce(TimeInForce::GoodTillCancel)
       .manualOrderIndicator(ManualOrdIndReq::Automated);
   nso.execInst().aON(true);
-  nso.executionMode(ExecMode::Aggressive)
-      .liquidityFlag(BooleanNULL::True)
-      .managedOrder(BooleanNULL::True)
-      .shortSaleType(ShortSaleType::LongSell);
+  nso.executionMode(ExecMode::Aggressive).liquidityFlag(BooleanNULL::True).managedOrder(BooleanNULL::True).shortSaleType(ShortSaleType::LongSell);
   nso.discretionPrice().mantissa(PRICENULL9::mantissaNullValue());
   /*
   auto &price = new_order_single.price();
@@ -75,8 +72,7 @@ TEST_CASE("simple", "[new_order_single]") {
   */
   std::span message{std::data(buffer), value_type::sbeBlockAndHeaderLength()};
   fmt::print(stderr, "{}\n"sv, utils::debug::hex::Message{message});
-  fmt::print(
-      stderr, "{} {} {}\n"sv, std::size(message), value_type::sbeBlockAndHeaderLength(), value_type::sbeBlockLength());
+  fmt::print(stderr, "{} {} {}\n"sv, std::size(message), value_type::sbeBlockAndHeaderLength(), value_type::sbeBlockLength());
   [[maybe_unused]] auto expected =
       "\x7c\x00"  // block length
       "\x02\x02"  // template id (514)

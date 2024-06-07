@@ -165,8 +165,7 @@ void statistics_emplace_back(auto &result, T const &item, auto &security) {
   }
 }
 
-void emplace_back(
-    cme_mdp::MDIncrementalRefreshBook46::NoMDEntries const &item, auto &security, auto &layer, auto &bids, auto &asks) {
+void emplace_back(cme_mdp::MDIncrementalRefreshBook46::NoMDEntries const &item, auto &security, auto &layer, auto &bids, auto &asks) {
   using value_type = typename std::remove_cvref<decltype(item)>::type;
   switch (item.mDEntryType()) {
     using enum cme_mdp::MDEntryTypeBook::Value;
@@ -197,12 +196,7 @@ void emplace_back(
   }
 }
 
-void emplace_back(
-    cme_mdp::MDIncrementalRefreshBook46::NoOrderIDEntries const &item,
-    auto &security,
-    auto side,
-    auto price,
-    auto &orders) {
+void emplace_back(cme_mdp::MDIncrementalRefreshBook46::NoOrderIDEntries const &item, auto &security, auto side, auto price, auto &orders) {
   auto action = mdp::map(item.orderUpdateAction());
   auto quantity = mdp::get_int(item.mDDisplayQty(), item.mDDisplayQtyNullValue());
   auto priority = mdp::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue());
@@ -223,8 +217,7 @@ void emplace_back(
 }
 
 template <typename T>
-void emplace_back(
-    cme_mdp::MDIncrementalRefreshOrderBook47::NoMDEntries const &item, auto &security, auto security_id, T &orders) {
+void emplace_back(cme_mdp::MDIncrementalRefreshOrderBook47::NoMDEntries const &item, auto &security, auto security_id, T &orders) {
   using value_type = typename std::remove_cvref<decltype(item)>::type;
   using result_type = typename T::value_type;
   auto create_update = [&](auto side) {
@@ -275,16 +268,9 @@ void emplace_back(
 
 // === IMPLEMENTATION ===
 
-Incremental::Incremental(
-    Shared &shared,
-    Cache &cache,
-    Channel &channel,
-    uint16_t stream_id,
-    mdp::Config const &config,
-    uint16_t channel_id,
-    Priority priority)
-    : priority{priority}, stream_id{stream_id}, name{config.get_name(channel_id, CONNECTION_TYPE, priority)},
-      shared_{shared}, cache_{cache}, channel_{channel} {
+Incremental::Incremental(Shared &shared, Cache &cache, Channel &channel, uint16_t stream_id, mdp::Config const &config, uint16_t channel_id, Priority priority)
+    : priority{priority}, stream_id{stream_id}, name{config.get_name(channel_id, CONNECTION_TYPE, priority)}, shared_{shared}, cache_{cache},
+      channel_{channel} {
 }
 
 void Incremental::operator()(Event<Start> const &) {
@@ -338,13 +324,8 @@ void Incremental::dispatch(std::span<std::byte const> const &payload, TraceInfo 
                 drop = sequence_number < next_sequence_number;
               }
               if (hold) {
-                auto delta = static_cast<int64_t>(sequence_number) -
-                             static_cast<int64_t>(channel_.sequence.last_sequence_number);
-                log::warn(
-                    "DEBUG HOLD sequence_number={}, last_sequence_number={}, delta={}"sv,
-                    sequence_number,
-                    channel_.sequence.last_sequence_number,
-                    delta);
+                auto delta = static_cast<int64_t>(sequence_number) - static_cast<int64_t>(channel_.sequence.last_sequence_number);
+                log::warn("DEBUG HOLD sequence_number={}, last_sequence_number={}, delta={}"sv, sequence_number, channel_.sequence.last_sequence_number, delta);
               }
               /*
               // TEST >>>
@@ -510,8 +491,7 @@ void Incremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionSpread56> cons
   });
 }
 
-void Incremental::operator()(
-    Trace<cme_mdp::MDInstrumentDefinitionFixedIncome57> const &event, mdp::Frame const &frame) {
+void Incremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionFixedIncome57> const &event, mdp::Frame const &frame) {
   auto &trace_info = event.trace_info;
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -602,28 +582,11 @@ void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &e
         layer = {};
       }
       if (!std::empty(mbp)) {
-        dispatch_market_by_price(
-            trace_info,
-            security_id,
-            security,
-            exchange_sequence,
-            exchange_time_utc,
-            frame.sending_time,
-            mbp.bids,
-            mbp.asks,
-            is_snapshot);
+        dispatch_market_by_price(trace_info, security_id, security, exchange_sequence, exchange_time_utc, frame.sending_time, mbp.bids, mbp.asks, is_snapshot);
         mbp.clear();
       }
       if (!std::empty(mbo)) {
-        dispatch_market_by_order(
-            trace_info,
-            security_id,
-            security,
-            exchange_sequence,
-            exchange_time_utc,
-            frame.sending_time,
-            mbo.orders,
-            false);
+        dispatch_market_by_order(trace_info, security_id, security, exchange_sequence, exchange_time_utc, frame.sending_time, mbo.orders, false);
         mbo.clear();
       }
     };
@@ -637,8 +600,7 @@ void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &e
         if (security)
           dispatch(security_id, *security, true, is_snapshot);
         security_id = current_security_id;
-        if (shared_.security_definitions.get_security(
-                security_id, [&security](auto &security_2) { security = &security_2; })) {
+        if (shared_.security_definitions.get_security(security_id, [&security](auto &security_2) { security = &security_2; })) {
         } else {
           security = nullptr;
         }
@@ -659,8 +621,7 @@ void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &e
       if (security) {
         emplace_back(item, *security, layer, mbp.bids, mbp.asks);
         if (shared_.options.enable_market_by_order) {
-          if (action == UpdateAction::DELETE && side != Side::UNDEFINED &&
-              shared_.options.mbp_to_mbo_clear_price_level) {
+          if (action == UpdateAction::DELETE && side != Side::UNDEFINED && shared_.options.mbp_to_mbo_clear_price_level) {
             auto update = MBOUpdate{
                 .price = price * (*security).display_factor,
                 .quantity = {},
@@ -687,8 +648,7 @@ void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &e
     auto dispatch = [&](auto security_id, auto &security) {
       if (std::empty(orders))
         return;
-      dispatch_market_by_order(
-          trace_info, security_id, security, exchange_sequence, exchange_time_utc, frame.sending_time, orders, false);
+      dispatch_market_by_order(trace_info, security_id, security, exchange_sequence, exchange_time_utc, frame.sending_time, orders, false);
       orders.clear();
     };
     auto process = [&](auto &item) {
@@ -705,8 +665,7 @@ void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &e
         if (security)
           dispatch(security_id, *security);
         security_id = current_security_id;
-        if (shared_.security_definitions.get_security(
-                security_id, [&security](auto &security_2) { security = &security_2; })) {
+        if (shared_.security_definitions.get_security(security_id, [&security](auto &security_2) { security = &security_2; })) {
         } else {
           security = nullptr;
         }
@@ -754,8 +713,7 @@ void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshOrderBook47> con
     auto current_security_id = item.securityID();
     if (current_security_id != security_id) {
       security_id = current_security_id;
-      if (shared_.security_definitions.get_security(
-              security_id, [&security](auto &security_2) { security = &security_2; })) {
+      if (shared_.security_definitions.get_security(security_id, [&security](auto &security_2) { security = &security_2; })) {
       } else {
         security = nullptr;
       }
@@ -786,15 +744,7 @@ void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshOrderBook47> con
           cache_.orders.emplace_back(std::move(result));
         }
       auto snapshot = !security.rpt_seq;
-      dispatch_market_by_order(
-          trace_info,
-          security_id,
-          security,
-          exchange_sequence,
-          exchange_time_utc,
-          frame.sending_time,
-          cache_.orders,
-          snapshot);
+      dispatch_market_by_order(trace_info, security_id, security, exchange_sequence, exchange_time_utc, frame.sending_time, cache_.orders, snapshot);
       cache_.orders.clear();
     };
     shared_.security_definitions.get_security(security_id, dispatch);
@@ -810,42 +760,32 @@ void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshTradeSummary48> 
   dispatch_trade_summary(event, frame);
 }
 
-void Incremental::operator()(
-    Trace<cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65> const &event, mdp::Frame const &frame) {
+void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_incremental_refresh_trade_summary_long_qty_65={}, frame={}"sv, value, frame);
   dispatch_trade_summary(event, frame);
 }
 
-void Incremental::operator()(
-    Trace<cme_mdp::MDIncrementalRefreshDailyStatistics49> const &event, mdp::Frame const &frame) {
+void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshDailyStatistics49> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_incremental_refresh_daily_statistics_49={}, frame={}"sv, value, frame);
-  dispatch_statistics(event, frame, [](auto &statistics, auto &item, auto &security) {
-    statistics_emplace_back(statistics, item, security);
-  });
+  dispatch_statistics(event, frame, [](auto &statistics, auto &item, auto &security) { statistics_emplace_back(statistics, item, security); });
 }
 
-void Incremental::operator()(
-    Trace<cme_mdp::MDIncrementalRefreshSessionStatistics51> const &event, mdp::Frame const &frame) {
+void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshSessionStatistics51> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_incremental_refresh_session_statistics_51={}, frame={}"sv, value, frame);
-  dispatch_statistics(event, frame, [](auto &statistics, auto &item, auto &security) {
-    statistics_emplace_back(statistics, item, security);
-  });
+  dispatch_statistics(event, frame, [](auto &statistics, auto &item, auto &security) { statistics_emplace_back(statistics, item, security); });
 }
 
-void Incremental::operator()(
-    Trace<cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67> const &event, mdp::Frame const &frame) {
+void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_incremental_refresh_session_statistics_long_qty_67={}, frame={}"sv, value, frame);
-  dispatch_statistics(event, frame, [](auto &statistics, auto &item, auto &security) {
-    statistics_emplace_back(statistics, item, security);
-  });
+  dispatch_statistics(event, frame, [](auto &statistics, auto &item, auto &security) { statistics_emplace_back(statistics, item, security); });
 }
 
 void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshVolume37> const &event, mdp::Frame const &frame) {
@@ -857,8 +797,7 @@ void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshVolume37> const 
   });
 }
 
-void Incremental::operator()(
-    Trace<cme_mdp::MDIncrementalRefreshVolumeLongQty66> const &event, mdp::Frame const &frame) {
+void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshVolumeLongQty66> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_incremental_refresh_volume_long_qty_66={}, frame={}"sv, value, frame);
@@ -867,8 +806,7 @@ void Incremental::operator()(
   SecurityIterator{shared_}(value.noMDEntries(), dispatch, update);
 }
 
-void Incremental::operator()(
-    Trace<cme_mdp::MDIncrementalRefreshLimitsBanding50> const &event, mdp::Frame const &frame) {
+void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshLimitsBanding50> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_incremental_refresh_limits_banding_50={}, frame={}"sv, value, frame);
@@ -912,8 +850,7 @@ void Incremental::dispatch_market_by_price(
     auto publish_update = [&](auto &bids, auto &asks) {
       auto market_by_price_update = create_update(bids, asks, UpdateType::INCREMENTAL);
       auto callback = []([[maybe_unused]] auto &market_by_price) {};
-      create_trace_and_dispatch(
-          shared_, trace_info, market_by_price_update, true, shared_.cache.bids, shared_.cache.asks, callback);
+      create_trace_and_dispatch(shared_, trace_info, market_by_price_update, true, shared_.cache.bids, shared_.cache.asks, callback);
     };
     auto publish_snapshot = [&](auto &bids, auto &asks, auto exchange_sequence, auto retries, auto delay) {
       log::info(
@@ -926,8 +863,7 @@ void Incremental::dispatch_market_by_price(
           std::chrono::duration_cast<std::chrono::milliseconds>(delay));
       auto market_by_price_update = create_update(bids, asks, UpdateType::SNAPSHOT);
       auto callback = []([[maybe_unused]] auto &market_by_price) {};
-      create_trace_and_dispatch(
-          shared_, trace_info, market_by_price_update, true, shared_.cache.bids, shared_.cache.asks, callback);
+      create_trace_and_dispatch(shared_, trace_info, market_by_price_update, true, shared_.cache.bids, shared_.cache.asks, callback);
       security.mbp.resubscribe = {};
     };
     auto request_snapshot = [&]([[maybe_unused]] auto retries) {
@@ -943,15 +879,7 @@ void Incremental::dispatch_market_by_price(
       auto force = true;
       sequencer(bids, asks, exchange_sequence, force, publish_snapshot, request_snapshot);
     } else {
-      sequencer(
-          bids,
-          asks,
-          exchange_sequence,
-          exchange_sequence,
-          last_exchange_sequence,
-          publish_update,
-          publish_snapshot,
-          request_snapshot);
+      sequencer(bids, asks, exchange_sequence, exchange_sequence, last_exchange_sequence, publish_update, publish_snapshot, request_snapshot);
     }
   } catch (BadState &) {
     log::warn(
@@ -966,8 +894,7 @@ void Incremental::dispatch_market_by_price(
   }
 }
 
-void Incremental::dispatch_market_by_price_stale(
-    auto &trace_info, auto &security, auto exchange_sequence, auto exchange_time_utc, auto sending_time_utc) {
+void Incremental::dispatch_market_by_price_stale(auto &trace_info, auto &security, auto exchange_sequence, auto exchange_time_utc, auto sending_time_utc) {
   auto market_by_price_update = MarketByPriceUpdate{
       .stream_id = stream_id,
       .exchange = security.exchange,
@@ -983,19 +910,11 @@ void Incremental::dispatch_market_by_price_stale(
       .checksum = {},
   };
   auto callback = []([[maybe_unused]] auto &market_by_price) {};
-  create_trace_and_dispatch(
-      shared_, trace_info, market_by_price_update, true, shared_.cache.bids, shared_.cache.asks, callback);
+  create_trace_and_dispatch(shared_, trace_info, market_by_price_update, true, shared_.cache.bids, shared_.cache.asks, callback);
 }
 
 void Incremental::dispatch_market_by_order(
-    auto &trace_info,
-    auto security_id,
-    auto &security,
-    auto exchange_sequence,
-    auto exchange_time_utc,
-    auto sending_time_utc,
-    auto &orders,
-    bool is_snapshot) {
+    auto &trace_info, auto security_id, auto &security, auto exchange_sequence, auto exchange_time_utc, auto sending_time_utc, auto &orders, bool is_snapshot) {
   auto &sequencer = security.mbo.sequencer;
   try {
     auto last_exchange_sequence = sequencer.last_sequence();  // note! the protocol doesn't tell us
@@ -1057,14 +976,7 @@ void Incremental::dispatch_market_by_order(
       auto force = true;
       sequencer(orders, exchange_sequence, force, publish_snapshot, request_snapshot);
     } else {
-      sequencer(
-          orders,
-          exchange_sequence,
-          exchange_sequence,
-          last_exchange_sequence,
-          publish_update,
-          publish_snapshot,
-          request_snapshot);
+      sequencer(orders, exchange_sequence, exchange_sequence, last_exchange_sequence, publish_update, publish_snapshot, request_snapshot);
     }
   } catch (BadState &) {
     log::warn(
@@ -1079,8 +991,7 @@ void Incremental::dispatch_market_by_order(
   }
 }
 
-void Incremental::dispatch_market_by_order_stale(
-    auto &trace_info, auto &security, auto exchange_sequence, auto exchange_time_utc, auto sending_time_utc) {
+void Incremental::dispatch_market_by_order_stale(auto &trace_info, auto &security, auto exchange_sequence, auto exchange_time_utc, auto sending_time_utc) {
   auto market_by_order_update = MarketByOrderUpdate{
       .stream_id = stream_id,
       .exchange = security.exchange,
@@ -1136,8 +1047,7 @@ void Incremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame const
     auto side = mdp::map_side(aggressor_side);
     trade_summary_.emplace_back(security_id, side, price, size, number_of_orders, trade_id);
     total_number_of_orders_ += number_of_orders;
-    shared_.security_definitions.get_security(
-        security_id, [&](auto &security) { check_report_sequence(security, item, frame); });
+    shared_.security_definitions.get_security(security_id, [&](auto &security) { check_report_sequence(security, item, frame); });
   });
   value.noOrderIDEntries().forEach([&](auto &item) {
     auto order_id = item.orderID();
@@ -1145,19 +1055,11 @@ void Incremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame const
     orders_.emplace_back(order_id, last_qty);
   });
   if (std::size(orders_) < total_number_of_orders_) {
-    log::warn<5>(
-        "Message is fragmented: sequence={}, len(orders)={}, expected={}"sv,
-        exchange_sequence,
-        std::size(orders_),
-        total_number_of_orders_);
+    log::warn<5>("Message is fragmented: sequence={}, len(orders)={}, expected={}"sv, exchange_sequence, std::size(orders_), total_number_of_orders_);
     return;  // note!
   }
   if (std::size(orders_) > total_number_of_orders_) {
-    log::warn(
-        "Unexpected: sequence={}, len(orders)={}, expected={}"sv,
-        exchange_sequence,
-        std::size(orders_),
-        total_number_of_orders_);
+    log::warn("Unexpected: sequence={}, len(orders)={}, expected={}"sv, exchange_sequence, std::size(orders_), total_number_of_orders_);
   } else if (fragmented) {
     log::info<5>(
         "DEBUG Message was fragmented and now fully assembled: sequence={}, len(orders)={}, expected={}"sv,
@@ -1226,8 +1128,7 @@ void Incremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame const
   auto dispatch_market_by_order_2 = [&](auto security_id, auto &security) {
     if (std::empty(mbo))
       return;
-    dispatch_market_by_order(
-        trace_info, security_id, security, exchange_sequence, exchange_time_utc, frame.sending_time, mbo.orders, false);
+    dispatch_market_by_order(trace_info, security_id, security, exchange_sequence, exchange_time_utc, frame.sending_time, mbo.orders, false);
     mbo.clear();
   };
   for (auto security_id : security_ids_) {
@@ -1397,12 +1298,10 @@ void Incremental::check_report_sequence(tools::Security &security, auto const &v
   TraceInfo trace_info;
   security.mbp.sequencer.clear();
   security.mbp.resubscribe = frame.sequence_number;
-  dispatch_market_by_price_stale(
-      trace_info, security, frame.sequence_number, std::chrono::nanoseconds{}, frame.sending_time);
+  dispatch_market_by_price_stale(trace_info, security, frame.sequence_number, std::chrono::nanoseconds{}, frame.sending_time);
   security.mbo.sequencer.clear();
   security.mbo.resubscribe = frame.sequence_number;
-  dispatch_market_by_order_stale(
-      trace_info, security, frame.sequence_number, std::chrono::nanoseconds{}, frame.sending_time);
+  dispatch_market_by_order_stale(trace_info, security, frame.sequence_number, std::chrono::nanoseconds{}, frame.sending_time);
 }
 
 void Incremental::on_sequence_reset() {

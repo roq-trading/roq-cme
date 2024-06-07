@@ -102,8 +102,7 @@ R create_names(auto &connections) {
 
 Config::Config(std::string_view const &filename, bool verbose)
     : connections_{read_connections<decltype(connections_)>(filename, verbose)},
-      connection_types_{create_connection_types<decltype(connection_types_)>(connections_)},
-      names_{create_names<decltype(names_)>(connections_)} {
+      connection_types_{create_connection_types<decltype(connection_types_)>(connections_)}, names_{create_names<decltype(names_)>(connections_)} {
 }
 
 std::string_view Config::get_name(uint16_t channel_id, ConnectionType connection_type, Priority priority) const {
@@ -119,11 +118,7 @@ std::string_view Config::get_name(uint16_t channel_id, ConnectionType connection
       }
     }
   }
-  throw RuntimeError{
-      "Unexpected: channel_id={}, connection_type={}, priority={}"sv,
-      channel_id,
-      magic_enum::enum_name(connection_type),
-      priority};
+  throw RuntimeError{"Unexpected: channel_id={}, connection_type={}, priority={}"sv, channel_id, magic_enum::enum_name(connection_type), priority};
 }
 
 }  // namespace mdp

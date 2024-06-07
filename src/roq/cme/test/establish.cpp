@@ -57,12 +57,7 @@ TEST_CASE("simple", "[establish]") {
       .keepAliveInterval(123);
   std::span message{std::data(buffer), Establish503::sbeBlockAndHeaderLength()};
   fmt::print(stderr, "{}\n"sv, utils::debug::hex::Message{message});
-  fmt::print(
-      stderr,
-      "{} {} {}\n"sv,
-      std::size(message),
-      Establish503::sbeBlockAndHeaderLength(),
-      Establish503::sbeBlockLength());
+  fmt::print(stderr, "{} {} {}\n"sv, std::size(message), Establish503::sbeBlockAndHeaderLength(), Establish503::sbeBlockLength());
   [[maybe_unused]] auto expected =
       "\x4c\x00"  // block length
       "\xf4\x01"  // template id (500)

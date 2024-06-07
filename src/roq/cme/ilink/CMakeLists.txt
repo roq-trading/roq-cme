@@ -20,5 +20,4 @@ include(RoqAutogen)
 
 add_library(${TARGET_NAME} OBJECT ${SOURCES})
 
-target_link_libraries(${TARGET_NAME} roq-core::roq-core roq-io::roq-io roq-logging::roq-logging
-                      fmt::fmt)
+target_link_libraries(${TARGET_NAME} roq-core::roq-core roq-io::roq-io roq-logging::roq-logging fmt::fmt)

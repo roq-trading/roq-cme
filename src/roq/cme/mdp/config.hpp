@@ -61,15 +61,12 @@ struct Config final {
 
  private:
   // channel_id => type => feed => connection
-  utils::unordered_map<uint16_t, utils::unordered_map<ConnectionType, utils::unordered_map<Priority, Connection>>>
-      connections_;
+  utils::unordered_map<uint16_t, utils::unordered_map<ConnectionType, utils::unordered_map<Priority, Connection>>> connections_;
 
   // address ==> port ==> {channel_id, connection type, priority}
-  utils::unordered_map<std::string, utils::unordered_map<uint16_t, std::tuple<uint16_t, ConnectionType, Priority>>>
-      connection_types_;
+  utils::unordered_map<std::string, utils::unordered_map<uint16_t, std::tuple<uint16_t, ConnectionType, Priority>>> connection_types_;
 
-  utils::unordered_map<uint16_t, utils::unordered_map<ConnectionType, utils::unordered_map<Priority, std::string>>>
-      names_;
+  utils::unordered_map<uint16_t, utils::unordered_map<ConnectionType, utils::unordered_map<Priority, std::string>>> names_;
 };
 
 }  // namespace mdp

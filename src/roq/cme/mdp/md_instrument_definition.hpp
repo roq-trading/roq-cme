@@ -27,31 +27,19 @@ namespace roq {
 namespace cme {
 namespace mdp {
 
-extern ReferenceData create_reference_data(
-    cme_mdp::MDInstrumentDefinitionFuture54 const &, uint16_t stream_id, tools::Security &);
-extern ReferenceData create_reference_data(
-    cme_mdp::MDInstrumentDefinitionOption55 const &, uint16_t stream_id, tools::Security &);
-extern ReferenceData create_reference_data(
-    cme_mdp::MDInstrumentDefinitionSpread56 const &, uint16_t stream_id, tools::Security &);
-extern ReferenceData create_reference_data(
-    cme_mdp::MDInstrumentDefinitionFixedIncome57 const &, uint16_t stream_id, tools::Security &);
-extern ReferenceData create_reference_data(
-    cme_mdp::MDInstrumentDefinitionRepo58 const &, uint16_t stream_id, tools::Security &);
-extern ReferenceData create_reference_data(
-    cme_mdp::MDInstrumentDefinitionFX63 const &, uint16_t stream_id, tools::Security &);
+extern ReferenceData create_reference_data(cme_mdp::MDInstrumentDefinitionFuture54 const &, uint16_t stream_id, tools::Security &);
+extern ReferenceData create_reference_data(cme_mdp::MDInstrumentDefinitionOption55 const &, uint16_t stream_id, tools::Security &);
+extern ReferenceData create_reference_data(cme_mdp::MDInstrumentDefinitionSpread56 const &, uint16_t stream_id, tools::Security &);
+extern ReferenceData create_reference_data(cme_mdp::MDInstrumentDefinitionFixedIncome57 const &, uint16_t stream_id, tools::Security &);
+extern ReferenceData create_reference_data(cme_mdp::MDInstrumentDefinitionRepo58 const &, uint16_t stream_id, tools::Security &);
+extern ReferenceData create_reference_data(cme_mdp::MDInstrumentDefinitionFX63 const &, uint16_t stream_id, tools::Security &);
 
-extern MarketStatus create_market_status(
-    cme_mdp::MDInstrumentDefinitionFuture54 const &, uint16_t stream_id, tools::Security &);
-extern MarketStatus create_market_status(
-    cme_mdp::MDInstrumentDefinitionOption55 const &, uint16_t stream_id, tools::Security &);
-extern MarketStatus create_market_status(
-    cme_mdp::MDInstrumentDefinitionSpread56 const &, uint16_t stream_id, tools::Security &);
-extern MarketStatus create_market_status(
-    cme_mdp::MDInstrumentDefinitionFixedIncome57 const &, uint16_t stream_id, tools::Security &);
-extern MarketStatus create_market_status(
-    cme_mdp::MDInstrumentDefinitionRepo58 const &, uint16_t stream_id, tools::Security &);
-extern MarketStatus create_market_status(
-    cme_mdp::MDInstrumentDefinitionFX63 const &, uint16_t stream_id, tools::Security &);
+extern MarketStatus create_market_status(cme_mdp::MDInstrumentDefinitionFuture54 const &, uint16_t stream_id, tools::Security &);
+extern MarketStatus create_market_status(cme_mdp::MDInstrumentDefinitionOption55 const &, uint16_t stream_id, tools::Security &);
+extern MarketStatus create_market_status(cme_mdp::MDInstrumentDefinitionSpread56 const &, uint16_t stream_id, tools::Security &);
+extern MarketStatus create_market_status(cme_mdp::MDInstrumentDefinitionFixedIncome57 const &, uint16_t stream_id, tools::Security &);
+extern MarketStatus create_market_status(cme_mdp::MDInstrumentDefinitionRepo58 const &, uint16_t stream_id, tools::Security &);
+extern MarketStatus create_market_status(cme_mdp::MDInstrumentDefinitionFX63 const &, uint16_t stream_id, tools::Security &);
 
 // compute length
 
@@ -70,8 +58,7 @@ inline size_t compute_length(cme_mdp::MDInstrumentDefinitionFuture54 &value) {
   // NoLotTypeRules
   auto no_lot_type_rules_length = value.noLotTypeRules().count();
   value.noLotTypeRules().forEach([](auto &e) { e.skip(); });
-  return value.computeLength(
-      no_events_length, no_md_feed_types_length, no_inst_attrib_length, no_lot_type_rules_length);
+  return value.computeLength(no_events_length, no_md_feed_types_length, no_inst_attrib_length, no_lot_type_rules_length);
 }
 
 template <>
@@ -96,12 +83,7 @@ inline size_t compute_length(cme_mdp::MDInstrumentDefinitionOption55 &value) {
   auto no_related_instruments_length = value.noRelatedInstruments().count();
   value.noRelatedInstruments().forEach([](auto &e) { e.skip(); });
   return value.computeLength(
-      no_events_length,
-      no_md_feed_types_length,
-      no_inst_attrib_length,
-      no_lot_type_rules_length,
-      no_underlyings_length,
-      no_related_instruments_length);
+      no_events_length, no_md_feed_types_length, no_inst_attrib_length, no_lot_type_rules_length, no_underlyings_length, no_related_instruments_length);
 }
 
 template <>
@@ -122,8 +104,7 @@ inline size_t compute_length(cme_mdp::MDInstrumentDefinitionSpread56 &value) {
   // NoLegs
   auto no_legs_length = value.noLegs().count();
   value.noLegs().forEach([](auto &e) { e.skip(); });
-  return value.computeLength(
-      no_events_length, no_md_feed_types_length, no_inst_attrib_length, no_lot_type_rules_length, no_legs_length);
+  return value.computeLength(no_events_length, no_md_feed_types_length, no_inst_attrib_length, no_lot_type_rules_length, no_legs_length);
 }
 
 template <>
@@ -141,8 +122,7 @@ inline size_t compute_length(cme_mdp::MDInstrumentDefinitionFixedIncome57 &value
   // NoLotTypeRules
   auto no_lot_type_rules_length = value.noLotTypeRules().count();
   value.noLotTypeRules().forEach([](auto &e) { e.skip(); });
-  return value.computeLength(
-      no_events_length, no_md_feed_types_length, no_inst_attrib_length, no_lot_type_rules_length);
+  return value.computeLength(no_events_length, no_md_feed_types_length, no_inst_attrib_length, no_lot_type_rules_length);
 }
 
 template <>
@@ -167,12 +147,7 @@ inline size_t compute_length(cme_mdp::MDInstrumentDefinitionRepo58 &value) {
   auto no_related_instruments_length = value.noRelatedInstruments().count();
   value.noRelatedInstruments().forEach([](auto &e) { e.skip(); });
   return value.computeLength(
-      no_events_length,
-      no_md_feed_types_length,
-      no_inst_attrib_length,
-      no_lot_type_rules_length,
-      no_underlyings_length,
-      no_related_instruments_length);
+      no_events_length, no_md_feed_types_length, no_inst_attrib_length, no_lot_type_rules_length, no_underlyings_length, no_related_instruments_length);
 }
 
 template <>
@@ -193,12 +168,7 @@ inline size_t compute_length(cme_mdp::MDInstrumentDefinitionFX63 &value) {
   // NoTradingSessions
   auto no_trading_sessions_length = value.noTradingSessions().count();
   value.noTradingSessions().forEach([](auto &e) { e.skip(); });
-  return value.computeLength(
-      no_events_length,
-      no_md_feed_types_length,
-      no_inst_attrib_length,
-      no_lot_type_rules_length,
-      no_trading_sessions_length);
+  return value.computeLength(no_events_length, no_md_feed_types_length, no_inst_attrib_length, no_lot_type_rules_length, no_trading_sessions_length);
 }
 
 }  // namespace mdp

@@ -58,8 +58,7 @@ bool Parser::dispatch(Handler &handler, std::span<std::byte const> const &buffer
           auto template_id = header.templateId();
           auto version = header.version();
           // log::debug("block_length={}, template={}, version={}"sv, block_length, template_id, version);
-          auto length =
-              message_size.length - (sizeof(MessageSize::value_type) + cme_mdp::MessageHeader::encodedLength());
+          auto length = message_size.length - (sizeof(MessageSize::value_type) + cme_mdp::MessageHeader::encodedLength());
           // log::debug("length={}"sv, length);
           assert(std::size(message) >= length);
           auto tmp = message.subspan(0, length);
@@ -166,30 +165,26 @@ bool Parser::dispatch(Handler &handler, std::span<std::byte const> const &buffer
               break;
             }
             case cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65::SBE_TEMPLATE_ID: {
-              cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65 value{
-                  std::data(tmp), std::size(tmp), block_length, version};
+              cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65 value{std::data(tmp), std::size(tmp), block_length, version};
               log::info<5>("md_incremental_refresh_trade_summary_long_qty_65={}"sv, value);
               create_trace_and_dispatch(handler, trace_info, value, frame);
               break;
             }
               // statistics
             case cme_mdp::MDIncrementalRefreshDailyStatistics49::SBE_TEMPLATE_ID: {
-              cme_mdp::MDIncrementalRefreshDailyStatistics49 value{
-                  std::data(tmp), std::size(tmp), block_length, version};
+              cme_mdp::MDIncrementalRefreshDailyStatistics49 value{std::data(tmp), std::size(tmp), block_length, version};
               log::info<5>("md_incremental_refresh_daily_statistics_49={}"sv, value);
               create_trace_and_dispatch(handler, trace_info, value, frame);
               break;
             }
             case cme_mdp::MDIncrementalRefreshSessionStatistics51::SBE_TEMPLATE_ID: {
-              cme_mdp::MDIncrementalRefreshSessionStatistics51 value{
-                  std::data(tmp), std::size(tmp), block_length, version};
+              cme_mdp::MDIncrementalRefreshSessionStatistics51 value{std::data(tmp), std::size(tmp), block_length, version};
               log::info<5>("md_incremental_refresh_session_statistics_51={}"sv, value);
               create_trace_and_dispatch(handler, trace_info, value, frame);
               break;
             }
             case cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67::SBE_TEMPLATE_ID: {
-              cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67 value{
-                  std::data(tmp), std::size(tmp), block_length, version};
+              cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67 value{std::data(tmp), std::size(tmp), block_length, version};
               log::info<5>("md_incremental_refresh_session_statistics_long_qty_67={}"sv, value);
               create_trace_and_dispatch(handler, trace_info, value, frame);
               break;

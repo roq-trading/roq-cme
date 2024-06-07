@@ -31,14 +31,7 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public ili
     virtual void operator()(Trace<ExternalLatency> const &) = 0;
   };
 
-  OrderEntry(
-      Handler &,
-      io::Context &,
-      uint16_t stream_id,
-      Account &,
-      Shared &,
-      uint8_t market_segment_id,
-      io::web::URI const &);
+  OrderEntry(Handler &, io::Context &, uint16_t stream_id, Account &, Shared &, uint8_t market_segment_id, io::web::URI const &);
 
   OrderEntry(OrderEntry const &) = delete;
   OrderEntry(OrderEntry &&) = delete;
@@ -50,16 +43,8 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public ili
   void operator()(Event<Timer> const &);
 
   uint16_t operator()(Event<CreateOrder> const &, server::oms::Order const &, std::string_view const &request_id);
-  uint16_t operator()(
-      Event<ModifyOrder> const &,
-      server::oms::Order const &,
-      std::string_view const &request_id,
-      std::string_view const &previous_request_id);
-  uint16_t operator()(
-      Event<CancelOrder> const &,
-      server::oms::Order const &,
-      std::string_view const &request_id,
-      std::string_view const &previous_request_id);
+  uint16_t operator()(Event<ModifyOrder> const &, server::oms::Order const &, std::string_view const &request_id, std::string_view const &previous_request_id);
+  uint16_t operator()(Event<CancelOrder> const &, server::oms::Order const &, std::string_view const &request_id, std::string_view const &previous_request_id);
 
   uint16_t operator()(Event<CancelAllOrders> const &, std::string_view const &request_id);
 
@@ -136,8 +121,7 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public ili
   void send_order_mass_action_request(CancelAllOrders const &);
 
   template <typename Callback, typename... Args>
-  void operator()(
-      Callback, Trace<server::oms::OrderUpdate> const &, std::string_view const &client_order_id, Args &&...);
+  void operator()(Callback, Trace<server::oms::OrderUpdate> const &, std::string_view const &client_order_id, Args &&...);
 
   template <typename... Args>
   void operator()(Trace<server::oms::Response> const &, std::string_view const &client_order_id, Args &&...);

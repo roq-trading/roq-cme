@@ -63,14 +63,7 @@ struct MBPMarketRecovery final : public mdp::Parser::Handler {
   // helpers
 
   void dispatch_market_by_price(
-      auto &trace_info,
-      auto security_id,
-      auto &security,
-      auto exchange_sequence,
-      auto exchange_time_utc,
-      auto sending_time_utc,
-      auto &bids,
-      auto &asks);
+      auto &trace_info, auto security_id, auto &security, auto exchange_sequence, auto exchange_time_utc, auto sending_time_utc, auto &bids, auto &asks);
 
   void publish_stream_status(TraceInfo const &, ConnectionStatus);
 

@@ -53,30 +53,30 @@ TEST_CASE("not_complete", "[execution_report_outright]") {
       "\x98\x4c"                                                                          // trade date
       "\x00\x00"                                                                          // expire date
       "\x02"                                                                              // ord status (filled)
-      "\x31"                                  // ord type (1 = market with protection)
-      "\x01"                                  // side (1 = buy)
-      "\x01"                                  // time in force (1 = gtc)
-      "\x00"                                  // manual order indicator
-      "\x00"                                  // poss retrans flag
-      "\x01"                                  // aggressor indicator (1 = aggressor)
-      "\xff"                                  // cross type
-      "\x00"                                  // exec inst
-      "\x00"                                  // execution mode
-      "\xff"                                  // liquidity flag
-      "\xff"                                  // managed order
-      "\xff"                                  // short sale type
-      "\x09"                                  // ownership
-      "\xff\xff\xff\xff\xff\xff\xff\x7f"      // discretion price
-      "\xff\xff"                              // trd type
-      "\xff"                                  // exec restatement reason
-      "\xff\xff"                              // settl date
-      "\xff\xff"                              // maturity date
-      "\xff\xff\xff\xff\xff\xff\xff\x7f\x7f"  // calculated ccy last qty
-      "\xff\xff\xff\xff\xff\xff\xff\x7f\x7f"  // gross trade amt
-      "\xff\xff\xff\xff\xff\xff\xff\x7f"      // benchmark price
-      "\xff\xff\xff\xff\xff\xff\xff\x7f"      // reservation price
-      "\xff"                                  // priority indicator
-      "\xff\xff\xff\xff\xff"sv;               // display limit price !!! BUT !!! truncated
+      "\x31"                                                                              // ord type (1 = market with protection)
+      "\x01"                                                                              // side (1 = buy)
+      "\x01"                                                                              // time in force (1 = gtc)
+      "\x00"                                                                              // manual order indicator
+      "\x00"                                                                              // poss retrans flag
+      "\x01"                                                                              // aggressor indicator (1 = aggressor)
+      "\xff"                                                                              // cross type
+      "\x00"                                                                              // exec inst
+      "\x00"                                                                              // execution mode
+      "\xff"                                                                              // liquidity flag
+      "\xff"                                                                              // managed order
+      "\xff"                                                                              // short sale type
+      "\x09"                                                                              // ownership
+      "\xff\xff\xff\xff\xff\xff\xff\x7f"                                                  // discretion price
+      "\xff\xff"                                                                          // trd type
+      "\xff"                                                                              // exec restatement reason
+      "\xff\xff"                                                                          // settl date
+      "\xff\xff"                                                                          // maturity date
+      "\xff\xff\xff\xff\xff\xff\xff\x7f\x7f"                                              // calculated ccy last qty
+      "\xff\xff\xff\xff\xff\xff\xff\x7f\x7f"                                              // gross trade amt
+      "\xff\xff\xff\xff\xff\xff\xff\x7f"                                                  // benchmark price
+      "\xff\xff\xff\xff\xff\xff\xff\x7f"                                                  // reservation price
+      "\xff"                                                                              // priority indicator
+      "\xff\xff\xff\xff\xff"sv;                                                           // display limit price !!! BUT !!! truncated
   static_assert(std::size(message) == 302);
   struct MyHandler final : public ilink::Parser::Handler {
     // session

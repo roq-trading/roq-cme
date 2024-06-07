@@ -18,15 +18,9 @@ namespace filter {
 
 namespace {
 auto find(auto &result, auto &config, auto channel_id, auto type, auto priority) {
-  if (config.find(channel_id, type, priority, [&](auto &connection) {
-        result.emplace_back(connection.multicast_address, connection.port);
-      })) {
+  if (config.find(channel_id, type, priority, [&](auto &connection) { result.emplace_back(connection.multicast_address, connection.port); })) {
   } else {
-    log::fatal(
-        R"(Unable to find multicast configuration using channel_id="{}", type={}, priority={})"sv,
-        channel_id,
-        magic_enum::enum_name(type),
-        priority);
+    log::fatal(R"(Unable to find multicast configuration using channel_id="{}", type={}, priority={})"sv, channel_id, magic_enum::enum_name(type), priority);
   }
 }
 }  // namespace

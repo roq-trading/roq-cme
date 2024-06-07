@@ -20,8 +20,7 @@ namespace {
 template <typename T, typename SG, typename MS, typename D>
 struct Handler final : public secdef::ConfigReader::Handler {
   Handler(T &securities, SG &security_groups, MS &market_segments, D &dispatcher)
-      : securities_{securities}, security_groups_{security_groups}, market_segments_{market_segments},
-        dispatcher_{dispatcher} {}
+      : securities_{securities}, security_groups_{security_groups}, market_segments_{market_segments}, dispatcher_{dispatcher} {}
 
   void operator()(secdef::ConfigReader::SecDef const &item) override {
     auto discard = dispatcher_.discard_symbol(item.symbol);

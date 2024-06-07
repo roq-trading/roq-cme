@@ -14,8 +14,7 @@ namespace mdp {
 
 // reference data
 
-ReferenceData create_reference_data(
-    cme_mdp::MDInstrumentDefinitionFuture54 const &message, uint16_t stream_id, tools::Security &security) {
+ReferenceData create_reference_data(cme_mdp::MDInstrumentDefinitionFuture54 const &message, uint16_t stream_id, tools::Security &security) {
   using value_type = std::remove_cvref<decltype(message)>::type;
   auto &value = const_cast<value_type &>(message);  // note! not const-safe
   auto quote_currency = mdp::get_string_view(value.currency(), value.currencyLength());
@@ -52,8 +51,7 @@ ReferenceData create_reference_data(
   };
 }
 
-ReferenceData create_reference_data(
-    cme_mdp::MDInstrumentDefinitionOption55 const &message, uint16_t stream_id, tools::Security &security) {
+ReferenceData create_reference_data(cme_mdp::MDInstrumentDefinitionOption55 const &message, uint16_t stream_id, tools::Security &security) {
   using value_type = std::remove_cvref<decltype(message)>::type;
   auto &value = const_cast<value_type &>(message);  // note! not const-safe
   auto quote_currency = mdp::get_string_view(value.currency(), value.currencyLength());
@@ -90,8 +88,7 @@ ReferenceData create_reference_data(
   };
 }
 
-ReferenceData create_reference_data(
-    cme_mdp::MDInstrumentDefinitionSpread56 const &message, uint16_t stream_id, tools::Security &security) {
+ReferenceData create_reference_data(cme_mdp::MDInstrumentDefinitionSpread56 const &message, uint16_t stream_id, tools::Security &security) {
   using value_type = std::remove_cvref<decltype(message)>::type;
   auto &value = const_cast<value_type &>(message);  // note! not const-safe
   auto quote_currency = mdp::get_string_view(value.currency(), value.currencyLength());
@@ -126,8 +123,7 @@ ReferenceData create_reference_data(
   };
 }
 
-ReferenceData create_reference_data(
-    cme_mdp::MDInstrumentDefinitionFixedIncome57 const &message, uint16_t stream_id, tools::Security &security) {
+ReferenceData create_reference_data(cme_mdp::MDInstrumentDefinitionFixedIncome57 const &message, uint16_t stream_id, tools::Security &security) {
   using value_type = std::remove_cvref<decltype(message)>::type;
   auto &value = const_cast<value_type &>(message);  // note! not const-safe
   auto quote_currency = mdp::get_string_view(value.currency(), value.currencyLength());
@@ -162,8 +158,7 @@ ReferenceData create_reference_data(
   };
 }
 
-ReferenceData create_reference_data(
-    cme_mdp::MDInstrumentDefinitionRepo58 const &message, uint16_t stream_id, tools::Security &security) {
+ReferenceData create_reference_data(cme_mdp::MDInstrumentDefinitionRepo58 const &message, uint16_t stream_id, tools::Security &security) {
   using value_type = std::remove_cvref<decltype(message)>::type;
   auto &value = const_cast<value_type &>(message);  // note! not const-safe
   auto quote_currency = mdp::get_string_view(value.currency(), value.currencyLength());
@@ -198,8 +193,7 @@ ReferenceData create_reference_data(
   };
 }
 
-ReferenceData create_reference_data(
-    cme_mdp::MDInstrumentDefinitionFX63 const &message, uint16_t stream_id, tools::Security &security) {
+ReferenceData create_reference_data(cme_mdp::MDInstrumentDefinitionFX63 const &message, uint16_t stream_id, tools::Security &security) {
   using value_type = std::remove_cvref<decltype(message)>::type;
   auto &value = const_cast<value_type &>(message);  // note! not const-safe
   auto quote_currency = mdp::get_string_view(value.currency(), value.currencyLength());
@@ -236,8 +230,7 @@ ReferenceData create_reference_data(
 
 // market status
 
-MarketStatus create_market_status(
-    cme_mdp::MDInstrumentDefinitionFuture54 const &message, uint16_t stream_id, tools::Security &security) {
+MarketStatus create_market_status(cme_mdp::MDInstrumentDefinitionFuture54 const &message, uint16_t stream_id, tools::Security &security) {
   using value_type = std::remove_cvref<decltype(message)>::type;
   auto &value = const_cast<value_type &>(message);  // note! not const-safe
   auto trading_status = mdp::map_security_trading_status(value.mDSecurityTradingStatus());
@@ -249,8 +242,7 @@ MarketStatus create_market_status(
   };
 }
 
-MarketStatus create_market_status(
-    cme_mdp::MDInstrumentDefinitionOption55 const &message, uint16_t stream_id, tools::Security &security) {
+MarketStatus create_market_status(cme_mdp::MDInstrumentDefinitionOption55 const &message, uint16_t stream_id, tools::Security &security) {
   using value_type = std::remove_cvref<decltype(message)>::type;
   auto &value = const_cast<value_type &>(message);  // note! not const-safe
   auto trading_status = mdp::map_security_trading_status(value.mDSecurityTradingStatus());
@@ -262,8 +254,7 @@ MarketStatus create_market_status(
   };
 }
 
-MarketStatus create_market_status(
-    cme_mdp::MDInstrumentDefinitionSpread56 const &message, uint16_t stream_id, tools::Security &security) {
+MarketStatus create_market_status(cme_mdp::MDInstrumentDefinitionSpread56 const &message, uint16_t stream_id, tools::Security &security) {
   using value_type = std::remove_cvref<decltype(message)>::type;
   auto &value = const_cast<value_type &>(message);  // note! not const-safe
   auto trading_status = mdp::map_security_trading_status(value.mDSecurityTradingStatus());
@@ -275,8 +266,7 @@ MarketStatus create_market_status(
   };
 }
 
-MarketStatus create_market_status(
-    cme_mdp::MDInstrumentDefinitionFixedIncome57 const &message, uint16_t stream_id, tools::Security &security) {
+MarketStatus create_market_status(cme_mdp::MDInstrumentDefinitionFixedIncome57 const &message, uint16_t stream_id, tools::Security &security) {
   using value_type = std::remove_cvref<decltype(message)>::type;
   auto &value = const_cast<value_type &>(message);  // note! not const-safe
   auto trading_status = mdp::map_security_trading_status(value.mDSecurityTradingStatus());
@@ -288,8 +278,7 @@ MarketStatus create_market_status(
   };
 }
 
-MarketStatus create_market_status(
-    cme_mdp::MDInstrumentDefinitionRepo58 const &message, uint16_t stream_id, tools::Security &security) {
+MarketStatus create_market_status(cme_mdp::MDInstrumentDefinitionRepo58 const &message, uint16_t stream_id, tools::Security &security) {
   using value_type = std::remove_cvref<decltype(message)>::type;
   auto &value = const_cast<value_type &>(message);  // note! not const-safe
   auto trading_status = mdp::map_security_trading_status(value.mDSecurityTradingStatus());
@@ -301,8 +290,7 @@ MarketStatus create_market_status(
   };
 }
 
-MarketStatus create_market_status(
-    cme_mdp::MDInstrumentDefinitionFX63 const &message, uint16_t stream_id, tools::Security &security) {
+MarketStatus create_market_status(cme_mdp::MDInstrumentDefinitionFX63 const &message, uint16_t stream_id, tools::Security &security) {
   using value_type = std::remove_cvref<decltype(message)>::type;
   auto &value = const_cast<value_type &>(message);  // note! not const-safe
   auto trading_status = mdp::map_security_trading_status(value.mDSecurityTradingStatus());

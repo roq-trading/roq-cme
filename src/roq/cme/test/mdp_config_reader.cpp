@@ -67,9 +67,7 @@ TEST_CASE("simple", "[mdp_config_reader]") {
             CHECK(connection.protocol == "TCP/IP"sv);
             CHECK(std::empty(connection.ip));
             REQUIRE(std::size(connection.host_ips) == 2);
-            CHECK(
-                std::find(std::begin(connection.host_ips), std::end(connection.host_ips), "205.209.218.10"sv) !=
-                std::end(connection.host_ips));
+            CHECK(std::find(std::begin(connection.host_ips), std::end(connection.host_ips), "205.209.218.10"sv) != std::end(connection.host_ips));
             // 2nd is the same
             CHECK(connection.port == "10000"sv);
             CHECK(connection.feed == "A"sv);
@@ -82,12 +80,8 @@ TEST_CASE("simple", "[mdp_config_reader]") {
             CHECK(connection.protocol == "UDP/IP"sv);
             CHECK(connection.ip == "224.0.31.1"sv);
             REQUIRE(std::size(connection.host_ips) == 2);
-            CHECK(
-                std::find(std::begin(connection.host_ips), std::end(connection.host_ips), "205.209.223.70"sv) !=
-                std::end(connection.host_ips));
-            CHECK(
-                std::find(std::begin(connection.host_ips), std::end(connection.host_ips), "205.209.221.70"sv) !=
-                std::end(connection.host_ips));
+            CHECK(std::find(std::begin(connection.host_ips), std::end(connection.host_ips), "205.209.223.70"sv) != std::end(connection.host_ips));
+            CHECK(std::find(std::begin(connection.host_ips), std::end(connection.host_ips), "205.209.221.70"sv) != std::end(connection.host_ips));
             CHECK(connection.port == "14310"sv);
             CHECK(connection.feed == "A"sv);
           }
