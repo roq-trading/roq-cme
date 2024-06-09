@@ -44,7 +44,6 @@ requirements:
     - roq-oss-magic_enum
     - roq-oss-tomlplusplus
     - roq-oss-unordered_dense
-    - roq-schema
     - roq-server
     - roq-utils
     - roq-web
