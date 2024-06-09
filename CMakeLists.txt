@@ -47,8 +47,6 @@ endif()
 
 find_package(PkgConfig REQUIRED)
 
-find_program(CLANG_FORMAT clang-format REQUIRED)
-
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
   include(CTest)
 endif()
@@ -64,6 +62,16 @@ if(BUILD_BENCHMARK)
 endif()
 
 option(BUILD_DOCS "Enable documentation" OFF)
+
+# autogen
+
+find_program(ROQ_AUTOGEN roq-autogen REQUIRED)
+
+set(TEMPLATE_DIR ${CMAKE_SOURCE_DIR}/autogen)
+
+# clang-format
+
+find_program(CLANG_FORMAT clang-format REQUIRED)
 
 # include
 
