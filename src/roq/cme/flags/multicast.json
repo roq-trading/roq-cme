@@ -6,7 +6,7 @@
     {
       "name": "config_file",
       "type": "std/string",
-      "validator": "roq::flags::validators::Path",
+      "validator": "roq/flags/validators/Path",
       "required": true,
       "description": "Config file (path)"
     },
@@ -40,7 +40,7 @@
     {
       "name": "timeout",
       "type": "std/nanoseconds",
-      "validator": "roq::flags::validators::TimePeriod",
+      "validator": "roq/flags/validators/TimePeriod",
       "default": "90s",
       "description": "Timeout when waiting for snapshot"
     }

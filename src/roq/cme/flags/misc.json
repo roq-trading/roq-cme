@@ -17,7 +17,7 @@
     {
       "name": "secdef_config_file",
       "type": "std/string",
-      "validator": "roq::flags::validators::Path",
+      "validator": "roq/flags/validators/Path",
       "description": "Config file (path)"
     },
     {
