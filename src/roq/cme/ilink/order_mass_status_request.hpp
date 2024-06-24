@@ -8,7 +8,7 @@
 #include <chrono>
 #include <string_view>
 
-#include "roq/numbers.hpp"
+#include "roq/limits.hpp"
 
 #include "roq/cme/ilink/utils.hpp"
 

@@ -17,7 +17,7 @@
 #include <cme_ilink/SLEDS.h>
 #include <cme_ilink/SMPI.h>
 
-#include "roq/numbers.hpp"
+#include "roq/limits.hpp"
 
 #include "roq/cme/ilink/utils.hpp"
 
