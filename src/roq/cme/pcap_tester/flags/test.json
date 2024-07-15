@@ -1,0 +1,26 @@
+{
+  "name": "roq/cme/import/flags/Test",
+  "type": "flags",
+  "prefix": "test_",
+  "values": [
+    {
+      "name": "mbp_mbo",
+      "type": "std/bool",
+      "default": false,
+      "description": "Compare MBP and MBO updates?"
+    },
+    {
+      "name": "depth",
+      "type": "std/uint32",
+      "required": true,
+      "default": 10,
+      "description": "Depth to compare."
+    },
+    {
+      "name": "mbp_to_mbo_clear_price_level",
+      "type": "std/bool",
+      "default": false,
+      "description": "DEPRECATED"
+    }
+  ]
+}

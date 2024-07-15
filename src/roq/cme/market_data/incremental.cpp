@@ -56,6 +56,26 @@ auto get_supports(auto enable_market_by_order) {
   return enable_market_by_order ? SUPPORTS_2 : SUPPORTS_1;
 }
 
+template <typename Callback>
+void create_security(auto &shared, auto &value, Callback callback) {
+  auto security_id = value.securityID();
+  if (shared.security_definitions.has_security(security_id))
+    return;
+  auto market_segment_id = value.marketSegmentID();
+  auto security_exchange = mdp::get_string_view(value.securityExchange(), value.securityExchangeLength());
+  auto symbol = mdp::get_string_view(value.symbol(), value.symbolLength());
+  auto display_factor = mdp::get_double(value.displayFactor());
+  auto security_group = mdp::get_string_view(value.securityGroup(), value.securityGroupLength());
+  auto discard = shared.discard_symbol(symbol);
+  auto security = tools::Security{
+      .exchange = security_exchange,
+      .symbol = symbol,
+      .display_factor = display_factor,
+      .discard = discard,
+  };
+  shared.security_definitions.create_security(security_group, market_segment_id, security_id, std::move(security), [&](auto &security) { callback(security); });
+}
+
 struct SecurityIterator final {
   SecurityIterator(Shared &shared) : shared_{shared} {}
 
@@ -446,8 +466,18 @@ void Incremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> cons
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_instrument_definition_future_54={}, frame={}"sv, value, frame);
   value.sbeRewind();  // note!
+  /*
   auto security_id = value.securityID();
   shared_.security_definitions.get_security_incl_discard(security_id, [&](auto &security) {
+    auto reference_data = mdp::create_reference_data(value, stream_id, security);
+    create_trace_and_dispatch(shared_, trace_info, reference_data, true);
+    if (security.discard)
+      return;
+    auto market_status = mdp::create_market_status(value, stream_id, security);
+    create_trace_and_dispatch(shared_, trace_info, market_status, true);
+  });
+  */
+  create_security(shared_, value, [&](auto &security) {
     auto reference_data = mdp::create_reference_data(value, stream_id, security);
     create_trace_and_dispatch(shared_, trace_info, reference_data, true);
     if (security.discard)

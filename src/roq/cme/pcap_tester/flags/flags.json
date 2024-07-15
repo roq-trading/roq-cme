@@ -1,0 +1,13 @@
+{
+  "name": "roq/cme/pcap_tester/flags/Flags",
+  "type": "flags",
+  "values": [
+    {
+      "name": "type",
+      "type": "std/string",
+      "required": true,
+      "default": "pcap",
+      "description": "Type of input file (only support type is :code:`pcap`)."
+    }
+  ]
+}

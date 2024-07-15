@@ -37,7 +37,7 @@ namespace import {
 
 namespace {
 auto const ENABLE_MARKET_BY_ORDER = true;
-auto const FILTER_SNAPSHOT_FROM_INCREMENTAL = 1024uz;
+auto const FILTER_SNAPSHOT_FROM_INCREMENTAL = 0uz;
 auto const LOCAL_INTERFACE = "pcap"sv;
 auto const MULTICAST_TIMEOUT = 10s;
 std::vector<core::event_log::User> const USERS;
