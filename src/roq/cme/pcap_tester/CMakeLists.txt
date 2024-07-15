@@ -10,6 +10,7 @@ target_link_libraries(
   ${TARGET_NAME}
   PRIVATE ${PROJECT_NAME}-pcap-tester-flags
           ${PROJECT_NAME}-mdp
+          roq-core::roq-core
           roq-utils::roq-utils
           roq-logging::roq-logging
           roq-logging::roq-logging-flags
