@@ -591,7 +591,7 @@ void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &e
   auto exchange_sequence = frame.sequence_number;
   auto exchange_time_utc = std::chrono::nanoseconds{value.transactTime()};
   // note! MBO contains indexed references to MBP entries
-  md_entries_.clear();
+  shared_.md_entries_.clear();
   {  // MBP
     Layer layer;
     auto &mbp = shared_.get_mbp();
@@ -647,7 +647,7 @@ void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &e
       auto action = mdp::map(item.mDUpdateAction());
       // ... need these for MBO referencing
       if (shared_.options.enable_market_by_order)
-        md_entries_.emplace_back(security_id, side, price, action);
+        shared_.md_entries_.emplace_back(security_id, side, price, action);
       if (security) {
         emplace_back(item, *security, layer, mbp.bids, mbp.asks);
         if (shared_.options.enable_market_by_order) {
@@ -686,11 +686,11 @@ void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &e
       if (!reference_id)
         return;
       auto index = static_cast<size_t>(reference_id) - 1;  // indexing is 1-based
-      if (!(index < std::size(md_entries_))) [[unlikely]] {
-        log::warn("Unexpected: index={}, len={}"sv, index, std::size(md_entries_));
+      if (!(index < std::size(shared_.md_entries_))) [[unlikely]] {
+        log::warn("Unexpected: index={}, len={}"sv, index, std::size(shared_.md_entries_));
         return;
       }
-      auto [current_security_id, side, price, action] = md_entries_[index];
+      auto [current_security_id, side, price, action] = shared_.md_entries_[index];
       if (current_security_id != security_id) {
         if (security)
           dispatch(security_id, *security);
@@ -1049,22 +1049,25 @@ void Incremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame const
   auto exchange_time_utc = std::chrono::nanoseconds{value.transactTime()};
   auto exchange_sequence = frame.sequence_number;
   auto clear_state = [&]() {
-    security_ids_.clear();
-    trade_summary_.clear();
-    orders_.clear();
-    total_number_of_orders_ = 0;
+    shared_.security_ids_.clear();
+    shared_.trade_summary_.clear();
+    shared_.orders_.clear();
+    shared_.total_number_of_orders_ = 0;
   };
-  auto fragmented = exchange_time_utc == transact_time_;
+  // log::warn("DEBUG exchange_time_utc={}, transact_time_={}"sv, exchange_time_utc, shared_.transact_time_);
+  auto fragmented = exchange_time_utc == shared_.transact_time_;
   if (!fragmented) {
-    transact_time_ = exchange_time_utc;
+    // log::warn("DEBUG CLEAR_STATE exchange_time_utc={}, transact_time={}"sv, exchange_time_utc, transact_time_);
+    shared_.transact_time_ = exchange_time_utc;
     clear_state();
+    // log::warn("DEBUG exchange_time_utc={}, transact_time_={}"sv, exchange_time_utc, shared_.transact_time_);
   }
   auto insert_security_id = [&](auto security_id) {
-    for (auto iter : security_ids_) {
+    for (auto iter : shared_.security_ids_) {
       if (iter == security_id)
         return;
     }
-    security_ids_.emplace_back(security_id);
+    shared_.security_ids_.emplace_back(security_id);
   };
   value.noMDEntries().forEach([&]<typename U>(U &item) {
     auto security_id = item.securityID();
@@ -1075,27 +1078,40 @@ void Incremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame const
     auto trade_id = mdp::get_int(item.mDTradeEntryID(), item.mDTradeEntryIDNullValue());
     insert_security_id(security_id);
     auto side = mdp::map_side(aggressor_side);
-    trade_summary_.emplace_back(security_id, side, price, size, number_of_orders, trade_id);
-    total_number_of_orders_ += number_of_orders;
+    shared_.trade_summary_.emplace_back(security_id, side, price, size, number_of_orders, trade_id);
+    shared_.total_number_of_orders_ += number_of_orders;
     shared_.security_definitions.get_security(security_id, [&](auto &security) { check_report_sequence(security, item, frame); });
   });
   value.noOrderIDEntries().forEach([&](auto &item) {
     auto order_id = item.orderID();
     auto last_qty = item.lastQty();
-    orders_.emplace_back(order_id, last_qty);
+    shared_.orders_.emplace_back(order_id, last_qty);
   });
-  if (std::size(orders_) < total_number_of_orders_) {
-    log::warn<5>("Message is fragmented: sequence={}, len(orders)={}, expected={}"sv, exchange_sequence, std::size(orders_), total_number_of_orders_);
+  if (std::size(shared_.orders_) < shared_.total_number_of_orders_) {
+    log::warn<5>(
+        "Message is fragmented: sequence={}, exchange_time_utc={}, len(orders)={}, expected={}"sv,
+        exchange_sequence,
+        exchange_time_utc,
+        std::size(shared_.orders_),
+        shared_.total_number_of_orders_);
+    shared_.transact_time_ = exchange_time_utc;
+    // log::warn("DEBUG exchange_time_utc={}, transact_time_={}"sv, exchange_time_utc, shared_.transact_time_);
     return;  // note!
   }
-  if (std::size(orders_) > total_number_of_orders_) {
-    log::warn("Unexpected: sequence={}, len(orders)={}, expected={}"sv, exchange_sequence, std::size(orders_), total_number_of_orders_);
+  if (std::size(shared_.orders_) > shared_.total_number_of_orders_) {
+    log::warn(
+        "Unexpected: sequence={}, exchange_time_utc={}, len(orders)={}, expected={}"sv,
+        exchange_sequence,
+        exchange_time_utc,
+        std::size(shared_.orders_),
+        shared_.total_number_of_orders_);
   } else if (fragmented) {
     log::info<5>(
-        "DEBUG Message was fragmented and now fully assembled: sequence={}, len(orders)={}, expected={}"sv,
+        "DEBUG Message was fragmented and now fully assembled: sequence={}, exchange_time_utc={}, len(orders)={}, expected={}"sv,
         exchange_sequence,
-        std::size(orders_),
-        total_number_of_orders_);
+        exchange_time_utc,
+        std::size(shared_.orders_),
+        shared_.total_number_of_orders_);
   }
   // mbp
   /*
@@ -1161,15 +1177,15 @@ void Incremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame const
     dispatch_market_by_order(trace_info, security_id, security, exchange_sequence, exchange_time_utc, frame.sending_time, mbo.orders, false);
     mbo.clear();
   };
-  for (auto security_id : security_ids_) {
+  for (auto security_id : shared_.security_ids_) {
     shared_.security_definitions.get_security(security_id, [&](auto &security) {
       size_t offset = 0;
-      for (auto [security_id_2, aggressor_side, price, size, number_of_orders, trade_id] : trade_summary_) {
+      for (auto [security_id_2, aggressor_side, price, size, number_of_orders, trade_id] : shared_.trade_summary_) {
         auto side = aggressor_side;
         if (security_id == security_id_2) {
           size_t offset_2 = 0;
           if (aggressor_side != Side::UNDEFINED) {
-            auto &[order_id, last_qty] = orders_[offset + offset_2];
+            auto &[order_id, last_qty] = shared_.orders_[offset + offset_2];
             if (last_qty == size) {
               side = utils::invert(side);
               // XXX HANS are we missing the part of an aggressive order that remains in the book?
@@ -1177,7 +1193,7 @@ void Incremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame const
             ++offset_2;
           }
           for (; offset_2 < number_of_orders; ++offset_2) {
-            auto &[order_id, last_qty] = orders_[offset + offset_2];
+            auto &[order_id, last_qty] = shared_.orders_[offset + offset_2];
             auto result = MBOUpdate{
                 .price = price * security.display_factor,
                 .quantity = static_cast<double>(last_qty),
@@ -1217,16 +1233,16 @@ void Incremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame const
     create_trace_and_dispatch(shared_, trace_info, trade_summary, true);
     trades.clear();
   };
-  for (auto security_id : security_ids_) {
+  for (auto security_id : shared_.security_ids_) {
     shared_.security_definitions.get_security(security_id, [&](auto &security) {
       size_t offset = 0;
-      for (auto [security_id_2, aggressor_side, price, size, number_of_orders, trade_id] : trade_summary_) {
+      for (auto [security_id_2, aggressor_side, price, size, number_of_orders, trade_id] : shared_.trade_summary_) {
         if (security_id == security_id_2) {
           size_t offset_2 = 0;
           auto trade_id_2 = fmt::format("{}"sv, trade_id);
           std::string taker_order_id;
           if (aggressor_side != Side::UNDEFINED) {
-            auto &[order_id, last_qty] = orders_[offset + offset_2];
+            auto &[order_id, last_qty] = shared_.orders_[offset + offset_2];
             if (last_qty == size) {
               taker_order_id = fmt::format("{}"sv, order_id);
               if (number_of_orders == 1) {
@@ -1256,7 +1272,7 @@ void Incremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame const
             ++offset_2;
           }
           for (; offset_2 < number_of_orders; ++offset_2) {
-            auto &[order_id, last_qty] = orders_[offset + offset_2];
+            auto &[order_id, last_qty] = shared_.orders_[offset + offset_2];
             auto trade = Trade{
                 .side = aggressor_side,
                 .price = price * security.display_factor,
@@ -1275,6 +1291,10 @@ void Incremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame const
     });
   }
   // done
+  if (std::size(shared_.orders_) < shared_.total_number_of_orders_)
+    log::warn("Unexpected: len(orders)={}, total_number_of_orders={}"sv, std::size(shared_.orders_), shared_.total_number_of_orders_);
+  shared_.transact_time_ = {};
+  // log::warn("DEBUG exchange_time_utc={}, transact_time_={}"sv, exchange_time_utc, shared_.transact_time_);
   clear_state();
 }
 

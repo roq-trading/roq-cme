@@ -95,6 +95,15 @@ struct Shared final {
   SecurityDefinitions &security_definitions;
   // buffer
   std::vector<std::byte> buffer;
+
+  // - incremental / refresh book
+  std::vector<std::tuple<int32_t, Side, double, UpdateAction>> md_entries_;
+  // - incremental / trade summary
+  std::vector<std::tuple<int32_t, Side, double, int32_t, size_t, uint32_t>> trade_summary_;
+  std::vector<int32_t> security_ids_;
+  std::vector<std::pair<uint64_t, int32_t>> orders_;
+  std::chrono::nanoseconds transact_time_ = {};
+  size_t total_number_of_orders_ = {};
 };
 
 }  // namespace market_data
