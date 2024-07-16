@@ -85,8 +85,8 @@ struct Incremental final : public mdp::Parser::Handler {
       auto exchange_sequence,
       auto exchange_time_utc,
       auto sending_time_utc,
-      auto &bids,
-      auto &asks,
+      std::span<MBPUpdate const> const &bids,
+      std::span<MBPUpdate const> const &asks,
       bool is_snapshot);
 
   void dispatch_market_by_price_stale(auto &trace_info, auto &security, auto exchange_sequence, auto exchange_time_utc, auto sending_time_utc);
@@ -98,7 +98,7 @@ struct Incremental final : public mdp::Parser::Handler {
       auto exchange_sequence,
       auto exchange_time_utc,
       auto sending_time_utc,
-      auto &orders,
+      std::span<MBOUpdate const> const &orders,
       bool is_snapshot);
 
   void dispatch_market_by_order_stale(auto &trace_info, auto &security, auto exchange_sequence, auto exchange_time_utc, auto sending_time_utc);

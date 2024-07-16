@@ -73,7 +73,8 @@ void create_security(auto &shared, auto &value, Callback callback) {
       .display_factor = display_factor,
       .discard = discard,
   };
-  shared.security_definitions.create_security(security_group, market_segment_id, security_id, std::move(security), [&](auto &security) { callback(security); });
+  auto callback_2 = [&](auto &security) { callback(security); };
+  shared.security_definitions.create_security(security_group, market_segment_id, security_id, std::move(security), callback_2);
 }
 
 struct SecurityIterator final {
@@ -93,7 +94,7 @@ struct SecurityIterator final {
         }
       }
       if (security_)
-        callback(*security_, item);
+        callback(security_id_, *security_, item);
     });
     if (security_)
       dispatch(security_id_, *security_);
@@ -466,6 +467,7 @@ void Incremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> cons
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_instrument_definition_future_54={}, frame={}"sv, value, frame);
   value.sbeRewind();  // note!
+  auto security_id = value.securityID();
   /*
   auto security_id = value.securityID();
   shared_.security_definitions.get_security_incl_discard(security_id, [&](auto &security) {
@@ -592,7 +594,8 @@ void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &e
   auto exchange_time_utc = std::chrono::nanoseconds{value.transactTime()};
   // note! MBO contains indexed references to MBP entries
   shared_.md_entries_.clear();
-  {  // MBP
+  auto is_snapshot_workaround = false;  // note! we assume that a snapshot only includes a single security_id
+  {                                     // MBP
     Layer layer;
     auto &mbp = shared_.get_mbp();
     auto &mbo = shared_.get_mbo();
@@ -636,8 +639,10 @@ void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &e
         }
         is_snapshot = false;
       }
-      if (item.rptSeq() == 1)
+      if (item.rptSeq() == 1) {
         is_snapshot = true;
+        is_snapshot_workaround = true;  // XXX
+      }
       if (security)
         check_report_sequence(*security, item, frame);
       using value_type = typename std::remove_cvref<decltype(item)>::type;
@@ -678,7 +683,7 @@ void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &e
     auto dispatch = [&](auto security_id, auto &security) {
       if (std::empty(orders))
         return;
-      dispatch_market_by_order(trace_info, security_id, security, exchange_sequence, exchange_time_utc, frame.sending_time, orders, false);
+      dispatch_market_by_order(trace_info, security_id, security, exchange_sequence, exchange_time_utc, frame.sending_time, orders, is_snapshot_workaround);
       orders.clear();
     };
     auto process = [&](auto &item) {
@@ -717,7 +722,7 @@ void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBookLongQty64> c
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_incremental_refresh_book_long_qty_64={}, frame={}"sv, value, frame);
   auto dispatch = []([[maybe_unused]] auto security_id, [[maybe_unused]] auto &security) {};
-  auto update = [&](auto &security, auto &item) { check_report_sequence(security, item, frame); };
+  auto update = [&]([[maybe_unused]] auto security_id, auto &security, auto &item) { check_report_sequence(security, item, frame); };
   SecurityIterator{shared_}(value.noMDEntries(), dispatch, update);
 }
 
@@ -801,30 +806,34 @@ void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshDailyStatistics4
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_incremental_refresh_daily_statistics_49={}, frame={}"sv, value, frame);
-  dispatch_statistics(event, frame, [](auto &statistics, auto &item, auto &security) { statistics_emplace_back(statistics, item, security); });
+  auto callback = [](auto &statistics, auto &item, auto &security) { statistics_emplace_back(statistics, item, security); };
+  dispatch_statistics(event, frame, callback);
 }
 
 void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshSessionStatistics51> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_incremental_refresh_session_statistics_51={}, frame={}"sv, value, frame);
-  dispatch_statistics(event, frame, [](auto &statistics, auto &item, auto &security) { statistics_emplace_back(statistics, item, security); });
+  auto callback = [](auto &statistics, auto &item, auto &security) { statistics_emplace_back(statistics, item, security); };
+  dispatch_statistics(event, frame, callback);
 }
 
 void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_incremental_refresh_session_statistics_long_qty_67={}, frame={}"sv, value, frame);
-  dispatch_statistics(event, frame, [](auto &statistics, auto &item, auto &security) { statistics_emplace_back(statistics, item, security); });
+  auto callback = [](auto &statistics, auto &item, auto &security) { statistics_emplace_back(statistics, item, security); };
+  dispatch_statistics(event, frame, callback);
 }
 
 void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshVolume37> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_incremental_refresh_volume_37={}, frame={}"sv, value, frame);
-  dispatch_statistics(event, frame, [](auto &statistics, auto &item, [[maybe_unused]] auto &security) {
+  auto callback = [](auto &statistics, auto &item, [[maybe_unused]] auto &security) {
     statistics_emplace_back_size(statistics, StatisticsType::TRADE_VOLUME, item);
-  });
+  };
+  dispatch_statistics(event, frame, callback);
 }
 
 void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshVolumeLongQty66> const &event, mdp::Frame const &frame) {
@@ -832,7 +841,7 @@ void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshVolumeLongQty66>
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_incremental_refresh_volume_long_qty_66={}, frame={}"sv, value, frame);
   auto dispatch = []([[maybe_unused]] auto security_id, [[maybe_unused]] auto &security) {};
-  auto update = [&](auto &security, auto &item) { check_report_sequence(security, item, frame); };
+  auto update = [&]([[maybe_unused]] auto security_id, auto &security, auto &item) { check_report_sequence(security, item, frame); };
   SecurityIterator{shared_}(value.noMDEntries(), dispatch, update);
 }
 
@@ -842,7 +851,7 @@ void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshLimitsBanding50>
   log::info<5>("md_incremental_refresh_limits_banding_50={}, frame={}"sv, value, frame);
   value.sbeRewind();  // note!
   auto dispatch = []([[maybe_unused]] auto security_id, [[maybe_unused]] auto &security) {};
-  auto update = [&](auto &security, auto &item) { check_report_sequence(security, item, frame); };
+  auto update = [&]([[maybe_unused]] auto security_id, auto &security, auto &item) { check_report_sequence(security, item, frame); };
   SecurityIterator{shared_}(value.noMDEntries(), dispatch, update);
 }
 
@@ -855,8 +864,8 @@ void Incremental::dispatch_market_by_price(
     auto exchange_sequence,
     auto exchange_time_utc,
     auto sending_time_utc,
-    auto &bids,
-    auto &asks,
+    std::span<MBPUpdate const> const &bids,
+    std::span<MBPUpdate const> const &asks,
     bool is_snapshot) {
   auto &sequencer = security.mbp.sequencer;
   try {
@@ -944,7 +953,14 @@ void Incremental::dispatch_market_by_price_stale(auto &trace_info, auto &securit
 }
 
 void Incremental::dispatch_market_by_order(
-    auto &trace_info, auto security_id, auto &security, auto exchange_sequence, auto exchange_time_utc, auto sending_time_utc, auto &orders, bool is_snapshot) {
+    auto &trace_info,
+    auto security_id,
+    auto &security,
+    auto exchange_sequence,
+    auto exchange_time_utc,
+    auto sending_time_utc,
+    std::span<MBOUpdate const> const &orders,
+    bool is_snapshot) {
   auto &sequencer = security.mbo.sequencer;
   try {
     auto last_exchange_sequence = sequencer.last_sequence();  // note! the protocol doesn't tell us
@@ -1323,9 +1339,17 @@ void Incremental::dispatch_statistics(Trace<T> const &event, mdp::Frame const &f
     create_trace_and_dispatch(shared_, trace_info, statistics_update, true);
     statistics.clear();
   };
-  auto update = [&](auto &security, auto &item) {
+  auto update = [&](auto security_id, auto &security, auto &item) {
     check_report_sequence(security, item, frame);
     callback(statistics, item, security);
+    // initializing?
+    auto rpt_seq = item.rptSeq();
+    if (rpt_seq != 1)
+      return;
+    auto exchange_sequence = frame.sequence_number;
+    auto exchange_time_utc = std::chrono::nanoseconds{value.transactTime()};
+    dispatch_market_by_price(trace_info, security_id, security, exchange_sequence, exchange_time_utc, frame.sending_time, {}, {}, true);
+    dispatch_market_by_order(trace_info, security_id, security, exchange_sequence, exchange_time_utc, frame.sending_time, {}, true);
   };
   SecurityIterator{shared_}(value.noMDEntries(), dispatch, update);
 }
