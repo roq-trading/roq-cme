@@ -14,6 +14,8 @@
 #include <cme_mdp/MDIncrementalRefreshVolume37.h>
 #include <cme_mdp/MDIncrementalRefreshVolumeLongQty66.h>
 
+#include "roq/name.hpp"
+
 #include "roq/core/sbe/iterator.hpp"
 
 #include "roq/cme/mdp/utils.hpp"
@@ -51,6 +53,72 @@ MDIncrementalRefreshSessionStatisticsLongQty67
 */
 }  // namespace mdp
 }  // namespace cme
+
+template <>
+inline constexpr std::string_view get_name<cme_mdp::MDIncrementalRefreshVolume37>() {
+  using namespace std::literals;
+  return "md_incremental_refresh_volume_37"sv;
+}
+
+template <>
+inline constexpr std::string_view get_name<cme_mdp::MDIncrementalRefreshBook46>() {
+  using namespace std::literals;
+  return "md_incremental_refresh_book_46"sv;
+}
+
+template <>
+inline constexpr std::string_view get_name<cme_mdp::MDIncrementalRefreshOrderBook47>() {
+  using namespace std::literals;
+  return "md_incremental_refresh_order_book_47"sv;
+}
+
+template <>
+inline constexpr std::string_view get_name<cme_mdp::MDIncrementalRefreshTradeSummary48>() {
+  using namespace std::literals;
+  return "md_incremental_refresh_trade_summary_48"sv;
+}
+
+template <>
+inline constexpr std::string_view get_name<cme_mdp::MDIncrementalRefreshDailyStatistics49>() {
+  using namespace std::literals;
+  return "md_incremental_refresh_daily_statistics_49"sv;
+}
+
+template <>
+inline constexpr std::string_view get_name<cme_mdp::MDIncrementalRefreshLimitsBanding50>() {
+  using namespace std::literals;
+  return "md_incremental_refresh_limits_banding_50"sv;
+}
+
+template <>
+inline constexpr std::string_view get_name<cme_mdp::MDIncrementalRefreshSessionStatistics51>() {
+  using namespace std::literals;
+  return "md_incremental_refresh_session_statistics_51"sv;
+}
+
+template <>
+inline constexpr std::string_view get_name<cme_mdp::MDIncrementalRefreshBookLongQty64>() {
+  using namespace std::literals;
+  return "md_incremental_refresh_book_long_qty_64"sv;
+}
+
+template <>
+inline constexpr std::string_view get_name<cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65>() {
+  using namespace std::literals;
+  return "md_incremental_refresh_trade_summary_long_qty_65"sv;
+}
+
+template <>
+inline constexpr std::string_view get_name<cme_mdp::MDIncrementalRefreshVolumeLongQty66>() {
+  using namespace std::literals;
+  return "md_incremental_refresh_volume_long_qty_66"sv;
+}
+
+template <>
+inline constexpr std::string_view get_name<cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67>() {
+  using namespace std::literals;
+  return "md_incremental_refresh_session_statistics_long_qty_67"sv;
+}
 }  // namespace roq
 
 // MDIncrementalRefreshVolume37

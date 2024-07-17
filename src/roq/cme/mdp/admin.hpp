@@ -13,6 +13,18 @@ namespace roq {
 namespace cme {
 namespace mdp {}  // namespace mdp
 }  // namespace cme
+
+template <>
+inline constexpr std::string_view get_name<cme_mdp::ChannelReset4>() {
+  using namespace std::literals;
+  return "channel_reset_4"sv;
+}
+
+template <>
+inline constexpr std::string_view get_name<cme_mdp::AdminHeartbeat12>() {
+  using namespace std::literals;
+  return "admin_heartbeat_12"sv;
+}
 }  // namespace roq
 
 // messages

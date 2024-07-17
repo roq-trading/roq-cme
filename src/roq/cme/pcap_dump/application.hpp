@@ -6,7 +6,7 @@
 
 namespace roq {
 namespace cme {
-namespace pcap_tester {
+namespace pcap_dump {
 
 struct Application final : public roq::Tool {
   using roq::Tool::Tool;
@@ -15,6 +15,6 @@ struct Application final : public roq::Tool {
   int main(args::Parser const &) override;
 };
 
-}  // namespace pcap_tester
+}  // namespace pcap_dump
 }  // namespace cme
 }  // namespace roq

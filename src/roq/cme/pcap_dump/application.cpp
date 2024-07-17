@@ -1,17 +1,17 @@
 /* Copyright (c) 2017-2024, Hans Erik Thrane */
 
-#include "roq/cme/pcap_tester/application.hpp"
+#include "roq/cme/pcap_dump/application.hpp"
 
 #include "roq/logging.hpp"
 
-#include "roq/cme/pcap_tester/controller.hpp"
-#include "roq/cme/pcap_tester/settings.hpp"
+#include "roq/cme/pcap_dump/controller.hpp"
+#include "roq/cme/pcap_dump/settings.hpp"
 
 using namespace std::literals;
 
 namespace roq {
 namespace cme {
-namespace pcap_tester {
+namespace pcap_dump {
 
 // === IMPLEMENTATION ===
 
@@ -24,6 +24,6 @@ int Application::main(args::Parser const &args) {
   return EXIT_SUCCESS;
 }
 
-}  // namespace pcap_tester
+}  // namespace pcap_dump
 }  // namespace cme
 }  // namespace roq

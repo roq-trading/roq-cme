@@ -34,6 +34,36 @@ inline size_t compute_length(cme_mdp::SnapshotFullRefreshOrderBook53 &value) {
 
 }  // namespace mdp
 }  // namespace cme
+
+template <>
+inline constexpr std::string_view get_name<cme_mdp::SnapshotFullRefresh52>() {
+  using namespace std::literals;
+  return "snapshot_full_refresh_52"sv;
+}
+
+template <>
+inline constexpr std::string_view get_name<cme_mdp::SnapshotFullRefreshOrderBook53>() {
+  using namespace std::literals;
+  return "snapshot_full_refresh_order_book_53"sv;
+}
+
+template <>
+inline constexpr std::string_view get_name<cme_mdp::SnapshotFullRefreshTCP61>() {
+  using namespace std::literals;
+  return "snapshot_full_refresh_tcp_61"sv;
+}
+
+template <>
+inline constexpr std::string_view get_name<cme_mdp::SnapshotFullRefreshTCPLongQty68>() {
+  using namespace std::literals;
+  return "snapshot_full_refresh_tcp_long_qty_68"sv;
+}
+
+template <>
+inline constexpr std::string_view get_name<cme_mdp::SnapshotFullRefreshLongQty69>() {
+  using namespace std::literals;
+  return "snapshot_full_refresh_long_qty_69"sv;
+}
 }  // namespace roq
 
 // SnapshotFullRefresh52

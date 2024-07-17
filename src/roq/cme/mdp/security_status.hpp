@@ -10,6 +10,12 @@ namespace roq {
 namespace cme {
 namespace mdp {}  // namespace mdp
 }  // namespace cme
+
+template <>
+inline constexpr std::string_view get_name<cme_mdp::SecurityStatus30>() {
+  using namespace std::literals;
+  return "security_status_30"sv;
+}
 }  // namespace roq
 
 // messages

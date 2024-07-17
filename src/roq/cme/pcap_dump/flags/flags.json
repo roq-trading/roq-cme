@@ -1,5 +1,5 @@
 {
-  "name": "roq/cme/pcap_tester/flags/Flags",
+  "name": "roq/cme/pcap_dump/flags/Flags",
   "type": "flags",
   "values": [
     {

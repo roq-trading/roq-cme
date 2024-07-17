@@ -4,16 +4,16 @@
 
 #include "roq/flags/args.hpp"
 
-#include "roq/cme/pcap_tester/flags/flags.hpp"
+#include "roq/cme/pcap_dump/flags/flags.hpp"
 
 namespace roq {
 namespace cme {
-namespace pcap_tester {
+namespace pcap_dump {
 
 struct Settings final : public flags::Flags {
   explicit Settings(args::Parser const &);
 };
 
-}  // namespace pcap_tester
+}  // namespace pcap_dump
 }  // namespace cme
 }  // namespace roq

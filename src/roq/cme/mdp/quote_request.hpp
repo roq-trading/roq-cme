@@ -24,6 +24,12 @@ inline size_t compute_length(cme_mdp::QuoteRequest39 &value) {
 
 }  // namespace mdp
 }  // namespace cme
+
+template <>
+inline constexpr std::string_view get_name<cme_mdp::QuoteRequest39>() {
+  using namespace std::literals;
+  return "quote_request_39"sv;
+}
 }  // namespace roq
 
 // QuoteRequest39

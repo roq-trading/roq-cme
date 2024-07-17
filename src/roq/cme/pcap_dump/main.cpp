@@ -1,6 +1,6 @@
 /* Copyright (c) 2017-2024, Hans Erik Thrane */
 
-#include "roq/cme/pcap_tester/application.hpp"
+#include "roq/cme/pcap_dump/application.hpp"
 
 #include "roq/flags/args.hpp"
 #include "roq/logging/flags/settings.hpp"
@@ -26,5 +26,5 @@ roq::Tool::Info const INFO{
 int main(int argc, char **argv) {
   roq::flags::Args args{argc, argv, INFO.description, INFO.build_version};
   roq::logging::flags::Settings settings{args};
-  return roq::cme::pcap_tester::Application{args, settings, INFO}.run();
+  return roq::cme::pcap_dump::Application{args, settings, INFO}.run();
 }

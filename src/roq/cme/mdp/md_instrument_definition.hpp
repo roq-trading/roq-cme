@@ -173,6 +173,42 @@ inline size_t compute_length(cme_mdp::MDInstrumentDefinitionFX63 &value) {
 
 }  // namespace mdp
 }  // namespace cme
+
+template <>
+inline constexpr std::string_view get_name<cme_mdp::MDInstrumentDefinitionFuture54>() {
+  using namespace std::literals;
+  return "md_instrument_definition_future_54"sv;
+}
+
+template <>
+inline constexpr std::string_view get_name<cme_mdp::MDInstrumentDefinitionOption55>() {
+  using namespace std::literals;
+  return "md_instrument_definition_option_55"sv;
+}
+
+template <>
+inline constexpr std::string_view get_name<cme_mdp::MDInstrumentDefinitionSpread56>() {
+  using namespace std::literals;
+  return "md_instrument_definition_spread_56"sv;
+}
+
+template <>
+inline constexpr std::string_view get_name<cme_mdp::MDInstrumentDefinitionFixedIncome57>() {
+  using namespace std::literals;
+  return "md_instrument_definition_fixed_income_57"sv;
+}
+
+template <>
+inline constexpr std::string_view get_name<cme_mdp::MDInstrumentDefinitionRepo58>() {
+  using namespace std::literals;
+  return "md_instrument_definition_repo_58"sv;
+}
+
+template <>
+inline constexpr std::string_view get_name<cme_mdp::MDInstrumentDefinitionFX63>() {
+  using namespace std::literals;
+  return "md_instrument_definition_fx_63"sv;
+}
 }  // namespace roq
 
 // messages

@@ -1,8 +1,8 @@
-set(TARGET_NAME ${PROJECT_NAME}-pcap-tester-flags)
+set(TARGET_NAME ${PROJECT_NAME}-pcap-dump-flags)
 
 include(RoqAutogen)
 
-set(NAMESPACE "roq/cme/pcap_tester/flags")
+set(NAMESPACE "roq/cme/pcap_dump/flags")
 
 set(AUTOGEN_SCHEMAS flags.json)
 
@@ -20,7 +20,7 @@ if(BUILD_DOCS)
     TEMPLATE_TYPE
     "doc")
 
-  add_custom_target(pcap-tester-autogen-docs ALL DEPENDS ${AUTOGEN_DOCS})
+  add_custom_target(pcap-dump-autogen-docs ALL DEPENDS ${AUTOGEN_DOCS})
 
 endif()
 
@@ -34,7 +34,7 @@ roq_autogen_hpp(
   TEMPLATE_TYPE
   "state")
 
-add_custom_target(pcap-tester-autogen-headers ALL DEPENDS ${AUTOGEN_HEADERS})
+add_custom_target(pcap-dump-autogen-headers ALL DEPENDS ${AUTOGEN_HEADERS})
 
 roq_autogen_cpp(
   OUTPUT
@@ -57,6 +57,6 @@ roq_gitignore(
 
 add_library(${TARGET_NAME} OBJECT ${AUTOGEN_SOURCES})
 
-add_dependencies(${TARGET_NAME} pcap-tester-autogen-headers)
+add_dependencies(${TARGET_NAME} pcap-dump-autogen-headers)
 
 target_link_libraries(${TARGET_NAME} PRIVATE roq-api::roq-api absl::flags)

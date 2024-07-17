@@ -1,6 +1,6 @@
 /* Copyright (c) 2017-2024, Hans Erik Thrane */
 
-#include "roq/cme/pcap_tester/pcap.hpp"
+#include "roq/cme/pcap_dump/pcap.hpp"
 
 #include "roq/exceptions.hpp"
 
@@ -8,7 +8,7 @@ using namespace std::literals;
 
 namespace roq {
 namespace cme {
-namespace pcap_tester {
+namespace pcap_dump {
 
 // === HELPERS ===
 
@@ -47,6 +47,6 @@ void PCAP::dispatch(callback_type const &callback) {
     throw RuntimeError{"pcap_dispatch: {}"sv, pcap_geterr(handle_.get())};
 }
 
-}  // namespace pcap_tester
+}  // namespace pcap_dump
 }  // namespace cme
 }  // namespace roq
