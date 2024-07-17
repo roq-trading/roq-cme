@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 
 CONFIG_FILE="../config/config.xml"
+SECDEF_FILE="$HOME/secdef.dat"
+
+#SYMBOLS=".*"
 SYMBOLS="^Z[TFNB][FGHJKMNQUVXZ][0-9]$"
 #SYMBOLS="ZTM4"
 
@@ -27,8 +30,9 @@ $PREFIX ./roq-cme-import \
   --name cme \
   --type pcap \
   --channel_ids 344 \
-  --symbols $SYMBOLS \
+  --symbols "$SYMBOLS" \
   --cme_config_file $CONFIG_FILE \
-  --cme_secdef_file $HOME/secdef.dat \
   --event_log_output_file test.roq \
   $@
+
+#  --cme_secdef_file $SECDEF_FILE
