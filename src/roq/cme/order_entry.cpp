@@ -56,7 +56,7 @@ auto const TRADING_SYSTEM_VENDOR = "ROQ GMBH"sv;
 auto const KEEP_ALIVE_INTERVAL = 30s;
 
 auto const REQUEST_TIMEOUT = 5s;
-auto const MAX_SEQ_NUM = uint64_t{1000000000};
+uint64_t const MAX_SEQ_NUM = 1000000000;
 
 auto const MANUAL_ORDER_INDICATOR = cme_ilink::ManualOrdIndReq::Automated;  // XXX flag?
 }  // namespace

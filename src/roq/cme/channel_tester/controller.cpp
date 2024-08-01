@@ -19,7 +19,7 @@ namespace channel_tester {
 // === CONSTANTS ===
 
 namespace {
-auto const BUFFER_SIZE = size_t{4096};
+size_t const BUFFER_SIZE = 4096;
 }
 
 // === HELPERS ===

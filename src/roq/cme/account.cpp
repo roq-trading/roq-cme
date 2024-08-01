@@ -8,7 +8,7 @@ namespace cme {
 // === CONSTANTS ===
 
 namespace {
-auto const ENCODE_BUFFER_LENGTH = size_t{512};
+size_t const ENCODE_BUFFER_LENGTH = 512;
 }  // namespace
 
 // === IMPLEMENTATION ===
