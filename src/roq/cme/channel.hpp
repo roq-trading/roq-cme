@@ -14,7 +14,6 @@ namespace cme {
 struct Channel final {
   Channel(std::string_view const &channel_id, size_t buffer_size, size_t buffer_depth);
 
-  Channel(Channel &&) = default;
   Channel(Channel const &) = delete;
 
   std::string const channel_id;

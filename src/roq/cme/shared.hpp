@@ -28,7 +28,6 @@ struct Shared final {
  public:
   Shared(server::Dispatcher &, Settings const &, market_data::SecurityDefinitions &);
 
-  Shared(Shared &&) = default;
   Shared(Shared const &) = delete;
 
   template <typename Callback>

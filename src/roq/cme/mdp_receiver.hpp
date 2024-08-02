@@ -19,7 +19,6 @@ namespace cme {
 struct MDPReceiver final : public io::net::udp::Receiver::Handler {
   MDPReceiver(io::Context &, Shared &, market_data::Manager &, uint16_t channel_id, mdp::ConnectionType, Priority);
 
-  MDPReceiver(MDPReceiver &&) = default;
   MDPReceiver(MDPReceiver const &) = delete;
 
   void operator()(metrics::Writer &);
