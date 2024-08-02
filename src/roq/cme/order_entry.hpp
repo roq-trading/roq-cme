@@ -33,8 +33,8 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public ili
 
   OrderEntry(Handler &, io::Context &, uint16_t stream_id, Account &, Shared &, uint8_t market_segment_id, io::web::URI const &);
 
+  OrderEntry(OrderEntry &&) = default;
   OrderEntry(OrderEntry const &) = delete;
-  OrderEntry(OrderEntry &&) = delete;
 
   bool ready() const { return status_ == ConnectionStatus::READY; }
 

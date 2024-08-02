@@ -29,7 +29,7 @@ namespace cme {
 struct Gateway final : public server::Handler, public market_data::SecurityDefinitions::Dispatcher, public OrderEntry::Handler {
   Gateway(server::Dispatcher &, Settings const &, Config const &, io::Context &);
 
-  Gateway(Gateway &&) = delete;
+  Gateway(Gateway &&) = default;
   Gateway(Gateway const &) = delete;
 
  protected:
