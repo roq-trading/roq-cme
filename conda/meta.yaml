@@ -39,7 +39,6 @@ requirements:
     - roq-market
     - roq-oss-benchmark
     - roq-oss-brotli
-    - roq-oss-cppitertools
     - roq-oss-libpcap
     - roq-oss-magic_enum
     - roq-oss-tomlplusplus
