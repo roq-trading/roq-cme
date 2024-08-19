@@ -25,6 +25,10 @@ size_t const BUFFER_SIZE = 4096;
 // === HELPERS ===
 
 namespace {
+auto create_context() {
+  return io::engine::ContextFactory::create();
+}
+
 auto create_receiver(auto &handler, auto &settings, auto &context) {
   auto network_address = io::NetworkAddress{settings.multicast_port};
   auto socket_options = Mask{
@@ -41,8 +45,7 @@ auto create_receiver(auto &handler, auto &settings, auto &context) {
 // === IMPLEMENTATION ===
 
 Controller::Controller(Settings const &settings)
-    : settings_{settings}, context_{io::engine::ContextFactory::create_libevent()},
-      terminate_{(*context_).create_signal(*this, io::sys::Signal::Type::TERMINATE)},
+    : settings_{settings}, context_{create_context()}, terminate_{(*context_).create_signal(*this, io::sys::Signal::Type::TERMINATE)},
       interrupt_{(*context_).create_signal(*this, io::sys::Signal::Type::INTERRUPT)},
       bus_error_{(*context_).create_signal(*this, io::sys::Signal::Type::BUS_ERROR)}, receiver_{create_receiver(*this, settings, *context_)},
       buffer_(BUFFER_SIZE) {
