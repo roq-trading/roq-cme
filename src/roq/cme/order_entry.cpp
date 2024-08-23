@@ -82,8 +82,6 @@ auto create_connection_manager(auto &handler, auto &settings, auto &connection_f
       .connection_timeout = settings.net.connection_timeout,
       .disconnect_on_idle_timeout = {},
       .always_reconnect = true,
-      .encode_buffer_size = ROQ_PAGE_SIZE,
-      .max_buffers = {},
   };
   return io::net::ConnectionManager::create(handler, connection_factory, config);
 }
@@ -1247,6 +1245,9 @@ void OrderEntry::operator()(io::net::ConnectionManager::Read const &) {
   (*connection_manager_).drain(total_bytes);
 }
 
+void OrderEntry::operator()(io::net::ConnectionManager::Write const &) {
+}
+
 size_t OrderEntry::parse(std::span<std::byte const> const &buffer) {
   size_t result = 0;
   profile_.parse([&]() {
@@ -1315,7 +1316,7 @@ uint64_t OrderEntry::fetch_next_request_id() {
 
 template <typename T>
 void OrderEntry::send(T const &value) {
-  auto message = value.encode(encode_buffer_2_);
+  auto message = value.encode(encode_buffer_2_);  // XXX FIXME move inside send callback + drop encode_buffer
   uint16_t length = utils::safe_cast{std::size(message) + 4};
   struct SOFH final {
     uint16_t message_length;
@@ -1325,13 +1326,20 @@ void OrderEntry::send(T const &value) {
       .message_length = core::host_to_little_endian(length),
   };
   static_assert(sizeof(SOFH) == 4);
-  auto data = std::array<std::span<std::byte const>, 2>{{
-      {reinterpret_cast<std::byte const *>(&sofh), sizeof(sofh)},
-      message,
-  }};
-  // log::info(R"(DEBUG message="{}{}")"sv, utils::debug::hex::Message{data[0]}, utils::debug::hex::Message{data[1]});
-  log::info<5>(R"(Sending message="{}{}")"sv, utils::debug::hex::Message{data[0]}, utils::debug::hex::Message{data[1]});
-  (*connection_manager_).send(data);
+  (*connection_manager_).send_with_completion([&](auto &buffer) {
+    auto data = std::array<std::span<std::byte const>, 2>{{
+        {reinterpret_cast<std::byte const *>(&sofh), sizeof(sofh)},
+        message,
+    }};
+    // log::info(R"(DEBUG message="{}{}")"sv, utils::debug::hex::Message{data[0]}, utils::debug::hex::Message{data[1]});
+    log::info<5>(R"(Sending message="{}{}")"sv, utils::debug::hex::Message{data[0]}, utils::debug::hex::Message{data[1]});
+    auto length = std::size(data[0]) + std::size(data[1]);
+    if (std::size(buffer) < length) [[unlikely]]
+      log::fatal("Unexpected: {} < {}"sv, std::size(buffer), length);
+    std::memcpy(std::data(buffer), std::data(data[0]), std::size(data[0]));
+    std::memcpy(std::data(buffer) + std::size(data[0]), std::data(data[1]), std::size(data[1]));
+    return length;
+  });
   next_heartbeat_ = clock::get_system() + KEEP_ALIVE_INTERVAL;
 }
 

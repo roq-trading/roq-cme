@@ -86,6 +86,7 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public ili
   void operator()(io::net::ConnectionManager::Connected const &) override;
   void operator()(io::net::ConnectionManager::Disconnected const &) override;
   void operator()(io::net::ConnectionManager::Read const &) override;
+  void operator()(io::net::ConnectionManager::Write const &) override;
 
   size_t parse(std::span<std::byte const> const &);
 
