@@ -1326,7 +1326,7 @@ void OrderEntry::send(T const &value) {
       .message_length = core::host_to_little_endian(length),
   };
   static_assert(sizeof(SOFH) == 4);
-  (*connection_manager_).send_with_completion([&](auto &buffer) {
+  (*connection_manager_).send([&](auto &buffer) {
     auto data = std::array<std::span<std::byte const>, 2>{{
         {reinterpret_cast<std::byte const *>(&sofh), sizeof(sofh)},
         message,
