@@ -1326,20 +1326,23 @@ void OrderEntry::send(T const &value) {
       .message_length = core::host_to_little_endian(length),
   };
   static_assert(sizeof(SOFH) == 4);
-  (*connection_manager_).send([&](auto &buffer) {
-    auto data = std::array<std::span<std::byte const>, 2>{{
-        {reinterpret_cast<std::byte const *>(&sofh), sizeof(sofh)},
-        message,
-    }};
-    // log::info(R"(DEBUG message="{}{}")"sv, utils::debug::hex::Message{data[0]}, utils::debug::hex::Message{data[1]});
-    log::info<5>(R"(Sending message="{}{}")"sv, utils::debug::hex::Message{data[0]}, utils::debug::hex::Message{data[1]});
-    auto length = std::size(data[0]) + std::size(data[1]);
-    if (std::size(buffer) < length) [[unlikely]]
-      log::fatal("Unexpected: {} < {}"sv, std::size(buffer), length);
-    std::memcpy(std::data(buffer), std::data(data[0]), std::size(data[0]));
-    std::memcpy(std::data(buffer) + std::size(data[0]), std::data(data[1]), std::size(data[1]));
-    return length;
-  });
+  if ((*connection_manager_).send([&](auto &buffer) {
+        auto data = std::array<std::span<std::byte const>, 2>{{
+            {reinterpret_cast<std::byte const *>(&sofh), sizeof(sofh)},
+            message,
+        }};
+        // log::info(R"(DEBUG message="{}{}")"sv, utils::debug::hex::Message{data[0]}, utils::debug::hex::Message{data[1]});
+        log::info<5>(R"(Sending message="{}{}")"sv, utils::debug::hex::Message{data[0]}, utils::debug::hex::Message{data[1]});
+        auto length = std::size(data[0]) + std::size(data[1]);
+        if (std::size(buffer) < length) [[unlikely]]
+          log::fatal("Unexpected: {} < {}"sv, std::size(buffer), length);
+        std::memcpy(std::data(buffer), std::data(data[0]), std::size(data[0]));
+        std::memcpy(std::data(buffer) + std::size(data[0]), std::data(data[1]), std::size(data[1]));
+        return length;
+      })) {
+  } else {
+    log::warn("HERE"sv);
+  }
   next_heartbeat_ = clock::get_system() + KEEP_ALIVE_INTERVAL;
 }
 
