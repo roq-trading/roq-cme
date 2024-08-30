@@ -34,6 +34,7 @@ requirements:
     - libsodium
     - roq-cme-ilink
     - roq-cme-mdp
+    - roq-codec
     - roq-core
     - roq-flags
     - roq-market

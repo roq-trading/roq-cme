@@ -28,6 +28,7 @@ find_package(absl REQUIRED)
 find_package(EXPAT REQUIRED) # note! a cmake module takes precedence on macOS
 find_package(fmt REQUIRED)
 find_package(roq-api REQUIRED)
+find_package(roq-codec REQUIRED)
 find_package(roq-core REQUIRED)
 find_package(roq-flags REQUIRED)
 find_package(roq-io REQUIRED)
