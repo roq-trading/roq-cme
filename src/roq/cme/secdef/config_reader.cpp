@@ -4,7 +4,7 @@
 
 #include "roq/logging.hpp"
 
-#include "roq/core/charconv.hpp"
+#include "roq/utils/charconv/from_chars.hpp"
 
 #include "roq/io/fs/file.hpp"
 
@@ -18,13 +18,13 @@ namespace secdef {
 
 void set(auto &result, auto &key, auto &value) {
   // XXX we could use discard to avoid conversion
-  auto tag = core::from_chars<uint32_t>(key);
+  auto tag = utils::charconv::from_chars<uint32_t>(key);
   switch (tag) {
     case 15:  // currency (string)
       result.currency = value;
       break;
     case 48:  // security id (int32)
-      result.security_id = core::from_chars<decltype(result.security_id)>(value);
+      result.security_id = utils::charconv::from_chars<decltype(result.security_id)>(value);
       break;
     case 55:  // symbol (string)
       result.symbol = value;
@@ -36,25 +36,25 @@ void set(auto &result, auto &key, auto &value) {
       result.exchange = value;
       break;
     case 231:  // contract multiplier (int32)
-      result.multiplier = core::from_chars<decltype(result.multiplier)>(value);
+      result.multiplier = utils::charconv::from_chars<decltype(result.multiplier)>(value);
       break;
     case 562:  // min trade vol (uint32)
-      result.min_trade_vol = core::from_chars<decltype(result.min_trade_vol)>(value);
+      result.min_trade_vol = utils::charconv::from_chars<decltype(result.min_trade_vol)>(value);
       break;
     case 969:  // min price increment (price9)
-      result.min_price_increment = core::from_chars<decltype(result.min_price_increment)>(value);
+      result.min_price_increment = utils::charconv::from_chars<decltype(result.min_price_increment)>(value);
       break;
     case 1140:  // max trade vol (uint32)
-      result.max_trade_vol = core::from_chars<decltype(result.max_trade_vol)>(value);
+      result.max_trade_vol = utils::charconv::from_chars<decltype(result.max_trade_vol)>(value);
       break;
     case 1300:  // market segment id (uint8)
-      result.market_segment_id = core::from_chars<decltype(result.market_segment_id)>(value);
+      result.market_segment_id = utils::charconv::from_chars<decltype(result.market_segment_id)>(value);
       break;
     case 6937:  // asset
       result.asset = value;
       break;
     case 9787:  // display factor (decimal9)
-      result.display_factor = core::from_chars<decltype(result.display_factor)>(value);
+      result.display_factor = utils::charconv::from_chars<decltype(result.display_factor)>(value);
       break;
   }
 }

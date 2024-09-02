@@ -4,7 +4,7 @@
 
 #include "roq/logging.hpp"
 
-#include "roq/utils/charconv.hpp"
+#include "roq/utils/charconv/from_chars.hpp"
 
 #include "roq/cme/mdp/config_reader.hpp"
 
@@ -51,7 +51,7 @@ struct Handler final : public ConfigReader::Handler {
         auto priority = get_priority(connection.feed);
         auto tmp = Config::Connection{
             .multicast_address = connection.ip,
-            .port = utils::from_chars<uint16_t>(connection.port),
+            .port = utils::charconv::from_chars<uint16_t>(connection.port),
             .name = connection_id,
         };
         connections_[channel_id][type].try_emplace(priority, std::move(tmp));

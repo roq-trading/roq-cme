@@ -4,7 +4,7 @@
 
 #include <utility>
 
-#include "roq/utils/charconv.hpp"
+#include "roq/utils/charconv/from_chars.hpp"
 
 using namespace std::literals;
 
@@ -70,7 +70,7 @@ R create_order_entry(auto &gateway, auto &context, auto &stream_id, auto &accoun
     if (std::empty(firm_id))
       log::fatal("Unexpected: --ilink_firm_id is required"sv);
     for (auto &item : market_segment_ids) {
-      auto market_segment_id = utils::from_chars<uint16_t>(item);
+      auto market_segment_id = utils::charconv::from_chars<uint16_t>(item);
       if (shared.get_market_segment(market_segment_id, [&](auto &market_segment) {
             auto uri = io::web::URI::create("tcp"sv, market_segment.primary_host_ip, shared.settings.ilink.port);
             log::info("DEBUG market_segment_id={}, uri={}"sv, market_segment_id, uri);

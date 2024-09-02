@@ -8,7 +8,7 @@
 
 #include "roq/logging.hpp"
 
-#include "roq/utils/charconv.hpp"
+#include "roq/utils/charconv/from_chars.hpp"
 
 #include "roq/io/fs/file.hpp"
 
@@ -104,7 +104,7 @@ void ConfigReader::dispatch(Handler &handler, std::string_view const &buffer) {
         connection_ = {};
       } else if (name.compare("channel"sv) == 0) {
         assert(!std::empty(channel_id_));
-        auto channel_id_2 = utils::from_chars<uint16_t>(channel_id_);
+        auto channel_id_2 = utils::charconv::from_chars<uint16_t>(channel_id_);
         handler_(channel_id_2, channel_);
         channel_id_.clear();
         channel_.clear();
