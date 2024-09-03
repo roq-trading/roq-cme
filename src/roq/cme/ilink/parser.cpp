@@ -4,9 +4,9 @@
 
 #include "roq/logging.hpp"
 
-#include "roq/utils/debug/hex/message.hpp"
+#include "roq/utils/byte_order.hpp"
 
-#include "roq/core/byte_order.hpp"
+#include "roq/utils/debug/hex/message.hpp"
 
 #include "roq/cme/ilink/utils.hpp"
 
@@ -29,7 +29,7 @@ size_t parse_helper(auto &buffer, Callback callback) {
     log::fatal("Unexpected"sv);
   uint16_t tmp;
   std::memcpy(&tmp, &buffer[0], sizeof(tmp));
-  auto length = core::little_endian_to_host(tmp);
+  auto length = utils::little_endian_to_host(tmp);
   if (std::size(buffer) < length)
     return 0;
   auto message = buffer.subspan(4, length - 4);

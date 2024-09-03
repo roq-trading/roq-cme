@@ -12,9 +12,9 @@
 
 #include "roq/logging.hpp"
 
-#include "roq/utils/debug/hex/message.hpp"
+#include "roq/utils/byte_order.hpp"
 
-#include "roq/core/byte_order.hpp"
+#include "roq/utils/debug/hex/message.hpp"
 
 #include "roq/cme/mdp/frame.hpp"
 #include "roq/cme/mdp/utils.hpp"
@@ -35,7 +35,7 @@ struct MessageSize final {
       throw RuntimeError{"Unexpected: buffer too small {}"sv, std::size(buffer)};
     value_type tmp;
     std::memcpy(&tmp, std::data(buffer), sizeof(value_type));
-    length = core::little_endian_to_host(tmp);
+    length = utils::little_endian_to_host(tmp);
     buffer = buffer.subspan(sizeof(value_type));
   }
   value_type length = {};

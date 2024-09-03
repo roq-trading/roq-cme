@@ -4,12 +4,11 @@
 
 #include "roq/mask.hpp"
 
+#include "roq/utils/byte_order.hpp"
 #include "roq/utils/safe_cast.hpp"
 #include "roq/utils/update.hpp"
 
-#include "roq/core/byte_order.hpp"
-
-#include "roq/core/metrics/factory.hpp"
+#include "roq/utils/metrics/factory.hpp"
 
 #include "roq/server/oms/exceptions.hpp"
 #include "roq/server/oms/order.hpp"
@@ -86,8 +85,8 @@ auto create_connection_manager(auto &handler, auto &settings, auto &connection_f
   return io::net::ConnectionManager::create(handler, connection_factory, config);
 }
 
-struct create_metrics final : public core::metrics::Factory {
-  explicit create_metrics(auto &settings, auto const &group, auto const &function) : core::metrics::Factory(settings.app.name, group, function) {}
+struct create_metrics final : public utils::metrics::Factory {
+  create_metrics(auto &settings, auto &group, auto const &function) : utils::metrics::Factory(settings.app.name, group, function) {}
 };
 
 auto get_quantity(double value) -> uint32_t {
@@ -1323,7 +1322,7 @@ void OrderEntry::send(T const &value) {
     uint8_t dummy_1 = 0xFE;
     uint8_t dummy_2 = 0xCA;
   } sofh = {
-      .message_length = core::host_to_little_endian(length),
+      .message_length = utils::host_to_little_endian(length),
   };
   static_assert(sizeof(SOFH) == 4);
   if ((*connection_manager_).send([&](auto &buffer) {

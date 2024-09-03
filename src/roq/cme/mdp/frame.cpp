@@ -4,7 +4,7 @@
 
 #include "roq/logging.hpp"
 
-#include "roq/core/byte_order.hpp"
+#include "roq/utils/byte_order.hpp"
 
 using namespace std::literals;
 
@@ -24,8 +24,8 @@ std::pair<bool, Frame> Frame::parse_helper(std::span<std::byte const> const &buf
   return {
       true,
       {
-          .sequence_number = core::little_endian_to_host(sequence_number),
-          .sending_time = std::chrono::nanoseconds{core::little_endian_to_host(sending_time)},
+          .sequence_number = utils::little_endian_to_host(sequence_number),
+          .sending_time = std::chrono::nanoseconds{utils::little_endian_to_host(sending_time)},
       },
   };
 }
