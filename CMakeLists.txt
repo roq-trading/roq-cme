@@ -37,7 +37,10 @@ find_package(roq-market REQUIRED)
 find_package(roq-server REQUIRED)
 find_package(roq-utils REQUIRED)
 find_package(roq-web REQUIRED)
+find_package(magic_enum REQUIRED)
 find_package(unordered_dense REQUIRED)
+# note! roq-core
+find_package(Brotli REQUIRED)
 
 pkg_check_modules(LIBPCAP REQUIRED libpcap)
 
