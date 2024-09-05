@@ -43,10 +43,6 @@ find_package(unordered_dense REQUIRED)
 
 pkg_check_modules(LIBPCAP REQUIRED libpcap)
 
-if(UNIX AND NOT APPLE)
-  find_package(rt REQUIRED) # XXX
-endif()
-
 find_package(PkgConfig REQUIRED)
 
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)

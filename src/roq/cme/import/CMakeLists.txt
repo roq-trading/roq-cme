@@ -21,8 +21,7 @@ target_link_libraries(
           roq-api::roq-api
           fmt::fmt
           EXPAT::EXPAT
-          ${LIBPCAP_LIBRARIES}
-          ${RT_LIBRARIES})
+          ${LIBPCAP_LIBRARIES})
 
 if(ROQ_BUILD_TYPE STREQUAL "Release")
   set_target_properties(${TARGET_NAME} PROPERTIES LINK_FLAGS_RELEASE -s)
