@@ -65,6 +65,7 @@ struct Handler final : public secdef::ConfigReader::Handler {
               .security_type = SecurityType::FUTURES,  // ???
               .base_currency = {},
               .quote_currency = item.currency,
+              .settlement_currency = {},
               .margin_currency = {},
               .commission_currency = {},
               .tick_size = item.min_price_increment * item.display_factor,

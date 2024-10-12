@@ -888,6 +888,7 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportTradeOutright525> co
                   .side = side,
                   .position_effect = {},
                   .margin_mode = {},
+                  .quantity_type = {},
                   .create_time_utc = create_time_utc,
                   .update_time_utc = update_time_utc,
                   .external_account = {},
