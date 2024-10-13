@@ -16,7 +16,7 @@ void set_price(cme_ilink::PRICENULL9 &result, double value) {
   if (std::isnan(value)) {
     result.mantissa(value_type::mantissaNullValue());
   } else {
-    auto mantissa = static_cast<int64_t>(value * std::pow(10.0, static_cast<double>(-value_type::exponent())) + 0.5);
+    auto mantissa = static_cast<int64_t>(value * std::pow(10.0, -static_cast<double>(value_type::exponent())) + 0.5);
     result.mantissa(mantissa);
   }
 }
