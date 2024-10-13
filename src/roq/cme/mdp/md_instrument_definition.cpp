@@ -18,6 +18,7 @@ ReferenceData create_reference_data(cme_mdp::MDInstrumentDefinitionFuture54 cons
   using value_type = std::remove_cvref<decltype(message)>::type;
   auto &value = const_cast<value_type &>(message);  // note! not const-safe
   auto quote_currency = mdp::get_string_view(value.currency(), value.currencyLength());
+  auto settlement_currency = mdp::get_string_view(value.settlCurrency(), value.settlCurrencyLength());
   auto min_price_increment = mdp::get_double(value.minPriceIncrement());
   auto contract_multiplier = mdp::get_int(value.contractMultiplier(), value.contractMultiplierNullValue());
   auto multiplier = contract_multiplier == 0 ? NaN : utils::safe_cast<double>(contract_multiplier);
@@ -31,7 +32,7 @@ ReferenceData create_reference_data(cme_mdp::MDInstrumentDefinitionFuture54 cons
       .security_type = SecurityType::FUTURES,
       .base_currency = {},
       .quote_currency = quote_currency,
-      .settlement_currency = {},
+      .settlement_currency = settlement_currency,
       .margin_currency = {},
       .commission_currency = {},
       .tick_size = min_price_increment * security.display_factor,
@@ -56,6 +57,7 @@ ReferenceData create_reference_data(cme_mdp::MDInstrumentDefinitionOption55 cons
   using value_type = std::remove_cvref<decltype(message)>::type;
   auto &value = const_cast<value_type &>(message);  // note! not const-safe
   auto quote_currency = mdp::get_string_view(value.currency(), value.currencyLength());
+  auto settlement_currency = mdp::get_string_view(value.settlCurrency(), value.settlCurrencyLength());
   auto min_price_increment = mdp::get_double(value.minPriceIncrement());
   auto min_trade_vol = utils::safe_cast(value.minTradeVol());
   auto max_trade_vol = utils::safe_cast(value.maxTradeVol());
@@ -68,7 +70,7 @@ ReferenceData create_reference_data(cme_mdp::MDInstrumentDefinitionOption55 cons
       .security_type = SecurityType::OPTION,
       .base_currency = {},
       .quote_currency = quote_currency,
-      .settlement_currency = {},
+      .settlement_currency = settlement_currency,
       .margin_currency = {},
       .commission_currency = {},
       .tick_size = min_price_increment * security.display_factor,
@@ -130,6 +132,7 @@ ReferenceData create_reference_data(cme_mdp::MDInstrumentDefinitionFixedIncome57
   using value_type = std::remove_cvref<decltype(message)>::type;
   auto &value = const_cast<value_type &>(message);  // note! not const-safe
   auto quote_currency = mdp::get_string_view(value.currency(), value.currencyLength());
+  auto settlement_currency = mdp::get_string_view(value.settlCurrency(), value.settlCurrencyLength());
   auto tick_size = mdp::get_double(value.minPriceIncrement());
   auto min_trade_vol = utils::safe_cast(value.minTradeVol());
   auto max_trade_vol = utils::safe_cast(value.maxTradeVol());
@@ -141,7 +144,7 @@ ReferenceData create_reference_data(cme_mdp::MDInstrumentDefinitionFixedIncome57
       .security_type = SecurityType::FUTURES,
       .base_currency = {},
       .quote_currency = quote_currency,
-      .settlement_currency = {},
+      .settlement_currency = settlement_currency,
       .margin_currency = {},
       .commission_currency = {},
       .tick_size = tick_size,
@@ -166,6 +169,7 @@ ReferenceData create_reference_data(cme_mdp::MDInstrumentDefinitionRepo58 const 
   using value_type = std::remove_cvref<decltype(message)>::type;
   auto &value = const_cast<value_type &>(message);  // note! not const-safe
   auto quote_currency = mdp::get_string_view(value.currency(), value.currencyLength());
+  auto settlement_currency = mdp::get_string_view(value.settlCurrency(), value.settlCurrencyLength());
   auto tick_size = mdp::get_double(value.minPriceIncrement());
   auto min_trade_vol = utils::safe_cast(value.minTradeVol());
   auto max_trade_vol = utils::safe_cast(value.maxTradeVol());
@@ -177,7 +181,7 @@ ReferenceData create_reference_data(cme_mdp::MDInstrumentDefinitionRepo58 const 
       .security_type = SecurityType::FUTURES,
       .base_currency = {},
       .quote_currency = quote_currency,
-      .settlement_currency = {},
+      .settlement_currency = settlement_currency,
       .margin_currency = {},
       .commission_currency = {},
       .tick_size = tick_size,
@@ -202,6 +206,7 @@ ReferenceData create_reference_data(cme_mdp::MDInstrumentDefinitionFX63 const &m
   using value_type = std::remove_cvref<decltype(message)>::type;
   auto &value = const_cast<value_type &>(message);  // note! not const-safe
   auto quote_currency = mdp::get_string_view(value.currency(), value.currencyLength());
+  auto settlement_currency = mdp::get_string_view(value.settlCurrency(), value.settlCurrencyLength());
   auto tick_size = mdp::get_double(value.minPriceIncrement());
   auto min_trade_vol = utils::safe_cast(value.minTradeVol());
   auto max_trade_vol = utils::safe_cast(value.maxTradeVol());
@@ -213,7 +218,7 @@ ReferenceData create_reference_data(cme_mdp::MDInstrumentDefinitionFX63 const &m
       .security_type = SecurityType::FUTURES,
       .base_currency = {},
       .quote_currency = quote_currency,
-      .settlement_currency = {},
+      .settlement_currency = settlement_currency,
       .margin_currency = {},
       .commission_currency = {},
       .tick_size = tick_size,
