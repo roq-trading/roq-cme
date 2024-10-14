@@ -63,6 +63,7 @@ struct Handler final : public secdef::ConfigReader::Handler {
               .symbol = item.symbol,
               .description = {},
               .security_type = SecurityType::FUTURES,  // ???
+              .cfi_code = {},
               .base_currency = {},
               .quote_currency = item.currency,
               .settlement_currency = {},
