@@ -148,17 +148,24 @@ void Controller::dispatch() {
         last_timer_update = timestamp;
       }
     }
-    // note! assuming ether
-    auto ether_header = reinterpret_cast<struct ether_header const *>(packet);
+    size_t offset = 0;
+    auto ether_header = reinterpret_cast<struct ether_header const *>(packet + offset);
     auto ether_type = ntohs((*ether_header).ether_type);
+    if (ether_type == ETHERTYPE_VLAN) {
+      offset += 4;  // XXX FIXME find somee struct or length in system header files... (VLAN tag)
+      ether_header = reinterpret_cast<struct ether_header const *>(packet + offset);
+      ether_type = ntohs((*ether_header).ether_type);
+    }
     if (ether_type == ETHERTYPE_IP) {
-      auto ip_header = reinterpret_cast<struct ip const *>(packet + sizeof(struct ether_header));
+      offset += sizeof(struct ether_header);
+      auto ip_header = reinterpret_cast<struct ip const *>(packet + offset);
       char src[INET_ADDRSTRLEN];
       inet_ntop(AF_INET, &((*ip_header).ip_src), src, INET_ADDRSTRLEN);
       char dst[INET_ADDRSTRLEN];
       inet_ntop(AF_INET, &((*ip_header).ip_dst), dst, INET_ADDRSTRLEN);
       if ((*ip_header).ip_p == IPPROTO_UDP) {
-        auto udp_header = reinterpret_cast<struct udphdr const *>(packet + sizeof(struct ether_header) + sizeof(struct ip));
+        offset += sizeof(struct ip);
+        auto udp_header = reinterpret_cast<struct udphdr const *>(packet + offset);
 #if __APPLE__
         // auto src_port = ntohs((*udp_header).uh_sport);
         auto dst_port = ntohs((*udp_header).uh_dport);
@@ -166,7 +173,7 @@ void Controller::dispatch() {
         // auto src_port = ntohs((*udp_header).source);
         auto dst_port = ntohs((*udp_header).dest);
 #endif
-        auto offset = sizeof(struct ether_header) + sizeof(struct ip) + sizeof(struct udphdr);
+        offset += sizeof(struct udphdr);
         std::span payload{reinterpret_cast<std::byte const *>(packet + offset), (*header).len - offset};
         log::info<5>("timestamp={}, address={}, port={}, payload={}"sv, timestamp, dst, dst_port, utils::debug::hex::Message{payload});
         if (config_.find(dst, dst_port, [&](auto channel_id, auto connection_type, auto priority) {
