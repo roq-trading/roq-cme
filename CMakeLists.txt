@@ -43,7 +43,7 @@ find_package(unordered_dense REQUIRED)
 
 find_package(PkgConfig REQUIRED)
 
-pkg_check_modules(LIBMAGIC REQUIRED libmagic)
+# pkg_check_modules(LIBMAGIC REQUIRED libmagic)
 pkg_check_modules(LIBPCAP REQUIRED libpcap)
 
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
