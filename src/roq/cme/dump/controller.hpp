@@ -2,11 +2,11 @@
 
 #pragma once
 
-#include "roq/cme/pcap_dump/settings.hpp"
+#include "roq/cme/dump/settings.hpp"
 
 namespace roq {
 namespace cme {
-namespace pcap_dump {
+namespace dump {
 
 struct Controller final {
   Controller(Settings const &, std::string_view const &pcap_path);
@@ -21,6 +21,6 @@ struct Controller final {
   std::string const pcap_path_;
 };
 
-}  // namespace pcap_dump
+}  // namespace dump
 }  // namespace cme
 }  // namespace roq

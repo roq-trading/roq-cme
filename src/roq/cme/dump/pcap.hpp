@@ -11,7 +11,7 @@
 
 namespace roq {
 namespace cme {
-namespace pcap_dump {
+namespace dump {
 
 struct PCAP final {
   using value_type = pcap_t;
@@ -27,6 +27,6 @@ struct PCAP final {
   std::unique_ptr<value_type, void (*)(value_type *)> handle_;
 };
 
-}  // namespace pcap_dump
+}  // namespace dump
 }  // namespace cme
 }  // namespace roq

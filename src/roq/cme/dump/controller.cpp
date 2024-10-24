@@ -1,6 +1,6 @@
 /* Copyright (c) 2017-2024, Hans Erik Thrane */
 
-#include "roq/cme/pcap_dump/controller.hpp"
+#include "roq/cme/dump/controller.hpp"
 
 #include <arpa/inet.h>
 #include <net/ethernet.h>
@@ -19,13 +19,13 @@
 
 #include "roq/cme/mdp/parser.hpp"
 
-#include "roq/cme/pcap_dump/pcap.hpp"
+#include "roq/cme/dump/pcap.hpp"
 
 using namespace std::literals;
 
 namespace roq {
 namespace cme {
-namespace pcap_dump {
+namespace dump {
 
 // === HELPERS ===
 
@@ -157,6 +157,6 @@ void Controller::dispatch() {
   PCAP{pcap_path_}.dispatch(callback);
 }
 
-}  // namespace pcap_dump
+}  // namespace dump
 }  // namespace cme
 }  // namespace roq
