@@ -29,6 +29,7 @@ requirements:
     - expat
     - fmt
     - libabseil
+    - libmagic
     - roq-api
     - roq-cme-ilink
     - roq-cme-mdp
