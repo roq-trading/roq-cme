@@ -17,6 +17,8 @@
 
 #include "roq/logging.hpp"
 
+#include "roq/utils/debug/hex/message.hpp"
+
 #include "roq/cme/mdp/parser.hpp"
 
 #include "roq/cme/dump/pcap.hpp"
@@ -102,8 +104,8 @@ struct Bridge final : public mdp::Parser::Handler {
 #endif
         using value_type = std::remove_cvref<decltype(event)>::type::value_type;
         auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
-        log::info(
-            "timestamp={}, address={}, port={}, sequence_number={}, sending_time={}, {}={}"sv,
+        fmt::print(
+            "message={{timestamp={}, address={}, port={}, sequence_number={}, sending_time={}, {}={}}}\n"sv,
             timestamp,
             dst,
             dst_port,
@@ -128,6 +130,10 @@ Controller::Controller(Settings const &settings, std::string_view const &pcap_pa
 
 void Controller::dispatch() {
   auto callback = [&](struct pcap_pkthdr const *header, u_char const *packet) -> bool {
+    if (settings_.print_packet) {
+      utils::debug::hex::Message message{reinterpret_cast<std::byte const *>(packet), (*header).len};
+      fmt::print("packet={}\n"sv, message);
+    }
     auto timestamp = convert((*header).ts);
     size_t offset = 0;
     auto ether_header = reinterpret_cast<struct ether_header const *>(packet + offset);
@@ -144,6 +150,10 @@ void Controller::dispatch() {
       if ((*ip_header).ip_p == IPPROTO_UDP) {
         offset += sizeof(struct ip) + sizeof(struct udphdr);
         std::span payload{reinterpret_cast<std::byte const *>(packet + offset), (*header).len - offset};
+        if (settings_.print_payload) {
+          utils::debug::hex::Message message{payload};
+          fmt::print("payload={}\n"sv, message);
+        }
         Bridge bridge{header, packet};
         TraceInfo trace_info;
         mdp::Parser::dispatch(bridge, payload, trace_info);
