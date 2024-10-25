@@ -2,7 +2,7 @@ set(TARGET_NAME ${PROJECT_NAME}-import)
 
 add_subdirectory(flags)
 
-set(SOURCES application.cpp controller.cpp pcap.cpp settings.cpp main.cpp)
+set(SOURCES application.cpp controller.cpp settings.cpp main.cpp)
 
 add_executable(${TARGET_NAME} ${SOURCES})
 
@@ -15,13 +15,13 @@ target_link_libraries(
           ${PROJECT_NAME}-secdef
           roq-core::roq-core
           roq-codec::roq-codec
+          roq-utils::roq-utils
           roq-logging::roq-logging
           roq-logging::roq-logging-flags
           roq-flags::roq-flags
           roq-api::roq-api
           fmt::fmt
-          EXPAT::EXPAT
-          ${LIBPCAP_LIBRARIES})
+          EXPAT::EXPAT)
 
 if(ROQ_BUILD_TYPE STREQUAL "Release")
   set_target_properties(${TARGET_NAME} PROPERTIES LINK_FLAGS_RELEASE -s)

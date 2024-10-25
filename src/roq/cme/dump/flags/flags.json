@@ -10,11 +10,6 @@
       "description": "Type of input file (only support type is :code:`pcap`)."
     },
     {
-      "name": "print_packet",
-      "type": "std/bool",
-      "description": "Print packet?"
-    },
-    {
       "name": "print_payload",
       "type": "std/bool",
       "description": "Print payload?"

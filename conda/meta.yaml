@@ -29,7 +29,6 @@ requirements:
     - expat
     - fmt
     - libabseil
-    - libmagic
     - roq-api
     - roq-cme-ilink
     - roq-cme-mdp
@@ -40,7 +39,6 @@ requirements:
     - roq-logging
     - roq-market
     - roq-oss-benchmark
-    - roq-oss-libpcap
     - roq-oss-magic_enum
     - roq-oss-tomlplusplus
     - roq-oss-unordered_dense

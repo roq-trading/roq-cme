@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "roq/utils/pcap/reader.hpp"
+
 #include "roq/cme/dump/settings.hpp"
 
 namespace roq {

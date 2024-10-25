@@ -2,16 +2,6 @@
 
 #include "roq/cme/import/controller.hpp"
 
-#include <arpa/inet.h>
-#include <net/ethernet.h>
-#include <net/if.h>
-#include <netinet/if_ether.h>
-#include <netinet/in.h>
-#include <netinet/ip.h>
-#include <netinet/tcp.h>
-#include <netinet/udp.h>
-
-#include "roq/exceptions.hpp"
 #include "roq/logging.hpp"
 
 #include "roq/utils/compare.hpp"
@@ -19,13 +9,13 @@
 
 #include "roq/utils/debug/hex/message.hpp"
 
+#include "roq/utils/pcap/reader.hpp"
+
 #include "roq/market/mbp/factory.hpp"
 
 #include "roq/market/mbo/factory.hpp"
 
 #include "roq/core/codec/encoder.hpp"
-
-#include "roq/cme/import/pcap.hpp"
 
 using namespace std::literals;
 
@@ -47,22 +37,27 @@ auto const TIMER_FREQUENCY = 100ms;
 // === HELPERS ===
 
 namespace {
-auto convert(timeval ts) {
-  return std::chrono::nanoseconds{std::chrono::seconds{ts.tv_sec} + std::chrono::microseconds{ts.tv_usec}};
-}
-
 auto get_first_timestamp(auto &path) {
-  log::info(R"(Fetching first timestamp... (path="{}"))"sv, path);
-  size_t count = {};
-  std::chrono::nanoseconds result = {};
-  auto callback = [&](struct pcap_pkthdr const *header, [[maybe_unused]] u_char const *packet) -> bool {
-    ++count;
-    result = convert((*header).ts);
-    return result.count() > 0;
+  struct Bridge final : public utils::pcap::Reader::Handler {
+    std::chrono::nanoseconds result = {};
+
+   protected:
+    bool operator()(
+        std::chrono::nanoseconds timestamp,
+        [[maybe_unused]] std::string_view const &source_address,
+        [[maybe_unused]] uint16_t source_port,
+        [[maybe_unused]] std::string_view const &destination_address,
+        [[maybe_unused]] uint16_t destination_port,
+        [[maybe_unused]] std::span<std::byte const> const &payload) override {
+      result = timestamp;
+      return result.count();
+    }
   };
-  PCAP{path}.dispatch(callback);
-  log::info("timestamp={}"sv, result);
-  return result;
+  log::info(R"(Fetching first timestamp... (path="{}"))"sv, path);
+  Bridge bridge;
+  utils::pcap::Reader::dispatch(bridge, path);
+  log::info("timestamp={}"sv, bridge.result);
+  return bridge.result;
 }
 
 auto create_gateway_settings(auto &settings) -> GatewaySettings {
@@ -119,80 +114,54 @@ Controller::Controller(Settings const &settings, std::string_view const &pcap_pa
 }
 
 void Controller::dispatch() {
+  utils::pcap::Reader::dispatch(*this, pcap_path_);
+  if (producer_)
+    (*producer_).close();
+}
+
+bool Controller::operator()(
+    std::chrono::nanoseconds timestamp,
+    [[maybe_unused]] std::string_view const &source_address,
+    [[maybe_unused]] uint16_t source_port,
+    std::string_view const &destination_address,
+    uint16_t destination_port,
+    std::span<std::byte const> const &payload) {
   auto include = [](auto connection_type, auto priority) {
     if (connection_type == mdp::ConnectionType::INCREMENTAL)
       return true;
     return priority == Priority::PRIMARY;  // XXX same as live
   };
-  auto initialized = false;
-  std::chrono::nanoseconds last_timer_update = {};
-  auto callback = [&](struct pcap_pkthdr const *header, u_char const *packet) -> bool {
-    auto timestamp = convert((*header).ts);
-    TraceInfo trace_info{timestamp, timestamp, timestamp};
-    if (!initialized) {
-      initialized = true;
-      auto message_info = create_message_info(trace_info);
-      Start start;
-      Event event{message_info, start};
+  TraceInfo trace_info{timestamp, timestamp, timestamp};
+  if (!initialized_) {
+    initialized_ = true;
+    auto message_info = create_message_info(trace_info);
+    Start start;
+    Event event{message_info, start};
+    market_data_(event);
+  }
+  while (last_timer_update_ < timestamp) {
+    if (last_timer_update_.count()) {
+      last_timer_update_ += TIMER_FREQUENCY;
+      TraceInfo trace_info_2{last_timer_update_, last_timer_update_, last_timer_update_};
+      auto message_info = create_message_info(trace_info_2);
+      Timer timer;
+      Event event{message_info, timer};
       market_data_(event);
+    } else {
+      last_timer_update_ = timestamp;
     }
-    while (last_timer_update < timestamp) {
-      if (last_timer_update.count()) {
-        last_timer_update += TIMER_FREQUENCY;
-        TraceInfo trace_info_2{last_timer_update, last_timer_update, last_timer_update};
-        auto message_info = create_message_info(trace_info_2);
-        Timer timer;
-        Event event{message_info, timer};
-        market_data_(event);
-      } else {
-        last_timer_update = timestamp;
-      }
-    }
-    size_t offset = 0;
-    auto ether_header = reinterpret_cast<struct ether_header const *>(packet + offset);
-    auto ether_type = ntohs((*ether_header).ether_type);
-    if (ether_type == ETHERTYPE_VLAN) {
-      offset += 4;  // XXX FIXME find somee struct or length in system header files... (VLAN tag)
-      ether_header = reinterpret_cast<struct ether_header const *>(packet + offset);
-      ether_type = ntohs((*ether_header).ether_type);
-    }
-    if (ether_type == ETHERTYPE_IP) {
-      offset += sizeof(struct ether_header);
-      auto ip_header = reinterpret_cast<struct ip const *>(packet + offset);
-      char src[INET_ADDRSTRLEN];
-      inet_ntop(AF_INET, &((*ip_header).ip_src), src, INET_ADDRSTRLEN);
-      char dst[INET_ADDRSTRLEN];
-      inet_ntop(AF_INET, &((*ip_header).ip_dst), dst, INET_ADDRSTRLEN);
-      if ((*ip_header).ip_p == IPPROTO_UDP) {
-        offset += sizeof(struct ip);
-        auto udp_header = reinterpret_cast<struct udphdr const *>(packet + offset);
-#if __APPLE__
-        // auto src_port = ntohs((*udp_header).uh_sport);
-        auto dst_port = ntohs((*udp_header).uh_dport);
-#else
-        // auto src_port = ntohs((*udp_header).source);
-        auto dst_port = ntohs((*udp_header).dest);
-#endif
-        offset += sizeof(struct udphdr);
-        std::span payload{reinterpret_cast<std::byte const *>(packet + offset), (*header).len - offset};
-        log::info<5>("timestamp={}, address={}, port={}, payload={}"sv, timestamp, dst, dst_port, utils::debug::hex::Message{payload});
-        if (config_.find(dst, dst_port, [&](auto channel_id, auto connection_type, auto priority) {
-              if (include(connection_type, priority)) {
-                TraceInfo trace_info{timestamp, timestamp, timestamp};
-                market_data_.dispatch(channel_id, connection_type, priority, payload, trace_info);
-              }
-            })) {
-        } else {
-          log::warn(R"(Unexpected: address="{}", port={})"sv, dst, dst_port);
+  }
+  log::info<5>("timestamp={}, address={}, port={}, payload={}"sv, timestamp, destination_address, destination_port, utils::debug::hex::Message{payload});
+  if (config_.find(destination_address, destination_port, [&](auto channel_id, auto connection_type, auto priority) {
+        if (include(connection_type, priority)) {
+          TraceInfo trace_info{timestamp, timestamp, timestamp};
+          market_data_.dispatch(channel_id, connection_type, priority, payload, trace_info);
         }
-      }
-    }
-    return false;
-  };
-  // market_data_.start();
-  PCAP{pcap_path_}.dispatch(callback);
-  if (producer_)
-    (*producer_).close();
+      })) {
+  } else {
+    log::warn(R"(Unexpected: address="{}", port={})"sv, destination_address, destination_port);
+  }
+  return false;
 }
 
 // market_data::Manager::Handler

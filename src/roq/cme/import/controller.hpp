@@ -14,6 +14,8 @@
 
 #include "roq/utils/regex/pattern.hpp"
 
+#include "roq/utils/pcap/reader.hpp"
+
 #include "roq/core/event_log/producer.hpp"
 
 #include "roq/server/md/dispatcher.hpp"
@@ -30,7 +32,7 @@ namespace roq {
 namespace cme {
 namespace import {
 
-struct Controller final : public server::md::Dispatcher, public market_data::SecurityDefinitions::Dispatcher {
+struct Controller final : public utils::pcap::Reader::Handler, public server::md::Dispatcher, public market_data::SecurityDefinitions::Dispatcher {
   Controller(Settings const &, std::string_view const &pcap_path);
 
   Controller(Controller const &) = delete;
@@ -39,6 +41,14 @@ struct Controller final : public server::md::Dispatcher, public market_data::Sec
   void dispatch();
 
  protected:
+  bool operator()(
+      std::chrono::nanoseconds timestamp,
+      std::string_view const &source_address,
+      uint16_t source_port,
+      std::string_view const &destination_address,
+      uint16_t destination_port,
+      std::span<std::byte const> const &payload) override;
+
   // market_data::Dispatcher
   bool discard_symbol(std::string_view const &symbol) override;  // note! multiple
   void operator()(Trace<StreamStatus> const &) override;
@@ -83,6 +93,9 @@ struct Controller final : public server::md::Dispatcher, public market_data::Sec
   utils::unordered_map<std::string, std::unique_ptr<cache::MarketByOrder>> market_by_order_;
   // TEST
   std::vector<Layer> mbp_depth_, mbo_depth_;
+  //
+  bool initialized_ = {};
+  std::chrono::nanoseconds last_timer_update_ = {};
 };
 
 }  // namespace import
