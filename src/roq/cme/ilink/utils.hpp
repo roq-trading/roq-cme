@@ -26,7 +26,7 @@
 #include <cme_ilink/SplitMsg.h>
 #include <cme_ilink/TimeInForce.h>
 
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 
 #include "roq/api.hpp"
 
