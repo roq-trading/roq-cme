@@ -10,12 +10,12 @@ target_link_libraries(
   ${TARGET_NAME}
   PRIVATE ${PROJECT_NAME}-filter-flags
           ${PROJECT_NAME}-mdp
-          roq-io::roq-io
+          roq-api::roq-api
           roq-core::roq-core
+          roq-flags::roq-flags
+          roq-io::roq-io
           roq-logging::roq-logging
           roq-logging::roq-logging-flags
-          roq-flags::roq-flags
-          roq-api::roq-api
           fmt::fmt)
 
 if(ROQ_BUILD_TYPE STREQUAL "Release")

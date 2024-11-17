@@ -33,11 +33,7 @@ target_link_libraries(
           ${PROJECT_NAME}-mdp
           ${PROJECT_NAME}-ilink
           ${PROJECT_NAME}-tools
-          roq-server::roq-server
           roq-core::roq-core
-          roq-io::roq-io
-          roq-utils::roq-utils
-          roq-logging::roq-logging
           EXPAT::EXPAT
           Catch2::Catch2)
 

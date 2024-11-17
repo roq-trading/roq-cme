@@ -10,14 +10,14 @@ target_link_libraries(
   ${TARGET_NAME}
   PRIVATE ${PROJECT_NAME}-dump-flags
           ${PROJECT_NAME}-mdp
+          roq-api::roq-api
           roq-core::roq-core
-          roq-utils::roq-utils
+          roq-flags::roq-flags
           roq-logging::roq-logging
           roq-logging::roq-logging-flags
-          roq-flags::roq-flags
-          roq-api::roq-api
-          fmt::fmt
-          EXPAT::EXPAT)
+          roq-utils::roq-utils
+          EXPAT::EXPAT
+          fmt::fmt)
 
 if(ROQ_BUILD_TYPE STREQUAL "Release")
   set_target_properties(${TARGET_NAME} PROPERTIES LINK_FLAGS_RELEASE -s)

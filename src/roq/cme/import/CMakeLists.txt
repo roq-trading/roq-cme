@@ -13,15 +13,15 @@ target_link_libraries(
           ${PROJECT_NAME}-mdp
           ${PROJECT_NAME}-market_data
           ${PROJECT_NAME}-secdef
-          roq-core::roq-core
+          roq-api::roq-api
           roq-codec::roq-codec
-          roq-utils::roq-utils
+          roq-core::roq-core
+          roq-flags::roq-flags
           roq-logging::roq-logging
           roq-logging::roq-logging-flags
-          roq-flags::roq-flags
-          roq-api::roq-api
-          fmt::fmt
-          EXPAT::EXPAT)
+          roq-utils::roq-utils
+          EXPAT::EXPAT
+          fmt::fmt)
 
 if(ROQ_BUILD_TYPE STREQUAL "Release")
   set_target_properties(${TARGET_NAME} PROPERTIES LINK_FLAGS_RELEASE -s)

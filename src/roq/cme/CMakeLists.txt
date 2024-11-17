@@ -54,18 +54,17 @@ target_link_libraries(
           ${PROJECT_NAME}-ilink
           ${PROJECT_NAME}-secdef
           ${PROJECT_NAME}-market_data
+          roq-api::roq-api
+          roq-core::roq-core
+          roq-flags::roq-flags
+          roq-io::roq-io
+          roq-logging::roq-logging
+          roq-logging::roq-logging-flags
+          roq-market::roq-market
           roq-server::roq-server
           roq-server::roq-server-flags
           roq-web::roq-web
-          roq-core::roq-core
-          roq-io::roq-io
-          roq-market::roq-market
-          roq-logging::roq-logging
-          roq-logging::roq-logging-flags
-          roq-flags::roq-flags
-          roq-api::roq-api
-          unordered_dense::unordered_dense
-          EXPAT::EXPAT)
+          unordered_dense::unordered_dense)
 
 if(ROQ_BUILD_TYPE STREQUAL "Release")
   set_target_properties(${TARGET_NAME} PROPERTIES LINK_FLAGS_RELEASE -s)
