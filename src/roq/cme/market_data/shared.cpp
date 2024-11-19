@@ -70,6 +70,7 @@ struct Handler final : public secdef::ConfigReader::Handler {
               .margin_currency = {},
               .commission_currency = {},
               .tick_size = item.min_price_increment * item.display_factor,
+              .tick_size_steps = {},
               .multiplier = multiplier,
               .min_trade_vol = utils::safe_cast(item.min_trade_vol),
               .max_trade_vol = utils::safe_cast(item.max_trade_vol),
