@@ -467,7 +467,7 @@ void Incremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> cons
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_instrument_definition_future_54={}, frame={}"sv, value, frame);
   value.sbeRewind();  // note!
-  auto security_id = value.securityID();
+  [[maybe_unused]] auto security_id = value.securityID();
   /*
   auto security_id = value.securityID();
   shared_.security_definitions.get_security_incl_discard(security_id, [&](auto &security) {
