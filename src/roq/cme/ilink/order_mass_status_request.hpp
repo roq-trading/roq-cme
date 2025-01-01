@@ -3,7 +3,9 @@
 #pragma once
 
 #include <fmt/chrono.h>
-#include <fmt/format.h>
+#include <fmt/core.h>
+
+#include <magic_enum/magic_enum_format.hpp>
 
 #include <chrono>
 #include <string_view>
@@ -67,16 +69,16 @@ struct fmt::formatter<roq::cme::ilink::OrderMassStatusRequest> {
         R"(}})"sv,
         value.party_details_list_req_id,
         value.mass_status_req_id,
-        magic_enum::enum_name(value.manual_order_indicator),
+        value.manual_order_indicator,
         value.seq_num,
         value.sender_id,
         value.sending_time_epoch,
         value.security_group,
         value.location,
         value.security_id,
-        magic_enum::enum_name(value.mass_status_req_type),
-        magic_enum::enum_name(value.ord_status_req_type),
-        magic_enum::enum_name(value.time_in_force),
+        value.mass_status_req_type,
+        value.ord_status_req_type,
+        value.time_in_force,
         value.market_segment_id);
   }
 };

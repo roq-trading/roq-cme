@@ -2,6 +2,10 @@
 
 #include "roq/cme/shared.hpp"
 
+#include <fmt/core.h>
+
+#include <magic_enum/magic_enum_format.hpp>
+
 #include "roq/logging.hpp"
 
 #include "roq/utils/safe_cast.hpp"
@@ -53,8 +57,7 @@ std::pair<std::string, uint16_t> Shared::get_multicast_config(uint16_t channel_i
   std::pair<std::string, uint16_t> result;
   if (mdp_config.find(channel_id, type, priority, [&](auto &connection) { result = {connection.multicast_address, connection.port}; })) {
   } else {
-    throw RuntimeError{
-        R"(Unable to find multicast configuration using channel_id="{}", type={}, priority={})"sv, channel_id, magic_enum::enum_name(type), priority};
+    throw RuntimeError{R"(Unable to find multicast configuration using channel_id="{}", type={}, priority={})"sv, channel_id, type, priority};
   }
   return result;
 }

@@ -2,6 +2,10 @@
 
 #include "roq/cme/mdp/config.hpp"
 
+#include <fmt/core.h>
+
+#include <magic_enum/magic_enum_format.hpp>
+
 #include "roq/logging.hpp"
 
 #include "roq/utils/charconv/from_chars.hpp"
@@ -118,7 +122,7 @@ std::string_view Config::get_name(uint16_t channel_id, ConnectionType connection
       }
     }
   }
-  throw RuntimeError{"Unexpected: channel_id={}, connection_type={}, priority={}"sv, channel_id, magic_enum::enum_name(connection_type), priority};
+  throw RuntimeError{"Unexpected: channel_id={}, connection_type={}, priority={}"sv, channel_id, connection_type, priority};
 }
 
 }  // namespace mdp

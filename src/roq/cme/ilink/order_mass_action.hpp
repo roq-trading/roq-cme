@@ -2,7 +2,9 @@
 
 #pragma once
 
-#include <fmt/format.h>
+#include <fmt/core.h>
+
+#include <magic_enum/magic_enum_format.hpp>
 
 #include <cme_ilink/OrderMassActionReport562.h>
 
@@ -74,20 +76,20 @@ struct fmt::formatter<cme_ilink::OrderMassActionReport562> {
         value.location(),
         value.securityID(),
         value.delayDuration(),
-        magic_enum::enum_name(value.massActionResponse()),
-        magic_enum::enum_name(value.manualOrderIndicator()),
-        magic_enum::enum_name(value.massActionScope()),
+        value.massActionResponse(),
+        value.manualOrderIndicator(),
+        value.massActionScope(),
         value.totalAffectedOrders(),
         value.lastFragment(),
         value.massActionRejectReason(),
         value.marketSegmentID(),
-        magic_enum::enum_name(value.massCancelRequestType()),
-        magic_enum::enum_name(value.side()),
-        magic_enum::enum_name(value.ordType()),
-        magic_enum::enum_name(value.timeInForce()),
-        magic_enum::enum_name(value.splitMsg()),
-        magic_enum::enum_name(value.liquidityFlag()),
-        magic_enum::enum_name(value.possRetransFlag()),
+        value.massCancelRequestType(),
+        value.side(),
+        value.ordType(),
+        value.timeInForce(),
+        value.splitMsg(),
+        value.liquidityFlag(),
+        value.possRetransFlag(),
         value.delayToTime(),
         value.origOrderUser(),
         value.cancelText());

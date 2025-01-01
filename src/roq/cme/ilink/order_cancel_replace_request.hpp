@@ -3,7 +3,9 @@
 #pragma once
 
 #include <fmt/chrono.h>
-#include <fmt/format.h>
+#include <fmt/core.h>
+
+#include <magic_enum/magic_enum_format.hpp>
 
 #include <chrono>
 #include <string_view>
@@ -98,7 +100,7 @@ struct fmt::formatter<roq::cme::ilink::OrderCancelReplaceRequest> {
         value.price,
         value.order_qty,
         value.security_id,
-        magic_enum::enum_name(value.side),
+        value.side,
         value.seq_num,
         value.sender_id,
         value.cl_ord_id,
@@ -111,15 +113,15 @@ struct fmt::formatter<roq::cme::ilink::OrderCancelReplaceRequest> {
         value.min_qty,
         value.display_qty,
         value.expire_date,
-        magic_enum::enum_name(value.ord_type),
-        magic_enum::enum_name(value.time_in_force),
-        magic_enum::enum_name(value.manual_order_indicator),
-        magic_enum::enum_name(value.ofm_override),
+        value.ord_type,
+        value.time_in_force,
+        value.manual_order_indicator,
+        value.ofm_override,
         value.exec_inst,
         value.execution_mode,
         value.liquidity_flag,
         value.managed_order,
-        magic_enum::enum_name(value.short_sale_type),
+        value.short_sale_type,
         value.discretion_price);
   }
 };

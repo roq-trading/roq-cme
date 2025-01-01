@@ -2,6 +2,10 @@
 
 #include "roq/cme/market_data/manager.hpp"
 
+#include <fmt/core.h>
+
+#include <magic_enum/magic_enum_format.hpp>
+
 #include "roq/logging.hpp"
 
 using namespace std::literals;
@@ -82,7 +86,7 @@ std::string_view const Manager::get_name(uint16_t channel_id, mdp::ConnectionTyp
         break;
     }
   }
-  log::fatal("Unexpected: channel_id={}, connection_type={}, priority={}"sv, channel_id, magic_enum::enum_name(connection_type), priority);
+  log::fatal("Unexpected: channel_id={}, connection_type={}, priority={}"sv, channel_id, connection_type, priority);
 }
 
 void Manager::operator()(Event<Start> const &event) {

@@ -3,7 +3,9 @@
 #pragma once
 
 #include <fmt/chrono.h>
-#include <fmt/format.h>
+#include <fmt/core.h>
+
+#include <magic_enum/magic_enum_format.hpp>
 
 #include <chrono>
 #include <string_view>
@@ -84,18 +86,18 @@ struct fmt::formatter<roq::cme::ilink::PartyDetailsDefinitionRequest> {
         R"(}})"sv,
         value.party_details_list_req_id,
         value.sending_time_epoch,
-        magic_enum::enum_name(value.list_update_action),
+        value.list_update_action,
         value.seq_num,
         value.memo,
         value.avg_px_group_id,
         value.self_match_prevention_id,
-        magic_enum::enum_name(value.cmta_giveup_cd),
-        magic_enum::enum_name(value.cust_order_capacity),
-        magic_enum::enum_name(value.clearing_account_type),
-        magic_enum::enum_name(value.self_match_prevention_instruction),
-        magic_enum::enum_name(value.avg_px_indicator),
-        magic_enum::enum_name(value.clearing_trade_price_type),
-        magic_enum::enum_name(value.cust_order_handling_inst),
+        value.cmta_giveup_cd,
+        value.cust_order_capacity,
+        value.clearing_account_type,
+        value.self_match_prevention_instruction,
+        value.avg_px_indicator,
+        value.clearing_trade_price_type,
+        value.cust_order_handling_inst,
         value.executor,
         value.idm_short_code);
   }

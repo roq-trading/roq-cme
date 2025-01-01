@@ -2,7 +2,9 @@
 
 #include "roq/cme/channel_tester/controller.hpp"
 
-#include <magic_enum/magic_enum.hpp>
+#include <fmt/core.h>
+
+#include <magic_enum/magic_enum_format.hpp>
 
 #include "roq/logging.hpp"
 
@@ -56,7 +58,7 @@ void Controller::dispatch() {
 }
 
 void Controller::operator()(io::sys::Signal::Event const &event) {
-  log::warn("*** SIGNAL: {} ***"sv, magic_enum::enum_name(event.type));
+  log::warn("*** SIGNAL: {} ***"sv, event.type);
   (*context_).stop();
 }
 

@@ -2,7 +2,9 @@
 
 #pragma once
 
-#include <fmt/format.h>
+#include <fmt/core.h>
+
+#include <magic_enum/magic_enum_format.hpp>
 
 #include <cme_ilink/BusinessReject521.h>
 #include <cme_ilink/PartyDetailsDefinitionRequestAck519.h>
@@ -91,20 +93,20 @@ struct fmt::formatter<cme_ilink::PartyDetailsDefinitionRequestAck519> {
         value.sendingTimeEpoch(),
         value.selfMatchPreventionID(),
         value.partyDetailRequestStatus(),
-        magic_enum::enum_name(value.custOrderCapacity()),
-        magic_enum::enum_name(value.clearingAccountType()),
-        magic_enum::enum_name(value.selfMatchPreventionInstruction()),
-        magic_enum::enum_name(value.avgPxIndicator()),
-        magic_enum::enum_name(value.clearingTradePriceType()),
-        magic_enum::enum_name(value.cmtaGiveupCD()),
-        magic_enum::enum_name(value.custOrderHandlingInst()),
+        value.custOrderCapacity(),
+        value.clearingAccountType(),
+        value.selfMatchPreventionInstruction(),
+        value.avgPxIndicator(),
+        value.clearingTradePriceType(),
+        value.cmtaGiveupCD(),
+        value.custOrderHandlingInst(),
         value.noPartyUpdates(),
-        magic_enum::enum_name(value.listUpdateAction()),
+        value.listUpdateAction(),
         value.partyDetailDefinitionStatus(),
         value.executor(),
         value.iDMShortCode(),
-        magic_enum::enum_name(value.possRetransFlag()),
-        magic_enum::enum_name(value.splitMsg()));
+        value.possRetransFlag(),
+        value.splitMsg());
     // roq::cme::ilink::Group{value.noPartyDetails()},
     // roq::cme::ilink::Group{value.noTrdRegPublications()});
   }
