@@ -3,6 +3,7 @@ set(TARGET_NAME ${PROJECT_NAME}-ilink)
 set(SOURCES
     config_reader.cpp
     establish.cpp
+    mass_quote.cpp
     negotiate.cpp
     new_order_single.cpp
     order_cancel_replace_request.cpp
@@ -12,6 +13,7 @@ set(SOURCES
     parser.cpp
     party_details_definition_request.cpp
     party_details_list_request.cpp
+    quote_cancel.cpp
     security_definition_request.cpp
     sequence.cpp
     terminate.cpp)
