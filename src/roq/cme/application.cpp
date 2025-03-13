@@ -11,13 +11,19 @@ using namespace std::literals;
 namespace roq {
 namespace cme {
 
+// === CONSTANTS ===
+
+namespace {
+uint8_t const API = {};
+}
+
 // === IMPLEMENTATION ===
 
 int Application::main(args::Parser const &args) {
   Settings settings{args};
   Config config{settings};
   auto context = server::create_io_context(settings);
-  server::Trading<Gateway>{settings, config, *context}.dispatch();
+  server::Trading<Gateway>{settings, config, *context, API}.dispatch();
   return EXIT_SUCCESS;
 }
 
