@@ -37,7 +37,7 @@ auto const SUPPORTS = Mask{
 namespace {
 template <typename T>
 void mbp_emplace_back(auto &result, T const &item, auto &security) {
-  auto price = mdp::get_double(const_cast<T &>(item).mDEntryPx());
+  auto price = map(const_cast<T &>(item).mDEntryPx()).template get<double>();
   auto quantity = mdp::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue());
   auto number_of_orders = mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue());
   auto md_price_level = mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue());

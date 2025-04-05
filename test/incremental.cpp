@@ -94,15 +94,15 @@ TEST_CASE("batched", "[incremental]") {
           CHECK(value.lastUpdateTime() == 1675616678351000000);
           CHECK(value.tradeDate() == 19394);
           CHECK(value.mDSecurityTradingStatus() == cme_mdp::SecurityTradingStatus::ReadyToTrade);
-          CHECK(std::isnan(mdp::get_double(value.highLimitPrice())));
-          CHECK(std::isnan(mdp::get_double(value.lowLimitPrice())));
-          CHECK(mdp::get_double(value.maxPriceVariation()) == 0.5_a);
+          CHECK(std::isnan(map(value.highLimitPrice()).template get<double>()));
+          CHECK(std::isnan(map(value.lowLimitPrice()).template get<double>()));
+          CHECK(map(value.maxPriceVariation()).template get<double>() == 0.5_a);
           value.sbeRewind();  // wtf!
           auto no_md_entries_rows = 0;
           value.noMDEntries().forEach([&no_md_entries_rows](auto &item) {
             switch (++no_md_entries_rows) {
               case 1:
-                CHECK(mdp::get_double(item.mDEntryPx()) == -0.21875_a);
+                CHECK(map(item.mDEntryPx()).template get<double>() == -0.21875_a);
                 CHECK(mdp::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 2);
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 1);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 1);
@@ -112,7 +112,7 @@ TEST_CASE("batched", "[incremental]") {
                 CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::Bid);
                 break;
               case 2:
-                CHECK(mdp::get_double(item.mDEntryPx()) == -0.234375_a);
+                CHECK(map(item.mDEntryPx()).template get<double>() == -0.234375_a);
                 CHECK(mdp::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 4);
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 2);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 2);
@@ -123,7 +123,7 @@ TEST_CASE("batched", "[incremental]") {
                 break;
               // ...
               case 31:
-                CHECK(mdp::get_double(item.mDEntryPx()) == -0.09375_a);
+                CHECK(map(item.mDEntryPx()).template get<double>() == -0.09375_a);
                 CHECK(mdp::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 0);
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 0);
@@ -133,7 +133,7 @@ TEST_CASE("batched", "[incremental]") {
                 CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::OpenPrice);
                 break;
               case 32:
-                CHECK(mdp::get_double(item.mDEntryPx()) == 0.0_a);
+                CHECK(map(item.mDEntryPx()).template get<double>() == 0.0_a);
                 CHECK(mdp::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 0);
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 0);
@@ -156,15 +156,15 @@ TEST_CASE("batched", "[incremental]") {
           CHECK(value.lastUpdateTime() == 1675616678351000000);
           CHECK(value.tradeDate() == 19394);
           CHECK(value.mDSecurityTradingStatus() == cme_mdp::SecurityTradingStatus::ReadyToTrade);
-          CHECK(std::isnan(mdp::get_double(value.highLimitPrice())));
-          CHECK(std::isnan(mdp::get_double(value.lowLimitPrice())));
-          CHECK(mdp::get_double(value.maxPriceVariation()) == 0.5_a);
+          CHECK(std::isnan(map(value.highLimitPrice()).template get<double>()));
+          CHECK(std::isnan(map(value.lowLimitPrice()).template get<double>()));
+          CHECK(map(value.maxPriceVariation()).template get<double>() == 0.5_a);
           value.sbeRewind();  // wtf!
           auto no_md_entries_rows = 0;
           value.noMDEntries().forEach([&no_md_entries_rows](auto &item) {
             switch (++no_md_entries_rows) {
               case 1:
-                CHECK(mdp::get_double(item.mDEntryPx()) == -0.140625_a);
+                CHECK(map(item.mDEntryPx()).template get<double>() == -0.140625_a);
                 CHECK(mdp::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 2);
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 1);
@@ -174,7 +174,7 @@ TEST_CASE("batched", "[incremental]") {
                 CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::ImpliedBid);
                 break;
               case 2:
-                CHECK(mdp::get_double(item.mDEntryPx()) == -0.14453125_a);
+                CHECK(map(item.mDEntryPx()).template get<double>() == -0.14453125_a);
                 CHECK(mdp::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 2);
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 2);
@@ -185,7 +185,7 @@ TEST_CASE("batched", "[incremental]") {
                 break;
               // ...
               case 4:
-                CHECK(mdp::get_double(item.mDEntryPx()) == -0.12109375_a);
+                CHECK(map(item.mDEntryPx()).template get<double>() == -0.12109375_a);
                 CHECK(mdp::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 3);
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 2);
@@ -195,7 +195,7 @@ TEST_CASE("batched", "[incremental]") {
                 CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::ImpliedOffer);
                 break;
               case 5:
-                CHECK(mdp::get_double(item.mDEntryPx()) == 0.0_a);
+                CHECK(map(item.mDEntryPx()).template get<double>() == 0.0_a);
                 CHECK(mdp::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 0);
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 0);
@@ -282,7 +282,7 @@ TEST_CASE("simple", "[incremental]") {
           value.noMDEntries().forEach([&no_md_entries_rows](auto &item) {
             switch (++no_md_entries_rows) {
               case 1:
-                CHECK(mdp::get_double(item.mDEntryPx()) == 108.7578125_a);
+                CHECK(map(item.mDEntryPx()).template get<double>() == 108.7578125_a);
                 CHECK(item.mDEntrySize() == 37);
                 CHECK(item.securityID() == 492654);
                 CHECK(item.rptSeq() == 597792);
@@ -445,7 +445,7 @@ TEST_CASE("complex", "[incremental]") {
           value.noMDEntries().forEach([&no_md_entries_rows](auto &item) {
             switch (++no_md_entries_rows) {
               case 1:
-                CHECK(mdp::get_double(item.mDEntryPx()) == 108.7578125_a);
+                CHECK(map(item.mDEntryPx()).template get<double>() == 108.7578125_a);
                 CHECK(mdp::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 303);
                 CHECK(item.securityID() == 492654);
                 CHECK(item.rptSeq() == 597794);
@@ -480,7 +480,7 @@ TEST_CASE("complex", "[incremental]") {
           value.noMDEntries().forEach([&no_md_entries_rows](auto &item) {
             switch (++no_md_entries_rows) {
               case 1:
-                CHECK(mdp::get_double(item.mDEntryPx()) == 0.078125_a);
+                CHECK(map(item.mDEntryPx()).template get<double>() == 0.078125_a);
                 CHECK(mdp::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 303);
                 CHECK(item.securityID() == 8827);
                 CHECK(item.rptSeq() == 894013);
@@ -492,7 +492,7 @@ TEST_CASE("complex", "[incremental]") {
                 break;
               // ...
               case 12:
-                CHECK(mdp::get_double(item.mDEntryPx()) == 113.96875_a);
+                CHECK(map(item.mDEntryPx()).template get<double>() == 113.96875_a);
                 CHECK(mdp::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 53);
                 CHECK(item.securityID() == 397730);
                 CHECK(item.rptSeq() == 1260473);
@@ -517,7 +517,7 @@ TEST_CASE("complex", "[incremental]") {
           value.noMDEntries().forEach([&no_md_entries_rows](auto &item) {
             switch (++no_md_entries_rows) {
               case 1:
-                CHECK(mdp::get_double(item.mDEntryPx()) == 114.0_a);
+                CHECK(map(item.mDEntryPx()).template get<double>() == 114.0_a);
                 CHECK(mdp::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 2395);
                 CHECK(item.securityID() == 397730);
                 CHECK(item.rptSeq() == 1260476);
@@ -550,7 +550,7 @@ TEST_CASE("complex", "[incremental]") {
               case 1:
                 CHECK(mdp::get_int(item.orderID(), item.orderIDNullValue()) == 8411677212257);
                 CHECK(mdp::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue()) == 20477446525);
-                CHECK(mdp::get_double(item.mDEntryPx()) == 114.0_a);
+                CHECK(map(item.mDEntryPx()).template get<double>() == 114.0_a);
                 CHECK(mdp::get_int(item.mDDisplayQty(), item.mDDisplayQtyNullValue()) == 3);
                 CHECK(item.securityID() == 397730);
                 CHECK(item.mDUpdateAction() == cme_mdp::MDUpdateAction::Value::Delete);
@@ -559,7 +559,7 @@ TEST_CASE("complex", "[incremental]") {
               case 2:
                 CHECK(mdp::get_int(item.orderID(), item.orderIDNullValue()) == 8411677273574);
                 CHECK(mdp::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue()) == 20477532317);
-                CHECK(mdp::get_double(item.mDEntryPx()) == 114.0_a);
+                CHECK(map(item.mDEntryPx()).template get<double>() == 114.0_a);
                 CHECK(mdp::get_int(item.mDDisplayQty(), item.mDDisplayQtyNullValue()) == 283);
                 CHECK(item.securityID() == 397730);
                 CHECK(item.mDUpdateAction() == cme_mdp::MDUpdateAction::Value::Change);
@@ -583,7 +583,7 @@ TEST_CASE("complex", "[incremental]") {
           value.noMDEntries().forEach([&no_md_entries_rows](auto &item) {
             switch (++no_md_entries_rows) {
               case 1:
-                CHECK(mdp::get_double(item.mDEntryPx()) == 114.0_a);
+                CHECK(map(item.mDEntryPx()).template get<double>() == 114.0_a);
                 CHECK(item.mDEntrySize() == 8);
                 CHECK(item.securityID() == 397730);
                 CHECK(item.rptSeq() == 1260474);
@@ -688,7 +688,7 @@ TEST_CASE("46_with_orders", "[incremental]") {
           value.noMDEntries().forEach([&no_md_entries_rows](auto &item) {
             switch (++no_md_entries_rows) {
               case 1:
-                CHECK(mdp::get_double(item.mDEntryPx()) == 113.6875_a);
+                CHECK(map(item.mDEntryPx()).template get<double>() == 113.6875_a);
                 CHECK(mdp::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue()) == 1738);
                 CHECK(item.securityID() == 397730);
                 CHECK(item.rptSeq() == 5621861);

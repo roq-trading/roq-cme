@@ -8,6 +8,8 @@
 
 #include "roq/logging.hpp"
 
+#include "roq/cme/mdp/map.hpp"
+
 using namespace std::literals;
 
 namespace roq {
@@ -34,17 +36,16 @@ auto const SUPPORTS = Mask{
 
 namespace {
 void emplace_back(cme_mdp::SnapshotFullRefreshOrderBook53::NoMDEntries const &item, auto &security, auto &orders) {
-  auto price = mdp::get_double(const_cast<cme_mdp::SnapshotFullRefreshOrderBook53::NoMDEntries &>(item).mDEntryPx());
+  auto price = map(const_cast<cme_mdp::SnapshotFullRefreshOrderBook53::NoMDEntries &>(item).mDEntryPx()).template get<double>();
   auto quantity = item.mDDisplayQty();
   auto priority = mdp::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue());
   auto order_id = mdp::get_int(item.orderID(), item.orderIDNullValue());
-  auto side = mdp::map(item.mDEntryType());
   auto order = MBOUpdate{
       .price = price * security.display_factor,
       .quantity = static_cast<double>(quantity),
       .priority = priority,
       .order_id = {},
-      .side = side,
+      .side = map(item.mDEntryType()),
       .action = UpdateAction::NEW,
       .reason = {},
   };

@@ -10,6 +10,8 @@
 
 #include "roq/logging.hpp"
 
+#include "roq/cme/mdp/map.hpp"
+
 using namespace std::literals;
 
 namespace roq {
@@ -64,13 +66,12 @@ void create_security(auto &shared, auto &value, Callback callback) {
   auto market_segment_id = value.marketSegmentID();
   auto security_exchange = mdp::get_string_view(value.securityExchange(), value.securityExchangeLength());
   auto symbol = mdp::get_string_view(value.symbol(), value.symbolLength());
-  auto display_factor = mdp::get_double(value.displayFactor());
   auto security_group = mdp::get_string_view(value.securityGroup(), value.securityGroupLength());
   auto discard = shared.discard_symbol(symbol);
   auto security = tools::Security{
       .exchange = security_exchange,
       .symbol = symbol,
-      .display_factor = display_factor,
+      .display_factor = map(value.displayFactor()),
       .discard = discard,
   };
   auto callback_2 = [&](auto &security) { callback(security); };
@@ -110,13 +111,13 @@ struct SecurityIterator final {
 
 template <typename T>
 void mbp_emplace_back(auto &result, T const &item, auto &security) {
-  auto price = mdp::get_double(const_cast<T &>(item).mDEntryPx());
+  auto price = map(const_cast<T &>(item).mDEntryPx()).template get<double>();
   auto quantity = mdp::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue());
   auto number_of_orders = mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue());
   auto update_action = [&]() -> UpdateAction {
     constexpr bool has_md_update_action = requires(T const &t) { t.mDUpdateAction(); };
     if constexpr (has_md_update_action) {
-      return mdp::map(item.mDUpdateAction());
+      return map(item.mDUpdateAction());
     }
     return {};
   }();
@@ -137,11 +138,10 @@ void mbp_emplace_back(auto &result, T const &item, auto &security) {
 
 template <typename T>
 void trades_emplace_back(auto &result, T const &item, auto &security) {
-  auto side = mdp::map_side(item.aggressorSide());
-  auto price = mdp::get_double(const_cast<T &>(item).mDEntryPx());
+  auto price = map(const_cast<T &>(item).mDEntryPx()).template get<double>();
   auto quantity = mdp::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue());
   auto trade = Trade{
-      .side = side,
+      .side = map(item.aggressorSide()),
       .price = price * security.display_factor,
       .quantity = utils::safe_cast(quantity),
       .trade_id = {},
@@ -155,7 +155,7 @@ void trades_emplace_back(auto &result, T const &item, auto &security) {
 
 template <typename T>
 void statistics_emplace_back_price(auto &result, auto type, T const &item, auto factor) {
-  auto value = mdp::get_double(const_cast<T &>(item).mDEntryPx());
+  auto value = map(const_cast<T &>(item).mDEntryPx()).template get<double>();
   auto statistics = Statistics{
       .type = type,
       .value = value * factor,
@@ -178,7 +178,7 @@ void statistics_emplace_back_size(auto &result, auto type, auto const &item) {
 
 template <typename T>
 void statistics_emplace_back(auto &result, T const &item, auto &security) {
-  auto statistics_type = mdp::map(item.mDEntryType());
+  auto statistics_type = map(item.mDEntryType()).template get<StatisticsType>();
   if (statistics_type == StatisticsType::OPEN_INTEREST) {
     statistics_emplace_back_size(result, statistics_type, item);
   } else {
@@ -203,12 +203,12 @@ void emplace_back(cme_mdp::MDIncrementalRefreshBook46::NoMDEntries const &item, 
     case BookReset:  // XXX ????????????????????????
       break;
     case MarketBestOffer: {
-      auto price = mdp::get_double(const_cast<value_type &>(item).mDEntryPx());
+      auto price = map(const_cast<value_type &>(item).mDEntryPx()).template get<double>();
       layer.ask_price = price * security.display_factor;
       break;
     }
     case MarketBestBid: {
-      auto price = mdp::get_double(const_cast<value_type &>(item).mDEntryPx());
+      auto price = map(const_cast<value_type &>(item).mDEntryPx()).template get<double>();
       layer.bid_price = price * security.display_factor;
       break;
     }
@@ -218,7 +218,6 @@ void emplace_back(cme_mdp::MDIncrementalRefreshBook46::NoMDEntries const &item, 
 }
 
 void emplace_back(cme_mdp::MDIncrementalRefreshBook46::NoOrderIDEntries const &item, auto &security, auto side, auto price, auto &orders) {
-  auto action = mdp::map(item.orderUpdateAction());
   auto quantity = mdp::get_int(item.mDDisplayQty(), item.mDDisplayQtyNullValue());
   auto priority = mdp::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue());
   auto order_id = mdp::get_int(item.orderID(), item.orderIDNullValue());
@@ -228,11 +227,11 @@ void emplace_back(cme_mdp::MDIncrementalRefreshBook46::NoOrderIDEntries const &i
       .priority = priority,
       .order_id = {},
       .side = side,
-      .action = action,
+      .action = map(item.orderUpdateAction()),
       .reason = {},
   };
   fmt::format_to(std::back_inserter(order.order_id), "{}"sv, order_id);
-  if (action != UpdateAction::DELETE && !quantity) [[unlikely]]  // DEBUG
+  if (order.action != UpdateAction::DELETE && !quantity) [[unlikely]]  // DEBUG
     log::warn("Unexpected: update={}"sv, order);
   orders.emplace_back(std::move(order));
 }
@@ -242,11 +241,10 @@ void emplace_back(cme_mdp::MDIncrementalRefreshOrderBook47::NoMDEntries const &i
   using value_type = typename std::remove_cvref<decltype(item)>::type;
   using result_type = typename T::value_type;
   auto create_update = [&](auto side) {
-    auto price = mdp::get_double(const_cast<value_type &>(item).mDEntryPx());
+    auto price = map(const_cast<value_type &>(item).mDEntryPx()).template get<double>();
     auto quantity = mdp::get_int(item.mDDisplayQty(), item.mDDisplayQtyNullValue());
     auto priority = mdp::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue());
     auto order_id = mdp::get_int(item.orderID(), item.orderIDNullValue());
-    auto action = mdp::map(item.mDUpdateAction());
     auto result = result_type{
         .security_id = security_id,
         .price = price * security.display_factor,
@@ -254,7 +252,7 @@ void emplace_back(cme_mdp::MDIncrementalRefreshOrderBook47::NoMDEntries const &i
         .priority = priority,
         .order_id = order_id,
         .side = side,
-        .action = action,
+        .action = map(item.mDUpdateAction()),
     };
     return result;
   };
@@ -439,7 +437,6 @@ void Incremental::operator()(Trace<cme_mdp::SecurityStatus30> const &event, mdp:
   value.sbeRewind();  // note!
   auto security_id = mdp::get_int(value.securityID(), value.securityIDNullValue());
   auto security_group = mdp::get_string_view(value.securityGroup(), value.securityGroupLength());
-  auto trading_status = mdp::map_security_trading_status(value.securityTradingStatus());
   auto exchange_time_utc = std::chrono::nanoseconds{value.transactTime()};
   auto dispatch = [&](auto security_id) {
     shared_.security_definitions.get_security(security_id, [&](auto &security) {
@@ -447,7 +444,7 @@ void Incremental::operator()(Trace<cme_mdp::SecurityStatus30> const &event, mdp:
           .stream_id = stream_id,
           .exchange = security.exchange,
           .symbol = security.symbol,
-          .trading_status = trading_status,
+          .trading_status = map(value.securityTradingStatus()),
           .exchange_time_utc = exchange_time_utc,
           .exchange_sequence = frame.sequence_number,
           .sending_time_utc = frame.sending_time,
@@ -647,9 +644,9 @@ void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &e
         check_report_sequence(*security, item, frame);
       using value_type = typename std::remove_cvref<decltype(item)>::type;
       auto &value = const_cast<value_type &>(item);  // note! not const-safe
-      auto price = mdp::get_double(value.mDEntryPx());
-      auto side = mdp::map(item.mDEntryType());
-      auto action = mdp::map(item.mDUpdateAction());
+      auto price = map(value.mDEntryPx()).template get<double>();
+      auto side = map(item.mDEntryType()).template get<Side>();
+      auto action = map(item.mDUpdateAction()).template get<UpdateAction>();
       // ... need these for MBO referencing
       if (shared_.options.enable_market_by_order)
         shared_.md_entries_.emplace_back(security_id, side, price, action);
@@ -1088,12 +1085,12 @@ void Incremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame const
   value.noMDEntries().forEach([&]<typename U>(U &item) {
     auto security_id = item.securityID();
     auto aggressor_side = item.aggressorSide();
-    auto price = mdp::get_double(const_cast<U &>(item).mDEntryPx());
+    auto price = map(const_cast<U &>(item).mDEntryPx()).template get<double>();
     auto size = item.mDEntrySize();
     auto number_of_orders = item.numberOfOrders();
     auto trade_id = mdp::get_int(item.mDTradeEntryID(), item.mDTradeEntryIDNullValue());
     insert_security_id(security_id);
-    auto side = mdp::map_side(aggressor_side);
+    auto side = map(aggressor_side).template get<Side>();
     shared_.trade_summary_.emplace_back(security_id, side, price, size, number_of_orders, trade_id);
     shared_.total_number_of_orders_ += number_of_orders;
     shared_.security_definitions.get_security(security_id, [&](auto &security) { check_report_sequence(security, item, frame); });

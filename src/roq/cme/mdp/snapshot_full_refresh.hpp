@@ -10,6 +10,7 @@
 
 #include "roq/core/sbe/iterator.hpp"
 
+#include "roq/cme/mdp/map.hpp"
 #include "roq/cme/mdp/utils.hpp"
 
 namespace roq {
@@ -86,7 +87,7 @@ struct fmt::formatter<cme_mdp::SnapshotFullRefresh52::NoMDEntries> {
         R"(settl_price_type={}, )"
         R"(md_entry_type={})"
         R"(}})"sv,
-        roq::cme::mdp::get_double(const_cast<value_type &>(value).mDEntryPx()),
+        roq::map(const_cast<value_type &>(value).mDEntryPx()).template get<double>(),
         roq::cme::mdp::get_int(value.mDEntrySize(), value.mDEntrySizeNullValue()),
         roq::cme::mdp::get_int(value.numberOfOrders(), value.numberOfOrdersNullValue()),
         roq::cme::mdp::get_int(value.mDPriceLevel(), value.mDPriceLevelNullValue()),
@@ -130,9 +131,9 @@ struct fmt::formatter<cme_mdp::SnapshotFullRefresh52> {
         value.lastUpdateTime(),
         value.tradeDate(),
         value.mDSecurityTradingStatus(),
-        roq::cme::mdp::get_double(value.highLimitPrice()),
-        roq::cme::mdp::get_double(value.lowLimitPrice()),
-        roq::cme::mdp::get_double(value.maxPriceVariation()),
+        roq::map(value.highLimitPrice()).template get<double>(),
+        roq::map(value.lowLimitPrice()).template get<double>(),
+        roq::map(value.maxPriceVariation()).template get<double>(),
         roq::cme::mdp::Group{value.noMDEntries()});
   }
 };

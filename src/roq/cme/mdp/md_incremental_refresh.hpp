@@ -18,6 +18,7 @@
 
 #include "roq/core/sbe/iterator.hpp"
 
+#include "roq/cme/mdp/map.hpp"
 #include "roq/cme/mdp/utils.hpp"
 
 namespace roq {

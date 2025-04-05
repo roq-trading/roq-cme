@@ -40,13 +40,12 @@ void create_security(auto &shared, auto &value, Callback callback) {
   auto market_segment_id = value.marketSegmentID();
   auto security_exchange = mdp::get_string_view(value.securityExchange(), value.securityExchangeLength());
   auto symbol = mdp::get_string_view(value.symbol(), value.symbolLength());
-  auto display_factor = mdp::get_double(value.displayFactor());
   auto security_group = mdp::get_string_view(value.securityGroup(), value.securityGroupLength());
   auto discard = shared.discard_symbol(symbol);
   auto security = tools::Security{
       .exchange = security_exchange,
       .symbol = symbol,
-      .display_factor = display_factor,
+      .display_factor = map(value.displayFactor()),
       .discard = discard,
   };
   shared.security_definitions.create_security(security_group, market_segment_id, security_id, std::move(security), [&](auto &security) { callback(security); });
