@@ -14,8 +14,8 @@ target_link_libraries(
           ${PROJECT_NAME}-market_data
           ${PROJECT_NAME}-secdef
           roq-api::roq-api
-          roq-codec::roq-codec
           roq-core::roq-core
+          roq-codec::roq-codec
           roq-flags::roq-flags
           roq-logging::roq-logging
           roq-logging::roq-logging-flags
