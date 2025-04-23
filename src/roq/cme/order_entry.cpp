@@ -86,7 +86,7 @@ auto create_connection_manager(auto &handler, auto &settings, auto &connection_f
 }
 
 struct create_metrics final : public utils::metrics::Factory {
-  create_metrics(auto &settings, auto &group, auto const &function) : utils::metrics::Factory(settings.app.name, group, function) {}
+  create_metrics(auto &settings, auto &group, auto const &function) : utils::metrics::Factory{settings.app.name, group, function} {}
 };
 
 auto get_quantity(double value) -> uint32_t {
