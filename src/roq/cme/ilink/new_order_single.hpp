@@ -3,7 +3,7 @@
 #pragma once
 
 #include <fmt/chrono.h>
-#include <fmt/core.h>
+#include <fmt/format.h>
 
 #include <magic_enum/magic_enum_format.hpp>
 
