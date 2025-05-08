@@ -129,8 +129,9 @@ TEST_CASE("multiple", "[ilink_simple]") {
   TraceInfo trace_info;
   while (true) {
     auto bytes = ilink::Parser::dispatch(handler, buffer, trace_info);
-    if (!bytes)
+    if (!bytes) {
       break;
+    }
     buffer = buffer.subspan(bytes);
   }
   CHECK(handler.counter == 2);

@@ -40,11 +40,13 @@ struct SecurityDefinitions final {
   template <typename Callback>
   bool get_security(int32_t security_id, Callback callback) {
     auto iter = securities_.find(security_id);
-    if (iter == std::end(securities_))
+    if (iter == std::end(securities_)) {
       return false;
+    }
     auto &security = (*iter).second;
-    if (security.discard)
+    if (security.discard) {
       return false;
+    }
     callback(security);
     return true;
   }
@@ -52,8 +54,9 @@ struct SecurityDefinitions final {
   template <typename Callback>
   bool get_security_incl_discard(int32_t security_id, Callback callback) {
     auto iter = securities_.find(security_id);
-    if (iter == std::end(securities_))
+    if (iter == std::end(securities_)) {
       return false;
+    }
     auto &security = (*iter).second;
     callback(security);
     return true;
@@ -61,9 +64,11 @@ struct SecurityDefinitions final {
 
   template <typename Callback>
   void get_securities_(Callback callback) {
-    for (auto &[security_id, security] : securities_)
-      if (!security.discard)
+    for (auto &[security_id, security] : securities_) {
+      if (!security.discard) {
         callback(security);
+      }
+    }
   }
 
   // security group
@@ -71,11 +76,13 @@ struct SecurityDefinitions final {
   template <typename Callback>
   bool get_security_group(std::string_view const &security_group, Callback callback) {
     auto iter = security_groups_.find(security_group);
-    if (iter == std::end(security_groups_))
+    if (iter == std::end(security_groups_)) {
       return false;
+    }
     auto &security_ids = (*iter).second;
-    for (auto &security_id : security_ids)
+    for (auto &security_id : security_ids) {
       callback(security_id);
+    }
     return true;
   }
 
@@ -84,12 +91,14 @@ struct SecurityDefinitions final {
   template <typename Callback>
   bool find_security_id(uint8_t market_segment_id, std::string_view const &symbol, Callback callback) {
     auto iter_1 = market_segments_.find(market_segment_id);
-    if (iter_1 == std::end(market_segments_))
+    if (iter_1 == std::end(market_segments_)) {
       return false;
+    }
     auto &symbols = (*iter_1).second;
     auto iter_2 = symbols.find(symbol);
-    if (iter_2 == std::end(symbols))
+    if (iter_2 == std::end(symbols)) {
       return false;
+    }
     callback((*iter_2).second);
     return true;
   }

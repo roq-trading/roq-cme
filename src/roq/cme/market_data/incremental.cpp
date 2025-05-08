@@ -61,8 +61,9 @@ auto get_supports(auto enable_market_by_order) {
 template <typename Callback>
 void create_security(auto &shared, auto &value, Callback callback) {
   auto security_id = value.securityID();
-  if (shared.security_definitions.has_security(security_id))
+  if (shared.security_definitions.has_security(security_id)) {
     return;
+  }
   auto market_segment_id = value.marketSegmentID();
   auto security_exchange = mdp::get_string_view(value.securityExchange(), value.securityExchangeLength());
   auto symbol = mdp::get_string_view(value.symbol(), value.symbolLength());
@@ -86,19 +87,22 @@ struct SecurityIterator final {
     value.forEach([&](auto &item) {
       auto security_id = item.securityID();
       if (security_id != security_id_) {
-        if (security_)
+        if (security_) {
           dispatch(security_id, *security_);
+        }
         security_id_ = security_id;
         if (shared_.security_definitions.get_security(security_id, [&](auto &security) { security_ = &security; })) {
         } else {
           security_ = nullptr;
         }
       }
-      if (security_)
+      if (security_) {
         callback(security_id_, *security_, item);
+      }
     });
-    if (security_)
+    if (security_) {
       dispatch(security_id_, *security_);
+    }
   }
 
  private:
@@ -121,8 +125,9 @@ void mbp_emplace_back(auto &result, T const &item, auto &security) {
     }
     return {};
   }();
-  if (update_action == UpdateAction::DELETE)
+  if (update_action == UpdateAction::DELETE) {
     quantity = {};  // note! exchange gives us the *old* value / we need this to be zero
+  }
   auto md_price_level = mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue());
   uint32_t price_level = md_price_level > 0 ? (md_price_level - 1) : 0;
   auto update = MBPUpdate{
@@ -231,8 +236,9 @@ void emplace_back(cme_mdp::MDIncrementalRefreshBook46::NoOrderIDEntries const &i
       .reason = {},
   };
   fmt::format_to(std::back_inserter(order.order_id), "{}"sv, order_id);
-  if (order.action != UpdateAction::DELETE && !quantity) [[unlikely]]  // DEBUG
+  if (order.action != UpdateAction::DELETE && !quantity) [[unlikely]] {  // DEBUG
     log::warn("Unexpected: update={}"sv, order);
+  }
   orders.emplace_back(std::move(order));
 }
 
@@ -365,10 +371,12 @@ void Incremental::dispatch(std::span<std::byte const> const &payload, TraceInfo 
               */
             })) {
           log::info<5>("hold={}, drop={}"sv, hold, drop);
-          if (drop)
+          if (drop) {
             return {};
-          if (hold)
+          }
+          if (hold) {
             return {bytes, sequence_number};
+          }
           // parse this message
           channel_.update_sequence_number(sequence_number);
           parse(message);
@@ -452,10 +460,12 @@ void Incremental::operator()(Trace<cme_mdp::SecurityStatus30> const &event, mdp:
       create_trace_and_dispatch(shared_, trace_info, market_status, true);
     });
   };
-  if (security_id)
+  if (security_id) {
     dispatch(security_id);
-  if (!std::empty(security_group))
+  }
+  if (!std::empty(security_group)) {
     shared_.security_definitions.get_security_group(security_group, [&](auto security_id) { dispatch(security_id); });
+  }
 }
 
 void Incremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &event, mdp::Frame const &frame) {
@@ -479,8 +489,9 @@ void Incremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> cons
   create_security(shared_, value, [&](auto &security) {
     auto reference_data = mdp::create_reference_data(value, stream_id, security);
     create_trace_and_dispatch(shared_, trace_info, reference_data, true);
-    if (security.discard)
+    if (security.discard) {
       return;
+    }
     auto market_status = mdp::create_market_status(value, stream_id, security);
     create_trace_and_dispatch(shared_, trace_info, market_status, true);
   });
@@ -496,8 +507,9 @@ void Incremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionOption55> cons
   shared_.security_definitions.get_security_incl_discard(security_id, [&](auto &security) {
     auto reference_data = mdp::create_reference_data(value, stream_id, security);
     create_trace_and_dispatch(shared_, trace_info, reference_data, true);
-    if (security.discard)
+    if (security.discard) {
       return;
+    }
     auto market_status = mdp::create_market_status(value, stream_id, security);
     create_trace_and_dispatch(shared_, trace_info, market_status, true);
   });
@@ -513,8 +525,9 @@ void Incremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionSpread56> cons
   shared_.security_definitions.get_security_incl_discard(security_id, [&](auto &security) {
     auto reference_data = mdp::create_reference_data(value, stream_id, security);
     create_trace_and_dispatch(shared_, trace_info, reference_data, true);
-    if (security.discard)
+    if (security.discard) {
       return;
+    }
     auto market_status = mdp::create_market_status(value, stream_id, security);
     create_trace_and_dispatch(shared_, trace_info, market_status, true);
   });
@@ -530,8 +543,9 @@ void Incremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionFixedIncome57>
   shared_.security_definitions.get_security_incl_discard(security_id, [&](auto &security) {
     auto reference_data = mdp::create_reference_data(value, stream_id, security);
     create_trace_and_dispatch(shared_, trace_info, reference_data, true);
-    if (security.discard)
+    if (security.discard) {
       return;
+    }
     auto market_status = mdp::create_market_status(value, stream_id, security);
     create_trace_and_dispatch(shared_, trace_info, market_status, true);
   });
@@ -547,8 +561,9 @@ void Incremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionRepo58> const 
   shared_.security_definitions.get_security_incl_discard(security_id, [&](auto &security) {
     auto reference_data = mdp::create_reference_data(value, stream_id, security);
     create_trace_and_dispatch(shared_, trace_info, reference_data, true);
-    if (security.discard)
+    if (security.discard) {
       return;
+    }
     auto market_status = mdp::create_market_status(value, stream_id, security);
     create_trace_and_dispatch(shared_, trace_info, market_status, true);
   });
@@ -564,8 +579,9 @@ void Incremental::operator()(Trace<cme_mdp::MDInstrumentDefinitionFX63> const &e
   shared_.security_definitions.get_security_incl_discard(security_id, [&](auto &security) {
     auto reference_data = mdp::create_reference_data(value, stream_id, security);
     create_trace_and_dispatch(shared_, trace_info, reference_data, true);
-    if (security.discard)
+    if (security.discard) {
       return;
+    }
     auto market_status = mdp::create_market_status(value, stream_id, security);
     create_trace_and_dispatch(shared_, trace_info, market_status, true);
   });
@@ -627,8 +643,9 @@ void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &e
     auto process = [&](auto &item) {
       auto current_security_id = item.securityID();
       if (current_security_id != security_id) {
-        if (security)
+        if (security) {
           dispatch(security_id, *security, true, is_snapshot);
+        }
         security_id = current_security_id;
         if (shared_.security_definitions.get_security(security_id, [&security](auto &security_2) { security = &security_2; })) {
         } else {
@@ -640,16 +657,18 @@ void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &e
         is_snapshot = true;
         is_snapshot_workaround = true;  // XXX
       }
-      if (security)
+      if (security) {
         check_report_sequence(*security, item, frame);
+      }
       using value_type = typename std::remove_cvref<decltype(item)>::type;
       auto &value = const_cast<value_type &>(item);  // note! not const-safe
       auto price = map(value.mDEntryPx()).template get<double>();
       auto side = map(item.mDEntryType()).template get<Side>();
       auto action = map(item.mDUpdateAction()).template get<UpdateAction>();
       // ... need these for MBO referencing
-      if (shared_.options.enable_market_by_order)
+      if (shared_.options.enable_market_by_order) {
         shared_.md_entries_.emplace_back(security_id, side, price, action);
+      }
       if (security) {
         emplace_back(item, *security, layer, mbp.bids, mbp.asks);
         if (shared_.options.enable_market_by_order) {
@@ -669,8 +688,9 @@ void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &e
       }
     };
     value.noMDEntries().forEach(process);
-    if (security)
+    if (security) {
       dispatch(security_id, *security, true, is_snapshot);
+    }
   }
   if (shared_.options.enable_market_by_order) {
     // MBO
@@ -678,15 +698,17 @@ void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &e
     tools::Security *security = nullptr;
     auto &orders = cache_.orders;
     auto dispatch = [&](auto security_id, auto &security) {
-      if (std::empty(orders))
+      if (std::empty(orders)) {
         return;
+      }
       dispatch_market_by_order(trace_info, security_id, security, exchange_sequence, exchange_time_utc, frame.sending_time, orders, is_snapshot_workaround);
       orders.clear();
     };
     auto process = [&](auto &item) {
       auto reference_id = mdp::get_int(item.referenceID(), item.referenceIDNullValue());
-      if (!reference_id)
+      if (!reference_id) {
         return;
+      }
       auto index = static_cast<size_t>(reference_id) - 1;  // indexing is 1-based
       if (!(index < std::size(shared_.md_entries_))) [[unlikely]] {
         log::warn("Unexpected: index={}, len={}"sv, index, std::size(shared_.md_entries_));
@@ -694,8 +716,9 @@ void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &e
       }
       auto [current_security_id, side, price, action] = shared_.md_entries_[index];
       if (current_security_id != security_id) {
-        if (security)
+        if (security) {
           dispatch(security_id, *security);
+        }
         security_id = current_security_id;
         if (shared_.security_definitions.get_security(security_id, [&security](auto &security_2) { security = &security_2; })) {
         } else {
@@ -708,8 +731,9 @@ void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &e
       }
     };
     value.noOrderIDEntries().forEach(process);
-    if (security)
+    if (security) {
       dispatch(security_id, *security);
+    }
     assert(std::empty(orders));
   }
 }
@@ -727,8 +751,9 @@ void Incremental::operator()(Trace<cme_mdp::SnapshotFullRefreshOrderBook53> cons
 }
 
 void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshOrderBook47> const &event, mdp::Frame const &frame) {
-  if (!shared_.options.enable_market_by_order)
+  if (!shared_.options.enable_market_by_order) {
     return;
+  }
   auto &trace_info = event.trace_info;
   using value_type = std::remove_cvref<decltype(event)>::type::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -749,19 +774,22 @@ void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshOrderBook47> con
       } else {
         security = nullptr;
       }
-      if (security)
+      if (security) {
         cache_.security_ids_47.insert(security_id);
+      }
     }
-    if (security)
+    if (security) {
       emplace_back(item, *security, security_id, cache_.orders_47);
+    }
   };
   value.noMDEntries().forEach(process);
-  if (!last)
+  if (!last) {
     return;
+  }
   for (auto security_id : cache_.security_ids_47) {
     assert(std::empty(cache_.orders));
     auto dispatch = [&](auto &security) {
-      for (auto &item : cache_.orders_47)
+      for (auto &item : cache_.orders_47) {
         if (item.security_id == security_id) {
           auto result = MBOUpdate{
               .price = item.price,
@@ -775,6 +803,7 @@ void Incremental::operator()(Trace<cme_mdp::MDIncrementalRefreshOrderBook47> con
           fmt::format_to(std::back_inserter(result.order_id), "{}"sv, item.order_id);
           cache_.orders.emplace_back(std::move(result));
         }
+      }
       auto snapshot = !security.rpt_seq;
       dispatch_market_by_order(trace_info, security_id, security, exchange_sequence, exchange_time_utc, frame.sending_time, cache_.orders, snapshot);
       cache_.orders.clear();
@@ -1077,8 +1106,9 @@ void Incremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame const
   }
   auto insert_security_id = [&](auto security_id) {
     for (auto iter : shared_.security_ids_) {
-      if (iter == security_id)
+      if (iter == security_id) {
         return;
+      }
     }
     shared_.security_ids_.emplace_back(security_id);
   };
@@ -1185,8 +1215,9 @@ void Incremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame const
   // mbo
   auto &mbo = shared_.get_mbo();
   auto dispatch_market_by_order_2 = [&](auto security_id, auto &security) {
-    if (std::empty(mbo))
+    if (std::empty(mbo)) {
       return;
+    }
     dispatch_market_by_order(trace_info, security_id, security, exchange_sequence, exchange_time_utc, frame.sending_time, mbo.orders, false);
     mbo.clear();
   };
@@ -1217,8 +1248,9 @@ void Incremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame const
                 .reason = {},
             };
             fmt::format_to(std::back_inserter(result.order_id), "{}"sv, order_id);
-            if (!last_qty) [[unlikely]]  // DEBUG
+            if (!last_qty) [[unlikely]] {  // DEBUG
               log::warn("Unexpected: update={}"sv, result);
+            }
             mbo.orders.emplace_back(std::move(result));
           }
         }
@@ -1304,8 +1336,9 @@ void Incremental::dispatch_trade_summary(Trace<T> const &event, mdp::Frame const
     });
   }
   // done
-  if (std::size(shared_.orders_) < shared_.total_number_of_orders_)
+  if (std::size(shared_.orders_) < shared_.total_number_of_orders_) {
     log::warn("Unexpected: len(orders)={}, total_number_of_orders={}"sv, std::size(shared_.orders_), shared_.total_number_of_orders_);
+  }
   shared_.transact_time_ = {};
   // log::warn("DEBUG exchange_time_utc={}, transact_time_={}"sv, exchange_time_utc, shared_.transact_time_);
   clear_state();
@@ -1320,8 +1353,9 @@ void Incremental::dispatch_statistics(Trace<T> const &event, mdp::Frame const &f
   auto exchange_time_utc = std::chrono::nanoseconds{value.transactTime()};
   auto &statistics = shared_.get_statistics();
   auto dispatch = [&]([[maybe_unused]] auto security_id, auto &security) {
-    if (std::empty(statistics))
+    if (std::empty(statistics)) {
       return;
+    }
     auto statistics_update = StatisticsUpdate{
         .stream_id = stream_id,
         .exchange = security.exchange,
@@ -1341,8 +1375,9 @@ void Incremental::dispatch_statistics(Trace<T> const &event, mdp::Frame const &f
     callback(statistics, item, security);
     // initializing?
     auto rpt_seq = item.rptSeq();
-    if (rpt_seq != 1)
+    if (rpt_seq != 1) {
       return;
+    }
     auto exchange_sequence = frame.sequence_number;
     auto exchange_time_utc = std::chrono::nanoseconds{value.transactTime()};
     dispatch_market_by_price(trace_info, security_id, security, exchange_sequence, exchange_time_utc, frame.sending_time, {}, {}, true);
@@ -1363,8 +1398,9 @@ void Incremental::check_report_sequence(tools::Security &security, auto const &v
       security.rpt_seq,
       diff);
   */
-  if (!security.update_rpt_seq(rpt_seq))
+  if (!security.update_rpt_seq(rpt_seq)) {
     return;
+  }
   log::warn(R"(RESUBSCRIBE exchange="{}", symbol="{}", rpt_seq={})"sv, security.exchange, security.symbol, rpt_seq);
   TraceInfo trace_info;
   security.mbp.sequencer.clear();
@@ -1388,8 +1424,9 @@ void Incremental::on_sequence_reset() {
 }
 
 void Incremental::publish_stream_status(TraceInfo const &trace_info, ConnectionStatus connection_status) {
-  if (!utils::update(connection_status_, connection_status))
+  if (!utils::update(connection_status_, connection_status)) {
     return;
+  }
   auto stream_status = StreamStatus{
       .stream_id = stream_id,
       .account = {},

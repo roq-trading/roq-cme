@@ -35,8 +35,9 @@ namespace {
 template <typename Callback>
 void create_security(auto &shared, auto &value, Callback callback) {
   auto security_id = value.securityID();
-  if (shared.security_definitions.has_security(security_id))
+  if (shared.security_definitions.has_security(security_id)) {
     return;
+  }
   auto market_segment_id = value.marketSegmentID();
   auto security_exchange = mdp::get_string_view(value.securityExchange(), value.securityExchangeLength());
   auto symbol = mdp::get_string_view(value.symbol(), value.symbolLength());
@@ -111,8 +112,9 @@ void InstrumentDefinition::operator()(Trace<cme_mdp::MDInstrumentDefinitionFutur
   create_security(shared_, value, [&](auto &security) {
     auto reference_data = mdp::create_reference_data(value, stream_id, security);
     create_trace_and_dispatch(shared_, trace_info, reference_data, true);
-    if (security.discard)
+    if (security.discard) {
       return;
+    }
     auto market_status = mdp::create_market_status(value, stream_id, security);
     create_trace_and_dispatch(shared_, trace_info, market_status, true);
   });
@@ -126,8 +128,9 @@ void InstrumentDefinition::operator()(Trace<cme_mdp::MDInstrumentDefinitionOptio
   create_security(shared_, value, [&](auto &security) {
     auto reference_data = mdp::create_reference_data(value, stream_id, security);
     create_trace_and_dispatch(shared_, trace_info, reference_data, true);
-    if (security.discard)
+    if (security.discard) {
       return;
+    }
     auto market_status = mdp::create_market_status(value, stream_id, security);
     create_trace_and_dispatch(shared_, trace_info, market_status, true);
   });
@@ -141,8 +144,9 @@ void InstrumentDefinition::operator()(Trace<cme_mdp::MDInstrumentDefinitionSprea
   create_security(shared_, value, [&](auto &security) {
     auto reference_data = mdp::create_reference_data(value, stream_id, security);
     create_trace_and_dispatch(shared_, trace_info, reference_data, true);
-    if (security.discard)
+    if (security.discard) {
       return;
+    }
     auto market_status = mdp::create_market_status(value, stream_id, security);
     create_trace_and_dispatch(shared_, trace_info, market_status, true);
   });
@@ -156,8 +160,9 @@ void InstrumentDefinition::operator()(Trace<cme_mdp::MDInstrumentDefinitionFixed
   create_security(shared_, value, [&](auto &security) {
     auto reference_data = mdp::create_reference_data(value, stream_id, security);
     create_trace_and_dispatch(shared_, trace_info, reference_data, true);
-    if (security.discard)
+    if (security.discard) {
       return;
+    }
     auto market_status = mdp::create_market_status(value, stream_id, security);
     create_trace_and_dispatch(shared_, trace_info, market_status, true);
   });
@@ -171,8 +176,9 @@ void InstrumentDefinition::operator()(Trace<cme_mdp::MDInstrumentDefinitionRepo5
   create_security(shared_, value, [&](auto &security) {
     auto reference_data = mdp::create_reference_data(value, stream_id, security);
     create_trace_and_dispatch(shared_, trace_info, reference_data, true);
-    if (security.discard)
+    if (security.discard) {
       return;
+    }
     auto market_status = mdp::create_market_status(value, stream_id, security);
     create_trace_and_dispatch(shared_, trace_info, market_status, true);
   });
@@ -186,8 +192,9 @@ void InstrumentDefinition::operator()(Trace<cme_mdp::MDInstrumentDefinitionFX63>
   create_security(shared_, value, [&](auto &security) {
     auto reference_data = mdp::create_reference_data(value, stream_id, security);
     create_trace_and_dispatch(shared_, trace_info, reference_data, true);
-    if (security.discard)
+    if (security.discard) {
       return;
+    }
     auto market_status = mdp::create_market_status(value, stream_id, security);
     create_trace_and_dispatch(shared_, trace_info, market_status, true);
   });
@@ -284,8 +291,9 @@ void InstrumentDefinition::operator()(Trace<cme_mdp::QuoteRequest39> const &even
 }
 
 void InstrumentDefinition::publish_stream_status(TraceInfo const &trace_info, ConnectionStatus connection_status) {
-  if (!utils::update(connection_status_, connection_status))
+  if (!utils::update(connection_status_, connection_status)) {
     return;
+  }
   auto stream_status = StreamStatus{
       .stream_id = stream_id,
       .account = {},

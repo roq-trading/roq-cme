@@ -23,25 +23,32 @@ namespace mdp {
 namespace {
 auto get_type(auto &value) {
   using enum ConnectionType;
-  if (value.compare("H"sv) == 0)
+  if (value.compare("H"sv) == 0) {
     return HISTORICAL_REPLAY;
-  if (value.compare("N"sv) == 0)
+  }
+  if (value.compare("N"sv) == 0) {
     return INSTRUMENT_DEFINITION;
-  if (value.compare("S"sv) == 0)
+  }
+  if (value.compare("S"sv) == 0) {
     return MBP_MARKET_RECOVERY;
-  if (value.compare("SMBO"sv) == 0)
+  }
+  if (value.compare("SMBO"sv) == 0) {
     return MBOFD_MARKET_RECOVERY;
-  if (value.compare("I"sv) == 0)
+  }
+  if (value.compare("I"sv) == 0) {
     return INCREMENTAL;
+  }
   throw RuntimeError{R"(Unexpected: feed-type="{}")"sv, value};
 }
 
 auto get_priority(auto &value) {
   using enum Priority;
-  if (value.compare("A"sv) == 0)
+  if (value.compare("A"sv) == 0) {
     return PRIMARY;
-  if (value.compare("B"sv) == 0)
+  }
+  if (value.compare("B"sv) == 0) {
     return SECONDARY;
+  }
   throw RuntimeError{R"(Unexpected: feed="{}")"sv, value};
 }
 
@@ -71,8 +78,9 @@ struct Handler final : public ConfigReader::Handler {
 
 template <typename T>
 auto read_connections(auto &filename, bool verbose) {
-  if (verbose)
+  if (verbose) {
     log::info(R"(Reading "{}"...)"sv, filename);
+  }
   T result;
   Handler handler{result};
   ConfigReader::read(handler, filename);
@@ -83,10 +91,13 @@ template <typename R>
 R create_connection_types(auto &connections) {
   using result_type = std::remove_cvref<R>::type;
   result_type result;
-  for (auto &[channel_id, tmp_1] : connections)
-    for (auto &[connection_type, tmp_2] : tmp_1)
-      for (auto &[priority, connection] : tmp_2)
+  for (auto &[channel_id, tmp_1] : connections) {
+    for (auto &[connection_type, tmp_2] : tmp_1) {
+      for (auto &[priority, connection] : tmp_2) {
         result[connection.multicast_address][connection.port] = {channel_id, connection_type, priority};
+      }
+    }
+  }
   return result;
 }
 
@@ -94,10 +105,13 @@ template <typename R>
 R create_names(auto &connections) {
   using result_type = std::remove_cvref<R>::type;
   result_type result;
-  for (auto &[channel_id, tmp_1] : connections)
-    for (auto &[connection_type, tmp_2] : tmp_1)
-      for (auto &[priority, connection] : tmp_2)
+  for (auto &[channel_id, tmp_1] : connections) {
+    for (auto &[connection_type, tmp_2] : tmp_1) {
+      for (auto &[priority, connection] : tmp_2) {
         result[channel_id][connection_type][priority] = connection.name;
+      }
+    }
+  }
   return result;
 }
 }  // namespace

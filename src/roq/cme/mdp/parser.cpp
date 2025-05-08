@@ -31,8 +31,9 @@ namespace {
 struct MessageSize final {
   using value_type = uint16_t;
   explicit MessageSize(auto &buffer) {
-    if (std::size(buffer) < sizeof(value_type))
+    if (std::size(buffer) < sizeof(value_type)) {
       throw RuntimeError{"Unexpected: buffer too small {}"sv, std::size(buffer)};
+    }
     value_type tmp;
     std::memcpy(&tmp, std::data(buffer), sizeof(value_type));
     length = utils::little_endian_to_host(tmp);

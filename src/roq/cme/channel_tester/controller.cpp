@@ -66,15 +66,17 @@ void Controller::operator()(io::net::udp::Receiver::Read const &read) {
   auto &receiver = read.receiver;
   for (;;) {
     auto bytes = receiver.recv(buffer_);
-    if (!bytes)
+    if (!bytes) {
       return;
+    }
     auto message = std::span{std::data(buffer_), bytes};
     log::info<5>("received {} byte(s)"sv, std::size(message));
     if (mdp::Frame::parse(message, [&](auto &frame) {
           log::info<1>("frame={}"sv, frame);
           auto sequence_number = frame.sequence_number;
-          if (sequence_number < settings_.filter_snapshot_from_incremental)
+          if (sequence_number < settings_.filter_snapshot_from_incremental) {
             return;
+          }
           auto now = clock::get_realtime();
           if (last_sequence_number_) {
             auto delta = static_cast<int64_t>(sequence_number) - static_cast<int64_t>(last_sequence_number_);

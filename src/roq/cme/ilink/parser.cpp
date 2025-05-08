@@ -21,17 +21,20 @@ namespace ilink {
 namespace {
 template <typename Callback>
 size_t parse_helper(auto &buffer, Callback callback) {
-  if (std::size(buffer) < 4)
+  if (std::size(buffer) < 4) {
     return false;
+  }
   uint16_t encoding;
   std::memcpy(&encoding, &buffer[2], sizeof(encoding));
-  if (encoding != 0xCAFE)
+  if (encoding != 0xCAFE) {
     log::fatal("Unexpected"sv);
+  }
   uint16_t tmp;
   std::memcpy(&tmp, &buffer[0], sizeof(tmp));
   auto length = utils::little_endian_to_host(tmp);
-  if (std::size(buffer) < length)
+  if (std::size(buffer) < length) {
     return 0;
+  }
   auto message = buffer.subspan(4, length - 4);
   callback(message);
   return length;

@@ -59,8 +59,9 @@ void drain(auto &receiver, auto &buffer, auto stream_id, auto parse) {
     // read into buffer
     auto bytes = receiver.recv(buffer);
     log::info<5>("Received {} byte(s) (stream_id={})"sv, bytes, stream_id);
-    if (!bytes)
+    if (!bytes) {
       return;
+    }
     // parse message
     std::span message{std::data(buffer), bytes};
     log::info<5>("{}"sv, utils::debug::hex::Message{message});
@@ -197,11 +198,13 @@ void MBOFDMarketRecovery::operator()(Trace<cme_mdp::SnapshotFullRefreshOrderBook
   log::info<5>("snapshot_full_refresh_order_book_53={}, frame={}"sv, value, frame);
   auto security_id = value.securityID();
   shared_.security_definitions.get_security(security_id, [&](auto &security) {
-    if (!security.mbo.resubscribe)
+    if (!security.mbo.resubscribe) {
       return;
+    }
     auto last_msg_seq_num_processed = value.lastMsgSeqNumProcessed();
-    if (last_msg_seq_num_processed < security.mbo.resubscribe)
+    if (last_msg_seq_num_processed < security.mbo.resubscribe) {
       return;
+    }
     auto current_chunk = value.currentChunk();
     auto no_chunks = value.noChunks();
     log::info(
@@ -367,8 +370,9 @@ void MBOFDMarketRecovery::operator()(Trace<cme_mdp::QuoteRequest39> const &event
 }
 
 void MBOFDMarketRecovery::publish_stream_status(TraceInfo const &trace_info, ConnectionStatus connection_status) {
-  if (!utils::update(connection_status_, connection_status))
+  if (!utils::update(connection_status_, connection_status)) {
     return;
+  }
   auto stream_status = StreamStatus{
       .stream_id = stream_id,
       .account = {},

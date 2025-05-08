@@ -110,8 +110,9 @@ void drain(auto &receiver, auto &buffer, auto stream_id, auto parse) {
     // read into buffer
     auto bytes = receiver.recv(buffer);
     log::info<5>("Received {} byte(s) (stream_id={})"sv, bytes, stream_id);
-    if (!bytes)
+    if (!bytes) {
       return;
+    }
     // parse message
     std::span message{std::data(buffer), bytes};
     log::info<5>("{}"sv, utils::debug::hex::Message{message});
@@ -223,11 +224,13 @@ void MBPMarketRecovery::operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &
   log::info<5>("snapshot_full_refresh_52={}, frame={}"sv, value, frame);
   auto security_id = value.securityID();
   shared_.security_definitions.get_security(security_id, [&](auto &security) {
-    if (!security.mbp.resubscribe)
+    if (!security.mbp.resubscribe) {
       return;
+    }
     auto last_msg_seq_num_processed = value.lastMsgSeqNumProcessed();
-    if (last_msg_seq_num_processed < security.mbp.resubscribe)
+    if (last_msg_seq_num_processed < security.mbp.resubscribe) {
       return;
+    }
     auto transact_time = std::chrono::nanoseconds{value.transactTime()};
     auto &mbp = shared_.get_mbp();
     value.sbeRewind();  // note!
@@ -245,11 +248,13 @@ void MBPMarketRecovery::operator()(Trace<cme_mdp::SnapshotFullRefreshLongQty69> 
   log::info<5>("snapshot_full_refresh_long_qty_69={}, frame={}"sv, value, frame);
   auto security_id = value.securityID();
   shared_.security_definitions.get_security(security_id, [&](auto &security) {
-    if (!security.mbp.resubscribe)
+    if (!security.mbp.resubscribe) {
       return;
+    }
     auto last_msg_seq_num_processed = value.lastMsgSeqNumProcessed();
-    if (last_msg_seq_num_processed < security.mbp.resubscribe)
+    if (last_msg_seq_num_processed < security.mbp.resubscribe) {
       return;
+    }
     auto transact_time = std::chrono::nanoseconds{value.transactTime()};
     auto &mbp = shared_.get_mbp();
     value.sbeRewind();  // note!
@@ -342,8 +347,9 @@ void MBPMarketRecovery::operator()(Trace<cme_mdp::QuoteRequest39> const &event, 
 
 void MBPMarketRecovery::dispatch_market_by_price(
     auto &trace_info, auto security_id, auto &security, auto exchange_sequence, auto exchange_time_utc, auto sending_time_utc, auto &bids, auto &asks) {
-  if (!security.mbp.resubscribe)
+  if (!security.mbp.resubscribe) {
     return;
+  }
   auto &sequencer = security.mbp.sequencer;
   try {
     auto publish_snapshot = [&](auto &bids, auto &asks, auto exchange_sequence, auto retries, auto delay) {
@@ -412,8 +418,9 @@ void MBPMarketRecovery::dispatch_market_by_price(
 }
 
 void MBPMarketRecovery::publish_stream_status(TraceInfo const &trace_info, ConnectionStatus connection_status) {
-  if (!utils::update(connection_status_, connection_status))
+  if (!utils::update(connection_status_, connection_status)) {
     return;
+  }
   auto stream_status = StreamStatus{
       .stream_id = stream_id,
       .account = {},

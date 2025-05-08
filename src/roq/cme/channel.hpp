@@ -33,8 +33,9 @@ struct Channel final {
   } sequence = {};
 
   void update_sequence_number(uint32_t sequence_number) {
-    if (!sequence.first_sequence_number)
+    if (!sequence.first_sequence_number) {
       sequence.first_sequence_number = sequence_number;
+    }
     sequence.last_sequence_number = sequence_number;
   }
 };

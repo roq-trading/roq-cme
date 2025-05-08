@@ -28,16 +28,19 @@ struct Config final {
   template <typename Callback>
   bool find(uint16_t channel_id, ConnectionType type, Priority priority, Callback callback) const {
     auto iter_1 = connections_.find(channel_id);
-    if (iter_1 == std::end(connections_))
+    if (iter_1 == std::end(connections_)) {
       return false;
+    }
     auto &tmp_1 = (*iter_1).second;
     auto iter_2 = tmp_1.find(type);
-    if (iter_2 == std::end(tmp_1))
+    if (iter_2 == std::end(tmp_1)) {
       return false;
+    }
     auto &tmp_2 = (*iter_2).second;
     auto iter_3 = tmp_2.find(priority);
-    if (iter_3 == std::end(tmp_2))
+    if (iter_3 == std::end(tmp_2)) {
       return false;
+    }
     callback((*iter_3).second);
     return true;
   }

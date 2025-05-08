@@ -11,8 +11,9 @@ namespace cme {
 namespace tools {
 
 bool Security::update_rpt_seq(uint32_t rpt_seq) {
-  if (rpt_seq == 0)  // conflated feed
+  if (rpt_seq == 0) {  // conflated feed
     return false;
+  }
   log::info<5>("rpt_seq={}, last_rpt_seq={}"sv, rpt_seq, (*this).rpt_seq);
   auto next = (*this).rpt_seq + 1;
   auto result = rpt_seq != next;

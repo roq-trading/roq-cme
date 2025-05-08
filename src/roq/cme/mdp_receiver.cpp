@@ -68,8 +68,9 @@ void MDPReceiver::operator()(io::net::udp::Receiver::Read const &) {
   while (true) {
     auto bytes = (*receiver_).recv(shared_.buffer);
     log::info<5>("Received {} byte(s) (channel_id={})"sv, bytes, channel_id);
-    if (!bytes)
+    if (!bytes) {
       return;
+    }
     std::span payload{std::data(shared_.buffer), bytes};
     log::info<5>("{}"sv, utils::debug::hex::Message{payload});
     manager_.dispatch(channel_id, connection_type, priority, payload, trace_info);

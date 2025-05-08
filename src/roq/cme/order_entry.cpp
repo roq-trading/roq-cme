@@ -91,8 +91,9 @@ struct create_metrics final : public utils::metrics::Factory {
 
 auto get_quantity(double value) -> uint32_t {
   int32_t result = utils::safe_cast{value};
-  if (result >= 0)
+  if (result >= 0) {
     return static_cast<uint32_t>(value);
+  }
   throw RuntimeError{"Unexpected: value={} < 0"sv, value};
 }
 
@@ -316,29 +317,33 @@ auto map(cme_ilink::OrdStatusTrd::Value value) -> OrderStatus {
 
 auto get_business_reject_ref_id(auto &value) -> uint64_t {
   auto result = value.businessRejectRefID();
-  if (result == value.businessRejectRefIDNullValue())
+  if (result == value.businessRejectRefIDNullValue()) {
     return {};
+  }
   return result;
 }
 
 auto get_order_id(auto &value) -> uint64_t {
   auto result = value.orderID();
-  if (result == value.orderIDNullValue())
+  if (result == value.orderIDNullValue()) {
     return {};
+  }
   return result;
 }
 
 auto get_security_id(auto &value) -> int32_t {
   auto result = value.securityID();
-  if (result == value.securityIDNullValue())
+  if (result == value.securityIDNullValue()) {
     return {};
+  }
   return result;
 }
 
 auto get_transact_time(auto &value) -> std::chrono::nanoseconds {
   auto result = value.transactTime();
-  if (result == value.transactTimeNullValue())
+  if (result == value.transactTimeNullValue()) {
     return {};
+  }
   return std::chrono::nanoseconds{result};
 }
 
@@ -358,8 +363,9 @@ auto get_leaves_qty(T &value) -> double {
   constexpr bool has_leaves_qty = requires(T const &t) { t.leavesQty(); };
   if constexpr (has_leaves_qty) {
     auto result = value.leavesQty();
-    if (result == value.leavesQtyNullValue())
+    if (result == value.leavesQtyNullValue()) {
       return NaN;
+    }
     return result;
   }
   return NaN;
@@ -370,8 +376,9 @@ auto get_cum_qty(T &value) -> double {
   constexpr bool has_cum_qty = requires(T const &t) { t.cumQty(); };
   if constexpr (has_cum_qty) {
     auto result = value.cumQty();
-    if (result == value.cumQtyNullValue())
+    if (result == value.cumQtyNullValue()) {
       return NaN;
+    }
     return result;
   }
   return NaN;
@@ -384,8 +391,9 @@ auto get_last_qty(T &value) -> double {
   if constexpr (has_last_qty) {
     auto result = value.lastQty();
     if constexpr (has_last_qty_null_value) {
-      if (result == value.lastQtyNullValue())
+      if (result == value.lastQtyNullValue()) {
         return NaN;
+      }
     }
     return result;
   }
@@ -538,16 +546,19 @@ void OrderEntry::operator()(Event<Stop> const &) {
 
 void OrderEntry::operator()(Event<Timer> const &event) {
   auto now = event.value.now;
-  if (!(*connection_manager_).refresh(now))
+  if (!(*connection_manager_).refresh(now)) {
     return;
-  if (!ready() || now < next_heartbeat_)
+  }
+  if (!ready() || now < next_heartbeat_) {
     return;
+  }
   send_sequence();  // note! send() updates next_heartbeat
 }
 
 uint16_t OrderEntry::operator()(Event<CreateOrder> const &event, server::oms::Order const &order, std::string_view const &request_id) {
-  if (!ready()) [[unlikely]]
+  if (!ready()) [[unlikely]] {
     throw server::oms::NotReady{"not ready"sv};
+  }
   send_new_order_single(event.value, order, request_id);
   return stream_id_;
 }
@@ -557,8 +568,9 @@ uint16_t OrderEntry::operator()(
     server::oms::Order const &order,
     [[maybe_unused]] std::string_view const &request_id,
     [[maybe_unused]] std::string_view const &previous_request_id) {
-  if (!ready()) [[unlikely]]
+  if (!ready()) [[unlikely]] {
     throw server::oms::NotReady{"not ready"sv};
+  }
   send_order_cancel_replace_request(event.value, order);
   return stream_id_;
 }
@@ -568,15 +580,17 @@ uint16_t OrderEntry::operator()(
     server::oms::Order const &order,
     [[maybe_unused]] std::string_view const &request_id,
     [[maybe_unused]] std::string_view const &previous_request_id) {
-  if (!ready()) [[unlikely]]
+  if (!ready()) [[unlikely]] {
     throw server::oms::NotReady{"not ready"sv};
+  }
   send_order_cancel_request(event.value, order);
   return stream_id_;
 }
 
 uint16_t OrderEntry::operator()(Event<CancelAllOrders> const &event, std::string_view const &request_id) {
-  if (!ready()) [[unlikely]]
+  if (!ready()) [[unlikely]] {
     throw server::oms::NotReady{"not ready"sv};
+  }
   auto &cancel_all_orders = event.value;
   auto send_ack = [&]() {
     auto cancel_all_orders_ack = CancelAllOrdersAck{
@@ -776,8 +790,9 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportNew522> const &event
       if (shared_.security_definitions.get_security(security_id, [&](auto &security) {
             auto [type, user_id, order_id] = decode_order_request_id(value.orderRequestID());
             log::info("DEBUG type={}, user_id={}, order_id={}"sv, type, user_id, order_id);
-            if (type != RequestType::CREATE_ORDER) [[unlikely]]
+            if (type != RequestType::CREATE_ORDER) [[unlikely]] {
               log::warn("Unexpected: type={}"sv, type);
+            }
             auto order_update = order_update_from_execution_report(value, security, external_order_id);
             auto response = server::oms::Response{
                 .request_type = type,
@@ -812,8 +827,9 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportReject523> const &ev
     auto text = value.getTextAsStringView();
     auto [type, user_id, order_id] = decode_order_request_id(value.orderRequestID());
     log::info("DEBUG type={}, user_id={}, order_id={}"sv, type, user_id, order_id);
-    if (type != RequestType::CREATE_ORDER) [[unlikely]]
+    if (type != RequestType::CREATE_ORDER) [[unlikely]] {
       log::warn("Unexpected: type={}"sv, type);
+    }
     auto response = server::oms::Response{
         .request_type = type,
         .origin = Origin::EXCHANGE,
@@ -942,8 +958,9 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportModify531> const &ev
       if (shared_.security_definitions.get_security(security_id, [&](auto &security) {
             auto [type, user_id, order_id] = decode_order_request_id(value.orderRequestID());
             log::info("DEBUG type={}, user_id={}, order_id={}"sv, type, user_id, order_id);
-            if (type != RequestType::MODIFY_ORDER) [[unlikely]]
+            if (type != RequestType::MODIFY_ORDER) [[unlikely]] {
               log::warn("Unexpected: type={}"sv, type);
+            }
             auto order_update = order_update_from_execution_report(value, security, external_order_id);
             auto response = server::oms::Response{
                 .request_type = type,
@@ -990,8 +1007,9 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportStatus532> const &ev
     } else {
       log::info(R"(No working orders (text="{}"))"sv, value.getTextAsStringView());
     }
-    if (value.lastRptRequested() == cme_ilink::BooleanNULL::True)
+    if (value.lastRptRequested() == cme_ilink::BooleanNULL::True) {
       download_.check_relaxed(OrderEntryState::ORDERS);
+    }
   });
 }
 
@@ -1008,8 +1026,9 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportCancel534> const &ev
       if (shared_.security_definitions.get_security(security_id, [&](auto &security) {
             auto [type, user_id, order_id] = decode_order_request_id(value.orderRequestID());
             log::info("DEBUG type={}, user_id={}, order_id={}"sv, type, user_id, order_id);
-            if (type != RequestType::CANCEL_ORDER) [[unlikely]]
+            if (type != RequestType::CANCEL_ORDER) [[unlikely]] {
               log::warn("Unexpected: type={}"sv, type);
+            }
             auto order_update = order_update_from_execution_report(value, security, external_order_id);
             auto response = server::oms::Response{
                 .request_type = RequestType::CANCEL_ORDER,
@@ -1158,8 +1177,9 @@ void OrderEntry::operator()(Trace<cme_ilink::OrderCancelReject535> const &event)
     auto text = value.getTextAsStringView();
     auto [type, user_id, order_id] = decode_order_request_id(value.orderRequestID());
     log::info("DEBUG type={}, user_id={}, order_id={}"sv, type, user_id, order_id);
-    if (type != RequestType::CANCEL_ORDER) [[unlikely]]
+    if (type != RequestType::CANCEL_ORDER) [[unlikely]] {
       log::warn("Unexpected: type={}"sv, type);
+    }
     auto response = server::oms::Response{
         .request_type = type,
         .origin = Origin::EXCHANGE,
@@ -1187,8 +1207,9 @@ void OrderEntry::operator()(Trace<cme_ilink::OrderCancelReplaceReject536> const 
     auto text = value.getTextAsStringView();
     auto [type, user_id, order_id] = decode_order_request_id(value.orderRequestID());
     log::info("DEBUG type={}, user_id={}, order_id={}"sv, type, user_id, order_id);
-    if (type != RequestType::MODIFY_ORDER) [[unlikely]]
+    if (type != RequestType::MODIFY_ORDER) [[unlikely]] {
       log::warn("Unexpected: type={}"sv, type);
+    }
     auto response = server::oms::Response{
         .request_type = type,
         .origin = Origin::EXCHANGE,
@@ -1286,8 +1307,9 @@ uint32_t OrderEntry::download(OrderEntryState state) {
       assert(false);
       break;
     case ORDERS:
-      if (!party_details_list_req_id_)
+      if (!party_details_list_req_id_) {
         send_party_details_definition_request();
+      }
       send_order_mass_status_request();
       return 1;
     case DONE:
@@ -1334,8 +1356,9 @@ void OrderEntry::send(T const &value) {
         // log::info(R"(DEBUG message="{}{}")"sv, utils::debug::hex::Message{data[0]}, utils::debug::hex::Message{data[1]});
         log::info<5>(R"(Sending message="{}{}")"sv, utils::debug::hex::Message{data[0]}, utils::debug::hex::Message{data[1]});
         auto length = std::size(data[0]) + std::size(data[1]);
-        if (std::size(buffer) < length) [[unlikely]]
+        if (std::size(buffer) < length) [[unlikely]] {
           log::fatal("Unexpected: {} < {}"sv, std::size(buffer), length);
+        }
         std::memcpy(std::data(buffer), std::data(data[0]), std::size(data[0]));
         std::memcpy(std::data(buffer) + std::size(data[0]), std::data(data[1]), std::size(data[1]));
         return length;
@@ -1531,8 +1554,9 @@ void OrderEntry::send_new_order_single(CreateOrder const &create_order, server::
               auto ord_type = map(create_order.order_type);
               auto time_in_force = map(create_order.time_in_force);
               auto exec_inst = map(create_order.execution_instructions);
-              if (!party_details_list_req_id_)
+              if (!party_details_list_req_id_) {
                 send_party_details_definition_request();
+              }
               auto now = clock::get_realtime();
               auto new_order_single = ilink::NewOrderSingle{
                   .price = create_order.price,
@@ -1586,8 +1610,9 @@ void OrderEntry::send_order_cancel_replace_request(ModifyOrder const &modify_ord
         auto order_request_id = encode_order_request_id(RequestType::MODIFY_ORDER, order.user_id, order.order_id);
         auto ord_type = map(order.order_type);
         auto time_in_force = map(order.time_in_force);
-        if (!party_details_list_req_id_)
+        if (!party_details_list_req_id_) {
           send_party_details_definition_request();
+        }
         auto now = clock::get_realtime();
         auto order_cancel_replace_request = ilink::OrderCancelReplaceRequest{
             .price = modify_order.price,
@@ -1633,8 +1658,9 @@ void OrderEntry::send_order_cancel_request(CancelOrder const &cancel_order, serv
         log::info("DEBUG found security_id={}"sv, security_id);
         auto order_request_id = encode_order_request_id(RequestType::CANCEL_ORDER, order.user_id, order.order_id);
         auto side = map(order.side);
-        if (!party_details_list_req_id_)
+        if (!party_details_list_req_id_) {
           send_party_details_definition_request();
+        }
         auto now = clock::get_realtime();
         auto order_cancel_request = ilink::OrderCancelRequest{
             .order_id = {},
@@ -1663,8 +1689,9 @@ void OrderEntry::send_order_cancel_request(CancelOrder const &cancel_order, serv
 // note!
 //   undoc: ord type must be x0 (NULL results in reject reason 109)
 void OrderEntry::send_order_mass_action_request(CancelAllOrders const &) {
-  if (!party_details_list_req_id_)
+  if (!party_details_list_req_id_) {
     send_party_details_definition_request();
+  }
   auto now = clock::get_realtime();
   auto order_mass_action_request = ilink::OrderMassActionRequest{
       .party_details_list_req_id = party_details_list_req_id_,

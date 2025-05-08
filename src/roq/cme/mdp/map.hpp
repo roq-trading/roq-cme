@@ -67,8 +67,9 @@ namespace cme {
 namespace mdp {
 template <typename T>
 inline T get_int(T value, T null_value) {
-  if (value != null_value)
+  if (value != null_value) {
     return value;
+  }
   return T{};
 }
 }  // namespace mdp
@@ -89,8 +90,9 @@ template <>
 inline std::optional<double> Map<cme_mdp::Decimal9NULL>::helper() const {
   auto &value = std::get<0>(args_);
   auto mantissa = value.mantissa();
-  if (mantissa != value.mantissaNullValue())
+  if (mantissa != value.mantissaNullValue()) {
     return static_cast<double>(mantissa) * std::pow(10.0, value.exponent());
+  }
   return std::numeric_limits<double>::quiet_NaN();
 }
 
@@ -99,8 +101,9 @@ template <>
 inline std::optional<double> Map<cme_mdp::DecimalQty>::helper() const {
   auto &value = std::get<0>(args_);
   auto mantissa = value.mantissa();
-  if (mantissa != value.mantissaNullValue())
+  if (mantissa != value.mantissaNullValue()) {
     return static_cast<double>(mantissa) * std::pow(10.0, value.exponent());
+  }
   return std::numeric_limits<double>::quiet_NaN();
 }
 
@@ -117,8 +120,9 @@ template <>
 inline std::optional<double> Map<cme_mdp::PRICENULL9>::helper() const {
   auto &value = std::get<0>(args_);
   auto mantissa = value.mantissa();
-  if (mantissa != value.mantissaNullValue())
+  if (mantissa != value.mantissaNullValue()) {
     return static_cast<double>(mantissa) * std::pow(10.0, value.exponent());
+  }
   return std::numeric_limits<double>::quiet_NaN();
 }
 
@@ -128,9 +132,11 @@ inline std::optional<double> Map<cme_mdp::PRICENULL9>::helper() const {
 namespace cme {
 namespace mdp {
 inline std::string_view get_string_view(char const *buffer, size_t length) {
-  for (auto iter = buffer; iter < (buffer + length); ++iter)
-    if (!iter || (*iter) == '\0')
+  for (auto iter = buffer; iter < (buffer + length); ++iter) {
+    if (!iter || (*iter) == '\0') {
       return {buffer, static_cast<size_t>(iter - buffer)};
+    }
+  }
   return {buffer, length};
 }
 }  // namespace mdp

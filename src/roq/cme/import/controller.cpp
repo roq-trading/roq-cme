@@ -95,8 +95,9 @@ template <typename R>
 R create_symbols_regex(auto &symbols) {
   using result_type = std::remove_cvref<R>::type;
   result_type result;
-  for (auto &item : symbols)
+  for (auto &item : symbols) {
     result.emplace_back(item);
+  }
   return result;
 }
 }  // namespace
@@ -115,8 +116,9 @@ Controller::Controller(Settings const &settings, std::string_view const &pcap_pa
 
 void Controller::dispatch() {
   utils::pcap::Reader::dispatch(*this, pcap_path_);
-  if (producer_)
+  if (producer_) {
     (*producer_).close();
+  }
 }
 
 bool Controller::operator()(
@@ -127,8 +129,9 @@ bool Controller::operator()(
     uint16_t destination_port,
     std::span<std::byte const> const &payload) {
   auto include = [](auto connection_type, auto priority) {
-    if (connection_type == mdp::ConnectionType::INCREMENTAL)
+    if (connection_type == mdp::ConnectionType::INCREMENTAL) {
       return true;
+    }
     return priority == Priority::PRIMARY;  // XXX same as live
   };
   TraceInfo trace_info{timestamp, timestamp, timestamp};
@@ -168,8 +171,9 @@ bool Controller::operator()(
 
 bool Controller::discard_symbol(std::string_view const &symbol) {
   auto iter = discard_symbol_.find(symbol);
-  if (iter != std::end(discard_symbol_))
+  if (iter != std::end(discard_symbol_)) {
     return (*iter).second;
+  }
   bool discard = !std::empty(symbols_regex_);
   for (auto &regex : symbols_regex_) {  // note! O(n)
     if (regex.match(symbol)) {
@@ -177,8 +181,9 @@ bool Controller::discard_symbol(std::string_view const &symbol) {
       break;
     }
   }
-  if (discard)
+  if (discard) {
     log::info<1>(R"(Discard symbol="{}" (reason: no regex match))"sv, symbol);
+  }
   discard_symbol_.emplace(symbol, discard);
   return discard;
 }
@@ -201,8 +206,9 @@ void Controller::operator()(Trace<RateLimitsUpdate> const &event) {
 void Controller::operator()(Trace<ReferenceData> const &event, [[maybe_unused]] bool is_last) {
   // log::info("event={}"sv, event);
   auto &[trace_info, reference_data] = event;
-  if (settings_.cache_all_reference_data || !reference_data.discard)
+  if (settings_.cache_all_reference_data || !reference_data.discard) {
     append(event);
+  }
   auto &exchange = event.value.exchange;
   auto &symbol = event.value.symbol;
   get_market_by_price(exchange, symbol)(event.value);
@@ -229,8 +235,9 @@ void Controller::operator()(Trace<MarketByPriceUpdate> const &event, [[maybe_unu
 void Controller::operator()(Trace<MarketByOrderUpdate> const &event, [[maybe_unused]] bool is_last) {
   log::info<5>("event={}"sv, event);
   append(event);
-  if (settings_.test.mbp_mbo)
+  if (settings_.test.mbp_mbo) {
     DEBUG_compare(event.value.exchange, event.value.symbol, event.value.exchange_time_utc);
+  }
 }
 
 void Controller::operator()(Trace<TradeSummary> const &event, [[maybe_unused]] bool is_last) {
@@ -295,8 +302,9 @@ void Controller::append(Trace<T> const &event) {
   auto &[trace_info, value] = event;
   auto message_info = create_message_info(trace_info);
   auto message = core::codec::Encoder{encode_buffer_}.encode(value);
-  if (!producer_)
+  if (!producer_) {
     create_producer(message_info.origin_create_time_utc);
+  }
   // XXX HANS -- this should be cleaned up -- why core::queue ???
   auto header = core::queue::Message::Header{
       .boundary = {},
@@ -356,8 +364,9 @@ void Controller::DEBUG_compare(std::string_view const &exchange, std::string_vie
     same &= print("bq"sv, lhs.bid_quantity, rhs.bid_quantity);
     same &= print("ap"sv, lhs.ask_price, rhs.ask_price);
     same &= print("aq"sv, lhs.ask_quantity, rhs.ask_quantity);
-    if (!same)
+    if (!same) {
       fmt::print(" WRONG"sv);
+    }
     fmt::print("\n"sv);
   }
 }

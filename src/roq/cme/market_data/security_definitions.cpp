@@ -25,8 +25,9 @@ struct Handler final : public secdef::ConfigReader::Handler {
   void operator()(secdef::ConfigReader::SecDef const &item) override {
     auto discard = dispatcher_.discard_symbol(item.symbol);
     // note! it's too much -- always discard
-    if (discard)
+    if (discard) {
       return;  // note!
+    }
     auto security = tools::Security{
         .exchange = item.exchange,
         .symbol = item.symbol,
@@ -49,8 +50,9 @@ struct Handler final : public secdef::ConfigReader::Handler {
 // === IMPLEMENTATION ===
 
 SecurityDefinitions::SecurityDefinitions(Dispatcher &dispatcher, std::string_view const &secdef_config_file) {
-  if (std::empty(secdef_config_file))
+  if (std::empty(secdef_config_file)) {
     return;
+  }
   log::info(R"(Reading instrument definitions from "{}"...)"sv, secdef_config_file);
   Handler handler{securities_, security_groups_, market_segments_, dispatcher};
   secdef::ConfigReader::read(handler, secdef_config_file);

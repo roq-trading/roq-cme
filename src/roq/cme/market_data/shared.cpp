@@ -53,8 +53,9 @@ struct Handler final : public secdef::ConfigReader::Handler {
   void operator()(secdef::ConfigReader::SecDef const &item) override {
     auto discard = dispatcher_.discard_symbol(item.symbol);
     // note! it's too much -- always discard
-    if (discard)
+    if (discard) {
       return;
+    }
     if (security_definitions_.get_security(item.security_id, [&](auto &security) {
           double multiplier = item.multiplier == 0 ? NaN : utils::safe_cast<double>(item.multiplier);
           auto reference_data = ReferenceData{
@@ -112,8 +113,9 @@ Shared::Shared(server::md::Dispatcher &dispatcher, Options const &options, Secur
 }
 
 void Shared::read_secdef(std::string_view const &config_file, std::chrono::nanoseconds first_timestamp) {
-  if (std::empty(config_file))
+  if (std::empty(config_file)) {
     return;
+  }
   log::info(R"(Publishing instrument definitions from "{}"...)"sv, config_file);
   Handler handler{security_definitions, dispatcher_, first_timestamp};
   secdef::ConfigReader::read(handler, config_file);

@@ -28,8 +28,9 @@ template <typename R>
 R create_channels(auto &shared, auto &channel_ids, auto &config, auto &stream_id) {
   using result_type = std::remove_cvref<R>::type;
   result_type result;
-  for (auto &channel_id : channel_ids)
+  for (auto &channel_id : channel_ids) {
     result.try_emplace(channel_id, shared, config, channel_id, stream_id);
+  }
   return result;
 }
 }  // namespace
@@ -122,8 +123,9 @@ void Manager::dispatch(Event<T> const &event) {
 void Manager::dispatch(
     uint16_t channel_id, mdp::ConnectionType connection_type, Priority priority, std::span<std::byte const> const &payload, TraceInfo const &trace_info) {
   auto iter = channels_.find(channel_id);
-  if (iter == std::end(channels_)) [[unlikely]]
+  if (iter == std::end(channels_)) [[unlikely]] {
     return;  // note!
+  }
   auto &channel = (*iter).second;
   switch (connection_type) {
     using enum mdp::ConnectionType;

@@ -22,8 +22,9 @@ struct Frame final {
   template <typename Callback>
   static bool parse(std::span<std::byte const> const &buffer, Callback callback) {
     auto [result, frame] = parse_helper(buffer);
-    if (result)
+    if (result) {
       callback(frame);
+    }
     return result;
   }
 

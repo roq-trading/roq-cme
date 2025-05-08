@@ -33,8 +33,9 @@ struct Shared final {
   template <typename Callback>
   bool get_market_segment(uint8_t market_segment_id, Callback callback) {
     auto iter = ilink_config_.find(market_segment_id);
-    if (iter == std::end(ilink_config_))
+    if (iter == std::end(ilink_config_)) {
       return false;
+    }
     callback((*iter).second);
     return true;
   }

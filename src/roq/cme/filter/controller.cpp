@@ -32,8 +32,9 @@ auto find(auto &result, auto &config, auto channel_id, auto type, auto priority)
 // === IMPLEMENTATION ===
 
 Controller::Controller(Settings const &settings) : settings_{settings} {
-  if (settings_.type != "tcpdump"sv)
+  if (settings_.type != "tcpdump"sv) {
     log::fatal(R"(Unexpected: type="{}")"sv, settings_.type);
+  }
 }
 
 void Controller::dispatch() {
@@ -53,8 +54,9 @@ void Controller::dispatch() {
   for (size_t i = 0; i < n; ++i) {
     auto &[host, port] = filter[i];
     fmt::print(stdout, "(host {} and port {})"sv, host, port);
-    if (i != (n - 1))
+    if (i != (n - 1)) {
       fmt::print(" or "sv);
+    }
   }
 }
 

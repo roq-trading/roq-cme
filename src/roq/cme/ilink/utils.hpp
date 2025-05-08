@@ -42,8 +42,9 @@ namespace ilink {
 
 template <typename T>
 inline T get_int(T value, T null_value) {
-  if (value != null_value)
+  if (value != null_value) {
     return value;
+  }
   return T{};
 }
 
@@ -54,29 +55,34 @@ inline double get_double(cme_ilink::PRICE9 const &value) {
 
 inline double get_double(cme_ilink::PRICENULL9 const &value) {
   auto mantissa = value.mantissa();
-  if (mantissa != value.mantissaNullValue())
+  if (mantissa != value.mantissaNullValue()) {
     return static_cast<double>(mantissa) * std::pow(10.0, value.exponent());
+  }
   return NaN;
 }
 
 inline double get_double(cme_ilink::Decimal32NULL const &value) {
   auto mantissa = value.mantissa();
-  if (mantissa != value.mantissaNullValue())
+  if (mantissa != value.mantissaNullValue()) {
     return static_cast<double>(mantissa) * std::pow(10.0, value.exponent());
+  }
   return NaN;
 }
 
 inline double get_double(cme_ilink::Decimal64NULL const &value) {
   auto mantissa = value.mantissa();
-  if (mantissa != value.mantissaNullValue())
+  if (mantissa != value.mantissaNullValue()) {
     return static_cast<double>(mantissa) * std::pow(10.0, value.exponent());
+  }
   return NaN;
 }
 
 inline std::string_view get_string_view(char const *buffer, size_t length) {
-  for (auto iter = buffer; iter < (buffer + length); ++iter)
-    if (!iter || (*iter) == '\0')
+  for (auto iter = buffer; iter < (buffer + length); ++iter) {
+    if (!iter || (*iter) == '\0') {
       return {buffer, static_cast<size_t>(iter - buffer)};
+    }
+  }
   return {buffer, length};
 }
 
@@ -85,8 +91,9 @@ struct Group final {
   explicit Group(T &value) : value_(value) {}
   auto format_to(auto &context) {
     using namespace std::literals;
-    if (value_.count())
+    if (value_.count()) {
       fmt::format_to(context.out(), "{}"sv, fmt::join(roq::core::sbe::iterator{value_}, roq::core::sbe::sentinel{}, ", "sv));
+    }
     return context.out();
   }
 

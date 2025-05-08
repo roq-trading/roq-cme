@@ -57,8 +57,9 @@ template <typename R>
 R create_accounts(auto const &config) {
   using result_type = std::remove_cvref<R>::type;
   result_type result;
-  for (auto &[_, account] : config.accounts)
+  for (auto &[_, account] : config.accounts) {
     result.try_emplace(static_cast<std::string_view>(account.name), std::make_unique<Account>(config, account.name));
+  }
   return result;
 }
 
@@ -69,8 +70,9 @@ R create_order_entry(auto &gateway, auto &context, auto &stream_id, auto &accoun
   auto &market_segment_ids = shared.settings.ilink.market_segment_ids;
   if (!std::empty(market_segment_ids)) {
     auto &firm_id = shared.settings.ilink.firm_id;
-    if (std::empty(firm_id))
+    if (std::empty(firm_id)) {
       log::fatal("Unexpected: --ilink_firm_id is required"sv);
+    }
     for (auto &item : market_segment_ids) {
       auto market_segment_id = utils::charconv::from_chars<uint16_t>(item);
       if (shared.get_market_segment(market_segment_id, [&](auto &market_segment) {
@@ -185,14 +187,16 @@ template <typename... Args>
 void Gateway::dispatch(Args &&...args) {
   auto helper = [&](auto &target) { target(std::forward<Args>(args)...); };
   helper(market_data_);
-  for (auto &[_, item] : order_entry_)
+  for (auto &[_, item] : order_entry_) {
     helper(*item);
+  }
 }
 
 OrderEntry &Gateway::get_order_entry(std::string_view const &account) {
   auto iter = order_entry_.find(account);
-  if (iter == std::end(order_entry_)) [[unlikely]]
+  if (iter == std::end(order_entry_)) [[unlikely]] {
     throw RuntimeError{R"(Unknown account="{}")"sv, account};
+  }
   return *(*iter).second;
 }
 
