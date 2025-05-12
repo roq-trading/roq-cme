@@ -56,7 +56,7 @@ TEST_CASE("simple", "[md_incremental_refresh_book]") {
     // - MDIncrementalRefresh
     void operator()(Trace<cme_mdp::MDIncrementalRefreshVolume37> const &, mdp::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &event, mdp::Frame const &) override {
-      using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+      using value_type = std::remove_cvref_t<decltype(event)>::value_type;
       [[maybe_unused]] auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
       ++counter;
     }
@@ -130,7 +130,7 @@ TEST_CASE("implied", "[md_incremental_refresh_book]") {
     // - MDIncrementalRefresh
     void operator()(Trace<cme_mdp::MDIncrementalRefreshVolume37> const &, mdp::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &event, mdp::Frame const &) override {
-      using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+      using value_type = std::remove_cvref_t<decltype(event)>::value_type;
       [[maybe_unused]] auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
       ++counter;
     }
@@ -213,7 +213,7 @@ TEST_CASE("multiple_implied_securities", "[md_incremental_refresh_book]") {
     // - MDIncrementalRefresh
     void operator()(Trace<cme_mdp::MDIncrementalRefreshVolume37> const &, mdp::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &event, mdp::Frame const &) override {
-      using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+      using value_type = std::remove_cvref_t<decltype(event)>::value_type;
       [[maybe_unused]] auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
       ++counter;
     }

@@ -82,7 +82,7 @@ TEST_CASE("batched", "[incremental]") {
     void operator()(Trace<cme_mdp::MDInstrumentDefinitionFX63> const &, mdp::Frame const &) override { FAIL(); }
     // - SnapshotFullRefresh
     void operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &event, mdp::Frame const &) override {
-      using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+      using value_type = std::remove_cvref_t<decltype(event)>::value_type;
       auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
       switch (++counter) {
         case 1: {
@@ -271,7 +271,7 @@ TEST_CASE("simple", "[incremental]") {
     void operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &, mdp::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp::MDIncrementalRefreshOrderBook47> const &, mdp::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp::MDIncrementalRefreshTradeSummary48> const &event, mdp::Frame const &) override {
-      using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+      using value_type = std::remove_cvref_t<decltype(event)>::value_type;
       auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
       switch (++counter) {
         case 1: {
@@ -410,7 +410,7 @@ TEST_CASE("complex", "[incremental]") {
     void operator()(Trace<cme_mdp::SnapshotFullRefreshLongQty69> const &, mdp::Frame const &) override { FAIL(); }
     // - MDIncrementalRefresh
     void operator()(Trace<cme_mdp::MDIncrementalRefreshVolume37> const &event, mdp::Frame const &) override {
-      using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+      using value_type = std::remove_cvref_t<decltype(event)>::value_type;
       auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
       switch (++count_37) {
         case 1: {
@@ -435,7 +435,7 @@ TEST_CASE("complex", "[incremental]") {
       }
     }
     void operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &event, mdp::Frame const &) override {
-      using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+      using value_type = std::remove_cvref_t<decltype(event)>::value_type;
       auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
       switch (++count_46) {
         case 1: {
@@ -538,7 +538,7 @@ TEST_CASE("complex", "[incremental]") {
       }
     }
     void operator()(Trace<cme_mdp::MDIncrementalRefreshOrderBook47> const &event, mdp::Frame const &) override {
-      using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+      using value_type = std::remove_cvref_t<decltype(event)>::value_type;
       auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
       switch (++count_47) {
         case 1: {
@@ -573,7 +573,7 @@ TEST_CASE("complex", "[incremental]") {
       }
     }
     void operator()(Trace<cme_mdp::MDIncrementalRefreshTradeSummary48> const &event, mdp::Frame const &) override {
-      using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+      using value_type = std::remove_cvref_t<decltype(event)>::value_type;
       auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
       switch (++count_48) {
         case 1: {
@@ -677,7 +677,7 @@ TEST_CASE("46_with_orders", "[incremental]") {
     // - MDIncrementalRefresh
     void operator()(Trace<cme_mdp::MDIncrementalRefreshVolume37> const &, mdp::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &event, mdp::Frame const &) override {
-      using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+      using value_type = std::remove_cvref_t<decltype(event)>::value_type;
       auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
       switch (++counter) {
         case 1: {

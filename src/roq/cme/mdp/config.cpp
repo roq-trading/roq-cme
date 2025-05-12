@@ -89,7 +89,7 @@ auto read_connections(auto &filename, bool verbose) {
 
 template <typename R>
 R create_connection_types(auto &connections) {
-  using result_type = std::remove_cvref<R>::type;
+  using result_type = std::remove_cvref_t<R>;
   result_type result;
   for (auto &[channel_id, tmp_1] : connections) {
     for (auto &[connection_type, tmp_2] : tmp_1) {
@@ -103,7 +103,7 @@ R create_connection_types(auto &connections) {
 
 template <typename R>
 R create_names(auto &connections) {
-  using result_type = std::remove_cvref<R>::type;
+  using result_type = std::remove_cvref_t<R>;
   result_type result;
   for (auto &[channel_id, tmp_1] : connections) {
     for (auto &[connection_type, tmp_2] : tmp_1) {

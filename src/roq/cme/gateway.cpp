@@ -31,7 +31,7 @@ auto create_market_data_manager(auto &dispatcher, auto &settings, auto &security
 
 template <typename R>
 auto create_mdp_receivers(auto &settings, auto &context, auto &shared, auto &manager) {
-  using result_type = std::remove_cvref<R>::type;
+  using result_type = std::remove_cvref_t<R>;
   result_type result;
   auto helper_1 = [&](auto channel_id, auto connection_type) {
     result.emplace_back(std::make_unique<MDPReceiver>(context, shared, manager, channel_id, connection_type, Priority::PRIMARY));
@@ -55,7 +55,7 @@ auto create_mdp_receivers(auto &settings, auto &context, auto &shared, auto &man
 
 template <typename R>
 R create_accounts(auto const &config) {
-  using result_type = std::remove_cvref<R>::type;
+  using result_type = std::remove_cvref_t<R>;
   result_type result;
   for (auto &[_, account] : config.accounts) {
     result.try_emplace(static_cast<std::string_view>(account.name), std::make_unique<Account>(config, account.name));
@@ -65,7 +65,7 @@ R create_accounts(auto const &config) {
 
 template <typename R>
 R create_order_entry(auto &gateway, auto &context, auto &stream_id, auto &accounts, auto &shared) {
-  using result_type = std::remove_cvref<R>::type;
+  using result_type = std::remove_cvref_t<R>;
   result_type result;
   auto &market_segment_ids = shared.settings.ilink.market_segment_ids;
   if (!std::empty(market_segment_ids)) {

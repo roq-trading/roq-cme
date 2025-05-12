@@ -43,7 +43,7 @@ Crypto::Crypto(std::string_view const &secret) : mac_{create_hmac<decltype(mac_)
 
 std::span<std::byte const> Crypto::create_signature(std::span<std::byte> const &buffer, CanonicalMessage const &message) {
   utils::text::Writer writer{buffer};
-  static_assert(std::is_same<decltype(message.request_timestamp)::rep, int64_t>::value);
+  static_assert(std::is_same_v<decltype(message.request_timestamp)::rep, int64_t>);
   writer  //
       .write(message.request_timestamp.count())
       .write('\n')

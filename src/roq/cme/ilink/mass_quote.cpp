@@ -12,7 +12,7 @@ namespace ilink {
 
 namespace {
 void set_price(cme_ilink::PRICENULL9 &result, double value) {
-  using value_type = std::remove_cvref<decltype(result)>::type;
+  using value_type = std::remove_cvref_t<decltype(result)>;
   if (std::isnan(value)) {
     result.mantissa(value_type::mantissaNullValue());
   } else {

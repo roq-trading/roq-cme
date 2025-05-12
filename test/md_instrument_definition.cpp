@@ -105,7 +105,7 @@ TEST_CASE("simple", "[md_instrument_definition]") {
     void operator()(Trace<cme_mdp::SecurityStatus30> const &, mdp::Frame const &) override { FAIL(); }
     // - instrument definition
     void operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &event, mdp::Frame const &) override {
-      using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+      using value_type = std::remove_cvref_t<decltype(event)>::value_type;
       auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
       fmt::print("{}\n", value);
       switch (++counter) {
@@ -242,7 +242,7 @@ TEST_CASE("mixed", "[md_instrument_definition]") {
     void operator()(Trace<cme_mdp::SecurityStatus30> const &, mdp::Frame const &) override { FAIL(); }
     // - instrument definition
     void operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &event, mdp::Frame const &) override {
-      using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+      using value_type = std::remove_cvref_t<decltype(event)>::value_type;
       auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
       fmt::print("{}\n", value);
       switch (++counter) {
@@ -316,7 +316,7 @@ instrument_guid=18446744073709551615 ,
     }
     void operator()(Trace<cme_mdp::MDInstrumentDefinitionOption55> const &, mdp::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp::MDInstrumentDefinitionSpread56> const &event, mdp::Frame const &) override {
-      using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+      using value_type = std::remove_cvref_t<decltype(event)>::value_type;
       auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
       fmt::print("{}\n", value);
       switch (++counter) {

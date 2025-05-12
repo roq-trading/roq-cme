@@ -17,7 +17,7 @@ namespace mdp {
 // reference data
 
 ReferenceData create_reference_data(cme_mdp::MDInstrumentDefinitionFuture54 const &message, uint16_t stream_id, tools::Security &security) {
-  using value_type = std::remove_cvref<decltype(message)>::type;
+  using value_type = std::remove_cvref_t<decltype(message)>;
   auto &value = const_cast<value_type &>(message);  // note! not const-safe
   auto quote_currency = mdp::get_string_view(value.currency(), value.currencyLength());
   auto settlement_currency = mdp::get_string_view(value.settlCurrency(), value.settlCurrencyLength());
@@ -58,7 +58,7 @@ ReferenceData create_reference_data(cme_mdp::MDInstrumentDefinitionFuture54 cons
 }
 
 ReferenceData create_reference_data(cme_mdp::MDInstrumentDefinitionOption55 const &message, uint16_t stream_id, tools::Security &security) {
-  using value_type = std::remove_cvref<decltype(message)>::type;
+  using value_type = std::remove_cvref_t<decltype(message)>;
   auto &value = const_cast<value_type &>(message);  // note! not const-safe
   auto quote_currency = mdp::get_string_view(value.currency(), value.currencyLength());
   auto settlement_currency = mdp::get_string_view(value.settlCurrency(), value.settlCurrencyLength());
@@ -99,7 +99,7 @@ ReferenceData create_reference_data(cme_mdp::MDInstrumentDefinitionOption55 cons
 }
 
 ReferenceData create_reference_data(cme_mdp::MDInstrumentDefinitionSpread56 const &message, uint16_t stream_id, tools::Security &security) {
-  using value_type = std::remove_cvref<decltype(message)>::type;
+  using value_type = std::remove_cvref_t<decltype(message)>;
   auto &value = const_cast<value_type &>(message);  // note! not const-safe
   auto quote_currency = mdp::get_string_view(value.currency(), value.currencyLength());
   auto min_trade_vol = utils::safe_cast(value.minTradeVol());
@@ -136,7 +136,7 @@ ReferenceData create_reference_data(cme_mdp::MDInstrumentDefinitionSpread56 cons
 }
 
 ReferenceData create_reference_data(cme_mdp::MDInstrumentDefinitionFixedIncome57 const &message, uint16_t stream_id, tools::Security &security) {
-  using value_type = std::remove_cvref<decltype(message)>::type;
+  using value_type = std::remove_cvref_t<decltype(message)>;
   auto &value = const_cast<value_type &>(message);  // note! not const-safe
   auto quote_currency = mdp::get_string_view(value.currency(), value.currencyLength());
   auto settlement_currency = mdp::get_string_view(value.settlCurrency(), value.settlCurrencyLength());
@@ -174,7 +174,7 @@ ReferenceData create_reference_data(cme_mdp::MDInstrumentDefinitionFixedIncome57
 }
 
 ReferenceData create_reference_data(cme_mdp::MDInstrumentDefinitionRepo58 const &message, uint16_t stream_id, tools::Security &security) {
-  using value_type = std::remove_cvref<decltype(message)>::type;
+  using value_type = std::remove_cvref_t<decltype(message)>;
   auto &value = const_cast<value_type &>(message);  // note! not const-safe
   auto quote_currency = mdp::get_string_view(value.currency(), value.currencyLength());
   auto settlement_currency = mdp::get_string_view(value.settlCurrency(), value.settlCurrencyLength());
@@ -212,7 +212,7 @@ ReferenceData create_reference_data(cme_mdp::MDInstrumentDefinitionRepo58 const 
 }
 
 ReferenceData create_reference_data(cme_mdp::MDInstrumentDefinitionFX63 const &message, uint16_t stream_id, tools::Security &security) {
-  using value_type = std::remove_cvref<decltype(message)>::type;
+  using value_type = std::remove_cvref_t<decltype(message)>;
   auto &value = const_cast<value_type &>(message);  // note! not const-safe
   auto quote_currency = mdp::get_string_view(value.currency(), value.currencyLength());
   auto settlement_currency = mdp::get_string_view(value.settlCurrency(), value.settlCurrencyLength());
@@ -252,7 +252,7 @@ ReferenceData create_reference_data(cme_mdp::MDInstrumentDefinitionFX63 const &m
 // market status
 
 MarketStatus create_market_status(cme_mdp::MDInstrumentDefinitionFuture54 const &message, uint16_t stream_id, tools::Security &security) {
-  using value_type = std::remove_cvref<decltype(message)>::type;
+  using value_type = std::remove_cvref_t<decltype(message)>;
   auto &value = const_cast<value_type &>(message);  // note! not const-safe
   return {
       .stream_id = stream_id,
@@ -263,7 +263,7 @@ MarketStatus create_market_status(cme_mdp::MDInstrumentDefinitionFuture54 const 
 }
 
 MarketStatus create_market_status(cme_mdp::MDInstrumentDefinitionOption55 const &message, uint16_t stream_id, tools::Security &security) {
-  using value_type = std::remove_cvref<decltype(message)>::type;
+  using value_type = std::remove_cvref_t<decltype(message)>;
   auto &value = const_cast<value_type &>(message);  // note! not const-safe
   return {
       .stream_id = stream_id,
@@ -274,7 +274,7 @@ MarketStatus create_market_status(cme_mdp::MDInstrumentDefinitionOption55 const 
 }
 
 MarketStatus create_market_status(cme_mdp::MDInstrumentDefinitionSpread56 const &message, uint16_t stream_id, tools::Security &security) {
-  using value_type = std::remove_cvref<decltype(message)>::type;
+  using value_type = std::remove_cvref_t<decltype(message)>;
   auto &value = const_cast<value_type &>(message);  // note! not const-safe
   return {
       .stream_id = stream_id,
@@ -285,7 +285,7 @@ MarketStatus create_market_status(cme_mdp::MDInstrumentDefinitionSpread56 const 
 }
 
 MarketStatus create_market_status(cme_mdp::MDInstrumentDefinitionFixedIncome57 const &message, uint16_t stream_id, tools::Security &security) {
-  using value_type = std::remove_cvref<decltype(message)>::type;
+  using value_type = std::remove_cvref_t<decltype(message)>;
   auto &value = const_cast<value_type &>(message);  // note! not const-safe
   return {
       .stream_id = stream_id,
@@ -296,7 +296,7 @@ MarketStatus create_market_status(cme_mdp::MDInstrumentDefinitionFixedIncome57 c
 }
 
 MarketStatus create_market_status(cme_mdp::MDInstrumentDefinitionRepo58 const &message, uint16_t stream_id, tools::Security &security) {
-  using value_type = std::remove_cvref<decltype(message)>::type;
+  using value_type = std::remove_cvref_t<decltype(message)>;
   auto &value = const_cast<value_type &>(message);  // note! not const-safe
   return {
       .stream_id = stream_id,
@@ -307,7 +307,7 @@ MarketStatus create_market_status(cme_mdp::MDInstrumentDefinitionRepo58 const &m
 }
 
 MarketStatus create_market_status(cme_mdp::MDInstrumentDefinitionFX63 const &message, uint16_t stream_id, tools::Security &security) {
-  using value_type = std::remove_cvref<decltype(message)>::type;
+  using value_type = std::remove_cvref_t<decltype(message)>;
   auto &value = const_cast<value_type &>(message);  // note! not const-safe
   return {
       .stream_id = stream_id,

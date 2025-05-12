@@ -93,7 +93,7 @@ auto create_market_data(auto &handler, auto &settings, auto &config, auto &secur
 
 template <typename R>
 R create_symbols_regex(auto &symbols) {
-  using result_type = std::remove_cvref<R>::type;
+  using result_type = std::remove_cvref_t<R>;
   result_type result;
   for (auto &item : symbols) {
     result.emplace_back(item);

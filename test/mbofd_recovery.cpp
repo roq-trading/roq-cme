@@ -105,7 +105,7 @@ TEST_CASE("simple", "[mbofd_recovery]") {
     void operator()(Trace<cme_mdp::MDInstrumentDefinitionFX63> const &, mdp::Frame const &) override { FAIL(); }
     // - SnapshotFullRefresh
     void operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &event, mdp::Frame const &) override {
-      using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+      using value_type = std::remove_cvref_t<decltype(event)>::value_type;
       auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
       switch (++count_52) {
         case 1: {
@@ -235,7 +235,7 @@ TEST_CASE("simple", "[mbofd_recovery]") {
       }
     }
     void operator()(Trace<cme_mdp::SnapshotFullRefreshOrderBook53> const &event, mdp::Frame const &) override {
-      using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+      using value_type = std::remove_cvref_t<decltype(event)>::value_type;
       auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
       switch (++count_53) {
         case 1: {

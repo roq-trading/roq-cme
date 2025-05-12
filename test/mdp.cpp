@@ -97,7 +97,7 @@ TEST_CASE("md_incremental_refresh_book_46_test_1", "[mdp3]") {
     void operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &event, mdp::Frame const &frame) override {
       CHECK(frame.sequence_number == 1044422);
       CHECK(frame.sending_time == 1659367870041719045ns);
-      using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+      using value_type = std::remove_cvref_t<decltype(event)>::value_type;
       auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
       switch (++counter) {
         case 1: {
@@ -421,7 +421,7 @@ TEST_CASE("md_instrument_definition_future_54", "[mdp3]") {
     // - instrument definition
     void operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &event, mdp::Frame const &) override {
       ++counter;
-      using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+      using value_type = std::remove_cvref_t<decltype(event)>::value_type;
       auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
       auto tmp = fmt::format("{}"sv, value);
     }
@@ -613,7 +613,7 @@ TEST_CASE("md_md_incremental_refresh_book_46_test_1", "[mdp3]") {
     void operator()(Trace<cme_mdp::MDIncrementalRefreshVolume37> const &, mdp::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &event, mdp::Frame const &) override {
       ++counter;
-      using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+      using value_type = std::remove_cvref_t<decltype(event)>::value_type;
       auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
       fmt::print("{}\n"sv, value);
     }
@@ -846,7 +846,7 @@ TEST_CASE("snapshot_full_refresh_52", "[mdp3]") {
     // - SnapshotFullRefresh
     void operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &event, mdp::Frame const &) override {
       ++counter;
-      using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+      using value_type = std::remove_cvref_t<decltype(event)>::value_type;
       auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
       auto tmp = fmt::format("{}"sv, value);
     }
@@ -909,7 +909,7 @@ TEST_CASE("quote_request_39", "[mdp3]") {
     void operator()(Trace<cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67> const &, mdp::Frame const &) override { FAIL(); }
     void operator()(Trace<cme_mdp::QuoteRequest39> const &event, mdp::Frame const &) override {
       ++counter;
-      using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+      using value_type = std::remove_cvref_t<decltype(event)>::value_type;
       auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
       auto tmp = fmt::format("{}"sv, value);
       // fmt::print("{}\n", tmp);

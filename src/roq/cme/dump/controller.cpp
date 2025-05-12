@@ -80,7 +80,7 @@ struct Bridge final : public utils::pcap::Reader::Handler, public mdp::Parser::H
   void operator()(Trace<cme_mdp::QuoteRequest39> const &event, mdp::Frame const &frame) override { print(event, frame); }
 
   void print(auto &event, auto &frame) {
-    using value_type = std::remove_cvref<decltype(event)>::type::value_type;
+    using value_type = std::remove_cvref_t<decltype(event)>::value_type;
     auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
     fmt::print(", sequence_number={}, sending_time={}, {}={}"sv, frame.sequence_number, frame.sending_time, get_name<value_type>(), value);
   }
