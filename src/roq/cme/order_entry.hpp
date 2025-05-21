@@ -47,7 +47,7 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public ili
 
   uint16_t operator()(Event<CancelAllOrders> const &, std::string_view const &request_id);
 
-  void operator()(metrics::Writer &);
+  void operator()(metrics::Writer &) const;
 
  private:
   // session

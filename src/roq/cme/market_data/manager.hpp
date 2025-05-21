@@ -37,7 +37,7 @@ struct Manager final {
   void operator()(Event<Stop> const &);
   void operator()(Event<Timer> const &);
 
-  void operator()(metrics::Writer &);
+  void operator()(metrics::Writer &) const;
 
   void dispatch(uint16_t channel_id, mdp::ConnectionType, Priority, std::span<std::byte const> const &payload, TraceInfo const &);
 

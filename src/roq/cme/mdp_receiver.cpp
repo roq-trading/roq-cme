@@ -81,7 +81,7 @@ void MDPReceiver::operator()(io::net::udp::Receiver::Error const &error) {
   log::fatal("Error: what={}"sv, error.what);
 }
 
-void MDPReceiver::operator()(metrics::Writer &writer) {
+void MDPReceiver::operator()(metrics::Writer &writer) const {
   writer  //
       .write(counter_.disconnect, metrics::Type::COUNTER)
       .write(profile_.parse, metrics::Type::PROFILE);

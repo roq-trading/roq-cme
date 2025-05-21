@@ -620,7 +620,7 @@ uint16_t OrderEntry::operator()(Event<CancelAllOrders> const &event, std::string
   return stream_id_;
 }
 
-void OrderEntry::operator()(metrics::Writer &writer) {
+void OrderEntry::operator()(metrics::Writer &writer) const {
   writer  //
       .write(counter_.disconnect, metrics::Type::COUNTER)
       .write(profile_.parse, metrics::Type::PROFILE)

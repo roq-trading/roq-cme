@@ -103,7 +103,7 @@ void Manager::operator()(Event<Timer> const &event) {
   dispatch(event);
 }
 
-void Manager::operator()(metrics::Writer &) {
+void Manager::operator()(metrics::Writer &) const {
 }
 
 template <typename T>

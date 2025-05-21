@@ -21,7 +21,7 @@ struct MDPReceiver final : public io::net::udp::Receiver::Handler {
 
   MDPReceiver(MDPReceiver const &) = delete;
 
-  void operator()(metrics::Writer &);
+  void operator()(metrics::Writer &) const;
 
  protected:
   void operator()(io::net::udp::Receiver::Read const &) override;
