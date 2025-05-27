@@ -172,10 +172,7 @@ uint16_t Gateway::operator()(Event<CancelQuotes> const &) {
 }
 
 void Gateway::operator()(metrics::Writer &writer) const {
-  market_data_(writer);
-  for (auto &[_, item] : order_entry_) {
-    (*item)(writer);
-  }
+  dispatch_helper(*this, writer);
 }
 
 void Gateway::operator()(Trace<StreamStatus> const &event) {
@@ -188,9 +185,14 @@ void Gateway::operator()(Trace<ExternalLatency> const &event) {
 
 template <typename... Args>
 void Gateway::dispatch(Args &&...args) {
+  dispatch_helper(*this, std::forward<Args>(args)...);
+}
+
+template <typename... Args>
+void Gateway::dispatch_helper(auto &self, Args &&...args) {
   auto helper = [&](auto &target) { target(std::forward<Args>(args)...); };
-  helper(market_data_);
-  for (auto &[_, item] : order_entry_) {
+  helper(self.market_data_);
+  for (auto &[_, item] : self.order_entry_) {
     helper(*item);
   }
 }
