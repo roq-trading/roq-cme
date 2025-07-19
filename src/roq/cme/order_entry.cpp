@@ -889,7 +889,7 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportTradeOutright525> co
                   .quote_amount = NaN,
                   .commission_amount = NaN,
                   .commission_currency = {},
-                  .profit_loss_amount = NaN,
+                  .profit_loss_cost_amount = NaN,
               };
               fills.emplace_back(std::move(fill));
             });
