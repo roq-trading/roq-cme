@@ -885,10 +885,10 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportTradeOutright525> co
                   .quantity = static_cast<double>(item.fillQty()),
                   .price = price,
                   .liquidity = liquidity,
-                  .base_amount = NaN,
-                  .quote_amount = NaN,
                   .commission_amount = NaN,
                   .commission_currency = {},
+                  .base_amount = NaN,
+                  .quote_amount = NaN,
                   .profit_loss_amount = NaN,
               };
               fills.emplace_back(std::move(fill));
