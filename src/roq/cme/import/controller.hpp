@@ -61,6 +61,7 @@ struct Controller final : public utils::pcap::Reader::Handler, public server::md
   void operator()(Trace<MarketByOrderUpdate> const &, bool is_last) override;
   void operator()(Trace<TradeSummary> const &, bool is_last) override;
   void operator()(Trace<StatisticsUpdate> const &, bool is_last) override;
+  void operator()(Trace<TimeSeriesUpdate> const &, bool is_last) override;
   roq::cache::MarketByPrice &get_market_by_price(std::string_view const &exchange, std::string_view const &symbol) override;
   roq::cache::MarketByOrder &get_market_by_order(std::string_view const &exchange, std::string_view const &symbol) override;
 

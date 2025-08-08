@@ -250,6 +250,10 @@ void Controller::operator()(Trace<StatisticsUpdate> const &event, [[maybe_unused
   append(event);
 }
 
+void Controller::operator()(Trace<TimeSeriesUpdate> const &, [[maybe_unused]] bool is_last) {
+  // log::info("event={}"sv, event);
+}
+
 roq::cache::MarketByPrice &Controller::get_market_by_price([[maybe_unused]] std::string_view const &exchange, std::string_view const &symbol) {
   auto iter = market_by_price_.find(symbol);
   if (iter == std::end(market_by_price_)) {
