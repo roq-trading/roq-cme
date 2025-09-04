@@ -5,20 +5,20 @@
 roq-cme
 =======
 
-.. tab:: Stable
-
-  .. code-block:: shell
-
-     $ conda install \
-           --channel https://roq-trading.com/conda/stable \
-           roq-cme
-
 .. tab:: Unstable
 
   .. code-block:: shell
 
      $ conda install \
            --channel https://roq-trading.com/conda/unstable \
+           roq-cme
+
+.. tab:: Stable
+
+  .. code-block:: shell
+
+     $ conda install \
+           --channel https://roq-trading.com/conda/stable \
            roq-cme
 
 
