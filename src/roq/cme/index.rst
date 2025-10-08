@@ -1,6 +1,17 @@
 .. _roq-cme:
 
-.. |checkmark| unicode:: U+2713
+.. |dagger| unicode:: U+2020
+.. |double-dagger| unicode:: U+2021
+.. |right-arrow| unicode:: U+2192
+.. |right-double-arrow| unicode:: U+21D2
+.. |left-right-double-arrow| unicode:: U+21D4
+.. |check-mark| unicode:: U+2705
+.. |cross-mark| unicode:: U+274C
+.. |negative-cross-mark| unicode:: U+274E
+.. |footnote-1| unicode:: U+2776
+.. |footnote-2| unicode:: U+2777
+.. |footnote-3| unicode:: U+2778
+
 
 roq-cme
 =======
@@ -22,16 +33,8 @@ roq-cme
            roq-cme
 
 
-:code:`roq-cme`
----------------
-
-.. code-block:: shell
-
-   $ roq-cme [FLAGS]
-
-
 Description
-~~~~~~~~~~~
+-----------
 
 :code:`roq-cme` is a gateway
 
@@ -44,7 +47,7 @@ Description
 
 
 Supports
-~~~~~~~~
+--------
 
 .. grid::  2
   :gutter: 2
@@ -53,69 +56,112 @@ Supports
 
     .. list-table::
       :widths: auto
+      :align: left
 
-      * - Spot
+      * - :cpp:enumerator:`Spot <roq::SecurityType::SPOT>`
+        - |cross-mark|
         -
-      * - Futures
-        - |checkmark|
-      * - Options
+      * - :cpp:enumerator:`Futures <roq::SecurityType::FUTURES>`
+        - |check-mark|
         -
-      * - Combos
+      * - :cpp:enumerator:`Swap <roq::SecurityType::SWAP>`
+        - |cross-mark|
+        -
+      * - :cpp:enumerator:`Option <roq::SecurityType::OPTION>`
+        - |cross-mark|
         -
 
   .. grid-item-card::  Market Data
 
     .. list-table::
       :widths: auto
+      :align: left
 
-      * - Reference Data
-        - |checkmark|
-      * - Market Status
-        - |checkmark|
-      * - Top of Book
-        - |checkmark|
-      * - Market by Price
-        - |checkmark|
-      * - Market by Order
-        - |checkmark|
-      * - Trade Summary
-        - |checkmark|
-      * - Statistics
-        - |checkmark|
-      * - Time Series
+      * - :cpp:class:`ReferenceData <roq::ReferenceData>`
+        - |check-mark|
+        -
+      * - :cpp:class:`MarketStatus <roq::MarketStatus>`
+        - |check-mark|
+        -
+      * - :cpp:class:`TopOfBook <roq::TopOfBook>`
+        - |check-mark|
+        -
+      * - :cpp:class:`MarketByPrice <roq::MarketByPriceUpdate>`
+        - |check-mark|
+        -
+      * - :cpp:class:`MarketByOrder <roq::MarketByOrderUpdate>`
+        - |check-mark|
+        -
+      * - :cpp:class:`TradeSummary <roq::TradeSummary>`
+        - |check-mark|
+        -
+      * - :cpp:class:`Statistics <roq::StatisticsUpdate>`
+        - |check-mark|
+        -
+      * - :cpp:class:`TimeSeries <roq::TimeSeriesUpdate>`
+        - |cross-mark|
         -
 
-  .. grid-item-card::  Order Management
+  .. grid-item-card::  Orders
 
     .. list-table::
       :widths: auto
+      :align: left
 
-      * - Create
-        - |checkmark|
-      * - Modify
-        - |checkmark|
-      * - Cancel
-        - |checkmark|
-      * - Cancel All
-        - |checkmark|
-      * - Auto-Cancel
+      * - :cpp:class:`CreateOrder <roq::CreateOrder>`
+        - |check-mark|
+        -
+      * - :cpp:class:`ModifyOrder <roq::ModifyOrder>`
+        - |check-mark|
+        -
+      * - :cpp:class:`CancelOrder <roq::CancelOrder>`
+        - |check-mark|
+        -
+      * - :cpp:class:`CancelAllOrders <roq::CancelAllOrders>`
+        - |check-mark|
+        -
+      * - :cpp:class:`MassQuote <roq::MassQuote>`
+        - |negative-cross-mark|
+        -
+      * - :cpp:class:`CancelQuotes <roq::CancelQuotes>`
+        - |negative-cross-mark|
         -
 
-  .. grid-item-card::  Account Management
+  .. grid-item-card::  Account
 
     .. list-table::
       :widths: auto
+      :align: left
 
-      * - Positions
+      * - :cpp:class:`Funds <roq::FundsUpdate>`
+        - |cross-mark|
         -
-      * - Funds
+      * - :cpp:class:`Position <roq::PositionUpdate>`
+        - |cross-mark|
         -
+
+.. note::
+
+   |check-mark| = Available.
+
+   |negative-cross-mark| = Not implemented.
+
+   |cross-mark| = Unavailable.
+
+
+
+Using
+-----
+
+.. code-block:: shell
+
+   $ roq-cme [FLAGS]
 
 
 .. _roq-cme-flags:
 
 Flags
-~~~~~
+-----
 
 .. code-block:: shell
 
@@ -143,7 +189,7 @@ Flags
 
 
 Environments
-~~~~~~~~~~~~
+------------
 
 .. code-block:: shell
 
@@ -162,7 +208,7 @@ The actual IP address of that interface must be provided with the :code:`--multi
 
 
 Configuration
-~~~~~~~~~~~~~
+-------------
 
 .. code-block:: shell
 
@@ -178,208 +224,15 @@ Configuration
 
 
 Market Data
-~~~~~~~~~~~
-
-.. tab:: Live
-
-  .. list-table::
-    :header-rows: 1
-    :widths: auto
-
-    * - Event
-      - Stream
-      - Messages
-      - Comments
-
-    * - :cpp:class:`roq::ReferenceData`
-      - Incremental
-      - MDInstrumentDefinitionFuture54, MDInstrumentDefinitionOption55, MDInstrumentDefinitionSpread56,
-        MDInstrumentDefinitionFixedIncome57, MDInstrumentDefinitionRepo58, MDInstrumentDefinitionFX63
-      -
-
-    * - :cpp:class:`roq::MarketStatus`
-      - Incremental
-      - SecurityStatus30,
-        MDInstrumentDefinitionFuture54, MDInstrumentDefinitionOption55, MDInstrumentDefinitionSpread56,
-        MDInstrumentDefinitionFixedIncome57, MDInstrumentDefinitionRepo58, MDInstrumentDefinitionFX63
-      -
-
-    * - :cpp:class:`roq::TopOfBook`
-      - Incremental
-      - MDIncrementalRefreshBook46
-      -
-
-    * - :cpp:class:`roq::MarketByPriceUpdate`
-      - Incremental
-      - MDIncrementalRefreshBook46
-      -
-
-    * - :cpp:class:`roq::MarketByOrderUpdate`
-      - Incremental
-      - MDIncrementalRefreshBook46, MDIncrementalRefreshOrderBook47
-      -
-
-    * - :cpp:class:`roq::TradeSummary`
-      - Incremental
-      - MDIncrementalRefreshTradeSummary48,
-        MDIncrementalRefreshTradeSummaryLongQty65
-      -
-
-    * - :cpp:class:`roq::StatisticsUpdate`
-      - Incremental
-      - MDIncrementalRefreshDailyStatistics49, MDIncrementalRefreshSessionStatistics51,
-        MDIncrementalRefreshSessionStatisticsLongQty67, MDIncrementalRefreshVolume37
-      -
-
-.. tab:: Download
-
-  .. list-table::
-    :header-rows: 1
-    :widths: auto
-
-    * - Event
-      - Stream
-      - Messages
-      - Comments
-
-    * - :cpp:class:`roq::ReferenceData`
-      - Instrument Definition
-      - MDInstrumentDefinitionFuture54, MDInstrumentDefinitionOption55, MDInstrumentDefinitionSpread56,
-        MDInstrumentDefinitionFixedIncome57, MDInstrumentDefinitionRepo58, MDInstrumentDefinitionFX63
-      -
-
-    * - :cpp:class:`roq::MarketStatus`
-      - Instrument Definition
-      - MDInstrumentDefinitionFuture54, MDInstrumentDefinitionOption55
-      -
-
-    * - :cpp:class:`roq::TopOfBook`
-      -
-      -
-      -
-
-    * - :cpp:class:`roq::MarketByPriceUpdate`
-      - MBP Market Recovery
-      - SnapshotFullRefresh52, SnapshotFullRefreshLongQty69
-      -
-
-    * - :cpp:class:`roq::MarketByOrderUpdate`
-      - MBO Market Recovery
-      - SnapshotFullRefreshOrderBook53
-      -
-
-    * - :cpp:class:`roq::TradeSummary`
-      -
-      -
-      -
-
-    * - :cpp:class:`roq::StatisticsUpdate`
-      -
-      -
-      -
-
-
-Statistics
-^^^^^^^^^^
-
-TBD
+-----------
 
 
 Order Management
-~~~~~~~~~~~~~~~~
-
-.. tab:: Live
-
-  .. list-table::
-    :header-rows: 1
-    :widths: auto
-
-    * - Event
-      - Stream
-      - Messages
-      - Comments
-
-    * - :cpp:class:`roq::OrderUpdate`
-      - OrderEntry
-      - ExecutionReportTradeOutright525, ExecutionReportTradeSpread526, ExecutionReportTradeSpreadLeg527
-      -
-
-    * - :cpp:class:`roq::TradeUpdate`
-      - OrderEntry
-      - ExecutionReportTradeOutright525, ExecutionReportTradeSpread526, ExecutionReportTradeSpreadLeg527
-      -
-
-.. tab:: Download
-
-  .. list-table::
-    :header-rows: 1
-    :widths: auto
-
-    * - Event
-      - Stream
-      - Messages
-      - Comments
-
-    * - :cpp:class:`roq::OrderUpdate`
-      - OrderEntry
-      - ExecutionReportStatus532
-      -
-
-    * - :cpp:class:`roq::TradeUpdate`
-      -
-      -
-      - Unavailable
-
-.. tab:: Request
-
-  .. list-table::
-    :header-rows: 1
-    :widths: auto
-
-    * - Event
-      - Stream
-      - Messages
-      - Comments
-
-    * - :cpp:class:`roq::CreateOrder`
-      - OrderEntry
-      - NewOrderSingle514
-      -
-
-    * - :cpp:class:`roq::ModifyOrder`
-      - OrderEntry
-      - OrderCancelReplaceRequest515
-      -
-
-    * - :cpp:class:`roq::CancelOrder`
-      - OrderEntry
-      - OrderCancelRequest516
-      -
-
-    * - :cpp:class:`roq::CancelAllOrders`
-      - OrderEntry
-      - OrderMassActionRequest529
-      -
-
-.. tab:: Response
-
-  .. list-table::
-    :header-rows: 1
-    :widths: auto
-
-    * - Event
-      - Stream
-      - Messages
-      - Comments
-
-    * - :cpp:class:`roq::OrderAck`
-      - OrderUpdate
-      - ExecutionReportNew522,  ExecutionReportReject523, ExecutionReportModify531, ExecutionReportCancel534, BusinessReject521
-      -
+----------------
 
 
 Order Types
-^^^^^^^^^^^
+~~~~~~~~~~~
 
 .. list-table::
   :header-rows: 1
@@ -396,7 +249,7 @@ Order Types
 
 
 Time in Force
-^^^^^^^^^^^^^
+~~~~~~~~~~~~~
 
 .. list-table::
   :header-rows: 1
@@ -418,152 +271,8 @@ Time in Force
     - Mapped to :code:`'FillOrKill'` (SBE)
 
 
-Position Effect
-^^^^^^^^^^^^^^^
-
-.. note::
-
-  Not supported
-
-
-Execution Instructions
-^^^^^^^^^^^^^^^^^^^^^^
-
-.. note::
-
-  Not supported
-
-
-Templates
-^^^^^^^^^
-
-.. note::
-
-  Not supported
-
-
-Account Management
-~~~~~~~~~~~~~~~~~~
-
-.. tab:: Live
-
-  .. list-table::
-    :header-rows: 1
-    :widths: auto
-
-    * - Event
-      - Stream
-      - Messages
-      - Comments
-
-    * - :cpp:class:`roq::PositionUpdate`
-      -
-      -
-      - Unavailable
-
-    * - :cpp:class:`roq::FundsUpdate`
-      -
-      -
-      - Unavailable
-
-.. tab:: Download
-
-  .. list-table::
-    :header-rows: 1
-    :widths: auto
-
-    * - Event
-      - Stream
-      - Messages
-      - Comments
-
-    * - :cpp:class:`roq::PositionUpdate`
-      -
-      -
-      - Unavailable
-
-    * - :cpp:class:`roq::FundsUpdate`
-      -
-      -
-      - Unavailable
-
-
-Streams
-~~~~~~~
-
-.. tab:: Instrument Definition
-
-  .. list-table::
-    :header-rows: 1
-    :widths: auto
-
-    * - Type
-      - Comments
-
-    * - UDP
-      - Primary purpose
-
-        * Reference data
-
-.. tab:: MBP Market Recovery
-
-  .. list-table::
-    :header-rows: 1
-    :widths: auto
-
-    * - Type
-      - Comments
-
-    * - UDP
-      - Primary purpose
-
-        * MbP snapshot
-
-.. tab:: MBO Market Recovery
-
-  .. list-table::
-    :header-rows: 1
-    :widths: auto
-
-    * - Type
-      - Comments
-
-    * - UDP
-      - Primary purpose
-
-        * MbO snapshot
-
-.. tab:: Incremental
-
-  .. list-table::
-    :header-rows: 1
-    :widths: auto
-
-    * - Type
-      - Comments
-
-    * - UDP
-      - Primary purpose
-
-        * MbP incremental
-
-.. tab:: OrderEntry (iLink)
-
-  .. list-table::
-    :header-rows: 1
-    :widths: auto
-
-    * - Type
-      - Comments
-
-    * - TCP
-      - Primary purpose
-
-        * iLink
-
-
-Constraints
-~~~~~~~~~~~
+Comments
+--------
 
 * The OrderEntry (iLink) connections are established based on the provided list
   of market segments.
@@ -577,10 +286,6 @@ Constraints
   The exchange name used for creating, modify and canceling orders, must therefore
   match the name provided with the :code:`--exchange` flag.
 
-
-Comments
-~~~~~~~~
-
 * :code:`ExternalLatency` is currently only published when receiving a heartbeat from the exchange.
 
 * :code:`MarketByOrder` is opt-in using the :code:`--enable_market_by_order` flag.
@@ -590,7 +295,7 @@ Comments
 
 
 :code:`roq-cme-import`
-----------------------
+======================
 
 .. code-block:: shell
 
@@ -598,7 +303,7 @@ Comments
 
 
 Description
-~~~~~~~~~~~
+-----------
 
 :code:`roq-cme-import` is a tool to create a :code:`.roq` event-log by importing a :code:`.pcap` file.
 
@@ -609,7 +314,7 @@ Description
 
 
 Flags
-~~~~~
+-----
 
 .. code-block:: shell
 
@@ -637,7 +342,7 @@ Flags
 
 
 Example
-~~~~~~~
+-------
 
 .. code-block:: shell
 
@@ -653,7 +358,7 @@ Example
 
 
 :code:`roq-cme-filter`
-----------------------
+======================
 
 .. code-block:: shell
 
@@ -661,13 +366,13 @@ Example
 
 
 Description
-~~~~~~~~~~~
+-----------
 
 :code:`roq-cme-filter` is a tool to generate the PCAP filter required to capture specific channels.
 
 
 Flags
-~~~~~
+-----
 
 .. code-block:: shell
 
@@ -683,7 +388,7 @@ Flags
 
 
 Example
-~~~~~~~
+-------
 
 .. code-block:: shell
 
@@ -701,6 +406,7 @@ This will output a :code:`tcpdump` filter for :code:`channel_ids`.
 References
 ----------
 
+
 Common
 ~~~~~~
 
@@ -709,8 +415,8 @@ Common
 * :ref:`Gateway Flags <gateway-flags>`
 * :ref:`Gateway Config <gateway-config>`
 
-CME
-~~~
+Exchange
+~~~~~~~~
 
 * `Website <https://www.cmegroup.com/>`__
 * `FTP site <https://www.cmegroup.com/ftp/>`__

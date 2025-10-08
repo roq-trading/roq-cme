@@ -1,3 +1,5 @@
+# config template for the roq-cme gateway
+
 symbols = ".*"
 
 [accounts]
