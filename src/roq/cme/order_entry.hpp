@@ -133,7 +133,7 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public ili
   Handler &handler_;
   // config
   uint16_t const stream_id_;
-  Source const name_;
+  std::string const name_;
   uint8_t const market_segment_id_;
   uint64_t const party_details_list_req_id_ = {};  // XXX const until we get access to a service GW
   // connection
