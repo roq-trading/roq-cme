@@ -193,7 +193,7 @@ Environments
 
 .. code-block:: shell
 
-  $ $CONDA_PREFIX/share/roq-cme/flags
+  $ --flagfile $CONDA_PREFIX/share/roq-cme/flags
 
 There is no specific environment setup.
 
@@ -212,7 +212,7 @@ Configuration
 
 .. code-block:: shell
 
-   $ $CONDA_PREFIX/share/roq-cme/config.toml
+   $ --flagfile $CONDA_PREFIX/share/roq-cme/config.toml
 
 .. important::
 
