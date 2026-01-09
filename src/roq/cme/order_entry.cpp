@@ -768,6 +768,7 @@ void OrderEntry::operator()(Trace<cme_ilink::BusinessReject521> const &event) {
           .text = text,
           .version = {},
           .request_id = {},
+          .external_order_id = {},
           .quantity = NaN,
           .price = NaN,
       };
@@ -803,6 +804,7 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportNew522> const &event
                 .text = {},
                 .version = {},
                 .request_id = {},
+                .external_order_id = {},
                 .quantity = order_update.quantity,
                 .price = order_update.price,
             };
@@ -839,6 +841,7 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportReject523> const &ev
         .text = text,
         .version = {},
         .request_id = {},
+        .external_order_id = {},
         .quantity = NaN,
         .price = NaN,
     };
@@ -973,6 +976,7 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportModify531> const &ev
                 .text = {},
                 .version = {},
                 .request_id = {},
+                .external_order_id = {},
                 .quantity = order_update.quantity,
                 .price = order_update.price,
             };
@@ -1041,6 +1045,7 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportCancel534> const &ev
                 .text = {},
                 .version = {},
                 .request_id = {},
+                .external_order_id = {},
                 .quantity = order_update.quantity,
                 .price = order_update.price,
             };
@@ -1192,6 +1197,7 @@ void OrderEntry::operator()(Trace<cme_ilink::OrderCancelReject535> const &event)
         .text = text,
         .version = {},
         .request_id = {},
+        .external_order_id = {},
         .quantity = NaN,
         .price = NaN,
     };
@@ -1222,6 +1228,7 @@ void OrderEntry::operator()(Trace<cme_ilink::OrderCancelReplaceReject536> const 
         .text = text,
         .version = {},
         .request_id = {},
+        .external_order_id = {},
         .quantity = NaN,
         .price = NaN,
     };
