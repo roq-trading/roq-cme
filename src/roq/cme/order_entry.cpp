@@ -558,7 +558,8 @@ void OrderEntry::operator()(Event<Timer> const &event) {
   send_sequence();  // note! send() updates next_heartbeat
 }
 
-uint16_t OrderEntry::operator()(Event<CreateOrder> const &event, server::oms::Order const &order, std::string_view const &request_id) {
+uint16_t OrderEntry::operator()(
+    Event<CreateOrder> const &event, server::oms::Order const &order, server::oms::RefData const &, std::string_view const &request_id) {
   if (!ready()) [[unlikely]] {
     throw server::oms::NotReady{"not ready"sv};
   }
@@ -569,6 +570,7 @@ uint16_t OrderEntry::operator()(Event<CreateOrder> const &event, server::oms::Or
 uint16_t OrderEntry::operator()(
     Event<ModifyOrder> const &event,
     server::oms::Order const &order,
+    server::oms::RefData const &,
     [[maybe_unused]] std::string_view const &request_id,
     [[maybe_unused]] std::string_view const &previous_request_id) {
   if (!ready()) [[unlikely]] {
@@ -581,6 +583,7 @@ uint16_t OrderEntry::operator()(
 uint16_t OrderEntry::operator()(
     Event<CancelOrder> const &event,
     server::oms::Order const &order,
+    server::oms::RefData const &,
     [[maybe_unused]] std::string_view const &request_id,
     [[maybe_unused]] std::string_view const &previous_request_id) {
   if (!ready()) [[unlikely]] {
