@@ -1296,26 +1296,26 @@ size_t OrderEntry::parse(std::span<std::byte const> const &buffer) {
   return result;
 }
 
-void OrderEntry::operator()(ConnectionStatus status) {
-  if (utils::update(status_, status)) {
-    TraceInfo trace_info;
-    auto stream_status = StreamStatus{
-        .stream_id = stream_id_,
-        .account = account_.get_name(),
-        .supports = SUPPORTS,
-        .transport = Transport::TCP,
-        .protocol = Protocol::FIX,
-        .encoding = {Encoding::SBE},
-        .priority = Priority::PRIMARY,
-        .connection_status = status_,
-        .interface = (*connection_factory_).get_interface(),
-        .authority = (*connection_factory_).get_current_authority(),
-        .path = (*connection_factory_).get_current_path(),
-        .proxy = {},
-    };
-    log::info("stream_status={}"sv, stream_status);
-    create_trace_and_dispatch(handler_, trace_info, stream_status);
-  }
+void OrderEntry::operator()(ConnectionStatus connection_status, std::string_view const &reason) {
+  connection_status_ = connection_status;
+  TraceInfo trace_info;
+  auto stream_status = StreamStatus{
+      .stream_id = stream_id_,
+      .account = account_.get_name(),
+      .supports = SUPPORTS,
+      .transport = Transport::TCP,
+      .protocol = Protocol::FIX,
+      .encoding = {Encoding::SBE},
+      .priority = Priority::PRIMARY,
+      .connection_status = connection_status_,
+      .reason = reason,
+      .interface = (*connection_factory_).get_interface(),
+      .authority = (*connection_factory_).get_current_authority(),
+      .path = (*connection_factory_).get_current_path(),
+      .proxy = {},
+  };
+  log::info("stream_status={}"sv, stream_status);
+  create_trace_and_dispatch(handler_, trace_info, stream_status);
 }
 
 uint32_t OrderEntry::download(OrderEntryState state) {

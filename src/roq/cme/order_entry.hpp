@@ -35,7 +35,7 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public ili
 
   OrderEntry(OrderEntry const &) = delete;
 
-  bool ready() const { return status_ == ConnectionStatus::READY; }
+  bool ready() const { return connection_status_ == ConnectionStatus::READY; }
 
   void operator()(Event<Start> const &);
   void operator()(Event<Stop> const &);
@@ -101,7 +101,7 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public ili
   size_t parse(std::span<std::byte const> const &);
 
  private:
-  void operator()(ConnectionStatus);
+  void operator()(ConnectionStatus, std::string_view const &reason = {});
 
   uint32_t download(OrderEntryState state);
 
@@ -206,7 +206,7 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public ili
   // cache
   Shared &shared_;
   // state
-  ConnectionStatus status_ = {};
+  ConnectionStatus connection_status_ = {};
   core::Download<OrderEntryState> download_;
   std::chrono::nanoseconds next_heartbeat_ = {};
   uint64_t uuid_ = {};
