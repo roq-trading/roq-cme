@@ -430,6 +430,7 @@ void MBPMarketRecovery::publish_stream_status(TraceInfo const &trace_info, Conne
       .encoding = ENCODING,
       .priority = priority,
       .connection_status = connection_status_,
+      .reason = {},
       .interface = shared_.options.local_interface,
       .authority = {},
       .path = name,
