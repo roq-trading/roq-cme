@@ -57,7 +57,7 @@ auto const KEEP_ALIVE_INTERVAL = 30s;
 auto const REQUEST_TIMEOUT = 5s;
 uint64_t const MAX_SEQ_NUM = 1000000000;
 
-auto const MANUAL_ORDER_INDICATOR = cme_ilink::ManualOrdIndReq::Automated;  // XXX flag?
+auto const MANUAL_ORDER_INDICATOR = ::cme::sbe::ilink::ManualOrdIndReq::Automated;  // XXX flag?
 }  // namespace
 
 // === HELPERS ===
@@ -119,22 +119,22 @@ static_assert(decode_order_request_id(0x03ffffffffffffff) == std::tuple<RequestT
 
 // side
 
-auto map(Side side) -> cme_ilink::SideReq::Value {
+auto map(Side side) -> ::cme::sbe::ilink::SideReq::Value {
   switch (side) {
     using enum Side;
     case UNDEFINED:
       break;
     case BUY:
-      return cme_ilink::SideReq::Buy;
+      return ::cme::sbe::ilink::SideReq::Buy;
     case SELL:
-      return cme_ilink::SideReq::Sell;
+      return ::cme::sbe::ilink::SideReq::Sell;
   }
-  return cme_ilink::SideReq::NULL_VALUE;
+  return ::cme::sbe::ilink::SideReq::NULL_VALUE;
 }
 
-auto map(cme_ilink::SideReq::Value value) -> Side {
+auto map(::cme::sbe::ilink::SideReq::Value value) -> Side {
   switch (value) {
-    using enum cme_ilink::SideReq::Value;
+    using enum ::cme::sbe::ilink::SideReq::Value;
     case Buy:
       return Side::BUY;
     case Sell:
@@ -149,22 +149,22 @@ auto map(cme_ilink::SideReq::Value value) -> Side {
 // order type
 
 // XXX need some more complexity here
-auto map(OrderType order_type) -> cme_ilink::OrderTypeReq::Value {
+auto map(OrderType order_type) -> ::cme::sbe::ilink::OrderTypeReq::Value {
   switch (order_type) {
     using enum OrderType;
     case UNDEFINED:
       break;
     case MARKET:
-      return cme_ilink::OrderTypeReq::MarketwithProtection;  // ???
+      return ::cme::sbe::ilink::OrderTypeReq::MarketwithProtection;  // ???
     case LIMIT:
-      return cme_ilink::OrderTypeReq::Limit;
+      return ::cme::sbe::ilink::OrderTypeReq::Limit;
   }
-  return cme_ilink::OrderTypeReq::NULL_VALUE;
+  return ::cme::sbe::ilink::OrderTypeReq::NULL_VALUE;
 }
 
-auto map(cme_ilink::OrderType::Value value) -> OrderType {
+auto map(::cme::sbe::ilink::OrderType::Value value) -> OrderType {
   switch (value) {
-    using enum cme_ilink::OrderType::Value;
+    using enum ::cme::sbe::ilink::OrderType::Value;
     case MarketWithProtection:
       return OrderType::MARKET;
     case Limit:
@@ -181,25 +181,25 @@ auto map(cme_ilink::OrderType::Value value) -> OrderType {
 
 // time in force
 
-auto map(TimeInForce time_in_force) -> cme_ilink::TimeInForce::Value {
+auto map(TimeInForce time_in_force) -> ::cme::sbe::ilink::TimeInForce::Value {
   switch (time_in_force) {
     using enum TimeInForce;
     case UNDEFINED:
       break;
     case GFD:
-      return cme_ilink::TimeInForce::Day;
+      return ::cme::sbe::ilink::TimeInForce::Day;
     case GTC:
-      return cme_ilink::TimeInForce::GoodTillCancel;
+      return ::cme::sbe::ilink::TimeInForce::GoodTillCancel;
     case OPG:
       break;
     case IOC:
-      return cme_ilink::TimeInForce::FillAndKill;
+      return ::cme::sbe::ilink::TimeInForce::FillAndKill;
     case FOK:
-      return cme_ilink::TimeInForce::FillOrKill;  // btec and ebs
+      return ::cme::sbe::ilink::TimeInForce::FillOrKill;  // btec and ebs
     case GTX:
       break;
     case GTD:
-      return cme_ilink::TimeInForce::GoodTillDate;
+      return ::cme::sbe::ilink::TimeInForce::GoodTillDate;
     case AT_THE_CLOSE:
       break;
     case GOOD_THROUGH_CROSSING:
@@ -213,12 +213,12 @@ auto map(TimeInForce time_in_force) -> cme_ilink::TimeInForce::Value {
     case GFM:
       break;
   }
-  return cme_ilink::TimeInForce::NULL_VALUE;
+  return ::cme::sbe::ilink::TimeInForce::NULL_VALUE;
 }
 
-auto map(cme_ilink::TimeInForce::Value value) -> TimeInForce {
+auto map(::cme::sbe::ilink::TimeInForce::Value value) -> TimeInForce {
   switch (value) {
-    using enum cme_ilink::TimeInForce::Value;
+    using enum ::cme::sbe::ilink::TimeInForce::Value;
     case Day:
       return TimeInForce::GFD;
     case GoodTillCancel:
@@ -254,7 +254,7 @@ auto map(Mask<ExecutionInstruction> execution_instructions) -> uint8_t {
         error = true;
         break;
       case CANCEL_IF_NOT_BEST:
-        // result = cme_ilink::ExecInst::oB(result, true); // note! not for futures and options!
+        // result = ::cme::sbe::ilink::ExecInst::oB(result, true); // note! not for futures and options!
         error = true;
         break;
       case DO_NOT_INCREASE:
@@ -271,9 +271,9 @@ auto map(Mask<ExecutionInstruction> execution_instructions) -> uint8_t {
 
 // order status
 
-auto map(cme_ilink::OrderStatus::Value value) -> OrderStatus {
+auto map(::cme::sbe::ilink::OrderStatus::Value value) -> OrderStatus {
   switch (value) {
-    using enum cme_ilink::OrderStatus::Value;
+    using enum ::cme::sbe::ilink::OrderStatus::Value;
     case New:
       return OrderStatus::WORKING;  // ???
     case PartiallyFilled:
@@ -300,9 +300,9 @@ auto map(cme_ilink::OrderStatus::Value value) -> OrderStatus {
   return {};
 }
 
-auto map(cme_ilink::OrdStatusTrd::Value value) -> OrderStatus {
+auto map(::cme::sbe::ilink::OrdStatusTrd::Value value) -> OrderStatus {
   switch (value) {
-    using enum cme_ilink::OrdStatusTrd::Value;
+    using enum ::cme::sbe::ilink::OrdStatusTrd::Value;
     case PartiallyFilled:
       return OrderStatus::WORKING;
     case Filled:
@@ -350,8 +350,8 @@ auto get_transact_time(auto &value) -> std::chrono::nanoseconds {
 auto get_ord_status(auto &value) -> OrderStatus {
   auto ord_status = value.ordStatus();
   if constexpr (std::is_same_v<decltype(ord_status), char const *>) {
-    return map(static_cast<cme_ilink::OrderStatus::Value>(ord_status[0]));
-  } else if constexpr (std::is_same_v<decltype(ord_status), cme_ilink::OrdStatusTrd::Value>) {
+    return map(static_cast<::cme::sbe::ilink::OrderStatus::Value>(ord_status[0]));
+  } else if constexpr (std::is_same_v<decltype(ord_status), ::cme::sbe::ilink::OrdStatusTrd::Value>) {
     return map(ord_status);
   } else {
     return map(ord_status);
@@ -415,7 +415,7 @@ auto get_aggressor_indicator(T &value) -> Liquidity {
   if constexpr (has_aggressor_indicator) {
     auto tmp = value.aggressorIndicator();
     switch (tmp) {
-      using enum cme_ilink::BooleanFlag::Value;
+      using enum ::cme::sbe::ilink::BooleanFlag::Value;
       case False:
         return Liquidity::MAKER;
       case True:
@@ -449,7 +449,7 @@ auto order_update_from_execution_report(T &value, auto &security, auto &external
   auto last_traded_price = get_last_px(value);
   auto liquidity = get_aggressor_indicator(value);
   auto update_type = [&]() {
-    if constexpr (std::is_same_v<value_type, cme_ilink::ExecutionReportStatus532>) {
+    if constexpr (std::is_same_v<value_type, ::cme::sbe::ilink::ExecutionReportStatus532>) {
       return UpdateType::SNAPSHOT;
     } else {
       return UpdateType::INCREMENTAL;
@@ -660,7 +660,7 @@ void OrderEntry::operator()(metrics::Writer &writer) const {
 
 // session
 
-void OrderEntry::operator()(Trace<cme_ilink::NegotiationResponse501> const &event) {
+void OrderEntry::operator()(Trace<::cme::sbe::ilink::NegotiationResponse501> const &event) {
   profile_.negotiation_response([&]() {
     using value_type = std::remove_cvref_t<decltype(event)>::value_type;
     auto &[trace_info, value] = event;
@@ -669,7 +669,7 @@ void OrderEntry::operator()(Trace<cme_ilink::NegotiationResponse501> const &even
   });
 }
 
-void OrderEntry::operator()(Trace<cme_ilink::NegotiationReject502> const &event) {
+void OrderEntry::operator()(Trace<::cme::sbe::ilink::NegotiationReject502> const &event) {
   log::error("negotiation_reject="sv);
   profile_.negotiation_reject([&]() {
     using value_type = std::remove_cvref_t<decltype(event)>::value_type;
@@ -680,7 +680,7 @@ void OrderEntry::operator()(Trace<cme_ilink::NegotiationReject502> const &event)
   });
 }
 
-void OrderEntry::operator()(Trace<cme_ilink::EstablishmentAck504> const &event) {
+void OrderEntry::operator()(Trace<::cme::sbe::ilink::EstablishmentAck504> const &event) {
   profile_.establishment_ack([&]() {
     using value_type = std::remove_cvref_t<decltype(event)>::value_type;
     auto &[trace_info, value] = event;
@@ -690,7 +690,7 @@ void OrderEntry::operator()(Trace<cme_ilink::EstablishmentAck504> const &event) 
   });
 }
 
-void OrderEntry::operator()(Trace<cme_ilink::EstablishmentReject505> const &event) {
+void OrderEntry::operator()(Trace<::cme::sbe::ilink::EstablishmentReject505> const &event) {
   log::error("establishment_reject"sv);
   profile_.establishment_reject([&]() {
     using value_type = std::remove_cvref_t<decltype(event)>::value_type;
@@ -701,7 +701,7 @@ void OrderEntry::operator()(Trace<cme_ilink::EstablishmentReject505> const &even
   });
 }
 
-void OrderEntry::operator()(Trace<cme_ilink::Sequence506> const &) {
+void OrderEntry::operator()(Trace<::cme::sbe::ilink::Sequence506> const &) {
   profile_.sequence([&]() {
     // using value_type = std::remove_cvref_t<decltype(event)>::value_type;
     // auto &[trace_info, value] = event;
@@ -709,7 +709,7 @@ void OrderEntry::operator()(Trace<cme_ilink::Sequence506> const &) {
   });
 }
 
-void OrderEntry::operator()(Trace<cme_ilink::Terminate507> const &event) {
+void OrderEntry::operator()(Trace<::cme::sbe::ilink::Terminate507> const &event) {
   log::error("terminate"sv);
   profile_.terminate([&]() {
     using value_type = std::remove_cvref_t<decltype(event)>::value_type;
@@ -719,7 +719,7 @@ void OrderEntry::operator()(Trace<cme_ilink::Terminate507> const &event) {
   });
 }
 
-void OrderEntry::operator()(Trace<cme_ilink::Retransmission509> const &event) {
+void OrderEntry::operator()(Trace<::cme::sbe::ilink::Retransmission509> const &event) {
   profile_.retransmission([&]() {
     using value_type = std::remove_cvref_t<decltype(event)>::value_type;
     auto &[trace_info, value] = event;
@@ -727,7 +727,7 @@ void OrderEntry::operator()(Trace<cme_ilink::Retransmission509> const &event) {
   });
 }
 
-void OrderEntry::operator()(Trace<cme_ilink::RetransmitReject510> const &event) {
+void OrderEntry::operator()(Trace<::cme::sbe::ilink::RetransmitReject510> const &event) {
   profile_.retransmission_reject([&]() {
     using value_type = std::remove_cvref_t<decltype(event)>::value_type;
     auto &[trace_info, value] = event;
@@ -735,7 +735,7 @@ void OrderEntry::operator()(Trace<cme_ilink::RetransmitReject510> const &event) 
   });
 }
 
-void OrderEntry::operator()(Trace<cme_ilink::NotApplied513> const &event) {
+void OrderEntry::operator()(Trace<::cme::sbe::ilink::NotApplied513> const &event) {
   profile_.not_applied([&]() {
     using value_type = std::remove_cvref_t<decltype(event)>::value_type;
     auto &[trace_info, value] = event;
@@ -745,7 +745,7 @@ void OrderEntry::operator()(Trace<cme_ilink::NotApplied513> const &event) {
 
 // business
 
-void OrderEntry::operator()(Trace<cme_ilink::PartyDetailsDefinitionRequestAck519> const &event) {
+void OrderEntry::operator()(Trace<::cme::sbe::ilink::PartyDetailsDefinitionRequestAck519> const &event) {
   profile_.party_details_definition_request_ack([&]() {
     using value_type = std::remove_cvref_t<decltype(event)>::value_type;
     using value_type = std::remove_cvref_t<decltype(event)>::value_type;
@@ -754,7 +754,7 @@ void OrderEntry::operator()(Trace<cme_ilink::PartyDetailsDefinitionRequestAck519
   });
 }
 
-void OrderEntry::operator()(Trace<cme_ilink::BusinessReject521> const &event) {
+void OrderEntry::operator()(Trace<::cme::sbe::ilink::BusinessReject521> const &event) {
   log::error("business_reject"sv);
   profile_.business_reject([&]() {
     using value_type = std::remove_cvref_t<decltype(event)>::value_type;
@@ -784,7 +784,7 @@ void OrderEntry::operator()(Trace<cme_ilink::BusinessReject521> const &event) {
 }
 
 // execution report
-void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportNew522> const &event) {
+void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportNew522> const &event) {
   profile_.execution_report_new([&]() {
     using value_type = std::remove_cvref_t<decltype(event)>::value_type;
     auto &trace_info = event.trace_info;
@@ -825,7 +825,7 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportNew522> const &event
   });
 }
 
-void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportReject523> const &event) {
+void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportReject523> const &event) {
   profile_.execution_report_reject([&]() {
     using value_type = std::remove_cvref_t<decltype(event)>::value_type;
     auto &trace_info = event.trace_info;
@@ -855,7 +855,7 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportReject523> const &ev
   });
 }
 
-void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportTradeOutright525> const &event) {
+void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportTradeOutright525> const &event) {
   profile_.execution_report_trade_outright([&]() {
     using value_type = std::remove_cvref_t<decltype(event)>::value_type;
     auto &trace_info = event.trace_info;
@@ -940,7 +940,7 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportTradeOutright525> co
   });
 }
 
-void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportTradeSpread526> const &event) {
+void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportTradeSpread526> const &event) {
   profile_.execution_report_trade_spread([&]() {
     using value_type = std::remove_cvref_t<decltype(event)>::value_type;
     auto &[trace_info, value] = event;
@@ -948,7 +948,7 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportTradeSpread526> cons
   });
 }
 
-void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportTradeSpreadLeg527> const &event) {
+void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportTradeSpreadLeg527> const &event) {
   profile_.execution_report_trade_spread_leg([&]() {
     using value_type = std::remove_cvref_t<decltype(event)>::value_type;
     auto &[trace_info, value] = event;
@@ -956,7 +956,7 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportTradeSpreadLeg527> c
   });
 }
 
-void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportModify531> const &event) {
+void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportModify531> const &event) {
   profile_.execution_report_modify([&]() {
     using value_type = std::remove_cvref_t<decltype(event)>::value_type;
     auto &trace_info = event.trace_info;
@@ -997,7 +997,7 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportModify531> const &ev
   });
 }
 
-void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportStatus532> const &event) {
+void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportStatus532> const &event) {
   profile_.execution_report_status([&]() {
     using value_type = std::remove_cvref_t<decltype(event)>::value_type;
     auto &trace_info = event.trace_info;
@@ -1019,13 +1019,13 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportStatus532> const &ev
     } else {
       log::info(R"(No working orders (text="{}"))"sv, value.getTextAsStringView());
     }
-    if (value.lastRptRequested() == cme_ilink::BooleanNULL::True) {
+    if (value.lastRptRequested() == ::cme::sbe::ilink::BooleanNULL::True) {
       download_.check_relaxed(OrderEntryState::ORDERS);
     }
   });
 }
 
-void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportCancel534> const &event) {
+void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportCancel534> const &event) {
   profile_.execution_report_cancel([&]() {
     using value_type = std::remove_cvref_t<decltype(event)>::value_type;
     auto &trace_info = event.trace_info;
@@ -1066,7 +1066,7 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportCancel534> const &ev
   });
 }
 
-void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportPendingCancel564> const &event) {
+void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportPendingCancel564> const &event) {
   profile_.execution_report_pending_cancel([&]() {
     using value_type = std::remove_cvref_t<decltype(event)>::value_type;
     auto &[trace_info, value] = event;
@@ -1074,7 +1074,7 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportPendingCancel564> co
   });
 }
 
-void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportPendingReplace565> const &event) {
+void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportPendingReplace565> const &event) {
   profile_.execution_report_pending_replace([&]() {
     using value_type = std::remove_cvref_t<decltype(event)>::value_type;
     auto &[trace_info, value] = event;
@@ -1084,7 +1084,7 @@ void OrderEntry::operator()(Trace<cme_ilink::ExecutionReportPendingReplace565> c
 
 // order mass action
 
-void OrderEntry::operator()(Trace<cme_ilink::OrderMassActionReport562> const &event) {
+void OrderEntry::operator()(Trace<::cme::sbe::ilink::OrderMassActionReport562> const &event) {
   profile_.order_mass_action_report([&]() {
     using value_type = std::remove_cvref_t<decltype(event)>::value_type;
     auto &trace_info = event.trace_info;
@@ -1113,7 +1113,7 @@ void OrderEntry::operator()(Trace<cme_ilink::OrderMassActionReport562> const &ev
       shared_(event_2);
     };
     switch (value.massActionResponse()) {
-      using enum cme_ilink::MassActionResponse::Value;
+      using enum ::cme::sbe::ilink::MassActionResponse::Value;
       case Rejected: {
         auto mass_action_reject_reason = value.massActionRejectReason();
         log::info("*** CANCEL ALL ORDERS FAILED, REASON={} ***"sv, mass_action_reject_reason);
@@ -1184,7 +1184,7 @@ void OrderEntry::operator()(Trace<cme_ilink::OrderMassActionReport562> const &ev
 
 // order
 
-void OrderEntry::operator()(Trace<cme_ilink::OrderCancelReject535> const &event) {
+void OrderEntry::operator()(Trace<::cme::sbe::ilink::OrderCancelReject535> const &event) {
   profile_.order_cancel_reject([&]() {
     using value_type = std::remove_cvref_t<decltype(event)>::value_type;
     auto &[trace_info, value] = event;
@@ -1215,7 +1215,7 @@ void OrderEntry::operator()(Trace<cme_ilink::OrderCancelReject535> const &event)
 
 // note!
 //   maybe OrderRequestID can be used to correlate version?
-void OrderEntry::operator()(Trace<cme_ilink::OrderCancelReplaceReject536> const &event) {
+void OrderEntry::operator()(Trace<::cme::sbe::ilink::OrderCancelReplaceReject536> const &event) {
   profile_.order_cancel_replace_reject([&]() {
     using value_type = std::remove_cvref_t<decltype(event)>::value_type;
     auto &[trace_info, value] = event;
@@ -1246,7 +1246,7 @@ void OrderEntry::operator()(Trace<cme_ilink::OrderCancelReplaceReject536> const 
 
 // security definition
 
-void OrderEntry::operator()(Trace<cme_ilink::SecurityDefinitionResponse561> const &event) {
+void OrderEntry::operator()(Trace<::cme::sbe::ilink::SecurityDefinitionResponse561> const &event) {
   profile_.security_definition_response([&]() {
     using value_type = std::remove_cvref_t<decltype(event)>::value_type;
     auto &[trace_info, value] = event;
@@ -1450,8 +1450,8 @@ void OrderEntry::send_sequence() {
   auto sequence = ilink::Sequence{
       .uuid = uuid_,
       .next_seq_no = peek_next_seq_num(),
-      .fault_tolerance_indicator = cme_ilink::FTI::Primary,
-      .keep_alive_interval_lapsed = cme_ilink::KeepAliveLapsed::NotLapsed,
+      .fault_tolerance_indicator = ::cme::sbe::ilink::FTI::Primary,
+      .keep_alive_interval_lapsed = ::cme::sbe::ilink::KeepAliveLapsed::NotLapsed,
   };
   // log::info("DEBUG sequence={}"sv, sequence);
   send(sequence);
@@ -1480,32 +1480,32 @@ void OrderEntry::send_party_details_definition_request() {
   std::array<ilink::PartyDetailsDefinitionRequest::PartyDetails, 3> party_details{{
       {
           .party_detail_id = shared_.settings.ilink.firm_id,
-          .party_detail_role = cme_ilink::PartyDetailRole::ExecutingFirm,
+          .party_detail_role = ::cme::sbe::ilink::PartyDetailRole::ExecutingFirm,
       },
       {
           .party_detail_id = account_.get_name(),
-          .party_detail_role = cme_ilink::PartyDetailRole::CustomerAccount,
+          .party_detail_role = ::cme::sbe::ilink::PartyDetailRole::CustomerAccount,
       },
       {
           .party_detail_id = account_.get_name(),
-          .party_detail_role = cme_ilink::PartyDetailRole::Operator,
+          .party_detail_role = ::cme::sbe::ilink::PartyDetailRole::Operator,
       },
   }};
   auto party_details_definition_request = ilink::PartyDetailsDefinitionRequest{
       .party_details_list_req_id = {},  // note! must be 0
       .sending_time_epoch = now,
-      .list_update_action = cme_ilink::ListUpdAct::Add,
+      .list_update_action = ::cme::sbe::ilink::ListUpdAct::Add,
       .seq_num = fetch_next_seq_num(),
       .memo = {},
       .avg_px_group_id = {},
       .self_match_prevention_id = {},
-      .cmta_giveup_cd = cme_ilink::CmtaGiveUpCD::GiveUp,
-      .cust_order_capacity = cme_ilink::CustOrderCapacity::Membertradingfortheirownaccount,
-      .clearing_account_type = cme_ilink::ClearingAcctType::Firm,
-      .self_match_prevention_instruction = cme_ilink::SMPI::CancelNewest,
-      .avg_px_indicator = cme_ilink::AvgPxInd::NoAveragePricing,
-      .clearing_trade_price_type = cme_ilink::SLEDS::TradeClearingatExecutionPrice,
-      .cust_order_handling_inst = cme_ilink::CustOrdHandlInst::AlgoEngine,
+      .cmta_giveup_cd = ::cme::sbe::ilink::CmtaGiveUpCD::GiveUp,
+      .cust_order_capacity = ::cme::sbe::ilink::CustOrderCapacity::Membertradingfortheirownaccount,
+      .clearing_account_type = ::cme::sbe::ilink::ClearingAcctType::Firm,
+      .self_match_prevention_instruction = ::cme::sbe::ilink::SMPI::CancelNewest,
+      .avg_px_indicator = ::cme::sbe::ilink::AvgPxInd::NoAveragePricing,
+      .clearing_trade_price_type = ::cme::sbe::ilink::SLEDS::TradeClearingatExecutionPrice,
+      .cust_order_handling_inst = ::cme::sbe::ilink::CustOrdHandlInst::AlgoEngine,
       .executor = {},
       .idm_short_code = {},
       .no_party_details = party_details,
@@ -1548,9 +1548,9 @@ void OrderEntry::send_order_mass_status_request() {
       .security_group = {},
       .location = shared_.settings.ilink.location,
       .security_id = {},
-      .mass_status_req_type = cme_ilink::MassStatusReqTyp::MarketSegment,
-      .ord_status_req_type = cme_ilink::MassStatusOrdTyp::Account,
-      .time_in_force = cme_ilink::MassStatusTIF::NULL_VALUE,
+      .mass_status_req_type = ::cme::sbe::ilink::MassStatusReqTyp::MarketSegment,
+      .ord_status_req_type = ::cme::sbe::ilink::MassStatusOrdTyp::Account,
+      .time_in_force = ::cme::sbe::ilink::MassStatusTIF::NULL_VALUE,
       .market_segment_id = market_segment_id_,
   };
   log::info("DEBUG order_mass_status_request={}"sv, order_mass_status_request);
@@ -1596,10 +1596,10 @@ void OrderEntry::send_new_order_single(CreateOrder const &create_order, server::
                   .time_in_force = time_in_force,
                   .manual_order_indicator = MANUAL_ORDER_INDICATOR,
                   .exec_inst = exec_inst,
-                  .execution_mode = static_cast<cme_ilink::ExecMode::Value>(0),  // note!
+                  .execution_mode = static_cast<::cme::sbe::ilink::ExecMode::Value>(0),  // note!
                   .liquidity_flag = {},
                   .managed_order = {},
-                  .short_sale_type = cme_ilink::ShortSaleType::NULL_VALUE,
+                  .short_sale_type = ::cme::sbe::ilink::ShortSaleType::NULL_VALUE,
                   .discretion_price = NaN,
                   .reservation_price = NaN,
               };
@@ -1652,12 +1652,12 @@ void OrderEntry::send_order_cancel_replace_request(ModifyOrder const &modify_ord
             .ord_type = ord_type,
             .time_in_force = time_in_force,
             .manual_order_indicator = MANUAL_ORDER_INDICATOR,
-            .ofm_override = cme_ilink::OFMOverrideReq::Disabled,
-            .exec_inst = {},                                               // XXX
-            .execution_mode = static_cast<cme_ilink::ExecMode::Value>(0),  // note!
+            .ofm_override = ::cme::sbe::ilink::OFMOverrideReq::Disabled,
+            .exec_inst = {},                                                       // XXX
+            .execution_mode = static_cast<::cme::sbe::ilink::ExecMode::Value>(0),  // note!
             .liquidity_flag = {},
             .managed_order = {},
-            .short_sale_type = cme_ilink::ShortSaleType::NULL_VALUE,
+            .short_sale_type = ::cme::sbe::ilink::ShortSaleType::NULL_VALUE,
             .discretion_price = NaN,
         };
         log::info("DEBUG order_cancel_replace_request={}"sv, order_cancel_replace_request);
@@ -1721,13 +1721,13 @@ void OrderEntry::send_order_mass_action_request(CancelAllOrders const &) {
       .security_group = {},
       .location = shared_.settings.ilink.location,
       .security_id = {},
-      .mass_action_scope = cme_ilink::MassActionScope::MarketSegmentID,
+      .mass_action_scope = ::cme::sbe::ilink::MassActionScope::MarketSegmentID,
       .market_segment_id = market_segment_id_,
-      .mass_cancel_request_type = cme_ilink::MassCxlReqTyp::Account,
-      .side = cme_ilink::SideNULL::NULL_VALUE,
-      .ord_type = static_cast<cme_ilink::MassActionOrdTyp::Value>(0),  // note!
-      .time_in_force = cme_ilink::MassCancelTIF::NULL_VALUE,
-      .liquidity_flag = cme_ilink::BooleanNULL::NULL_VALUE,
+      .mass_cancel_request_type = ::cme::sbe::ilink::MassCxlReqTyp::Account,
+      .side = ::cme::sbe::ilink::SideNULL::NULL_VALUE,
+      .ord_type = static_cast<::cme::sbe::ilink::MassActionOrdTyp::Value>(0),  // note!
+      .time_in_force = ::cme::sbe::ilink::MassCancelTIF::NULL_VALUE,
+      .liquidity_flag = ::cme::sbe::ilink::BooleanNULL::NULL_VALUE,
       .orig_order_user = {},
   };
   log::info("DEBUG order_mass_action_request={}"sv, order_mass_action_request);

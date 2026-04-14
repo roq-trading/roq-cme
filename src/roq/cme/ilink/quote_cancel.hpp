@@ -15,8 +15,8 @@
 
 #include "roq/cme/ilink/utils.hpp"
 
-#include "cme_ilink/ManualOrdIndReq.h"
-#include "cme_ilink/QuoteCxlTyp.h"
+#include "cme/sbe/ilink/ManualOrdIndReq.h"
+#include "cme/sbe/ilink/QuoteCxlTyp.h"
 
 namespace roq {
 namespace cme {
@@ -27,12 +27,12 @@ struct QuoteCancel final {
 
   uint64_t party_details_list_req_id = {};
   std::chrono::nanoseconds sending_time_epoch = {};
-  cme_ilink::ManualOrdIndReq::Value manual_order_indicator = {};
+  ::cme::sbe::ilink::ManualOrdIndReq::Value manual_order_indicator = {};
   uint32_t seq_num = {};
   std::string_view sender_id;
   std::string_view location;
   uint32_t quote_id = {};
-  cme_ilink::QuoteCxlTyp::Value quote_cancel_type = {};
+  ::cme::sbe::ilink::QuoteCxlTyp::Value quote_cancel_type = {};
   bool liquidity_flag = {};
   std::string_view orig_order_user;
   bool quote_entry_open = {};

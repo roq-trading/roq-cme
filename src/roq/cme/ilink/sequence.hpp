@@ -9,8 +9,8 @@
 #include <span>
 #include <string_view>
 
-#include <cme_ilink/FTI.h>
-#include <cme_ilink/KeepAliveLapsed.h>
+#include <cme/sbe/ilink/FTI.h>
+#include <cme/sbe/ilink/KeepAliveLapsed.h>
 
 #include "roq/cme/ilink/utils.hpp"
 
@@ -23,8 +23,8 @@ struct Sequence final {
 
   uint64_t uuid = {};
   uint32_t next_seq_no = {};
-  cme_ilink::FTI::Value fault_tolerance_indicator = {};
-  cme_ilink::KeepAliveLapsed::Value keep_alive_interval_lapsed = {};
+  ::cme::sbe::ilink::FTI::Value fault_tolerance_indicator = {};
+  ::cme::sbe::ilink::KeepAliveLapsed::Value keep_alive_interval_lapsed = {};
 };
 
 }  // namespace ilink

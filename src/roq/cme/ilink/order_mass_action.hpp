@@ -6,7 +6,7 @@
 
 #include <magic_enum/magic_enum_format.hpp>
 
-#include <cme_ilink/OrderMassActionReport562.h>
+#include <cme/sbe/ilink/OrderMassActionReport562.h>
 
 #include "roq/core/sbe/iterator.hpp"
 
@@ -21,8 +21,8 @@ namespace ilink {}  // namespace ilink
 // messages
 
 template <>
-struct fmt::formatter<cme_ilink::OrderMassActionReport562> {
-  using value_type = cme_ilink::OrderMassActionReport562;
+struct fmt::formatter<::cme::sbe::ilink::OrderMassActionReport562> {
+  using value_type = ::cme::sbe::ilink::OrderMassActionReport562;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type &value, format_context &context) const {
     using namespace std::literals;

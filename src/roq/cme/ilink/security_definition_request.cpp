@@ -2,7 +2,7 @@
 
 #include "roq/cme/ilink/security_definition_request.hpp"
 
-#include <cme_ilink/SecurityDefinitionRequest560.h>
+#include <cme/sbe/ilink/SecurityDefinitionRequest560.h>
 
 using namespace std::literals;
 
@@ -11,8 +11,8 @@ namespace cme {
 namespace ilink {
 
 namespace {
-using header_type = cme_ilink::MessageHeader;
-using value_type = cme_ilink::SecurityDefinitionRequest560;
+using header_type = ::cme::sbe::ilink::MessageHeader;
+using value_type = ::cme::sbe::ilink::SecurityDefinitionRequest560;
 }  // namespace
 
 std::span<std::byte const> SecurityDefinitionRequest::encode(std::span<std::byte> const &buffer) const {

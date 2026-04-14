@@ -2,7 +2,7 @@
 
 #include "roq/cme/ilink/sequence.hpp"
 
-#include <cme_ilink/Sequence506.h>
+#include <cme/sbe/ilink/Sequence506.h>
 
 using namespace std::literals;
 
@@ -11,8 +11,8 @@ namespace cme {
 namespace ilink {
 
 namespace {
-using header_type = cme_ilink::MessageHeader;
-using value_type = cme_ilink::Sequence506;
+using header_type = ::cme::sbe::ilink::MessageHeader;
+using value_type = ::cme::sbe::ilink::Sequence506;
 }  // namespace
 
 std::span<std::byte const> Sequence::encode(std::span<std::byte> const &buffer) const {

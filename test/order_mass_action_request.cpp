@@ -7,8 +7,8 @@
 #include <cmath>
 #include <span>
 
-#include <cme_ilink/MessageHeader.h>
-#include <cme_ilink/OrderMassActionRequest529.h>
+#include <cme/sbe/ilink/MessageHeader.h>
+#include <cme/sbe/ilink/OrderMassActionRequest529.h>
 
 #include "roq/utils/debug/hex/message.hpp"
 
@@ -18,13 +18,13 @@ using namespace std::literals;
 
 using namespace Catch::literals;
 
-using namespace cme_ilink;
+using namespace ::cme::sbe::ilink;
 
 using namespace roq;
 using namespace roq::cme;
 
 namespace {
-using value_type = cme_ilink::OrderMassActionRequest529;
+using value_type = ::cme::sbe::ilink::OrderMassActionRequest529;
 }
 
 TEST_CASE("order_mass_action_request_simple", "[order_mass_action_request]") {
@@ -32,21 +32,21 @@ TEST_CASE("order_mass_action_request_simple", "[order_mass_action_request]") {
   auto order_mass_action_request = ilink::OrderMassActionRequest{
       .party_details_list_req_id = {},  // note!
       .order_request_id = 1,
-      .manual_order_indicator = cme_ilink::ManualOrdIndReq::Automated,
+      .manual_order_indicator = ::cme::sbe::ilink::ManualOrdIndReq::Automated,
       .seq_num = 1,
       .sender_id = "A1"sv,
       .sending_time_epoch = 1ns,
       .security_group = {},
       .location = "UK"sv,
       .security_id = {},
-      .mass_action_scope = cme_ilink::MassActionScope::MarketSegmentID,
+      .mass_action_scope = ::cme::sbe::ilink::MassActionScope::MarketSegmentID,
       .market_segment_id = 84,
-      .mass_cancel_request_type = cme_ilink::MassCxlReqTyp::Account,
-      .side = cme_ilink::SideNULL::NULL_VALUE,
-      // .ord_type = cme_ilink::MassActionOrdTyp::NULL_VALUE,
-      .ord_type = cme_ilink::MassActionOrdTyp::Limit,
-      .time_in_force = cme_ilink::MassCancelTIF::NULL_VALUE,
-      .liquidity_flag = cme_ilink::BooleanNULL::NULL_VALUE,
+      .mass_cancel_request_type = ::cme::sbe::ilink::MassCxlReqTyp::Account,
+      .side = ::cme::sbe::ilink::SideNULL::NULL_VALUE,
+      // .ord_type = ::cme::sbe::ilink::MassActionOrdTyp::NULL_VALUE,
+      .ord_type = ::cme::sbe::ilink::MassActionOrdTyp::Limit,
+      .time_in_force = ::cme::sbe::ilink::MassCancelTIF::NULL_VALUE,
+      .liquidity_flag = ::cme::sbe::ilink::BooleanNULL::NULL_VALUE,
       .orig_order_user = {},
   };
   auto message = order_mass_action_request.encode(buffer);

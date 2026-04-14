@@ -12,8 +12,8 @@
 
 #include "roq/cme/ilink/utils.hpp"
 
-#include "cme_ilink/ManualOrdIndReq.h"
-#include "cme_ilink/SideReq.h"
+#include "cme/sbe/ilink/ManualOrdIndReq.h"
+#include "cme/sbe/ilink/SideReq.h"
 
 namespace roq {
 namespace cme {
@@ -24,7 +24,7 @@ struct OrderCancelRequest final {
 
   uint64_t order_id = {};
   uint64_t party_details_list_req_id = {};
-  cme_ilink::ManualOrdIndReq::Value manual_order_indicator = {};
+  ::cme::sbe::ilink::ManualOrdIndReq::Value manual_order_indicator = {};
   uint32_t seq_num = {};
   std::string_view sender_id;
   std::string_view cl_ord_id;
@@ -32,7 +32,7 @@ struct OrderCancelRequest final {
   std::chrono::nanoseconds sending_time_epoch = {};
   std::string_view location;
   int32_t security_id = {};
-  cme_ilink::SideReq::Value side = {};
+  ::cme::sbe::ilink::SideReq::Value side = {};
   bool liquidity_flag = {};
   std::string_view orig_order_user;
 };

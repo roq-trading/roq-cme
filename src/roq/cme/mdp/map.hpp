@@ -2,20 +2,20 @@
 
 #pragma once
 
-#include <cme_mdp/AggressorSide.h>
-#include <cme_mdp/MDEntryTypeBook.h>
-#include <cme_mdp/MDEntryTypeDailyStatistics.h>
-#include <cme_mdp/MDEntryTypeStatistics.h>
-#include <cme_mdp/MDUpdateAction.h>
-#include <cme_mdp/OrderUpdateAction.h>
-#include <cme_mdp/SecurityTradingStatus.h>
-#include <cme_mdp/Side.h>
+#include <cme/sbe/mdp/AggressorSide.h>
+#include <cme/sbe/mdp/MDEntryTypeBook.h>
+#include <cme/sbe/mdp/MDEntryTypeDailyStatistics.h>
+#include <cme/sbe/mdp/MDEntryTypeStatistics.h>
+#include <cme/sbe/mdp/MDUpdateAction.h>
+#include <cme/sbe/mdp/OrderUpdateAction.h>
+#include <cme/sbe/mdp/SecurityTradingStatus.h>
+#include <cme/sbe/mdp/Side.h>
 
-#include <cme_mdp/Decimal9.h>
-#include <cme_mdp/Decimal9NULL.h>
-#include <cme_mdp/DecimalQty.h>
-#include <cme_mdp/PRICE9.h>
-#include <cme_mdp/PRICENULL9.h>
+#include <cme/sbe/mdp/Decimal9.h>
+#include <cme/sbe/mdp/Decimal9NULL.h>
+#include <cme/sbe/mdp/DecimalQty.h>
+#include <cme/sbe/mdp/PRICE9.h>
+#include <cme/sbe/mdp/PRICENULL9.h>
 
 #include <cmath>
 
@@ -30,35 +30,35 @@ namespace roq {
 
 template <>
 template <>
-std::optional<Side> Map<cme_mdp::AggressorSide::Value>::helper() const;
+std::optional<Side> Map<::cme::sbe::mdp::AggressorSide::Value>::helper() const;
 
 template <>
 template <>
-std::optional<Side> Map<cme_mdp::MDEntryTypeBook::Value>::helper() const;
+std::optional<Side> Map<::cme::sbe::mdp::MDEntryTypeBook::Value>::helper() const;
 
 template <>
 template <>
-std::optional<StatisticsType> Map<cme_mdp::MDEntryTypeDailyStatistics::Value>::helper() const;
+std::optional<StatisticsType> Map<::cme::sbe::mdp::MDEntryTypeDailyStatistics::Value>::helper() const;
 
 template <>
 template <>
-std::optional<StatisticsType> Map<cme_mdp::MDEntryTypeStatistics::Value>::helper() const;
+std::optional<StatisticsType> Map<::cme::sbe::mdp::MDEntryTypeStatistics::Value>::helper() const;
 
 template <>
 template <>
-std::optional<UpdateAction> Map<cme_mdp::MDUpdateAction::Value>::helper() const;
+std::optional<UpdateAction> Map<::cme::sbe::mdp::MDUpdateAction::Value>::helper() const;
 
 template <>
 template <>
-std::optional<UpdateAction> Map<cme_mdp::OrderUpdateAction::Value>::helper() const;
+std::optional<UpdateAction> Map<::cme::sbe::mdp::OrderUpdateAction::Value>::helper() const;
 
 template <>
 template <>
-std::optional<TradingStatus> Map<cme_mdp::SecurityTradingStatus::Value>::helper() const;
+std::optional<TradingStatus> Map<::cme::sbe::mdp::SecurityTradingStatus::Value>::helper() const;
 
 template <>
 template <>
-std::optional<Side> Map<cme_mdp::Side::Value>::helper() const;
+std::optional<Side> Map<::cme::sbe::mdp::Side::Value>::helper() const;
 
 // int
 
@@ -79,7 +79,7 @@ inline T get_int(T value, T null_value) {
 
 template <>
 template <>
-inline std::optional<double> Map<cme_mdp::Decimal9>::helper() const {
+inline std::optional<double> Map<::cme::sbe::mdp::Decimal9>::helper() const {
   auto &value = std::get<0>(args_);
   auto mantissa = value.mantissa();
   return static_cast<double>(mantissa) * std::pow(10.0, value.exponent());
@@ -87,7 +87,7 @@ inline std::optional<double> Map<cme_mdp::Decimal9>::helper() const {
 
 template <>
 template <>
-inline std::optional<double> Map<cme_mdp::Decimal9NULL>::helper() const {
+inline std::optional<double> Map<::cme::sbe::mdp::Decimal9NULL>::helper() const {
   auto &value = std::get<0>(args_);
   auto mantissa = value.mantissa();
   if (mantissa != value.mantissaNullValue()) {
@@ -98,7 +98,7 @@ inline std::optional<double> Map<cme_mdp::Decimal9NULL>::helper() const {
 
 template <>
 template <>
-inline std::optional<double> Map<cme_mdp::DecimalQty>::helper() const {
+inline std::optional<double> Map<::cme::sbe::mdp::DecimalQty>::helper() const {
   auto &value = std::get<0>(args_);
   auto mantissa = value.mantissa();
   if (mantissa != value.mantissaNullValue()) {
@@ -109,7 +109,7 @@ inline std::optional<double> Map<cme_mdp::DecimalQty>::helper() const {
 
 template <>
 template <>
-inline std::optional<double> Map<cme_mdp::PRICE9>::helper() const {
+inline std::optional<double> Map<::cme::sbe::mdp::PRICE9>::helper() const {
   auto &value = std::get<0>(args_);
   auto mantissa = value.mantissa();
   return static_cast<double>(mantissa) * std::pow(10.0, value.exponent());
@@ -117,7 +117,7 @@ inline std::optional<double> Map<cme_mdp::PRICE9>::helper() const {
 
 template <>
 template <>
-inline std::optional<double> Map<cme_mdp::PRICENULL9>::helper() const {
+inline std::optional<double> Map<::cme::sbe::mdp::PRICENULL9>::helper() const {
   auto &value = std::get<0>(args_);
   auto mantissa = value.mantissa();
   if (mantissa != value.mantissaNullValue()) {

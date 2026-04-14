@@ -9,7 +9,7 @@
 #include <span>
 #include <string_view>
 
-#include <cme_ilink/SplitMsg.h>
+#include <cme/sbe/ilink/SplitMsg.h>
 
 #include "roq/cme/ilink/utils.hpp"
 
@@ -24,7 +24,7 @@ struct Terminate final {
   uint64_t uuid = {};
   std::chrono::nanoseconds request_timestamp = {};
   uint16_t error_codes = {};
-  cme_ilink::SplitMsg::Value split_msg = {};
+  ::cme::sbe::ilink::SplitMsg::Value split_msg = {};
 };
 
 }  // namespace ilink

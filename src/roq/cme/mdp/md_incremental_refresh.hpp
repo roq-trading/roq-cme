@@ -2,17 +2,17 @@
 
 #pragma once
 
-#include <cme_mdp/MDIncrementalRefreshBook46.h>
-#include <cme_mdp/MDIncrementalRefreshBookLongQty64.h>
-#include <cme_mdp/MDIncrementalRefreshDailyStatistics49.h>
-#include <cme_mdp/MDIncrementalRefreshLimitsBanding50.h>
-#include <cme_mdp/MDIncrementalRefreshOrderBook47.h>
-#include <cme_mdp/MDIncrementalRefreshSessionStatistics51.h>
-#include <cme_mdp/MDIncrementalRefreshSessionStatisticsLongQty67.h>
-#include <cme_mdp/MDIncrementalRefreshTradeSummary48.h>
-#include <cme_mdp/MDIncrementalRefreshTradeSummaryLongQty65.h>
-#include <cme_mdp/MDIncrementalRefreshVolume37.h>
-#include <cme_mdp/MDIncrementalRefreshVolumeLongQty66.h>
+#include <cme/sbe/mdp/MDIncrementalRefreshBook46.h>
+#include <cme/sbe/mdp/MDIncrementalRefreshBookLongQty64.h>
+#include <cme/sbe/mdp/MDIncrementalRefreshDailyStatistics49.h>
+#include <cme/sbe/mdp/MDIncrementalRefreshLimitsBanding50.h>
+#include <cme/sbe/mdp/MDIncrementalRefreshOrderBook47.h>
+#include <cme/sbe/mdp/MDIncrementalRefreshSessionStatistics51.h>
+#include <cme/sbe/mdp/MDIncrementalRefreshSessionStatisticsLongQty67.h>
+#include <cme/sbe/mdp/MDIncrementalRefreshTradeSummary48.h>
+#include <cme/sbe/mdp/MDIncrementalRefreshTradeSummaryLongQty65.h>
+#include <cme/sbe/mdp/MDIncrementalRefreshVolume37.h>
+#include <cme/sbe/mdp/MDIncrementalRefreshVolumeLongQty66.h>
 
 #include "roq/name.hpp"
 
@@ -26,11 +26,11 @@ namespace cme {
 namespace mdp {
 
 /*
-virtual void operator()(Trace<cme_mdp::MDIncrementalRefreshVolume37> const &, Frame const &) = 0;
+virtual void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshVolume37> const &, Frame const &) = 0;
 */
 
 template <>
-inline size_t compute_length(cme_mdp::MDIncrementalRefreshBook46 &value) {
+inline size_t compute_length(::cme::sbe::mdp::MDIncrementalRefreshBook46 &value) {
   // NoMDEntries
   auto no_md_entries_length = value.noMDEntries().count();
   value.sbeRewind();  // wtf!
@@ -56,67 +56,67 @@ MDIncrementalRefreshSessionStatisticsLongQty67
 }  // namespace cme
 
 template <>
-inline constexpr std::string_view get_name<cme_mdp::MDIncrementalRefreshVolume37>() {
+inline constexpr std::string_view get_name<::cme::sbe::mdp::MDIncrementalRefreshVolume37>() {
   using namespace std::literals;
   return "md_incremental_refresh_volume_37"sv;
 }
 
 template <>
-inline constexpr std::string_view get_name<cme_mdp::MDIncrementalRefreshBook46>() {
+inline constexpr std::string_view get_name<::cme::sbe::mdp::MDIncrementalRefreshBook46>() {
   using namespace std::literals;
   return "md_incremental_refresh_book_46"sv;
 }
 
 template <>
-inline constexpr std::string_view get_name<cme_mdp::MDIncrementalRefreshOrderBook47>() {
+inline constexpr std::string_view get_name<::cme::sbe::mdp::MDIncrementalRefreshOrderBook47>() {
   using namespace std::literals;
   return "md_incremental_refresh_order_book_47"sv;
 }
 
 template <>
-inline constexpr std::string_view get_name<cme_mdp::MDIncrementalRefreshTradeSummary48>() {
+inline constexpr std::string_view get_name<::cme::sbe::mdp::MDIncrementalRefreshTradeSummary48>() {
   using namespace std::literals;
   return "md_incremental_refresh_trade_summary_48"sv;
 }
 
 template <>
-inline constexpr std::string_view get_name<cme_mdp::MDIncrementalRefreshDailyStatistics49>() {
+inline constexpr std::string_view get_name<::cme::sbe::mdp::MDIncrementalRefreshDailyStatistics49>() {
   using namespace std::literals;
   return "md_incremental_refresh_daily_statistics_49"sv;
 }
 
 template <>
-inline constexpr std::string_view get_name<cme_mdp::MDIncrementalRefreshLimitsBanding50>() {
+inline constexpr std::string_view get_name<::cme::sbe::mdp::MDIncrementalRefreshLimitsBanding50>() {
   using namespace std::literals;
   return "md_incremental_refresh_limits_banding_50"sv;
 }
 
 template <>
-inline constexpr std::string_view get_name<cme_mdp::MDIncrementalRefreshSessionStatistics51>() {
+inline constexpr std::string_view get_name<::cme::sbe::mdp::MDIncrementalRefreshSessionStatistics51>() {
   using namespace std::literals;
   return "md_incremental_refresh_session_statistics_51"sv;
 }
 
 template <>
-inline constexpr std::string_view get_name<cme_mdp::MDIncrementalRefreshBookLongQty64>() {
+inline constexpr std::string_view get_name<::cme::sbe::mdp::MDIncrementalRefreshBookLongQty64>() {
   using namespace std::literals;
   return "md_incremental_refresh_book_long_qty_64"sv;
 }
 
 template <>
-inline constexpr std::string_view get_name<cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65>() {
+inline constexpr std::string_view get_name<::cme::sbe::mdp::MDIncrementalRefreshTradeSummaryLongQty65>() {
   using namespace std::literals;
   return "md_incremental_refresh_trade_summary_long_qty_65"sv;
 }
 
 template <>
-inline constexpr std::string_view get_name<cme_mdp::MDIncrementalRefreshVolumeLongQty66>() {
+inline constexpr std::string_view get_name<::cme::sbe::mdp::MDIncrementalRefreshVolumeLongQty66>() {
   using namespace std::literals;
   return "md_incremental_refresh_volume_long_qty_66"sv;
 }
 
 template <>
-inline constexpr std::string_view get_name<cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67>() {
+inline constexpr std::string_view get_name<::cme::sbe::mdp::MDIncrementalRefreshSessionStatisticsLongQty67>() {
   using namespace std::literals;
   return "md_incremental_refresh_session_statistics_long_qty_67"sv;
 }
@@ -125,8 +125,8 @@ inline constexpr std::string_view get_name<cme_mdp::MDIncrementalRefreshSessionS
 // MDIncrementalRefreshVolume37
 
 template <>
-struct fmt::formatter<cme_mdp::MDIncrementalRefreshVolume37::NoMDEntries> {
-  using value_type = cme_mdp::MDIncrementalRefreshVolume37::NoMDEntries;
+struct fmt::formatter<::cme::sbe::mdp::MDIncrementalRefreshVolume37::NoMDEntries> {
+  using value_type = ::cme::sbe::mdp::MDIncrementalRefreshVolume37::NoMDEntries;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
@@ -148,8 +148,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshVolume37::NoMDEntries> {
 };
 
 template <>
-struct fmt::formatter<cme_mdp::MDIncrementalRefreshVolume37> {
-  using value_type = cme_mdp::MDIncrementalRefreshVolume37;
+struct fmt::formatter<::cme::sbe::mdp::MDIncrementalRefreshVolume37> {
+  using value_type = ::cme::sbe::mdp::MDIncrementalRefreshVolume37;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type &value, format_context &context) const {
     using namespace std::literals;
@@ -172,8 +172,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshVolume37> {
 // MDIncrementalRefreshBook46
 
 template <>
-struct fmt::formatter<cme_mdp::MDIncrementalRefreshBook46::NoMDEntries> {
-  using value_type = cme_mdp::MDIncrementalRefreshBook46::NoMDEntries;
+struct fmt::formatter<::cme::sbe::mdp::MDIncrementalRefreshBook46::NoMDEntries> {
+  using value_type = ::cme::sbe::mdp::MDIncrementalRefreshBook46::NoMDEntries;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
@@ -203,8 +203,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshBook46::NoMDEntries> {
 };
 
 template <>
-struct fmt::formatter<cme_mdp::MDIncrementalRefreshBook46::NoOrderIDEntries> {
-  using value_type = cme_mdp::MDIncrementalRefreshBook46::NoOrderIDEntries;
+struct fmt::formatter<::cme::sbe::mdp::MDIncrementalRefreshBook46::NoOrderIDEntries> {
+  using value_type = ::cme::sbe::mdp::MDIncrementalRefreshBook46::NoOrderIDEntries;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
@@ -226,8 +226,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshBook46::NoOrderIDEntries> {
 };
 
 template <>
-struct fmt::formatter<cme_mdp::MDIncrementalRefreshBook46> {
-  using value_type = cme_mdp::MDIncrementalRefreshBook46;
+struct fmt::formatter<::cme::sbe::mdp::MDIncrementalRefreshBook46> {
+  using value_type = ::cme::sbe::mdp::MDIncrementalRefreshBook46;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type &value, format_context &context) const {
     using namespace std::literals;
@@ -255,8 +255,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshBook46> {
 // MDIncrementalRefreshOrderBook47
 
 template <>
-struct fmt::formatter<cme_mdp::MDIncrementalRefreshOrderBook47::NoMDEntries> {
-  using value_type = cme_mdp::MDIncrementalRefreshOrderBook47::NoMDEntries;
+struct fmt::formatter<::cme::sbe::mdp::MDIncrementalRefreshOrderBook47::NoMDEntries> {
+  using value_type = ::cme::sbe::mdp::MDIncrementalRefreshOrderBook47::NoMDEntries;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
@@ -282,8 +282,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshOrderBook47::NoMDEntries> {
 };
 
 template <>
-struct fmt::formatter<cme_mdp::MDIncrementalRefreshOrderBook47> {
-  using value_type = cme_mdp::MDIncrementalRefreshOrderBook47;
+struct fmt::formatter<::cme::sbe::mdp::MDIncrementalRefreshOrderBook47> {
+  using value_type = ::cme::sbe::mdp::MDIncrementalRefreshOrderBook47;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type &value, format_context &context) const {
     using namespace std::literals;
@@ -306,8 +306,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshOrderBook47> {
 // MDIncrementalRefreshTradeSummary48
 
 template <>
-struct fmt::formatter<cme_mdp::MDIncrementalRefreshTradeSummary48::NoMDEntries> {
-  using value_type = cme_mdp::MDIncrementalRefreshTradeSummary48::NoMDEntries;
+struct fmt::formatter<::cme::sbe::mdp::MDIncrementalRefreshTradeSummary48::NoMDEntries> {
+  using value_type = ::cme::sbe::mdp::MDIncrementalRefreshTradeSummary48::NoMDEntries;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
@@ -337,8 +337,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshTradeSummary48::NoMDEntries> 
 };
 
 template <>
-struct fmt::formatter<cme_mdp::MDIncrementalRefreshTradeSummary48::NoOrderIDEntries> {
-  using value_type = cme_mdp::MDIncrementalRefreshTradeSummary48::NoOrderIDEntries;
+struct fmt::formatter<::cme::sbe::mdp::MDIncrementalRefreshTradeSummary48::NoOrderIDEntries> {
+  using value_type = ::cme::sbe::mdp::MDIncrementalRefreshTradeSummary48::NoOrderIDEntries;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
@@ -354,8 +354,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshTradeSummary48::NoOrderIDEntr
 };
 
 template <>
-struct fmt::formatter<cme_mdp::MDIncrementalRefreshTradeSummary48> {
-  using value_type = cme_mdp::MDIncrementalRefreshTradeSummary48;
+struct fmt::formatter<::cme::sbe::mdp::MDIncrementalRefreshTradeSummary48> {
+  using value_type = ::cme::sbe::mdp::MDIncrementalRefreshTradeSummary48;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type &value, format_context &context) const {
     using namespace std::literals;
@@ -383,8 +383,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshTradeSummary48> {
 // MDIncrementalRefreshDailyStatistics49
 
 template <>
-struct fmt::formatter<cme_mdp::MDIncrementalRefreshDailyStatistics49::NoMDEntries> {
-  using value_type = cme_mdp::MDIncrementalRefreshDailyStatistics49::NoMDEntries;
+struct fmt::formatter<::cme::sbe::mdp::MDIncrementalRefreshDailyStatistics49::NoMDEntries> {
+  using value_type = ::cme::sbe::mdp::MDIncrementalRefreshDailyStatistics49::NoMDEntries;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
@@ -412,8 +412,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshDailyStatistics49::NoMDEntrie
 };
 
 template <>
-struct fmt::formatter<cme_mdp::MDIncrementalRefreshDailyStatistics49> {
-  using value_type = cme_mdp::MDIncrementalRefreshDailyStatistics49;
+struct fmt::formatter<::cme::sbe::mdp::MDIncrementalRefreshDailyStatistics49> {
+  using value_type = ::cme::sbe::mdp::MDIncrementalRefreshDailyStatistics49;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type &value, format_context &context) const {
     using namespace std::literals;
@@ -436,8 +436,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshDailyStatistics49> {
 // MDIncrementalRefreshLimitsBanding50
 
 template <>
-struct fmt::formatter<cme_mdp::MDIncrementalRefreshLimitsBanding50::NoMDEntries> {
-  using value_type = cme_mdp::MDIncrementalRefreshLimitsBanding50::NoMDEntries;
+struct fmt::formatter<::cme::sbe::mdp::MDIncrementalRefreshLimitsBanding50::NoMDEntries> {
+  using value_type = ::cme::sbe::mdp::MDIncrementalRefreshLimitsBanding50::NoMDEntries;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
@@ -463,8 +463,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshLimitsBanding50::NoMDEntries>
 };
 
 template <>
-struct fmt::formatter<cme_mdp::MDIncrementalRefreshLimitsBanding50> {
-  using value_type = cme_mdp::MDIncrementalRefreshLimitsBanding50;
+struct fmt::formatter<::cme::sbe::mdp::MDIncrementalRefreshLimitsBanding50> {
+  using value_type = ::cme::sbe::mdp::MDIncrementalRefreshLimitsBanding50;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type &value, format_context &context) const {
     using namespace std::literals;
@@ -487,8 +487,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshLimitsBanding50> {
 // MDIncrementalRefreshSessionStatistics51
 
 template <>
-struct fmt::formatter<cme_mdp::MDIncrementalRefreshSessionStatistics51::NoMDEntries> {
-  using value_type = cme_mdp::MDIncrementalRefreshSessionStatistics51::NoMDEntries;
+struct fmt::formatter<::cme::sbe::mdp::MDIncrementalRefreshSessionStatistics51::NoMDEntries> {
+  using value_type = ::cme::sbe::mdp::MDIncrementalRefreshSessionStatistics51::NoMDEntries;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
@@ -514,8 +514,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshSessionStatistics51::NoMDEntr
 };
 
 template <>
-struct fmt::formatter<cme_mdp::MDIncrementalRefreshSessionStatistics51> {
-  using value_type = cme_mdp::MDIncrementalRefreshSessionStatistics51;
+struct fmt::formatter<::cme::sbe::mdp::MDIncrementalRefreshSessionStatistics51> {
+  using value_type = ::cme::sbe::mdp::MDIncrementalRefreshSessionStatistics51;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type &value, format_context &context) const {
     using namespace std::literals;
@@ -538,8 +538,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshSessionStatistics51> {
 // MDIncrementalRefreshBookLongQty64
 
 template <>
-struct fmt::formatter<cme_mdp::MDIncrementalRefreshBookLongQty64::NoMDEntries> {
-  using value_type = cme_mdp::MDIncrementalRefreshBookLongQty64::NoMDEntries;
+struct fmt::formatter<::cme::sbe::mdp::MDIncrementalRefreshBookLongQty64::NoMDEntries> {
+  using value_type = ::cme::sbe::mdp::MDIncrementalRefreshBookLongQty64::NoMDEntries;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
@@ -567,8 +567,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshBookLongQty64::NoMDEntries> {
 };
 
 template <>
-struct fmt::formatter<cme_mdp::MDIncrementalRefreshBookLongQty64::NoOrderIDEntries> {
-  using value_type = cme_mdp::MDIncrementalRefreshBookLongQty64::NoOrderIDEntries;
+struct fmt::formatter<::cme::sbe::mdp::MDIncrementalRefreshBookLongQty64::NoOrderIDEntries> {
+  using value_type = ::cme::sbe::mdp::MDIncrementalRefreshBookLongQty64::NoOrderIDEntries;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
@@ -590,8 +590,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshBookLongQty64::NoOrderIDEntri
 };
 
 template <>
-struct fmt::formatter<cme_mdp::MDIncrementalRefreshBookLongQty64> {
-  using value_type = cme_mdp::MDIncrementalRefreshBookLongQty64;
+struct fmt::formatter<::cme::sbe::mdp::MDIncrementalRefreshBookLongQty64> {
+  using value_type = ::cme::sbe::mdp::MDIncrementalRefreshBookLongQty64;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type &value, format_context &context) const {
     using namespace std::literals;
@@ -619,8 +619,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshBookLongQty64> {
 // MDIncrementalRefreshTradeSummaryLongQty65
 
 template <>
-struct fmt::formatter<cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65::NoMDEntries> {
-  using value_type = cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65::NoMDEntries;
+struct fmt::formatter<::cme::sbe::mdp::MDIncrementalRefreshTradeSummaryLongQty65::NoMDEntries> {
+  using value_type = ::cme::sbe::mdp::MDIncrementalRefreshTradeSummaryLongQty65::NoMDEntries;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
@@ -650,8 +650,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65::NoMDEn
 };
 
 template <>
-struct fmt::formatter<cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65::NoOrderIDEntries> {
-  using value_type = cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65::NoOrderIDEntries;
+struct fmt::formatter<::cme::sbe::mdp::MDIncrementalRefreshTradeSummaryLongQty65::NoOrderIDEntries> {
+  using value_type = ::cme::sbe::mdp::MDIncrementalRefreshTradeSummaryLongQty65::NoOrderIDEntries;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
@@ -667,8 +667,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65::NoOrde
 };
 
 template <>
-struct fmt::formatter<cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65> {
-  using value_type = cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65;
+struct fmt::formatter<::cme::sbe::mdp::MDIncrementalRefreshTradeSummaryLongQty65> {
+  using value_type = ::cme::sbe::mdp::MDIncrementalRefreshTradeSummaryLongQty65;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type &value, format_context &context) const {
     using namespace std::literals;
@@ -696,8 +696,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65> {
 // MDIncrementalRefreshVolumeLongQty66
 
 template <>
-struct fmt::formatter<cme_mdp::MDIncrementalRefreshVolumeLongQty66::NoMDEntries> {
-  using value_type = cme_mdp::MDIncrementalRefreshVolumeLongQty66::NoMDEntries;
+struct fmt::formatter<::cme::sbe::mdp::MDIncrementalRefreshVolumeLongQty66::NoMDEntries> {
+  using value_type = ::cme::sbe::mdp::MDIncrementalRefreshVolumeLongQty66::NoMDEntries;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
@@ -719,8 +719,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshVolumeLongQty66::NoMDEntries>
 };
 
 template <>
-struct fmt::formatter<cme_mdp::MDIncrementalRefreshVolumeLongQty66> {
-  using value_type = cme_mdp::MDIncrementalRefreshVolumeLongQty66;
+struct fmt::formatter<::cme::sbe::mdp::MDIncrementalRefreshVolumeLongQty66> {
+  using value_type = ::cme::sbe::mdp::MDIncrementalRefreshVolumeLongQty66;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type &value, format_context &context) const {
     using namespace std::literals;
@@ -743,8 +743,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshVolumeLongQty66> {
 // MDIncrementalRefreshSessionStatisticsLongQty67
 
 template <>
-struct fmt::formatter<cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67::NoMDEntries> {
-  using value_type = cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67::NoMDEntries;
+struct fmt::formatter<::cme::sbe::mdp::MDIncrementalRefreshSessionStatisticsLongQty67::NoMDEntries> {
+  using value_type = ::cme::sbe::mdp::MDIncrementalRefreshSessionStatisticsLongQty67::NoMDEntries;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
@@ -770,8 +770,8 @@ struct fmt::formatter<cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67::N
 };
 
 template <>
-struct fmt::formatter<cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67> {
-  using value_type = cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67;
+struct fmt::formatter<::cme::sbe::mdp::MDIncrementalRefreshSessionStatisticsLongQty67> {
+  using value_type = ::cme::sbe::mdp::MDIncrementalRefreshSessionStatisticsLongQty67;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type &value, format_context &context) const {
     using namespace std::literals;

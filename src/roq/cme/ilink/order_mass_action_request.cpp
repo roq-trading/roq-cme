@@ -2,7 +2,7 @@
 
 #include "roq/cme/ilink/order_mass_action_request.hpp"
 
-#include <cme_ilink/OrderMassActionRequest529.h>
+#include <cme/sbe/ilink/OrderMassActionRequest529.h>
 
 using namespace std::literals;
 
@@ -11,8 +11,8 @@ namespace cme {
 namespace ilink {
 
 namespace {
-using header_type = cme_ilink::MessageHeader;
-using value_type = cme_ilink::OrderMassActionRequest529;
+using header_type = ::cme::sbe::ilink::MessageHeader;
+using value_type = ::cme::sbe::ilink::OrderMassActionRequest529;
 }  // namespace
 
 std::span<std::byte const> OrderMassActionRequest::encode(std::span<std::byte> const &buffer) const {

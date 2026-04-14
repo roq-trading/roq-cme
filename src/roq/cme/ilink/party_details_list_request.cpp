@@ -2,7 +2,7 @@
 
 #include "roq/cme/ilink/party_details_list_request.hpp"
 
-#include <cme_ilink/PartyDetailsListRequest537.h>
+#include <cme/sbe/ilink/PartyDetailsListRequest537.h>
 
 using namespace std::literals;
 
@@ -11,8 +11,8 @@ namespace cme {
 namespace ilink {
 
 namespace {
-using header_type = cme_ilink::MessageHeader;
-using value_type = cme_ilink::PartyDetailsListRequest537;
+using header_type = ::cme::sbe::ilink::MessageHeader;
+using value_type = ::cme::sbe::ilink::PartyDetailsListRequest537;
 }  // namespace
 
 std::span<std::byte const> PartyDetailsListRequest::encode(std::span<std::byte> const &buffer) const {

@@ -4,7 +4,7 @@
 
 #include <fmt/chrono.h>
 
-#include <cme_mdp/MessageHeader.h>
+#include <cme/sbe/mdp/MessageHeader.h>
 
 #include "roq/logging.hpp"
 
@@ -47,37 +47,39 @@ struct Bridge final : public utils::pcap::Reader::Handler, public mdp::Parser::H
 
   void operator()(mdp::Frame const &) override {}
   // admin
-  void operator()(Trace<cme_mdp::AdminHeartbeat12> const &event, mdp::Frame const &frame) override { print(event, frame); }
-  void operator()(Trace<cme_mdp::ChannelReset4> const &event, mdp::Frame const &frame) override { print(event, frame); }
+  void operator()(Trace<::cme::sbe::mdp::AdminHeartbeat12> const &event, mdp::Frame const &frame) override { print(event, frame); }
+  void operator()(Trace<::cme::sbe::mdp::ChannelReset4> const &event, mdp::Frame const &frame) override { print(event, frame); }
   // instrument definitions
-  void operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &event, mdp::Frame const &frame) override { print(event, frame); }
-  void operator()(Trace<cme_mdp::MDInstrumentDefinitionOption55> const &event, mdp::Frame const &frame) override { print(event, frame); }
-  void operator()(Trace<cme_mdp::MDInstrumentDefinitionSpread56> const &event, mdp::Frame const &frame) override { print(event, frame); }
-  void operator()(Trace<cme_mdp::MDInstrumentDefinitionFixedIncome57> const &event, mdp::Frame const &frame) override { print(event, frame); }
-  void operator()(Trace<cme_mdp::MDInstrumentDefinitionRepo58> const &event, mdp::Frame const &frame) override { print(event, frame); }
-  void operator()(Trace<cme_mdp::MDInstrumentDefinitionFX63> const &event, mdp::Frame const &frame) override { print(event, frame); }
+  void operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionFuture54> const &event, mdp::Frame const &frame) override { print(event, frame); }
+  void operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionOption55> const &event, mdp::Frame const &frame) override { print(event, frame); }
+  void operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionSpread56> const &event, mdp::Frame const &frame) override { print(event, frame); }
+  void operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionFixedIncome57> const &event, mdp::Frame const &frame) override { print(event, frame); }
+  void operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionRepo58> const &event, mdp::Frame const &frame) override { print(event, frame); }
+  void operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionFX63> const &event, mdp::Frame const &frame) override { print(event, frame); }
   // status
-  void operator()(Trace<cme_mdp::SecurityStatus30> const &event, mdp::Frame const &frame) override { print(event, frame); }
+  void operator()(Trace<::cme::sbe::mdp::SecurityStatus30> const &event, mdp::Frame const &frame) override { print(event, frame); }
   // market by price
-  void operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &event, mdp::Frame const &frame) override { print(event, frame); }
-  void operator()(Trace<cme_mdp::SnapshotFullRefreshLongQty69> const &event, mdp::Frame const &frame) override { print(event, frame); }
-  void operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &event, mdp::Frame const &frame) override { print(event, frame); }
-  void operator()(Trace<cme_mdp::MDIncrementalRefreshBookLongQty64> const &event, mdp::Frame const &frame) override { print(event, frame); }
+  void operator()(Trace<::cme::sbe::mdp::SnapshotFullRefresh52> const &event, mdp::Frame const &frame) override { print(event, frame); }
+  void operator()(Trace<::cme::sbe::mdp::SnapshotFullRefreshLongQty69> const &event, mdp::Frame const &frame) override { print(event, frame); }
+  void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshBook46> const &event, mdp::Frame const &frame) override { print(event, frame); }
+  void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshBookLongQty64> const &event, mdp::Frame const &frame) override { print(event, frame); }
   // market by order
-  void operator()(Trace<cme_mdp::SnapshotFullRefreshOrderBook53> const &event, mdp::Frame const &frame) override { print(event, frame); }
-  void operator()(Trace<cme_mdp::MDIncrementalRefreshOrderBook47> const &event, mdp::Frame const &frame) override { print(event, frame); }
+  void operator()(Trace<::cme::sbe::mdp::SnapshotFullRefreshOrderBook53> const &event, mdp::Frame const &frame) override { print(event, frame); }
+  void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshOrderBook47> const &event, mdp::Frame const &frame) override { print(event, frame); }
   // trade summary
-  void operator()(Trace<cme_mdp::MDIncrementalRefreshTradeSummary48> const &event, mdp::Frame const &frame) override { print(event, frame); }
-  void operator()(Trace<cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65> const &event, mdp::Frame const &frame) override { print(event, frame); }
+  void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshTradeSummary48> const &event, mdp::Frame const &frame) override { print(event, frame); }
+  void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshTradeSummaryLongQty65> const &event, mdp::Frame const &frame) override { print(event, frame); }
   // statistics
-  void operator()(Trace<cme_mdp::MDIncrementalRefreshDailyStatistics49> const &event, mdp::Frame const &frame) override { print(event, frame); }
-  void operator()(Trace<cme_mdp::MDIncrementalRefreshSessionStatistics51> const &event, mdp::Frame const &frame) override { print(event, frame); }
-  void operator()(Trace<cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67> const &event, mdp::Frame const &frame) override { print(event, frame); }
-  void operator()(Trace<cme_mdp::MDIncrementalRefreshVolume37> const &event, mdp::Frame const &frame) override { print(event, frame); }
-  void operator()(Trace<cme_mdp::MDIncrementalRefreshVolumeLongQty66> const &event, mdp::Frame const &frame) override { print(event, frame); }
+  void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshDailyStatistics49> const &event, mdp::Frame const &frame) override { print(event, frame); }
+  void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshSessionStatistics51> const &event, mdp::Frame const &frame) override { print(event, frame); }
+  void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshSessionStatisticsLongQty67> const &event, mdp::Frame const &frame) override {
+    print(event, frame);
+  }
+  void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshVolume37> const &event, mdp::Frame const &frame) override { print(event, frame); }
+  void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshVolumeLongQty66> const &event, mdp::Frame const &frame) override { print(event, frame); }
   // misc
-  void operator()(Trace<cme_mdp::MDIncrementalRefreshLimitsBanding50> const &event, mdp::Frame const &frame) override { print(event, frame); }
-  void operator()(Trace<cme_mdp::QuoteRequest39> const &event, mdp::Frame const &frame) override { print(event, frame); }
+  void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshLimitsBanding50> const &event, mdp::Frame const &frame) override { print(event, frame); }
+  void operator()(Trace<::cme::sbe::mdp::QuoteRequest39> const &event, mdp::Frame const &frame) override { print(event, frame); }
 
   void print(auto &event, auto &frame) {
     using value_type = std::remove_cvref_t<decltype(event)>::value_type;

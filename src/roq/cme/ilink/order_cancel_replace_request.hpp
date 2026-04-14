@@ -14,14 +14,14 @@
 
 #include "roq/cme/ilink/utils.hpp"
 
-#include "cme_ilink/ExecInst.h"
-#include "cme_ilink/ExecMode.h"
-#include "cme_ilink/ManualOrdIndReq.h"
-#include "cme_ilink/OFMOverrideReq.h"
-#include "cme_ilink/OrderTypeReq.h"
-#include "cme_ilink/ShortSaleType.h"
-#include "cme_ilink/SideReq.h"
-#include "cme_ilink/TimeInForce.h"
+#include "cme/sbe/ilink/ExecInst.h"
+#include "cme/sbe/ilink/ExecMode.h"
+#include "cme/sbe/ilink/ManualOrdIndReq.h"
+#include "cme/sbe/ilink/OFMOverrideReq.h"
+#include "cme/sbe/ilink/OrderTypeReq.h"
+#include "cme/sbe/ilink/ShortSaleType.h"
+#include "cme/sbe/ilink/SideReq.h"
+#include "cme/sbe/ilink/TimeInForce.h"
 
 namespace roq {
 namespace cme {
@@ -33,7 +33,7 @@ struct OrderCancelReplaceRequest final {
   double price = NaN;
   uint32_t order_qty = {};
   int32_t security_id = {};
-  cme_ilink::SideReq::Value side = {};
+  ::cme::sbe::ilink::SideReq::Value side = {};
   uint32_t seq_num = {};
   std::string_view sender_id;
   std::string_view cl_ord_id;
@@ -46,15 +46,15 @@ struct OrderCancelReplaceRequest final {
   uint32_t min_qty = {};
   uint32_t display_qty = {};
   std::chrono::seconds expire_date = {};
-  cme_ilink::OrderTypeReq::Value ord_type = {};
-  cme_ilink::TimeInForce::Value time_in_force = {};
-  cme_ilink::ManualOrdIndReq::Value manual_order_indicator = {};
-  cme_ilink::OFMOverrideReq::Value ofm_override = {};
-  uint8_t exec_inst = {};  // cme_ilink::ExecInst
-  cme_ilink::ExecMode::Value execution_mode = {};
+  ::cme::sbe::ilink::OrderTypeReq::Value ord_type = {};
+  ::cme::sbe::ilink::TimeInForce::Value time_in_force = {};
+  ::cme::sbe::ilink::ManualOrdIndReq::Value manual_order_indicator = {};
+  ::cme::sbe::ilink::OFMOverrideReq::Value ofm_override = {};
+  uint8_t exec_inst = {};  // ::cme::sbe::ilink::ExecInst
+  ::cme::sbe::ilink::ExecMode::Value execution_mode = {};
   bool liquidity_flag = {};
   bool managed_order = {};
-  cme_ilink::ShortSaleType::Value short_sale_type = {};
+  ::cme::sbe::ilink::ShortSaleType::Value short_sale_type = {};
   double discretion_price = NaN;
 };
 

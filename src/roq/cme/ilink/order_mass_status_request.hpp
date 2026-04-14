@@ -14,10 +14,10 @@
 
 #include "roq/cme/ilink/utils.hpp"
 
-#include "cme_ilink/ManualOrdIndReq.h"
-#include "cme_ilink/MassStatusOrdTyp.h"
-#include "cme_ilink/MassStatusReqTyp.h"
-#include "cme_ilink/MassStatusTIF.h"
+#include "cme/sbe/ilink/ManualOrdIndReq.h"
+#include "cme/sbe/ilink/MassStatusOrdTyp.h"
+#include "cme/sbe/ilink/MassStatusReqTyp.h"
+#include "cme/sbe/ilink/MassStatusTIF.h"
 
 namespace roq {
 namespace cme {
@@ -28,16 +28,16 @@ struct OrderMassStatusRequest final {
 
   uint64_t party_details_list_req_id = {};
   uint64_t mass_status_req_id = {};
-  cme_ilink::ManualOrdIndReq::Value manual_order_indicator = {};
+  ::cme::sbe::ilink::ManualOrdIndReq::Value manual_order_indicator = {};
   uint32_t seq_num = {};
   std::string_view sender_id;
   std::chrono::nanoseconds sending_time_epoch = {};
   std::string_view security_group;
   std::string_view location;
   int32_t security_id = {};
-  cme_ilink::MassStatusReqTyp::Value mass_status_req_type = {};
-  cme_ilink::MassStatusOrdTyp::Value ord_status_req_type = {};
-  cme_ilink::MassStatusTIF::Value time_in_force = {};
+  ::cme::sbe::ilink::MassStatusReqTyp::Value mass_status_req_type = {};
+  ::cme::sbe::ilink::MassStatusOrdTyp::Value ord_status_req_type = {};
+  ::cme::sbe::ilink::MassStatusTIF::Value time_in_force = {};
   std::uint8_t market_segment_id = {};
 };
 

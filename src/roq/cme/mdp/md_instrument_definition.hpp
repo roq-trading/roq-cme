@@ -2,12 +2,12 @@
 
 #pragma once
 
-#include <cme_mdp/MDInstrumentDefinitionFX63.h>
-#include <cme_mdp/MDInstrumentDefinitionFixedIncome57.h>
-#include <cme_mdp/MDInstrumentDefinitionFuture54.h>
-#include <cme_mdp/MDInstrumentDefinitionOption55.h>
-#include <cme_mdp/MDInstrumentDefinitionRepo58.h>
-#include <cme_mdp/MDInstrumentDefinitionSpread56.h>
+#include <cme/sbe/mdp/MDInstrumentDefinitionFX63.h>
+#include <cme/sbe/mdp/MDInstrumentDefinitionFixedIncome57.h>
+#include <cme/sbe/mdp/MDInstrumentDefinitionFuture54.h>
+#include <cme/sbe/mdp/MDInstrumentDefinitionOption55.h>
+#include <cme/sbe/mdp/MDInstrumentDefinitionRepo58.h>
+#include <cme/sbe/mdp/MDInstrumentDefinitionSpread56.h>
 
 #include "roq/api.hpp"
 
@@ -27,24 +27,24 @@ namespace roq {
 namespace cme {
 namespace mdp {
 
-extern ReferenceData create_reference_data(cme_mdp::MDInstrumentDefinitionFuture54 const &, uint16_t stream_id, tools::Security &);
-extern ReferenceData create_reference_data(cme_mdp::MDInstrumentDefinitionOption55 const &, uint16_t stream_id, tools::Security &);
-extern ReferenceData create_reference_data(cme_mdp::MDInstrumentDefinitionSpread56 const &, uint16_t stream_id, tools::Security &);
-extern ReferenceData create_reference_data(cme_mdp::MDInstrumentDefinitionFixedIncome57 const &, uint16_t stream_id, tools::Security &);
-extern ReferenceData create_reference_data(cme_mdp::MDInstrumentDefinitionRepo58 const &, uint16_t stream_id, tools::Security &);
-extern ReferenceData create_reference_data(cme_mdp::MDInstrumentDefinitionFX63 const &, uint16_t stream_id, tools::Security &);
+extern ReferenceData create_reference_data(::cme::sbe::mdp::MDInstrumentDefinitionFuture54 const &, uint16_t stream_id, tools::Security &);
+extern ReferenceData create_reference_data(::cme::sbe::mdp::MDInstrumentDefinitionOption55 const &, uint16_t stream_id, tools::Security &);
+extern ReferenceData create_reference_data(::cme::sbe::mdp::MDInstrumentDefinitionSpread56 const &, uint16_t stream_id, tools::Security &);
+extern ReferenceData create_reference_data(::cme::sbe::mdp::MDInstrumentDefinitionFixedIncome57 const &, uint16_t stream_id, tools::Security &);
+extern ReferenceData create_reference_data(::cme::sbe::mdp::MDInstrumentDefinitionRepo58 const &, uint16_t stream_id, tools::Security &);
+extern ReferenceData create_reference_data(::cme::sbe::mdp::MDInstrumentDefinitionFX63 const &, uint16_t stream_id, tools::Security &);
 
-extern MarketStatus create_market_status(cme_mdp::MDInstrumentDefinitionFuture54 const &, uint16_t stream_id, tools::Security &);
-extern MarketStatus create_market_status(cme_mdp::MDInstrumentDefinitionOption55 const &, uint16_t stream_id, tools::Security &);
-extern MarketStatus create_market_status(cme_mdp::MDInstrumentDefinitionSpread56 const &, uint16_t stream_id, tools::Security &);
-extern MarketStatus create_market_status(cme_mdp::MDInstrumentDefinitionFixedIncome57 const &, uint16_t stream_id, tools::Security &);
-extern MarketStatus create_market_status(cme_mdp::MDInstrumentDefinitionRepo58 const &, uint16_t stream_id, tools::Security &);
-extern MarketStatus create_market_status(cme_mdp::MDInstrumentDefinitionFX63 const &, uint16_t stream_id, tools::Security &);
+extern MarketStatus create_market_status(::cme::sbe::mdp::MDInstrumentDefinitionFuture54 const &, uint16_t stream_id, tools::Security &);
+extern MarketStatus create_market_status(::cme::sbe::mdp::MDInstrumentDefinitionOption55 const &, uint16_t stream_id, tools::Security &);
+extern MarketStatus create_market_status(::cme::sbe::mdp::MDInstrumentDefinitionSpread56 const &, uint16_t stream_id, tools::Security &);
+extern MarketStatus create_market_status(::cme::sbe::mdp::MDInstrumentDefinitionFixedIncome57 const &, uint16_t stream_id, tools::Security &);
+extern MarketStatus create_market_status(::cme::sbe::mdp::MDInstrumentDefinitionRepo58 const &, uint16_t stream_id, tools::Security &);
+extern MarketStatus create_market_status(::cme::sbe::mdp::MDInstrumentDefinitionFX63 const &, uint16_t stream_id, tools::Security &);
 
 // compute length
 
 template <>
-inline size_t compute_length(cme_mdp::MDInstrumentDefinitionFuture54 &value) {
+inline size_t compute_length(::cme::sbe::mdp::MDInstrumentDefinitionFuture54 &value) {
   // NoEvents
   auto no_events_length = value.noEvents().count();
   value.sbeRewind();  // wtf!
@@ -62,7 +62,7 @@ inline size_t compute_length(cme_mdp::MDInstrumentDefinitionFuture54 &value) {
 }
 
 template <>
-inline size_t compute_length(cme_mdp::MDInstrumentDefinitionOption55 &value) {
+inline size_t compute_length(::cme::sbe::mdp::MDInstrumentDefinitionOption55 &value) {
   // NoEvents
   auto no_events_length = value.noEvents().count();
   value.sbeRewind();  // wtf!
@@ -87,7 +87,7 @@ inline size_t compute_length(cme_mdp::MDInstrumentDefinitionOption55 &value) {
 }
 
 template <>
-inline size_t compute_length(cme_mdp::MDInstrumentDefinitionSpread56 &value) {
+inline size_t compute_length(::cme::sbe::mdp::MDInstrumentDefinitionSpread56 &value) {
   // NoEvents
   auto no_events_length = value.noEvents().count();
   value.sbeRewind();  // wtf!
@@ -108,7 +108,7 @@ inline size_t compute_length(cme_mdp::MDInstrumentDefinitionSpread56 &value) {
 }
 
 template <>
-inline size_t compute_length(cme_mdp::MDInstrumentDefinitionFixedIncome57 &value) {
+inline size_t compute_length(::cme::sbe::mdp::MDInstrumentDefinitionFixedIncome57 &value) {
   // NoEvents
   auto no_events_length = value.noEvents().count();
   value.sbeRewind();  // wtf!
@@ -126,7 +126,7 @@ inline size_t compute_length(cme_mdp::MDInstrumentDefinitionFixedIncome57 &value
 }
 
 template <>
-inline size_t compute_length(cme_mdp::MDInstrumentDefinitionRepo58 &value) {
+inline size_t compute_length(::cme::sbe::mdp::MDInstrumentDefinitionRepo58 &value) {
   // NoEvents
   auto no_events_length = value.noEvents().count();
   value.sbeRewind();  // wtf!
@@ -151,7 +151,7 @@ inline size_t compute_length(cme_mdp::MDInstrumentDefinitionRepo58 &value) {
 }
 
 template <>
-inline size_t compute_length(cme_mdp::MDInstrumentDefinitionFX63 &value) {
+inline size_t compute_length(::cme::sbe::mdp::MDInstrumentDefinitionFX63 &value) {
   // NoEvents
   auto no_events_length = value.noEvents().count();
   value.sbeRewind();  // wtf!
@@ -175,37 +175,37 @@ inline size_t compute_length(cme_mdp::MDInstrumentDefinitionFX63 &value) {
 }  // namespace cme
 
 template <>
-inline constexpr std::string_view get_name<cme_mdp::MDInstrumentDefinitionFuture54>() {
+inline constexpr std::string_view get_name<::cme::sbe::mdp::MDInstrumentDefinitionFuture54>() {
   using namespace std::literals;
   return "md_instrument_definition_future_54"sv;
 }
 
 template <>
-inline constexpr std::string_view get_name<cme_mdp::MDInstrumentDefinitionOption55>() {
+inline constexpr std::string_view get_name<::cme::sbe::mdp::MDInstrumentDefinitionOption55>() {
   using namespace std::literals;
   return "md_instrument_definition_option_55"sv;
 }
 
 template <>
-inline constexpr std::string_view get_name<cme_mdp::MDInstrumentDefinitionSpread56>() {
+inline constexpr std::string_view get_name<::cme::sbe::mdp::MDInstrumentDefinitionSpread56>() {
   using namespace std::literals;
   return "md_instrument_definition_spread_56"sv;
 }
 
 template <>
-inline constexpr std::string_view get_name<cme_mdp::MDInstrumentDefinitionFixedIncome57>() {
+inline constexpr std::string_view get_name<::cme::sbe::mdp::MDInstrumentDefinitionFixedIncome57>() {
   using namespace std::literals;
   return "md_instrument_definition_fixed_income_57"sv;
 }
 
 template <>
-inline constexpr std::string_view get_name<cme_mdp::MDInstrumentDefinitionRepo58>() {
+inline constexpr std::string_view get_name<::cme::sbe::mdp::MDInstrumentDefinitionRepo58>() {
   using namespace std::literals;
   return "md_instrument_definition_repo_58"sv;
 }
 
 template <>
-inline constexpr std::string_view get_name<cme_mdp::MDInstrumentDefinitionFX63>() {
+inline constexpr std::string_view get_name<::cme::sbe::mdp::MDInstrumentDefinitionFX63>() {
   using namespace std::literals;
   return "md_instrument_definition_fx_63"sv;
 }
@@ -216,8 +216,8 @@ inline constexpr std::string_view get_name<cme_mdp::MDInstrumentDefinitionFX63>(
 // MDInstrumentDefinitionFuture54
 
 template <>
-struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFuture54::NoEvents> {
-  using value_type = cme_mdp::MDInstrumentDefinitionFuture54::NoEvents;
+struct fmt::formatter<::cme::sbe::mdp::MDInstrumentDefinitionFuture54::NoEvents> {
+  using value_type = ::cme::sbe::mdp::MDInstrumentDefinitionFuture54::NoEvents;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
@@ -233,8 +233,8 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFuture54::NoEvents> {
 };
 
 template <>
-struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFuture54::NoMDFeedTypes> {
-  using value_type = cme_mdp::MDInstrumentDefinitionFuture54::NoMDFeedTypes;
+struct fmt::formatter<::cme::sbe::mdp::MDInstrumentDefinitionFuture54::NoMDFeedTypes> {
+  using value_type = ::cme::sbe::mdp::MDInstrumentDefinitionFuture54::NoMDFeedTypes;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
@@ -250,8 +250,8 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFuture54::NoMDFeedTypes> {
 };
 
 template <>
-struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFuture54::NoInstAttrib> {
-  using value_type = cme_mdp::MDInstrumentDefinitionFuture54::NoInstAttrib;
+struct fmt::formatter<::cme::sbe::mdp::MDInstrumentDefinitionFuture54::NoInstAttrib> {
+  using value_type = ::cme::sbe::mdp::MDInstrumentDefinitionFuture54::NoInstAttrib;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
@@ -276,8 +276,8 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFuture54::NoInstAttrib> {
 };
 
 template <>
-struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFuture54::NoLotTypeRules> {
-  using value_type = cme_mdp::MDInstrumentDefinitionFuture54::NoLotTypeRules;
+struct fmt::formatter<::cme::sbe::mdp::MDInstrumentDefinitionFuture54::NoLotTypeRules> {
+  using value_type = ::cme::sbe::mdp::MDInstrumentDefinitionFuture54::NoLotTypeRules;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
@@ -302,8 +302,8 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFuture54::NoLotTypeRules> {
 };
 
 template <>
-struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFuture54> {
-  using value_type = cme_mdp::MDInstrumentDefinitionFuture54;
+struct fmt::formatter<::cme::sbe::mdp::MDInstrumentDefinitionFuture54> {
+  using value_type = ::cme::sbe::mdp::MDInstrumentDefinitionFuture54;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type &value, format_context &context) const {
     using namespace std::literals;
@@ -413,8 +413,8 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFuture54> {
 };
 
 template <>
-struct fmt::formatter<cme_mdp::MDInstrumentDefinitionOption55> {
-  using value_type = cme_mdp::MDInstrumentDefinitionOption55;
+struct fmt::formatter<::cme::sbe::mdp::MDInstrumentDefinitionOption55> {
+  using value_type = ::cme::sbe::mdp::MDInstrumentDefinitionOption55;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type &value, format_context &context) const {
     using namespace std::literals;
@@ -520,8 +520,8 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionOption55> {
 };
 
 template <>
-struct fmt::formatter<cme_mdp::MDInstrumentDefinitionSpread56> {
-  using value_type = cme_mdp::MDInstrumentDefinitionSpread56;
+struct fmt::formatter<::cme::sbe::mdp::MDInstrumentDefinitionSpread56> {
+  using value_type = ::cme::sbe::mdp::MDInstrumentDefinitionSpread56;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type &value, format_context &context) const {
     using namespace std::literals;
@@ -627,8 +627,8 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionSpread56> {
 };
 
 template <>
-struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFixedIncome57> {
-  using value_type = cme_mdp::MDInstrumentDefinitionFixedIncome57;
+struct fmt::formatter<::cme::sbe::mdp::MDInstrumentDefinitionFixedIncome57> {
+  using value_type = ::cme::sbe::mdp::MDInstrumentDefinitionFixedIncome57;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type &value, format_context &context) const {
     using namespace std::literals;
@@ -752,8 +752,8 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFixedIncome57> {
 };
 
 template <>
-struct fmt::formatter<cme_mdp::MDInstrumentDefinitionRepo58> {
-  using value_type = cme_mdp::MDInstrumentDefinitionRepo58;
+struct fmt::formatter<::cme::sbe::mdp::MDInstrumentDefinitionRepo58> {
+  using value_type = ::cme::sbe::mdp::MDInstrumentDefinitionRepo58;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type &value, format_context &context) const {
     using namespace std::literals;
@@ -859,8 +859,8 @@ struct fmt::formatter<cme_mdp::MDInstrumentDefinitionRepo58> {
 };
 
 template <>
-struct fmt::formatter<cme_mdp::MDInstrumentDefinitionFX63> {
-  using value_type = cme_mdp::MDInstrumentDefinitionFX63;
+struct fmt::formatter<::cme::sbe::mdp::MDInstrumentDefinitionFX63> {
+  using value_type = ::cme::sbe::mdp::MDInstrumentDefinitionFX63;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type &value, format_context &context) const {
     using namespace std::literals;

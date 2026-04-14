@@ -15,8 +15,8 @@
 
 #include "roq/cme/ilink/utils.hpp"
 
-#include "cme_ilink/ManualOrdIndReq.h"
-#include "cme_ilink/ShortSaleType.h"
+#include "cme/sbe/ilink/ManualOrdIndReq.h"
+#include "cme/sbe/ilink/ShortSaleType.h"
 
 namespace roq {
 namespace cme {
@@ -27,7 +27,7 @@ struct MassQuote final {
 
   uint64_t party_details_list_req_id = {};
   std::chrono::nanoseconds sending_time_epoch = {};
-  cme_ilink::ManualOrdIndReq::Value manual_order_indicator = {};
+  ::cme::sbe::ilink::ManualOrdIndReq::Value manual_order_indicator = {};
   uint32_t seq_num = {};
   std::string_view sender_id;
   uint64_t quote_req_id = {};
@@ -36,7 +36,7 @@ struct MassQuote final {
   uint8_t tot_no_quote_entries = {};
   bool mmp_protection_reset = {};
   bool liquidity_flag = {};
-  cme_ilink::ShortSaleType::Value short_sale_type = {};
+  ::cme::sbe::ilink::ShortSaleType::Value short_sale_type = {};
   std::string_view reserved;
   std::string_view reserved_1;
   bool quote_entry_open = {};

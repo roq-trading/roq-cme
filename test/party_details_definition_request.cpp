@@ -7,8 +7,8 @@
 #include <cmath>
 #include <span>
 
-#include <cme_ilink/MessageHeader.h>
-#include <cme_ilink/PartyDetailsDefinitionRequest518.h>
+#include <cme/sbe/ilink/MessageHeader.h>
+#include <cme/sbe/ilink/PartyDetailsDefinitionRequest518.h>
 
 #include "roq/utils/debug/hex/message.hpp"
 
@@ -18,7 +18,7 @@ using namespace std::literals;
 
 using namespace Catch::literals;
 
-using namespace cme_ilink;
+using namespace ::cme::sbe::ilink;
 
 using namespace roq;
 using namespace roq::cme;
@@ -29,24 +29,24 @@ TEST_CASE("simple", "[party_details_definition_request]") {
   std::array<ilink::PartyDetailsDefinitionRequest::PartyDetails, 1> party_details{{
       {
           .party_detail_id = "ROQ"sv,
-          .party_detail_role = cme_ilink::PartyDetailRole::ExecutingFirm,
+          .party_detail_role = ::cme::sbe::ilink::PartyDetailRole::ExecutingFirm,
       },
   }};
   auto party_details_definition_request = ilink::PartyDetailsDefinitionRequest{
       .party_details_list_req_id = {},  // note!
       .sending_time_epoch = now,
-      .list_update_action = cme_ilink::ListUpdAct::Add,
+      .list_update_action = ::cme::sbe::ilink::ListUpdAct::Add,
       .seq_num = 1,
       .memo = {},
       .avg_px_group_id = {},
       .self_match_prevention_id = {},
-      .cmta_giveup_cd = cme_ilink::CmtaGiveUpCD::GiveUp,
-      .cust_order_capacity = cme_ilink::CustOrderCapacity::Membertradingfortheirownaccount,
-      .clearing_account_type = cme_ilink::ClearingAcctType::Firm,
-      .self_match_prevention_instruction = cme_ilink::SMPI::CancelNewest,
-      .avg_px_indicator = cme_ilink::AvgPxInd::NoAveragePricing,
-      .clearing_trade_price_type = cme_ilink::SLEDS::TradeClearingatExecutionPrice,
-      .cust_order_handling_inst = cme_ilink::CustOrdHandlInst::AlgoEngine,
+      .cmta_giveup_cd = ::cme::sbe::ilink::CmtaGiveUpCD::GiveUp,
+      .cust_order_capacity = ::cme::sbe::ilink::CustOrderCapacity::Membertradingfortheirownaccount,
+      .clearing_account_type = ::cme::sbe::ilink::ClearingAcctType::Firm,
+      .self_match_prevention_instruction = ::cme::sbe::ilink::SMPI::CancelNewest,
+      .avg_px_indicator = ::cme::sbe::ilink::AvgPxInd::NoAveragePricing,
+      .clearing_trade_price_type = ::cme::sbe::ilink::SLEDS::TradeClearingatExecutionPrice,
+      .cust_order_handling_inst = ::cme::sbe::ilink::CustOrdHandlInst::AlgoEngine,
       .executor = {},
       .idm_short_code = {},
       .no_party_details = party_details,

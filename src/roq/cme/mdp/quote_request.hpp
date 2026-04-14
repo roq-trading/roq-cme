@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include <cme_mdp/QuoteRequest39.h>
+#include <cme/sbe/mdp/QuoteRequest39.h>
 
 #include "roq/core/sbe/iterator.hpp"
 
@@ -14,7 +14,7 @@ namespace mdp {
 
 /*
 template <>
-inline size_t compute_length(cme_mdp::QuoteRequest39 &value) {
+inline size_t compute_length(::cme::sbe::mdp::QuoteRequest39 &value) {
   // NoRelatedSym
   auto no_md_entries_length = value.noRelatedSym().count();
   value.noRelatedSym().forEach([](auto &e) { e.skip(); });
@@ -26,7 +26,7 @@ inline size_t compute_length(cme_mdp::QuoteRequest39 &value) {
 }  // namespace cme
 
 template <>
-inline constexpr std::string_view get_name<cme_mdp::QuoteRequest39>() {
+inline constexpr std::string_view get_name<::cme::sbe::mdp::QuoteRequest39>() {
   using namespace std::literals;
   return "quote_request_39"sv;
 }
@@ -35,8 +35,8 @@ inline constexpr std::string_view get_name<cme_mdp::QuoteRequest39>() {
 // QuoteRequest39
 
 template <>
-struct fmt::formatter<cme_mdp::QuoteRequest39::NoRelatedSym> {
-  using value_type = cme_mdp::QuoteRequest39::NoRelatedSym;
+struct fmt::formatter<::cme::sbe::mdp::QuoteRequest39::NoRelatedSym> {
+  using value_type = ::cme::sbe::mdp::QuoteRequest39::NoRelatedSym;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
@@ -58,8 +58,8 @@ struct fmt::formatter<cme_mdp::QuoteRequest39::NoRelatedSym> {
 };
 
 template <>
-struct fmt::formatter<cme_mdp::QuoteRequest39> {
-  using value_type = cme_mdp::QuoteRequest39;
+struct fmt::formatter<::cme::sbe::mdp::QuoteRequest39> {
+  using value_type = ::cme::sbe::mdp::QuoteRequest39;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type &value, format_context &context) const {
     using namespace std::literals;

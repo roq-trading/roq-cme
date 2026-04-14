@@ -6,8 +6,8 @@
 
 #include <magic_enum/magic_enum_format.hpp>
 
-#include <cme_ilink/BusinessReject521.h>
-#include <cme_ilink/PartyDetailsDefinitionRequestAck519.h>
+#include <cme/sbe/ilink/BusinessReject521.h>
+#include <cme/sbe/ilink/PartyDetailsDefinitionRequestAck519.h>
 
 #include "roq/core/sbe/iterator.hpp"
 
@@ -22,8 +22,8 @@ namespace ilink {}  // namespace ilink
 // messages
 
 template <>
-struct fmt::formatter<cme_ilink::PartyDetailsDefinitionRequestAck519::NoPartyDetails> {
-  using value_type = cme_ilink::PartyDetailsDefinitionRequestAck519::NoPartyDetails;
+struct fmt::formatter<::cme::sbe::ilink::PartyDetailsDefinitionRequestAck519::NoPartyDetails> {
+  using value_type = ::cme::sbe::ilink::PartyDetailsDefinitionRequestAck519::NoPartyDetails;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format([[maybe_unused]] value_type &value, format_context &context) const {
     using namespace std::literals;
@@ -36,8 +36,8 @@ struct fmt::formatter<cme_ilink::PartyDetailsDefinitionRequestAck519::NoPartyDet
 };
 
 template <>
-struct fmt::formatter<cme_ilink::PartyDetailsDefinitionRequestAck519::NoTrdRegPublications> {
-  using value_type = cme_ilink::PartyDetailsDefinitionRequestAck519::NoTrdRegPublications;
+struct fmt::formatter<::cme::sbe::ilink::PartyDetailsDefinitionRequestAck519::NoTrdRegPublications> {
+  using value_type = ::cme::sbe::ilink::PartyDetailsDefinitionRequestAck519::NoTrdRegPublications;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format([[maybe_unused]] value_type &value, format_context &context) const {
     using namespace std::literals;
@@ -50,8 +50,8 @@ struct fmt::formatter<cme_ilink::PartyDetailsDefinitionRequestAck519::NoTrdRegPu
 };
 
 template <>
-struct fmt::formatter<cme_ilink::PartyDetailsDefinitionRequestAck519> {
-  using value_type = cme_ilink::PartyDetailsDefinitionRequestAck519;
+struct fmt::formatter<::cme::sbe::ilink::PartyDetailsDefinitionRequestAck519> {
+  using value_type = ::cme::sbe::ilink::PartyDetailsDefinitionRequestAck519;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type &value, format_context &context) const {
     using namespace std::literals;
@@ -113,8 +113,8 @@ struct fmt::formatter<cme_ilink::PartyDetailsDefinitionRequestAck519> {
 };
 
 template <>
-struct fmt::formatter<cme_ilink::BusinessReject521> {
-  using value_type = cme_ilink::BusinessReject521;
+struct fmt::formatter<::cme::sbe::ilink::BusinessReject521> {
+  using value_type = ::cme::sbe::ilink::BusinessReject521;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type &value, format_context &context) const {
     using namespace std::literals;

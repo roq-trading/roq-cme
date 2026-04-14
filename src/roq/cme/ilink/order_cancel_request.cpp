@@ -2,7 +2,7 @@
 
 #include "roq/cme/ilink/order_cancel_request.hpp"
 
-#include <cme_ilink/OrderCancelRequest516.h>
+#include <cme/sbe/ilink/OrderCancelRequest516.h>
 
 using namespace std::literals;
 
@@ -11,8 +11,8 @@ namespace cme {
 namespace ilink {
 
 namespace {
-using header_type = cme_ilink::MessageHeader;
-using value_type = cme_ilink::OrderCancelRequest516;
+using header_type = ::cme::sbe::ilink::MessageHeader;
+using value_type = ::cme::sbe::ilink::OrderCancelRequest516;
 }  // namespace
 
 std::span<std::byte const> OrderCancelRequest::encode(std::span<std::byte> const &buffer) const {
@@ -29,7 +29,7 @@ std::span<std::byte const> OrderCancelRequest::encode(std::span<std::byte> const
   result.putLocation(location);
   result.securityID(security_id);
   result.side(side);
-  result.liquidityFlag(liquidity_flag ? cme_ilink::BooleanNULL::True : cme_ilink::BooleanNULL::False);
+  result.liquidityFlag(liquidity_flag ? ::cme::sbe::ilink::BooleanNULL::True : ::cme::sbe::ilink::BooleanNULL::False);
   result.putOrigOrderUser(orig_order_user);
   auto length = header_type::encodedLength() + value_type::computeLength();
   return {std::data(buffer), length};

@@ -105,19 +105,19 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
   struct MyHandler final : public mdp::Parser::Handler {
     int counter = 0;
     void operator()(mdp::Frame const &) override {}
-    void operator()(Trace<cme_mdp::ChannelReset4> const &, mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp::AdminHeartbeat12> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<::cme::sbe::mdp::ChannelReset4> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<::cme::sbe::mdp::AdminHeartbeat12> const &, mdp::Frame const &) override { FAIL(); }
     // - security status
-    void operator()(Trace<cme_mdp::SecurityStatus30> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<::cme::sbe::mdp::SecurityStatus30> const &, mdp::Frame const &) override { FAIL(); }
     // - instrument definition
-    void operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &, mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp::MDInstrumentDefinitionOption55> const &, mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp::MDInstrumentDefinitionSpread56> const &, mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp::MDInstrumentDefinitionFixedIncome57> const &, mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp::MDInstrumentDefinitionRepo58> const &, mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp::MDInstrumentDefinitionFX63> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionFuture54> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionOption55> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionSpread56> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionFixedIncome57> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionRepo58> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionFX63> const &, mdp::Frame const &) override { FAIL(); }
     // - SnapshotFullRefresh
-    void operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &event, mdp::Frame const &) override {
+    void operator()(Trace<::cme::sbe::mdp::SnapshotFullRefresh52> const &event, mdp::Frame const &) override {
       using value_type = std::remove_cvref_t<decltype(event)>::value_type;
       auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
       // fmt::print("{}\n", value);
@@ -130,7 +130,7 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
           CHECK(value.transactTime() == 1677818744867650955);
           CHECK(value.lastUpdateTime() == 1677788155389510545);
           CHECK(value.tradeDate() == 19419);
-          CHECK(value.mDSecurityTradingStatus() == cme_mdp::SecurityTradingStatus::ReadyToTrade);
+          CHECK(value.mDSecurityTradingStatus() == ::cme::sbe::mdp::SecurityTradingStatus::ReadyToTrade);
           CHECK(std::isnan(map(value.highLimitPrice()).template get<double>()));
           CHECK(std::isnan(map(value.lowLimitPrice()).template get<double>()));
           CHECK(map(value.maxPriceVariation()).template get<double>() == 0.5_a);
@@ -144,9 +144,9 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 1);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 1);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);  // null
-                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == ::cme::sbe::mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
-                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::Bid);
+                CHECK(item.mDEntryType() == ::cme::sbe::mdp::MDEntryType::Value::Bid);
                 break;
               case 2:
                 CHECK(map(item.mDEntryPx()).template get<double>() == -0.0234375_a);
@@ -154,9 +154,9 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 2);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 2);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
-                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == ::cme::sbe::mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
-                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::Bid);
+                CHECK(item.mDEntryType() == ::cme::sbe::mdp::MDEntryType::Value::Bid);
                 break;
               case 3:
                 CHECK(map(item.mDEntryPx()).template get<double>() == -0.03125_a);
@@ -164,9 +164,9 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 4);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 3);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
-                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == ::cme::sbe::mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
-                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::Bid);
+                CHECK(item.mDEntryType() == ::cme::sbe::mdp::MDEntryType::Value::Bid);
                 break;
               case 4:
                 CHECK(map(item.mDEntryPx()).template get<double>() == -0.0390625_a);
@@ -174,9 +174,9 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 5);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 4);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
-                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == ::cme::sbe::mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
-                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::Bid);
+                CHECK(item.mDEntryType() == ::cme::sbe::mdp::MDEntryType::Value::Bid);
                 break;
               case 5:
                 CHECK(map(item.mDEntryPx()).template get<double>() == -0.046875_a);
@@ -184,9 +184,9 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 4);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 5);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
-                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == ::cme::sbe::mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
-                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::Bid);
+                CHECK(item.mDEntryType() == ::cme::sbe::mdp::MDEntryType::Value::Bid);
                 break;
               case 6:
                 CHECK(map(item.mDEntryPx()).template get<double>() == -0.0546875_a);
@@ -194,9 +194,9 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 4);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 6);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
-                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == ::cme::sbe::mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
-                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::Bid);
+                CHECK(item.mDEntryType() == ::cme::sbe::mdp::MDEntryType::Value::Bid);
                 break;
               case 7:
                 CHECK(map(item.mDEntryPx()).template get<double>() == -0.0625_a);
@@ -204,9 +204,9 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 2);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 7);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
-                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == ::cme::sbe::mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
-                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::Bid);
+                CHECK(item.mDEntryType() == ::cme::sbe::mdp::MDEntryType::Value::Bid);
                 break;
               case 8:
                 CHECK(map(item.mDEntryPx()).template get<double>() == -0.0703125_a);
@@ -214,9 +214,9 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 2);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 8);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
-                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == ::cme::sbe::mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
-                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::Bid);
+                CHECK(item.mDEntryType() == ::cme::sbe::mdp::MDEntryType::Value::Bid);
                 break;
               case 9:
                 CHECK(map(item.mDEntryPx()).template get<double>() == -0.078125_a);
@@ -224,9 +224,9 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 2);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 9);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
-                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == ::cme::sbe::mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
-                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::Bid);
+                CHECK(item.mDEntryType() == ::cme::sbe::mdp::MDEntryType::Value::Bid);
                 break;
               case 10:
                 CHECK(map(item.mDEntryPx()).template get<double>() == 0.0_a);
@@ -234,9 +234,9 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 1);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 1);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
-                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == ::cme::sbe::mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
-                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::Offer);
+                CHECK(item.mDEntryType() == ::cme::sbe::mdp::MDEntryType::Value::Offer);
                 break;
               case 11:
                 CHECK(map(item.mDEntryPx()).template get<double>() == 0.0078125_a);
@@ -244,9 +244,9 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 3);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 2);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
-                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == ::cme::sbe::mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
-                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::Offer);
+                CHECK(item.mDEntryType() == ::cme::sbe::mdp::MDEntryType::Value::Offer);
                 break;
               case 12:
                 CHECK(map(item.mDEntryPx()).template get<double>() == 0.015625_a);
@@ -254,9 +254,9 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 4);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 3);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
-                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == ::cme::sbe::mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
-                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::Offer);
+                CHECK(item.mDEntryType() == ::cme::sbe::mdp::MDEntryType::Value::Offer);
                 break;
               case 13:
                 CHECK(map(item.mDEntryPx()).template get<double>() == 0.0234375_a);
@@ -264,9 +264,9 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 6);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 4);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
-                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == ::cme::sbe::mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
-                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::Offer);
+                CHECK(item.mDEntryType() == ::cme::sbe::mdp::MDEntryType::Value::Offer);
                 break;
               case 14:
                 CHECK(map(item.mDEntryPx()).template get<double>() == 0.03125_a);
@@ -274,9 +274,9 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 4);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 5);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
-                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == ::cme::sbe::mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
-                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::Offer);
+                CHECK(item.mDEntryType() == ::cme::sbe::mdp::MDEntryType::Value::Offer);
                 break;
               case 15:
                 CHECK(map(item.mDEntryPx()).template get<double>() == 0.0390625_a);
@@ -284,9 +284,9 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 4);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 6);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
-                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == ::cme::sbe::mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
-                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::Offer);
+                CHECK(item.mDEntryType() == ::cme::sbe::mdp::MDEntryType::Value::Offer);
                 break;
               case 16:
                 CHECK(map(item.mDEntryPx()).template get<double>() == 0.046875_a);
@@ -294,9 +294,9 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 2);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 7);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
-                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == ::cme::sbe::mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
-                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::Offer);
+                CHECK(item.mDEntryType() == ::cme::sbe::mdp::MDEntryType::Value::Offer);
                 break;
               case 17:
                 CHECK(map(item.mDEntryPx()).template get<double>() == 0.0546875_a);
@@ -304,9 +304,9 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 1);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 8);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
-                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == ::cme::sbe::mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
-                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::Offer);
+                CHECK(item.mDEntryType() == ::cme::sbe::mdp::MDEntryType::Value::Offer);
                 break;
               case 18:
                 CHECK(map(item.mDEntryPx()).template get<double>() == 0.0625_a);
@@ -314,9 +314,9 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 1);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 9);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
-                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == ::cme::sbe::mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
-                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::Offer);
+                CHECK(item.mDEntryType() == ::cme::sbe::mdp::MDEntryType::Value::Offer);
                 break;
               case 19:
                 CHECK(map(item.mDEntryPx()).template get<double>() == 0.0703125_a);
@@ -324,9 +324,9 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 1);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 10);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
-                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == ::cme::sbe::mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
-                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::Offer);
+                CHECK(item.mDEntryType() == ::cme::sbe::mdp::MDEntryType::Value::Offer);
                 break;
               case 20:
                 CHECK(map(item.mDEntryPx()).template get<double>() == -0.0234375_a);
@@ -334,9 +334,9 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 1);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
-                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == ::cme::sbe::mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
-                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::ImpliedBid);
+                CHECK(item.mDEntryType() == ::cme::sbe::mdp::MDEntryType::Value::ImpliedBid);
                 break;
               case 21:
                 CHECK(map(item.mDEntryPx()).template get<double>() == -0.03125_a);
@@ -344,9 +344,9 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 2);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
-                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == ::cme::sbe::mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
-                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::ImpliedBid);
+                CHECK(item.mDEntryType() == ::cme::sbe::mdp::MDEntryType::Value::ImpliedBid);
                 break;
               case 22:
                 CHECK(map(item.mDEntryPx()).template get<double>() == 0.015625_a);
@@ -354,9 +354,9 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 1);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
-                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == ::cme::sbe::mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
-                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::ImpliedOffer);
+                CHECK(item.mDEntryType() == ::cme::sbe::mdp::MDEntryType::Value::ImpliedOffer);
                 break;
               case 23:
                 CHECK(map(item.mDEntryPx()).template get<double>() == 0.0234375_a);
@@ -364,9 +364,9 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 2);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
-                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == ::cme::sbe::mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
-                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::ImpliedOffer);
+                CHECK(item.mDEntryType() == ::cme::sbe::mdp::MDEntryType::Value::ImpliedOffer);
                 break;
               case 24:
                 CHECK(map(item.mDEntryPx()).template get<double>() == 0.0078125_a);
@@ -374,9 +374,9 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 0);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
-                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == ::cme::sbe::mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
-                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::SessionHighBid);
+                CHECK(item.mDEntryType() == ::cme::sbe::mdp::MDEntryType::Value::SessionHighBid);
                 break;
               case 25:
                 CHECK(map(item.mDEntryPx()).template get<double>() == 0.0_a);
@@ -384,9 +384,9 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 0);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);
-                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == ::cme::sbe::mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
-                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::SessionLowOffer);
+                CHECK(item.mDEntryType() == ::cme::sbe::mdp::MDEntryType::Value::SessionLowOffer);
                 break;
               case 26:
                 CHECK(map(item.mDEntryPx()).template get<double>() == 0.0_a);
@@ -394,9 +394,9 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 0);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 19418);
-                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == ::cme::sbe::mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().rawValue() == 3);  // FinalDaily | Actual
-                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::SettlementPrice);
+                CHECK(item.mDEntryType() == ::cme::sbe::mdp::MDEntryType::Value::SettlementPrice);
                 break;
             }
           });
@@ -411,7 +411,7 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
           CHECK(value.transactTime() == 1677818744319067195);
           CHECK(value.lastUpdateTime() == 1677788155389510545);
           CHECK(value.tradeDate() == 19419);
-          CHECK(value.mDSecurityTradingStatus() == cme_mdp::SecurityTradingStatus::ReadyToTrade);
+          CHECK(value.mDSecurityTradingStatus() == ::cme::sbe::mdp::SecurityTradingStatus::ReadyToTrade);
           CHECK(std::isnan(map(value.highLimitPrice()).template get<double>()));
           CHECK(std::isnan(map(value.lowLimitPrice()).template get<double>()));
           CHECK(map(value.maxPriceVariation()).template get<double>() == 0.5_a);
@@ -425,9 +425,9 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 1);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);  // null
-                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == ::cme::sbe::mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
-                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::ImpliedBid);
+                CHECK(item.mDEntryType() == ::cme::sbe::mdp::MDEntryType::Value::ImpliedBid);
                 break;
               case 2:
                 CHECK(map(item.mDEntryPx()).template get<double>() == -0.05859375_a);
@@ -435,9 +435,9 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 2);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);  // null
-                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == ::cme::sbe::mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
-                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::ImpliedBid);
+                CHECK(item.mDEntryType() == ::cme::sbe::mdp::MDEntryType::Value::ImpliedBid);
                 break;
               case 3:
                 CHECK(map(item.mDEntryPx()).template get<double>() == 0.0859375_a);
@@ -445,9 +445,9 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 1);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);  // null
-                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == ::cme::sbe::mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
-                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::ImpliedOffer);
+                CHECK(item.mDEntryType() == ::cme::sbe::mdp::MDEntryType::Value::ImpliedOffer);
                 break;
               case 4:
                 CHECK(map(item.mDEntryPx()).template get<double>() == 0.11328125_a);
@@ -455,9 +455,9 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 2);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);  // null
-                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == ::cme::sbe::mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
-                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::ImpliedOffer);
+                CHECK(item.mDEntryType() == ::cme::sbe::mdp::MDEntryType::Value::ImpliedOffer);
                 break;
               case 5:
                 CHECK(map(item.mDEntryPx()).template get<double>() == 0.0_a);
@@ -465,9 +465,9 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 0);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 19418);
-                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == ::cme::sbe::mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().rawValue() == 3);  // FinalDaily | Actual
-                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::SettlementPrice);
+                CHECK(item.mDEntryType() == ::cme::sbe::mdp::MDEntryType::Value::SettlementPrice);
                 break;
             }
           });
@@ -482,7 +482,7 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
           CHECK(value.transactTime() == 1677818739535139153);
           CHECK(value.lastUpdateTime() == 1677788155389510545);
           CHECK(value.tradeDate() == 19419);
-          CHECK(value.mDSecurityTradingStatus() == cme_mdp::SecurityTradingStatus::ReadyToTrade);
+          CHECK(value.mDSecurityTradingStatus() == ::cme::sbe::mdp::SecurityTradingStatus::ReadyToTrade);
           CHECK(std::isnan(map(value.highLimitPrice()).template get<double>()));
           CHECK(std::isnan(map(value.lowLimitPrice()).template get<double>()));
           CHECK(map(value.maxPriceVariation()).template get<double>() == 0.25_a);
@@ -496,9 +496,9 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 1);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);  // null
-                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == ::cme::sbe::mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
-                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::ImpliedBid);
+                CHECK(item.mDEntryType() == ::cme::sbe::mdp::MDEntryType::Value::ImpliedBid);
                 break;
               case 2:
                 CHECK(map(item.mDEntryPx()).template get<double>() == -0.6015625_a);
@@ -506,9 +506,9 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 2);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);  // null
-                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == ::cme::sbe::mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
-                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::ImpliedBid);
+                CHECK(item.mDEntryType() == ::cme::sbe::mdp::MDEntryType::Value::ImpliedBid);
                 break;
               case 3:
                 CHECK(map(item.mDEntryPx()).template get<double>() == -0.07421875_a);
@@ -516,9 +516,9 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 1);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);  // null
-                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == ::cme::sbe::mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
-                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::ImpliedOffer);
+                CHECK(item.mDEntryType() == ::cme::sbe::mdp::MDEntryType::Value::ImpliedOffer);
                 break;
               case 4:
                 CHECK(map(item.mDEntryPx()).template get<double>() == -0.0703125_a);
@@ -526,9 +526,9 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 2);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);  // null
-                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == ::cme::sbe::mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
-                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::ImpliedOffer);
+                CHECK(item.mDEntryType() == ::cme::sbe::mdp::MDEntryType::Value::ImpliedOffer);
                 break;
               case 5:
                 CHECK(map(item.mDEntryPx()).template get<double>() == 0.0_a);
@@ -536,9 +536,9 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 0);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 19418);
-                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == ::cme::sbe::mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().rawValue() == 3);  // FinalDaily | Actual
-                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::SettlementPrice);
+                CHECK(item.mDEntryType() == ::cme::sbe::mdp::MDEntryType::Value::SettlementPrice);
                 break;
             }
           });
@@ -553,7 +553,7 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
           CHECK(value.transactTime() == 1677801258962364919);
           CHECK(value.lastUpdateTime() == 1677788155389510545);
           CHECK(value.tradeDate() == 19419);
-          CHECK(value.mDSecurityTradingStatus() == cme_mdp::SecurityTradingStatus::ReadyToTrade);
+          CHECK(value.mDSecurityTradingStatus() == ::cme::sbe::mdp::SecurityTradingStatus::ReadyToTrade);
           CHECK(std::isnan(map(value.highLimitPrice()).template get<double>()));
           CHECK(std::isnan(map(value.lowLimitPrice()).template get<double>()));
           CHECK(map(value.maxPriceVariation()).template get<double>() == 2500.0_a);
@@ -567,9 +567,9 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 0);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 19418);
-                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == ::cme::sbe::mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().rawValue() == 3);  // FinalDaily | Actual
-                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::SettlementPrice);
+                CHECK(item.mDEntryType() == ::cme::sbe::mdp::MDEntryType::Value::SettlementPrice);
                 break;
             }
           });
@@ -584,7 +584,7 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
           CHECK(value.transactTime() == 1677818739535139153);
           CHECK(value.lastUpdateTime() == 1677788155389510545);
           CHECK(value.tradeDate() == 19419);
-          CHECK(value.mDSecurityTradingStatus() == cme_mdp::SecurityTradingStatus::ReadyToTrade);
+          CHECK(value.mDSecurityTradingStatus() == ::cme::sbe::mdp::SecurityTradingStatus::ReadyToTrade);
           CHECK(std::isnan(map(value.highLimitPrice()).template get<double>()));
           CHECK(std::isnan(map(value.lowLimitPrice()).template get<double>()));
           CHECK(map(value.maxPriceVariation()).template get<double>() == 0.25_a);
@@ -598,9 +598,9 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 1);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);  // null
-                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == ::cme::sbe::mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
-                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::ImpliedBid);
+                CHECK(item.mDEntryType() == ::cme::sbe::mdp::MDEntryType::Value::ImpliedBid);
                 break;
               case 2:
                 CHECK(map(item.mDEntryPx()).template get<double>() == -1.1875);
@@ -608,9 +608,9 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 2);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);  // null
-                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == ::cme::sbe::mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
-                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::ImpliedBid);
+                CHECK(item.mDEntryType() == ::cme::sbe::mdp::MDEntryType::Value::ImpliedBid);
                 break;
               case 3:
                 CHECK(map(item.mDEntryPx()).template get<double>() == -0.296875_a);
@@ -618,9 +618,9 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 1);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);  // null
-                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == ::cme::sbe::mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
-                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::ImpliedOffer);
+                CHECK(item.mDEntryType() == ::cme::sbe::mdp::MDEntryType::Value::ImpliedOffer);
                 break;
               case 4:
                 CHECK(map(item.mDEntryPx()).template get<double>() == 0.890625_a);
@@ -628,9 +628,9 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 2);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 0);  // null
-                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == ::cme::sbe::mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().nullValue());
-                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::ImpliedOffer);
+                CHECK(item.mDEntryType() == ::cme::sbe::mdp::MDEntryType::Value::ImpliedOffer);
                 break;
               case 5:
                 CHECK(map(item.mDEntryPx()).template get<double>() == 0.0_a);
@@ -638,9 +638,9 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 0);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 19418);
-                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == ::cme::sbe::mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().rawValue() == 3);  // FinalDaily | Actual
-                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::SettlementPrice);
+                CHECK(item.mDEntryType() == ::cme::sbe::mdp::MDEntryType::Value::SettlementPrice);
                 break;
             }
           });
@@ -655,7 +655,7 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
           CHECK(value.transactTime() == 1677801259010763163);
           CHECK(value.lastUpdateTime() == 1677788155389510545);
           CHECK(value.tradeDate() == 19419);
-          CHECK(value.mDSecurityTradingStatus() == cme_mdp::SecurityTradingStatus::ReadyToTrade);
+          CHECK(value.mDSecurityTradingStatus() == ::cme::sbe::mdp::SecurityTradingStatus::ReadyToTrade);
           CHECK(std::isnan(map(value.highLimitPrice()).template get<double>()));
           CHECK(std::isnan(map(value.lowLimitPrice()).template get<double>()));
           CHECK(map(value.maxPriceVariation()).template get<double>() == 0.125_a);
@@ -669,9 +669,9 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
                 CHECK(mdp::get_int(item.numberOfOrders(), item.numberOfOrdersNullValue()) == 0);
                 CHECK(mdp::get_int(item.mDPriceLevel(), item.mDPriceLevelNullValue()) == 0);
                 CHECK(mdp::get_int(item.tradingReferenceDate(), item.tradingReferenceDateNullValue()) == 19418);
-                CHECK(item.openCloseSettlFlag() == cme_mdp::OpenCloseSettlFlag::NULL_VALUE);
+                CHECK(item.openCloseSettlFlag() == ::cme::sbe::mdp::OpenCloseSettlFlag::NULL_VALUE);
                 CHECK(item.settlPriceType().rawValue() == 3);  // FinalDaily | Actual
-                CHECK(item.mDEntryType() == cme_mdp::MDEntryType::Value::SettlementPrice);
+                CHECK(item.mDEntryType() == ::cme::sbe::mdp::MDEntryType::Value::SettlementPrice);
                 break;
             }
           });
@@ -680,21 +680,21 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
         }
       }
     }
-    void operator()(Trace<cme_mdp::SnapshotFullRefreshOrderBook53> const &, mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp::SnapshotFullRefreshLongQty69> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<::cme::sbe::mdp::SnapshotFullRefreshOrderBook53> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<::cme::sbe::mdp::SnapshotFullRefreshLongQty69> const &, mdp::Frame const &) override { FAIL(); }
     // - MDIncrementalRefresh
-    void operator()(Trace<cme_mdp::MDIncrementalRefreshVolume37> const &, mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &, mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp::MDIncrementalRefreshOrderBook47> const &, mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp::MDIncrementalRefreshTradeSummary48> const &, mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp::MDIncrementalRefreshDailyStatistics49> const &, mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp::MDIncrementalRefreshLimitsBanding50> const &, mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp::MDIncrementalRefreshSessionStatistics51> const &, mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp::MDIncrementalRefreshBookLongQty64> const &, mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65> const &, mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp::MDIncrementalRefreshVolumeLongQty66> const &, mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67> const &, mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<cme_mdp::QuoteRequest39> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshVolume37> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshBook46> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshOrderBook47> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshTradeSummary48> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshDailyStatistics49> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshLimitsBanding50> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshSessionStatistics51> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshBookLongQty64> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshTradeSummaryLongQty65> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshVolumeLongQty66> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshSessionStatisticsLongQty67> const &, mdp::Frame const &) override { FAIL(); }
+    void operator()(Trace<::cme::sbe::mdp::QuoteRequest39> const &, mdp::Frame const &) override { FAIL(); }
   } handler;
   std::span buffer{reinterpret_cast<std::byte const *>(std::data(message)), std::size(message)};
   TraceInfo trace_info;

@@ -2,7 +2,7 @@
 
 #include "roq/cme/ilink/new_order_single.hpp"
 
-#include <cme_ilink/NewOrderSingle514.h>
+#include <cme/sbe/ilink/NewOrderSingle514.h>
 
 using namespace std::literals;
 
@@ -11,7 +11,7 @@ namespace cme {
 namespace ilink {
 
 namespace {
-void set_price(cme_ilink::PRICENULL9 &result, double value) {
+void set_price(::cme::sbe::ilink::PRICENULL9 &result, double value) {
   using value_type = std::remove_cvref_t<decltype(result)>;
   if (std::isnan(value)) {
     result.mantissa(value_type::mantissaNullValue());
@@ -23,8 +23,8 @@ void set_price(cme_ilink::PRICENULL9 &result, double value) {
 }  // namespace
 
 namespace {
-using header_type = cme_ilink::MessageHeader;
-using value_type = cme_ilink::NewOrderSingle514;
+using header_type = ::cme::sbe::ilink::MessageHeader;
+using value_type = ::cme::sbe::ilink::NewOrderSingle514;
 }  // namespace
 
 std::span<std::byte const> NewOrderSingle::encode(std::span<std::byte> const &buffer) const {
@@ -50,8 +50,8 @@ std::span<std::byte const> NewOrderSingle::encode(std::span<std::byte> const &bu
   result.manualOrderIndicator(manual_order_indicator);
   result.execInst().rawValue(exec_inst);
   result.executionMode(execution_mode);
-  result.liquidityFlag(liquidity_flag ? cme_ilink::BooleanNULL::True : cme_ilink::BooleanNULL::False);
-  result.managedOrder(managed_order ? cme_ilink::BooleanNULL::True : cme_ilink::BooleanNULL::False);
+  result.liquidityFlag(liquidity_flag ? ::cme::sbe::ilink::BooleanNULL::True : ::cme::sbe::ilink::BooleanNULL::False);
+  result.managedOrder(managed_order ? ::cme::sbe::ilink::BooleanNULL::True : ::cme::sbe::ilink::BooleanNULL::False);
   result.shortSaleType(short_sale_type);
   set_price(result.discretionPrice(), discretion_price);
   set_price(result.reservationPrice(), reservation_price);

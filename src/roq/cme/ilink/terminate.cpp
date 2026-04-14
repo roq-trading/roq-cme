@@ -2,7 +2,7 @@
 
 #include "roq/cme/ilink/terminate.hpp"
 
-#include <cme_ilink/Terminate507.h>
+#include <cme/sbe/ilink/Terminate507.h>
 
 using namespace std::literals;
 
@@ -11,8 +11,8 @@ namespace cme {
 namespace ilink {
 
 namespace {
-using header_type = cme_ilink::MessageHeader;
-using value_type = cme_ilink::Terminate507;
+using header_type = ::cme::sbe::ilink::MessageHeader;
+using value_type = ::cme::sbe::ilink::Terminate507;
 }  // namespace
 
 std::span<std::byte const> Terminate::encode(std::span<std::byte> const &buffer) const {

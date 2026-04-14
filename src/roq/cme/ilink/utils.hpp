@@ -7,26 +7,26 @@
 
 #include <magic_enum/magic_enum_format.hpp>
 
-#include <cme_ilink/ExecutionReportNew522.h>
-#include <cme_ilink/MessageHeader.h>
+#include <cme/sbe/ilink/ExecutionReportNew522.h>
+#include <cme/sbe/ilink/MessageHeader.h>
 
-#include <cme_ilink/BooleanFlag.h>
-#include <cme_ilink/BooleanNULL.h>
-#include <cme_ilink/ExecMode.h>
-#include <cme_ilink/ExecReason.h>
-#include <cme_ilink/ExpCycle.h>
-#include <cme_ilink/FTI.h>
-#include <cme_ilink/KeepAliveLapsed.h>
-#include <cme_ilink/ManualOrdInd.h>
-#include <cme_ilink/ManualOrdIndReq.h>
-#include <cme_ilink/OrdStatusTrd.h>
-#include <cme_ilink/OrderStatus.h>
-#include <cme_ilink/OrderType.h>
-#include <cme_ilink/SecRspTyp.h>
-#include <cme_ilink/ShortSaleType.h>
-#include <cme_ilink/SideReq.h>
-#include <cme_ilink/SplitMsg.h>
-#include <cme_ilink/TimeInForce.h>
+#include <cme/sbe/ilink/BooleanFlag.h>
+#include <cme/sbe/ilink/BooleanNULL.h>
+#include <cme/sbe/ilink/ExecMode.h>
+#include <cme/sbe/ilink/ExecReason.h>
+#include <cme/sbe/ilink/ExpCycle.h>
+#include <cme/sbe/ilink/FTI.h>
+#include <cme/sbe/ilink/KeepAliveLapsed.h>
+#include <cme/sbe/ilink/ManualOrdInd.h>
+#include <cme/sbe/ilink/ManualOrdIndReq.h>
+#include <cme/sbe/ilink/OrdStatusTrd.h>
+#include <cme/sbe/ilink/OrderStatus.h>
+#include <cme/sbe/ilink/OrderType.h>
+#include <cme/sbe/ilink/SecRspTyp.h>
+#include <cme/sbe/ilink/ShortSaleType.h>
+#include <cme/sbe/ilink/SideReq.h>
+#include <cme/sbe/ilink/SplitMsg.h>
+#include <cme/sbe/ilink/TimeInForce.h>
 
 #include <magic_enum/magic_enum.hpp>
 
@@ -48,12 +48,12 @@ inline T get_int(T value, T null_value) {
   return T{};
 }
 
-inline double get_double(cme_ilink::PRICE9 const &value) {
+inline double get_double(::cme::sbe::ilink::PRICE9 const &value) {
   auto mantissa = value.mantissa();
   return static_cast<double>(mantissa) * std::pow(10.0, value.exponent());
 }
 
-inline double get_double(cme_ilink::PRICENULL9 const &value) {
+inline double get_double(::cme::sbe::ilink::PRICENULL9 const &value) {
   auto mantissa = value.mantissa();
   if (mantissa != value.mantissaNullValue()) {
     return static_cast<double>(mantissa) * std::pow(10.0, value.exponent());
@@ -61,7 +61,7 @@ inline double get_double(cme_ilink::PRICENULL9 const &value) {
   return NaN;
 }
 
-inline double get_double(cme_ilink::Decimal32NULL const &value) {
+inline double get_double(::cme::sbe::ilink::Decimal32NULL const &value) {
   auto mantissa = value.mantissa();
   if (mantissa != value.mantissaNullValue()) {
     return static_cast<double>(mantissa) * std::pow(10.0, value.exponent());
@@ -69,7 +69,7 @@ inline double get_double(cme_ilink::Decimal32NULL const &value) {
   return NaN;
 }
 
-inline double get_double(cme_ilink::Decimal64NULL const &value) {
+inline double get_double(::cme::sbe::ilink::Decimal64NULL const &value) {
   auto mantissa = value.mantissa();
   if (mantissa != value.mantissaNullValue()) {
     return static_cast<double>(mantissa) * std::pow(10.0, value.exponent());
@@ -108,11 +108,11 @@ struct Group final {
 
 /*
 template <>
-struct fmt::formatter<cme_ilink::MessageHeader> {
+struct fmt::formatter<::cme::sbe::ilink::MessageHeader> {
   constexpr auto parse(format_parse_context &context) {
     return std::begin(context);
   }
-  auto format(cme_ilink::MessageHeader const &value, format_context &context) const {
+  auto format(::cme::sbe::ilink::MessageHeader const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(
         context.out(),
@@ -133,8 +133,8 @@ struct fmt::formatter<cme_ilink::MessageHeader> {
 // types
 
 template <>
-struct fmt::formatter<cme_ilink::PRICE9> {
-  using value_type = cme_ilink::PRICE9;
+struct fmt::formatter<::cme::sbe::ilink::PRICE9> {
+  using value_type = ::cme::sbe::ilink::PRICE9;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
@@ -143,8 +143,8 @@ struct fmt::formatter<cme_ilink::PRICE9> {
 };
 
 template <>
-struct fmt::formatter<cme_ilink::PRICENULL9> {
-  using value_type = cme_ilink::PRICENULL9;
+struct fmt::formatter<::cme::sbe::ilink::PRICENULL9> {
+  using value_type = ::cme::sbe::ilink::PRICENULL9;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
@@ -153,8 +153,8 @@ struct fmt::formatter<cme_ilink::PRICENULL9> {
 };
 
 template <>
-struct fmt::formatter<cme_ilink::Decimal32NULL> {
-  using value_type = cme_ilink::Decimal32NULL;
+struct fmt::formatter<::cme::sbe::ilink::Decimal32NULL> {
+  using value_type = ::cme::sbe::ilink::Decimal32NULL;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
@@ -163,8 +163,8 @@ struct fmt::formatter<cme_ilink::Decimal32NULL> {
 };
 
 template <>
-struct fmt::formatter<cme_ilink::Decimal64NULL> {
-  using value_type = cme_ilink::Decimal64NULL;
+struct fmt::formatter<::cme::sbe::ilink::Decimal64NULL> {
+  using value_type = ::cme::sbe::ilink::Decimal64NULL;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
@@ -175,8 +175,8 @@ struct fmt::formatter<cme_ilink::Decimal64NULL> {
 // complex
 
 template <>
-struct fmt::formatter<cme_ilink::MaturityMonthYear> {
-  using value_type = cme_ilink::MaturityMonthYear;
+struct fmt::formatter<::cme::sbe::ilink::MaturityMonthYear> {
+  using value_type = ::cme::sbe::ilink::MaturityMonthYear;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
@@ -197,8 +197,8 @@ struct fmt::formatter<cme_ilink::MaturityMonthYear> {
 
 // note! set
 template <>
-struct fmt::formatter<cme_ilink::ExecInst> {
-  using value_type = cme_ilink::ExecInst;
+struct fmt::formatter<::cme::sbe::ilink::ExecInst> {
+  using value_type = ::cme::sbe::ilink::ExecInst;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;

@@ -35,8 +35,8 @@ auto const SUPPORTS = Mask{
 // === HELPERS ===
 
 namespace {
-void emplace_back(cme_mdp::SnapshotFullRefreshOrderBook53::NoMDEntries const &item, auto &security, auto &orders) {
-  auto price = map(const_cast<cme_mdp::SnapshotFullRefreshOrderBook53::NoMDEntries &>(item).mDEntryPx()).template get<double>();
+void emplace_back(::cme::sbe::mdp::SnapshotFullRefreshOrderBook53::NoMDEntries const &item, auto &security, auto &orders) {
+  auto price = map(const_cast<::cme::sbe::mdp::SnapshotFullRefreshOrderBook53::NoMDEntries &>(item).mDEntryPx()).template get<double>();
   auto quantity = item.mDDisplayQty();
   auto priority = mdp::get_int(item.mDOrderPriority(), item.mDOrderPriorityNullValue());
   auto order_id = mdp::get_int(item.orderID(), item.orderIDNullValue());
@@ -106,7 +106,7 @@ void MBOFDMarketRecovery::dispatch(std::span<std::byte const> const &payload, Tr
 void MBOFDMarketRecovery::operator()(mdp::Frame const &) {
 }
 
-void MBOFDMarketRecovery::operator()(Trace<cme_mdp::AdminHeartbeat12> const &event, mdp::Frame const &frame) {
+void MBOFDMarketRecovery::operator()(Trace<::cme::sbe::mdp::AdminHeartbeat12> const &event, mdp::Frame const &frame) {
   auto &trace_info = event.trace_info;
   using value_type = std::remove_cvref_t<decltype(event)>::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -119,79 +119,79 @@ void MBOFDMarketRecovery::operator()(Trace<cme_mdp::AdminHeartbeat12> const &eve
   create_trace_and_dispatch(shared_, trace_info, external_latency);
 }
 
-void MBOFDMarketRecovery::operator()(Trace<cme_mdp::ChannelReset4> const &event, mdp::Frame const &frame) {
+void MBOFDMarketRecovery::operator()(Trace<::cme::sbe::mdp::ChannelReset4> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref_t<decltype(event)>::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("channel_reset_4={}, frame={}"sv, value, frame);
 }
 
-void MBOFDMarketRecovery::operator()(Trace<cme_mdp::SecurityStatus30> const &event, mdp::Frame const &frame) {
+void MBOFDMarketRecovery::operator()(Trace<::cme::sbe::mdp::SecurityStatus30> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref_t<decltype(event)>::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("security_status_30={}, frame={}"sv, value, frame);
 }
 
-void MBOFDMarketRecovery::operator()(Trace<cme_mdp::MDInstrumentDefinitionFuture54> const &event, mdp::Frame const &frame) {
+void MBOFDMarketRecovery::operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionFuture54> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref_t<decltype(event)>::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_instrument_definition_future_54={}, frame={}"sv, value, frame);
 }
 
-void MBOFDMarketRecovery::operator()(Trace<cme_mdp::MDInstrumentDefinitionOption55> const &event, mdp::Frame const &frame) {
+void MBOFDMarketRecovery::operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionOption55> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref_t<decltype(event)>::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_instrument_definition_option_55={}, frame={}"sv, value, frame);
 }
 
-void MBOFDMarketRecovery::operator()(Trace<cme_mdp::MDInstrumentDefinitionSpread56> const &event, mdp::Frame const &frame) {
+void MBOFDMarketRecovery::operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionSpread56> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref_t<decltype(event)>::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_instrument_definition_spread_56={}, frame={}"sv, value, frame);
 }
 
-void MBOFDMarketRecovery::operator()(Trace<cme_mdp::MDInstrumentDefinitionFixedIncome57> const &event, mdp::Frame const &frame) {
+void MBOFDMarketRecovery::operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionFixedIncome57> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref_t<decltype(event)>::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_instrument_definition_fixed_income_57={}, frame={}"sv, value, frame);
 }
 
-void MBOFDMarketRecovery::operator()(Trace<cme_mdp::MDInstrumentDefinitionRepo58> const &event, mdp::Frame const &frame) {
+void MBOFDMarketRecovery::operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionRepo58> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref_t<decltype(event)>::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_instrument_definition_repo_58={}, frame={}"sv, value, frame);
 }
 
-void MBOFDMarketRecovery::operator()(Trace<cme_mdp::MDInstrumentDefinitionFX63> const &event, mdp::Frame const &frame) {
+void MBOFDMarketRecovery::operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionFX63> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref_t<decltype(event)>::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_instrument_definition_fx_63={}, frame={}"sv, value, frame);
 }
 
-void MBOFDMarketRecovery::operator()(Trace<cme_mdp::SnapshotFullRefresh52> const &event, mdp::Frame const &frame) {
+void MBOFDMarketRecovery::operator()(Trace<::cme::sbe::mdp::SnapshotFullRefresh52> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref_t<decltype(event)>::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("snapshot_full_refresh_52={}, frame={}"sv, value, frame);
 }
 
-void MBOFDMarketRecovery::operator()(Trace<cme_mdp::SnapshotFullRefreshLongQty69> const &event, mdp::Frame const &frame) {
+void MBOFDMarketRecovery::operator()(Trace<::cme::sbe::mdp::SnapshotFullRefreshLongQty69> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref_t<decltype(event)>::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("snapshot_full_refresh_long_qty_69={}, frame={}"sv, value, frame);
 }
 
-void MBOFDMarketRecovery::operator()(Trace<cme_mdp::MDIncrementalRefreshBook46> const &event, mdp::Frame const &frame) {
+void MBOFDMarketRecovery::operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshBook46> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref_t<decltype(event)>::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_incremental_refresh_book_46={}, frame={}"sv, value, frame);
 }
 
-void MBOFDMarketRecovery::operator()(Trace<cme_mdp::MDIncrementalRefreshBookLongQty64> const &event, mdp::Frame const &frame) {
+void MBOFDMarketRecovery::operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshBookLongQty64> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref_t<decltype(event)>::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_incremental_refresh_book_long_qty_64={}, frame={}"sv, value, frame);
 }
 
-void MBOFDMarketRecovery::operator()(Trace<cme_mdp::SnapshotFullRefreshOrderBook53> const &event, mdp::Frame const &frame) {
+void MBOFDMarketRecovery::operator()(Trace<::cme::sbe::mdp::SnapshotFullRefreshOrderBook53> const &event, mdp::Frame const &frame) {
   auto &trace_info = event.trace_info;
   using value_type = std::remove_cvref_t<decltype(event)>::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
@@ -309,61 +309,61 @@ void MBOFDMarketRecovery::operator()(Trace<cme_mdp::SnapshotFullRefreshOrderBook
   });
 }
 
-void MBOFDMarketRecovery::operator()(Trace<cme_mdp::MDIncrementalRefreshOrderBook47> const &event, mdp::Frame const &frame) {
+void MBOFDMarketRecovery::operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshOrderBook47> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref_t<decltype(event)>::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_incremental_refresh_order_book_47={}, frame={}"sv, value, frame);
 }
 
-void MBOFDMarketRecovery::operator()(Trace<cme_mdp::MDIncrementalRefreshTradeSummary48> const &event, mdp::Frame const &frame) {
+void MBOFDMarketRecovery::operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshTradeSummary48> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref_t<decltype(event)>::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_incremental_refresh_trade_summary_48={}, frame={}"sv, value, frame);
 }
 
-void MBOFDMarketRecovery::operator()(Trace<cme_mdp::MDIncrementalRefreshTradeSummaryLongQty65> const &event, mdp::Frame const &frame) {
+void MBOFDMarketRecovery::operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshTradeSummaryLongQty65> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref_t<decltype(event)>::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_incremental_refresh_trade_summary_long_qty_65={}, frame={}"sv, value, frame);
 }
 
-void MBOFDMarketRecovery::operator()(Trace<cme_mdp::MDIncrementalRefreshDailyStatistics49> const &event, mdp::Frame const &frame) {
+void MBOFDMarketRecovery::operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshDailyStatistics49> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref_t<decltype(event)>::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_incremental_refresh_daily_statistics_49={}, frame={}"sv, value, frame);
 }
 
-void MBOFDMarketRecovery::operator()(Trace<cme_mdp::MDIncrementalRefreshSessionStatistics51> const &event, mdp::Frame const &frame) {
+void MBOFDMarketRecovery::operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshSessionStatistics51> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref_t<decltype(event)>::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_incremental_refresh_session_statistics_51={}, frame={}"sv, value, frame);
 }
 
-void MBOFDMarketRecovery::operator()(Trace<cme_mdp::MDIncrementalRefreshSessionStatisticsLongQty67> const &event, mdp::Frame const &frame) {
+void MBOFDMarketRecovery::operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshSessionStatisticsLongQty67> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref_t<decltype(event)>::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_incremental_refresh_session_statistics_long_qty_67={}, frame={}"sv, value, frame);
 }
 
-void MBOFDMarketRecovery::operator()(Trace<cme_mdp::MDIncrementalRefreshVolume37> const &event, mdp::Frame const &frame) {
+void MBOFDMarketRecovery::operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshVolume37> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref_t<decltype(event)>::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_incremental_refresh_volume_37={}, frame={}"sv, value, frame);
 }
 
-void MBOFDMarketRecovery::operator()(Trace<cme_mdp::MDIncrementalRefreshVolumeLongQty66> const &event, mdp::Frame const &frame) {
+void MBOFDMarketRecovery::operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshVolumeLongQty66> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref_t<decltype(event)>::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_incremental_refresh_volume_long_qty_66={}, frame={}"sv, value, frame);
 }
 
-void MBOFDMarketRecovery::operator()(Trace<cme_mdp::MDIncrementalRefreshLimitsBanding50> const &event, mdp::Frame const &frame) {
+void MBOFDMarketRecovery::operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshLimitsBanding50> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref_t<decltype(event)>::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("md_incremental_refresh_limits_banding_50={}, frame={}"sv, value, frame);
 }
 
-void MBOFDMarketRecovery::operator()(Trace<cme_mdp::QuoteRequest39> const &event, mdp::Frame const &frame) {
+void MBOFDMarketRecovery::operator()(Trace<::cme::sbe::mdp::QuoteRequest39> const &event, mdp::Frame const &frame) {
   using value_type = std::remove_cvref_t<decltype(event)>::value_type;
   auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
   log::info<5>("quote_request_39={}, frame={}"sv, value, frame);

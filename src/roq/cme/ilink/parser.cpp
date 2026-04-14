@@ -47,8 +47,8 @@ size_t Parser::dispatch(Handler &handler, std::span<std::byte const> const &buff
     // SBE is not const-safe
     std::span message{reinterpret_cast<char *>(const_cast<std::byte *>(std::data(message_2))), std::size(message_2)};
     while (!std::empty(message)) {
-      cme_ilink::MessageHeader header{std::data(message), std::size(message)};
-      message = message.subspan(cme_ilink::MessageHeader::encodedLength());
+      ::cme::sbe::ilink::MessageHeader header{std::data(message), std::size(message)};
+      message = message.subspan(::cme::sbe::ilink::MessageHeader::encodedLength());
       auto block_length = header.blockLength();
       auto template_id = header.templateId();
       auto version = header.version();
@@ -59,157 +59,157 @@ size_t Parser::dispatch(Handler &handler, std::span<std::byte const> const &buff
       auto tmp = message.subspan(0, length);
       switch (template_id) {
           // session
-        case cme_ilink::NegotiationResponse501::SBE_TEMPLATE_ID: {
-          cme_ilink::NegotiationResponse501 value{std::data(tmp), std::size(tmp), block_length, version};
+        case ::cme::sbe::ilink::NegotiationResponse501::SBE_TEMPLATE_ID: {
+          ::cme::sbe::ilink::NegotiationResponse501 value{std::data(tmp), std::size(tmp), block_length, version};
           // log::info("DEBUG {}"sv, value);
           create_trace_and_dispatch(handler, trace_info, value);
           break;
         }
-        case cme_ilink::NegotiationReject502::SBE_TEMPLATE_ID: {
-          cme_ilink::NegotiationReject502 value{std::data(tmp), std::size(tmp), block_length, version};
+        case ::cme::sbe::ilink::NegotiationReject502::SBE_TEMPLATE_ID: {
+          ::cme::sbe::ilink::NegotiationReject502 value{std::data(tmp), std::size(tmp), block_length, version};
           // log::info("DEBUG {}"sv, value);
           create_trace_and_dispatch(handler, trace_info, value);
           break;
         }
-        case cme_ilink::EstablishmentAck504::SBE_TEMPLATE_ID: {
-          cme_ilink::EstablishmentAck504 value{std::data(tmp), std::size(tmp), block_length, version};
+        case ::cme::sbe::ilink::EstablishmentAck504::SBE_TEMPLATE_ID: {
+          ::cme::sbe::ilink::EstablishmentAck504 value{std::data(tmp), std::size(tmp), block_length, version};
           // log::info("DEBUG {}"sv, value);
           create_trace_and_dispatch(handler, trace_info, value);
           break;
         }
-        case cme_ilink::EstablishmentReject505::SBE_TEMPLATE_ID: {
-          cme_ilink::EstablishmentReject505 value{std::data(tmp), std::size(tmp), block_length, version};
+        case ::cme::sbe::ilink::EstablishmentReject505::SBE_TEMPLATE_ID: {
+          ::cme::sbe::ilink::EstablishmentReject505 value{std::data(tmp), std::size(tmp), block_length, version};
           // log::info("DEBUG {}"sv, value);
           create_trace_and_dispatch(handler, trace_info, value);
           break;
         }
-        case cme_ilink::Sequence506::SBE_TEMPLATE_ID: {
-          cme_ilink::Sequence506 value{std::data(tmp), std::size(tmp), block_length, version};
+        case ::cme::sbe::ilink::Sequence506::SBE_TEMPLATE_ID: {
+          ::cme::sbe::ilink::Sequence506 value{std::data(tmp), std::size(tmp), block_length, version};
           // log::info("DEBUG {}"sv, value);
           create_trace_and_dispatch(handler, trace_info, value);
           break;
         }
-        case cme_ilink::Terminate507::SBE_TEMPLATE_ID: {
-          cme_ilink::Terminate507 value{std::data(tmp), std::size(tmp), block_length, version};
+        case ::cme::sbe::ilink::Terminate507::SBE_TEMPLATE_ID: {
+          ::cme::sbe::ilink::Terminate507 value{std::data(tmp), std::size(tmp), block_length, version};
           // log::info("DEBUG {}"sv, value);
           create_trace_and_dispatch(handler, trace_info, value);
           break;
         }
-        case cme_ilink::Retransmission509::SBE_TEMPLATE_ID: {
-          cme_ilink::Retransmission509 value{std::data(tmp), std::size(tmp), block_length, version};
+        case ::cme::sbe::ilink::Retransmission509::SBE_TEMPLATE_ID: {
+          ::cme::sbe::ilink::Retransmission509 value{std::data(tmp), std::size(tmp), block_length, version};
           // log::info("DEBUG {}"sv, value);
           create_trace_and_dispatch(handler, trace_info, value);
           break;
         }
-        case cme_ilink::RetransmitReject510::SBE_TEMPLATE_ID: {
-          cme_ilink::RetransmitReject510 value{std::data(tmp), std::size(tmp), block_length, version};
+        case ::cme::sbe::ilink::RetransmitReject510::SBE_TEMPLATE_ID: {
+          ::cme::sbe::ilink::RetransmitReject510 value{std::data(tmp), std::size(tmp), block_length, version};
           // log::info("DEBUG {}"sv, value);
           create_trace_and_dispatch(handler, trace_info, value);
           break;
         }
-        case cme_ilink::NotApplied513::SBE_TEMPLATE_ID: {
-          cme_ilink::NotApplied513 value{std::data(tmp), std::size(tmp), block_length, version};
+        case ::cme::sbe::ilink::NotApplied513::SBE_TEMPLATE_ID: {
+          ::cme::sbe::ilink::NotApplied513 value{std::data(tmp), std::size(tmp), block_length, version};
           // log::info("DEBUG {}"sv, value);
           create_trace_and_dispatch(handler, trace_info, value);
           break;
         }
           // business
-        case cme_ilink::PartyDetailsDefinitionRequestAck519::SBE_TEMPLATE_ID: {
-          cme_ilink::PartyDetailsDefinitionRequestAck519 value{std::data(tmp), std::size(tmp), block_length, version};
+        case ::cme::sbe::ilink::PartyDetailsDefinitionRequestAck519::SBE_TEMPLATE_ID: {
+          ::cme::sbe::ilink::PartyDetailsDefinitionRequestAck519 value{std::data(tmp), std::size(tmp), block_length, version};
           // log::info("DEBUG {}"sv, value);
           create_trace_and_dispatch(handler, trace_info, value);
           break;
         }
-        case cme_ilink::BusinessReject521::SBE_TEMPLATE_ID: {
-          cme_ilink::BusinessReject521 value{std::data(tmp), std::size(tmp), block_length, version};
+        case ::cme::sbe::ilink::BusinessReject521::SBE_TEMPLATE_ID: {
+          ::cme::sbe::ilink::BusinessReject521 value{std::data(tmp), std::size(tmp), block_length, version};
           // log::info("DEBUG {}"sv, value);
           create_trace_and_dispatch(handler, trace_info, value);
           break;
         }
           // execution report
-        case cme_ilink::ExecutionReportNew522::SBE_TEMPLATE_ID: {
-          cme_ilink::ExecutionReportNew522 value{std::data(tmp), std::size(tmp), block_length, version};
+        case ::cme::sbe::ilink::ExecutionReportNew522::SBE_TEMPLATE_ID: {
+          ::cme::sbe::ilink::ExecutionReportNew522 value{std::data(tmp), std::size(tmp), block_length, version};
           // log::info("DEBUG {}"sv, value);
           create_trace_and_dispatch(handler, trace_info, value);
           break;
         }
-        case cme_ilink::ExecutionReportReject523::SBE_TEMPLATE_ID: {
-          cme_ilink::ExecutionReportReject523 value{std::data(tmp), std::size(tmp), block_length, version};
+        case ::cme::sbe::ilink::ExecutionReportReject523::SBE_TEMPLATE_ID: {
+          ::cme::sbe::ilink::ExecutionReportReject523 value{std::data(tmp), std::size(tmp), block_length, version};
           // log::info("DEBUG {}"sv, value);
           create_trace_and_dispatch(handler, trace_info, value);
           break;
         }
-        case cme_ilink::ExecutionReportTradeOutright525::SBE_TEMPLATE_ID: {
-          cme_ilink::ExecutionReportTradeOutright525 value{std::data(tmp), std::size(tmp), block_length, version};
+        case ::cme::sbe::ilink::ExecutionReportTradeOutright525::SBE_TEMPLATE_ID: {
+          ::cme::sbe::ilink::ExecutionReportTradeOutright525 value{std::data(tmp), std::size(tmp), block_length, version};
           // log::info("DEBUG {}"sv, value);
           create_trace_and_dispatch(handler, trace_info, value);
           break;
         }
-        case cme_ilink::ExecutionReportTradeSpread526::SBE_TEMPLATE_ID: {
-          cme_ilink::ExecutionReportTradeSpread526 value{std::data(tmp), std::size(tmp), block_length, version};
+        case ::cme::sbe::ilink::ExecutionReportTradeSpread526::SBE_TEMPLATE_ID: {
+          ::cme::sbe::ilink::ExecutionReportTradeSpread526 value{std::data(tmp), std::size(tmp), block_length, version};
           // log::info("DEBUG {}"sv, value);
           create_trace_and_dispatch(handler, trace_info, value);
           break;
         }
-        case cme_ilink::ExecutionReportTradeSpreadLeg527::SBE_TEMPLATE_ID: {
-          cme_ilink::ExecutionReportTradeSpreadLeg527 value{std::data(tmp), std::size(tmp), block_length, version};
+        case ::cme::sbe::ilink::ExecutionReportTradeSpreadLeg527::SBE_TEMPLATE_ID: {
+          ::cme::sbe::ilink::ExecutionReportTradeSpreadLeg527 value{std::data(tmp), std::size(tmp), block_length, version};
           // log::info("DEBUG {}"sv, value);
           create_trace_and_dispatch(handler, trace_info, value);
           break;
         }
-        case cme_ilink::ExecutionReportModify531::SBE_TEMPLATE_ID: {
-          cme_ilink::ExecutionReportModify531 value{std::data(tmp), std::size(tmp), block_length, version};
+        case ::cme::sbe::ilink::ExecutionReportModify531::SBE_TEMPLATE_ID: {
+          ::cme::sbe::ilink::ExecutionReportModify531 value{std::data(tmp), std::size(tmp), block_length, version};
           // log::info("DEBUG {}"sv, value);
           create_trace_and_dispatch(handler, trace_info, value);
           break;
         }
-        case cme_ilink::ExecutionReportStatus532::SBE_TEMPLATE_ID: {
-          cme_ilink::ExecutionReportStatus532 value{std::data(tmp), std::size(tmp), block_length, version};
+        case ::cme::sbe::ilink::ExecutionReportStatus532::SBE_TEMPLATE_ID: {
+          ::cme::sbe::ilink::ExecutionReportStatus532 value{std::data(tmp), std::size(tmp), block_length, version};
           // log::info("DEBUG {}"sv, value);
           create_trace_and_dispatch(handler, trace_info, value);
           break;
         }
-        case cme_ilink::ExecutionReportCancel534::SBE_TEMPLATE_ID: {
-          cme_ilink::ExecutionReportCancel534 value{std::data(tmp), std::size(tmp), block_length, version};
+        case ::cme::sbe::ilink::ExecutionReportCancel534::SBE_TEMPLATE_ID: {
+          ::cme::sbe::ilink::ExecutionReportCancel534 value{std::data(tmp), std::size(tmp), block_length, version};
           // log::info("DEBUG {}"sv, value);
           create_trace_and_dispatch(handler, trace_info, value);
           break;
         }
-        case cme_ilink::ExecutionReportPendingCancel564::SBE_TEMPLATE_ID: {
-          cme_ilink::ExecutionReportPendingCancel564 value{std::data(tmp), std::size(tmp), block_length, version};
+        case ::cme::sbe::ilink::ExecutionReportPendingCancel564::SBE_TEMPLATE_ID: {
+          ::cme::sbe::ilink::ExecutionReportPendingCancel564 value{std::data(tmp), std::size(tmp), block_length, version};
           // log::info("DEBUG {}"sv, value);
           create_trace_and_dispatch(handler, trace_info, value);
           break;
         }
-        case cme_ilink::ExecutionReportPendingReplace565::SBE_TEMPLATE_ID: {
-          cme_ilink::ExecutionReportPendingReplace565 value{std::data(tmp), std::size(tmp), block_length, version};
+        case ::cme::sbe::ilink::ExecutionReportPendingReplace565::SBE_TEMPLATE_ID: {
+          ::cme::sbe::ilink::ExecutionReportPendingReplace565 value{std::data(tmp), std::size(tmp), block_length, version};
           // log::info("DEBUG {}"sv, value);
           create_trace_and_dispatch(handler, trace_info, value);
           break;
         }
           // order
-        case cme_ilink::OrderCancelReject535::SBE_TEMPLATE_ID: {
-          cme_ilink::OrderCancelReject535 value{std::data(tmp), std::size(tmp), block_length, version};
+        case ::cme::sbe::ilink::OrderCancelReject535::SBE_TEMPLATE_ID: {
+          ::cme::sbe::ilink::OrderCancelReject535 value{std::data(tmp), std::size(tmp), block_length, version};
           // log::info("DEBUG {}"sv, value);
           create_trace_and_dispatch(handler, trace_info, value);
           break;
         }
-        case cme_ilink::OrderCancelReplaceReject536::SBE_TEMPLATE_ID: {
-          cme_ilink::OrderCancelReplaceReject536 value{std::data(tmp), std::size(tmp), block_length, version};
+        case ::cme::sbe::ilink::OrderCancelReplaceReject536::SBE_TEMPLATE_ID: {
+          ::cme::sbe::ilink::OrderCancelReplaceReject536 value{std::data(tmp), std::size(tmp), block_length, version};
           // log::info("DEBUG {}"sv, value);
           create_trace_and_dispatch(handler, trace_info, value);
           break;
         }
           // order mass action
-        case cme_ilink::OrderMassActionReport562::SBE_TEMPLATE_ID: {
-          cme_ilink::OrderMassActionReport562 value{std::data(tmp), std::size(tmp), block_length, version};
+        case ::cme::sbe::ilink::OrderMassActionReport562::SBE_TEMPLATE_ID: {
+          ::cme::sbe::ilink::OrderMassActionReport562 value{std::data(tmp), std::size(tmp), block_length, version};
           // log::info("DEBUG {}"sv, value);
           create_trace_and_dispatch(handler, trace_info, value);
           break;
         }
           // security definition
-        case cme_ilink::SecurityDefinitionResponse561::SBE_TEMPLATE_ID: {
-          cme_ilink::SecurityDefinitionResponse561 value{std::data(tmp), std::size(tmp), block_length, version};
+        case ::cme::sbe::ilink::SecurityDefinitionResponse561::SBE_TEMPLATE_ID: {
+          ::cme::sbe::ilink::SecurityDefinitionResponse561 value{std::data(tmp), std::size(tmp), block_length, version};
           // log::info("DEBUG {}"sv, value);
           create_trace_and_dispatch(handler, trace_info, value);
           break;

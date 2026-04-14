@@ -4,15 +4,15 @@
 
 #include <fmt/format.h>
 
-#include <cme_ilink/EstablishmentAck504.h>
-#include <cme_ilink/EstablishmentReject505.h>
-#include <cme_ilink/NegotiationReject502.h>
-#include <cme_ilink/NegotiationResponse501.h>
-#include <cme_ilink/NotApplied513.h>
-#include <cme_ilink/Retransmission509.h>
-#include <cme_ilink/RetransmitReject510.h>
-#include <cme_ilink/Sequence506.h>
-#include <cme_ilink/Terminate507.h>
+#include <cme/sbe/ilink/EstablishmentAck504.h>
+#include <cme/sbe/ilink/EstablishmentReject505.h>
+#include <cme/sbe/ilink/NegotiationReject502.h>
+#include <cme/sbe/ilink/NegotiationResponse501.h>
+#include <cme/sbe/ilink/NotApplied513.h>
+#include <cme/sbe/ilink/Retransmission509.h>
+#include <cme/sbe/ilink/RetransmitReject510.h>
+#include <cme/sbe/ilink/Sequence506.h>
+#include <cme/sbe/ilink/Terminate507.h>
 
 #include "roq/core/sbe/iterator.hpp"
 
@@ -27,8 +27,8 @@ namespace ilink {}  // namespace ilink
 // messages
 
 template <>
-struct fmt::formatter<cme_ilink::NegotiationResponse501> {
-  using value_type = cme_ilink::NegotiationResponse501;
+struct fmt::formatter<::cme::sbe::ilink::NegotiationResponse501> {
+  using value_type = ::cme::sbe::ilink::NegotiationResponse501;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type &value, format_context &context) const {
     using namespace std::literals;
@@ -60,8 +60,8 @@ struct fmt::formatter<cme_ilink::NegotiationResponse501> {
 };
 
 template <>
-struct fmt::formatter<cme_ilink::NegotiationReject502> {
-  using value_type = cme_ilink::NegotiationReject502;
+struct fmt::formatter<::cme::sbe::ilink::NegotiationReject502> {
+  using value_type = ::cme::sbe::ilink::NegotiationReject502;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type &value, format_context &context) const {
     using namespace std::literals;
@@ -87,8 +87,8 @@ struct fmt::formatter<cme_ilink::NegotiationReject502> {
 };
 
 template <>
-struct fmt::formatter<cme_ilink::EstablishmentAck504> {
-  using value_type = cme_ilink::EstablishmentAck504;
+struct fmt::formatter<::cme::sbe::ilink::EstablishmentAck504> {
+  using value_type = ::cme::sbe::ilink::EstablishmentAck504;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type &value, format_context &context) const {
     using namespace std::literals;
@@ -120,8 +120,8 @@ struct fmt::formatter<cme_ilink::EstablishmentAck504> {
 };
 
 template <>
-struct fmt::formatter<cme_ilink::EstablishmentReject505> {
-  using value_type = cme_ilink::EstablishmentReject505;
+struct fmt::formatter<::cme::sbe::ilink::EstablishmentReject505> {
+  using value_type = ::cme::sbe::ilink::EstablishmentReject505;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type &value, format_context &context) const {
     using namespace std::literals;
@@ -149,8 +149,8 @@ struct fmt::formatter<cme_ilink::EstablishmentReject505> {
 };
 
 template <>
-struct fmt::formatter<cme_ilink::Sequence506> {
-  using value_type = cme_ilink::Sequence506;
+struct fmt::formatter<::cme::sbe::ilink::Sequence506> {
+  using value_type = ::cme::sbe::ilink::Sequence506;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type &value, format_context &context) const {
     using namespace std::literals;
@@ -172,8 +172,8 @@ struct fmt::formatter<cme_ilink::Sequence506> {
 };
 
 template <>
-struct fmt::formatter<cme_ilink::Terminate507> {
-  using value_type = cme_ilink::Terminate507;
+struct fmt::formatter<::cme::sbe::ilink::Terminate507> {
+  using value_type = ::cme::sbe::ilink::Terminate507;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type &value, format_context &context) const {
     using namespace std::literals;
@@ -197,8 +197,8 @@ struct fmt::formatter<cme_ilink::Terminate507> {
 };
 
 template <>
-struct fmt::formatter<cme_ilink::Retransmission509> {
-  using value_type = cme_ilink::Retransmission509;
+struct fmt::formatter<::cme::sbe::ilink::Retransmission509> {
+  using value_type = ::cme::sbe::ilink::Retransmission509;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type &value, format_context &context) const {
     using namespace std::literals;
@@ -224,8 +224,8 @@ struct fmt::formatter<cme_ilink::Retransmission509> {
 };
 
 template <>
-struct fmt::formatter<cme_ilink::RetransmitReject510> {
-  using value_type = cme_ilink::RetransmitReject510;
+struct fmt::formatter<::cme::sbe::ilink::RetransmitReject510> {
+  using value_type = ::cme::sbe::ilink::RetransmitReject510;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type &value, format_context &context) const {
     using namespace std::literals;
@@ -251,8 +251,8 @@ struct fmt::formatter<cme_ilink::RetransmitReject510> {
 };
 
 template <>
-struct fmt::formatter<cme_ilink::NotApplied513> {
-  using value_type = cme_ilink::NotApplied513;
+struct fmt::formatter<::cme::sbe::ilink::NotApplied513> {
+  using value_type = ::cme::sbe::ilink::NotApplied513;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type &value, format_context &context) const {
     using namespace std::literals;

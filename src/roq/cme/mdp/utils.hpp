@@ -5,12 +5,12 @@
 #include <fmt/chrono.h>
 #include <fmt/format.h>
 
-#include <cme_mdp/MessageHeader.h>
+#include <cme/sbe/mdp/MessageHeader.h>
 
-#include <cme_mdp/AggressorSide.h>
-#include <cme_mdp/Side.h>
+#include <cme/sbe/mdp/AggressorSide.h>
+#include <cme/sbe/mdp/Side.h>
 
-#include <cme_mdp/MDInstrumentDefinitionFX63.h>
+#include <cme/sbe/mdp/MDInstrumentDefinitionFX63.h>
 
 #include <magic_enum/magic_enum.hpp>
 
@@ -28,7 +28,7 @@ template <typename T>
 size_t compute_length(T &);
 
 template <>
-inline size_t compute_length(cme_mdp::MessageHeader &value) {
+inline size_t compute_length(::cme::sbe::mdp::MessageHeader &value) {
   return value.encodedLength();
 }
 
@@ -53,9 +53,9 @@ struct Group final {
 // header
 
 template <>
-struct fmt::formatter<cme_mdp::MessageHeader> {
+struct fmt::formatter<::cme::sbe::mdp::MessageHeader> {
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
-  auto format(cme_mdp::MessageHeader const &value, format_context &context) const {
+  auto format(::cme::sbe::mdp::MessageHeader const &value, format_context &context) const {
     using namespace std::literals;
     return fmt::format_to(
         context.out(),
@@ -75,8 +75,8 @@ struct fmt::formatter<cme_mdp::MessageHeader> {
 // types
 
 template <>
-struct fmt::formatter<cme_mdp::Decimal9> {
-  using value_type = cme_mdp::Decimal9;
+struct fmt::formatter<::cme::sbe::mdp::Decimal9> {
+  using value_type = ::cme::sbe::mdp::Decimal9;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
@@ -85,8 +85,8 @@ struct fmt::formatter<cme_mdp::Decimal9> {
 };
 
 template <>
-struct fmt::formatter<cme_mdp::Decimal9NULL> {
-  using value_type = cme_mdp::Decimal9NULL;
+struct fmt::formatter<::cme::sbe::mdp::Decimal9NULL> {
+  using value_type = ::cme::sbe::mdp::Decimal9NULL;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
@@ -95,8 +95,8 @@ struct fmt::formatter<cme_mdp::Decimal9NULL> {
 };
 
 template <>
-struct fmt::formatter<cme_mdp::DecimalQty> {
-  using value_type = cme_mdp::DecimalQty;
+struct fmt::formatter<::cme::sbe::mdp::DecimalQty> {
+  using value_type = ::cme::sbe::mdp::DecimalQty;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
@@ -105,8 +105,8 @@ struct fmt::formatter<cme_mdp::DecimalQty> {
 };
 
 template <>
-struct fmt::formatter<cme_mdp::PRICE9> {
-  using value_type = cme_mdp::PRICE9;
+struct fmt::formatter<::cme::sbe::mdp::PRICE9> {
+  using value_type = ::cme::sbe::mdp::PRICE9;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
@@ -115,8 +115,8 @@ struct fmt::formatter<cme_mdp::PRICE9> {
 };
 
 template <>
-struct fmt::formatter<cme_mdp::PRICENULL9> {
-  using value_type = cme_mdp::PRICENULL9;
+struct fmt::formatter<::cme::sbe::mdp::PRICENULL9> {
+  using value_type = ::cme::sbe::mdp::PRICENULL9;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
@@ -127,8 +127,8 @@ struct fmt::formatter<cme_mdp::PRICENULL9> {
 // choice
 
 template <>
-struct fmt::formatter<cme_mdp::InstAttribValue> {
-  using value_type = cme_mdp::InstAttribValue;
+struct fmt::formatter<::cme::sbe::mdp::InstAttribValue> {
+  using value_type = ::cme::sbe::mdp::InstAttribValue;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
@@ -137,8 +137,8 @@ struct fmt::formatter<cme_mdp::InstAttribValue> {
 };
 
 template <>
-struct fmt::formatter<cme_mdp::MatchEventIndicator> {
-  using value_type = cme_mdp::MatchEventIndicator;
+struct fmt::formatter<::cme::sbe::mdp::MatchEventIndicator> {
+  using value_type = ::cme::sbe::mdp::MatchEventIndicator;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
@@ -147,8 +147,8 @@ struct fmt::formatter<cme_mdp::MatchEventIndicator> {
 };
 
 template <>
-struct fmt::formatter<cme_mdp::SettlPriceType> {
-  using value_type = cme_mdp::SettlPriceType;
+struct fmt::formatter<::cme::sbe::mdp::SettlPriceType> {
+  using value_type = ::cme::sbe::mdp::SettlPriceType;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
@@ -159,8 +159,8 @@ struct fmt::formatter<cme_mdp::SettlPriceType> {
 // complex
 
 template <>
-struct fmt::formatter<cme_mdp::MaturityMonthYear> {
-  using value_type = cme_mdp::MaturityMonthYear;
+struct fmt::formatter<::cme::sbe::mdp::MaturityMonthYear> {
+  using value_type = ::cme::sbe::mdp::MaturityMonthYear;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;

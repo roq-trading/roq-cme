@@ -2,7 +2,7 @@
 
 #include "roq/cme/ilink/negotiate.hpp"
 
-#include <cme_ilink/Negotiate500.h>
+#include <cme/sbe/ilink/Negotiate500.h>
 
 using namespace std::literals;
 
@@ -11,8 +11,8 @@ namespace cme {
 namespace ilink {
 
 namespace {
-using header_type = cme_ilink::MessageHeader;
-using value_type = cme_ilink::Negotiate500;
+using header_type = ::cme::sbe::ilink::MessageHeader;
+using value_type = ::cme::sbe::ilink::Negotiate500;
 }  // namespace
 
 std::span<std::byte const> Negotiate::encode(std::span<std::byte> const &buffer) const {

@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include <cme_mdp/SecurityStatus30.h>
+#include <cme/sbe/mdp/SecurityStatus30.h>
 
 #include "roq/cme/mdp/utils.hpp"
 
@@ -12,7 +12,7 @@ namespace mdp {}  // namespace mdp
 }  // namespace cme
 
 template <>
-inline constexpr std::string_view get_name<cme_mdp::SecurityStatus30>() {
+inline constexpr std::string_view get_name<::cme::sbe::mdp::SecurityStatus30>() {
   using namespace std::literals;
   return "security_status_30"sv;
 }
@@ -23,8 +23,8 @@ inline constexpr std::string_view get_name<cme_mdp::SecurityStatus30>() {
 // SecurityStatus30
 
 template <>
-struct fmt::formatter<cme_mdp::SecurityStatus30> {
-  using value_type = cme_mdp::SecurityStatus30;
+struct fmt::formatter<::cme::sbe::mdp::SecurityStatus30> {
+  using value_type = ::cme::sbe::mdp::SecurityStatus30;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type &value, format_context &context) const {
     using namespace std::literals;

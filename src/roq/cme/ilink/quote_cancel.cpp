@@ -2,7 +2,7 @@
 
 #include "roq/cme/ilink/quote_cancel.hpp"
 
-#include <cme_ilink/QuoteCancel528.h>
+#include <cme/sbe/ilink/QuoteCancel528.h>
 
 using namespace std::literals;
 
@@ -11,8 +11,8 @@ namespace cme {
 namespace ilink {
 
 namespace {
-using header_type = cme_ilink::MessageHeader;
-using value_type = cme_ilink::QuoteCancel528;
+using header_type = ::cme::sbe::ilink::MessageHeader;
+using value_type = ::cme::sbe::ilink::QuoteCancel528;
 }  // namespace
 
 std::span<std::byte const> QuoteCancel::encode(std::span<std::byte> const &buffer) const {
@@ -26,9 +26,9 @@ std::span<std::byte const> QuoteCancel::encode(std::span<std::byte> const &buffe
   result.putLocation(location);
   result.quoteID(quote_id);
   result.quoteCancelType(quote_cancel_type);
-  result.liquidityFlag(liquidity_flag ? cme_ilink::BooleanNULL::True : cme_ilink::BooleanNULL::False);
+  result.liquidityFlag(liquidity_flag ? ::cme::sbe::ilink::BooleanNULL::True : ::cme::sbe::ilink::BooleanNULL::False);
   result.putOrigOrderUser(orig_order_user);
-  result.quoteEntryOpen(quote_entry_open ? cme_ilink::BooleanNULL::True : cme_ilink::BooleanNULL::False);
+  result.quoteEntryOpen(quote_entry_open ? ::cme::sbe::ilink::BooleanNULL::True : ::cme::sbe::ilink::BooleanNULL::False);
   auto &quote_entries = result.noQuoteEntriesCount(std::size(no_quote_entries));
   for (auto &item : no_quote_entries) {
     quote_entries.next();

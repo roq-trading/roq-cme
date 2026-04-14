@@ -14,12 +14,12 @@
 
 #include "roq/cme/ilink/utils.hpp"
 
-#include "cme_ilink/BooleanNULL.h"
-#include "cme_ilink/ManualOrdIndReq.h"
-#include "cme_ilink/MassActionScope.h"
-#include "cme_ilink/MassCancelTIF.h"
-#include "cme_ilink/MassCxlReqTyp.h"
-#include "cme_ilink/SideNULL.h"
+#include "cme/sbe/ilink/BooleanNULL.h"
+#include "cme/sbe/ilink/ManualOrdIndReq.h"
+#include "cme/sbe/ilink/MassActionScope.h"
+#include "cme/sbe/ilink/MassCancelTIF.h"
+#include "cme/sbe/ilink/MassCxlReqTyp.h"
+#include "cme/sbe/ilink/SideNULL.h"
 
 namespace roq {
 namespace cme {
@@ -30,21 +30,21 @@ struct OrderMassActionRequest final {
 
   uint64_t party_details_list_req_id = {};
   uint64_t order_request_id = {};
-  cme_ilink::ManualOrdIndReq::Value manual_order_indicator = {};
+  ::cme::sbe::ilink::ManualOrdIndReq::Value manual_order_indicator = {};
   uint32_t seq_num = {};
   std::string_view sender_id;
   std::chrono::nanoseconds sending_time_epoch = {};
   std::string_view security_group;
   std::string_view location;
   int32_t security_id = {};
-  cme_ilink::MassActionScope::Value mass_action_scope = {};
+  ::cme::sbe::ilink::MassActionScope::Value mass_action_scope = {};
   uint8_t market_segment_id = {};
-  cme_ilink::MassCxlReqTyp::Value mass_cancel_request_type = {};
-  cme_ilink::SideNULL::Value side = cme_ilink::SideNULL::NULL_VALUE;
+  ::cme::sbe::ilink::MassCxlReqTyp::Value mass_cancel_request_type = {};
+  ::cme::sbe::ilink::SideNULL::Value side = ::cme::sbe::ilink::SideNULL::NULL_VALUE;
   // note! null is not actually supported
-  cme_ilink::MassActionOrdTyp::Value ord_type = cme_ilink::MassActionOrdTyp::NULL_VALUE;
-  cme_ilink::MassCancelTIF::Value time_in_force = cme_ilink::MassCancelTIF::NULL_VALUE;
-  cme_ilink::BooleanNULL::Value liquidity_flag = cme_ilink::BooleanNULL::NULL_VALUE;
+  ::cme::sbe::ilink::MassActionOrdTyp::Value ord_type = ::cme::sbe::ilink::MassActionOrdTyp::NULL_VALUE;
+  ::cme::sbe::ilink::MassCancelTIF::Value time_in_force = ::cme::sbe::ilink::MassCancelTIF::NULL_VALUE;
+  ::cme::sbe::ilink::BooleanNULL::Value liquidity_flag = ::cme::sbe::ilink::BooleanNULL::NULL_VALUE;
   std::string_view orig_order_user;
 };
 

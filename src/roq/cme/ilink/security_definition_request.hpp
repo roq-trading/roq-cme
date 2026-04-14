@@ -12,7 +12,7 @@
 
 #include "roq/cme/ilink/utils.hpp"
 
-#include "cme_ilink/ManualOrdIndReq.h"
+#include "cme/sbe/ilink/ManualOrdIndReq.h"
 
 namespace roq {
 namespace cme {
@@ -23,7 +23,7 @@ struct SecurityDefinitionRequest final {
 
   uint64_t party_details_list_req_id = {};
   uint64_t security_req_id = {};
-  cme_ilink::ManualOrdIndReq::Value manual_order_indicator = {};
+  ::cme::sbe::ilink::ManualOrdIndReq::Value manual_order_indicator = {};
   uint32_t seq_num = {};
   std::string_view sender_id;
   std::chrono::nanoseconds sending_time_epoch = {};

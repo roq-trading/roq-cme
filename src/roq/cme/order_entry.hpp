@@ -61,36 +61,36 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public ili
 
  private:
   // session
-  void operator()(Trace<cme_ilink::NegotiationResponse501> const &) override;
-  void operator()(Trace<cme_ilink::NegotiationReject502> const &) override;
-  void operator()(Trace<cme_ilink::EstablishmentAck504> const &) override;
-  void operator()(Trace<cme_ilink::EstablishmentReject505> const &) override;
-  void operator()(Trace<cme_ilink::Sequence506> const &) override;
-  void operator()(Trace<cme_ilink::Terminate507> const &) override;
-  void operator()(Trace<cme_ilink::Retransmission509> const &) override;
-  void operator()(Trace<cme_ilink::RetransmitReject510> const &) override;
-  void operator()(Trace<cme_ilink::NotApplied513> const &) override;
+  void operator()(Trace<::cme::sbe::ilink::NegotiationResponse501> const &) override;
+  void operator()(Trace<::cme::sbe::ilink::NegotiationReject502> const &) override;
+  void operator()(Trace<::cme::sbe::ilink::EstablishmentAck504> const &) override;
+  void operator()(Trace<::cme::sbe::ilink::EstablishmentReject505> const &) override;
+  void operator()(Trace<::cme::sbe::ilink::Sequence506> const &) override;
+  void operator()(Trace<::cme::sbe::ilink::Terminate507> const &) override;
+  void operator()(Trace<::cme::sbe::ilink::Retransmission509> const &) override;
+  void operator()(Trace<::cme::sbe::ilink::RetransmitReject510> const &) override;
+  void operator()(Trace<::cme::sbe::ilink::NotApplied513> const &) override;
   // business
-  void operator()(Trace<cme_ilink::PartyDetailsDefinitionRequestAck519> const &) override;
-  void operator()(Trace<cme_ilink::BusinessReject521> const &) override;
+  void operator()(Trace<::cme::sbe::ilink::PartyDetailsDefinitionRequestAck519> const &) override;
+  void operator()(Trace<::cme::sbe::ilink::BusinessReject521> const &) override;
   // execution report
-  void operator()(Trace<cme_ilink::ExecutionReportNew522> const &) override;
-  void operator()(Trace<cme_ilink::ExecutionReportReject523> const &) override;
-  void operator()(Trace<cme_ilink::ExecutionReportTradeOutright525> const &) override;
-  void operator()(Trace<cme_ilink::ExecutionReportTradeSpread526> const &) override;
-  void operator()(Trace<cme_ilink::ExecutionReportTradeSpreadLeg527> const &) override;
-  void operator()(Trace<cme_ilink::ExecutionReportModify531> const &) override;
-  void operator()(Trace<cme_ilink::ExecutionReportStatus532> const &) override;
-  void operator()(Trace<cme_ilink::ExecutionReportCancel534> const &) override;
-  void operator()(Trace<cme_ilink::ExecutionReportPendingCancel564> const &) override;
-  void operator()(Trace<cme_ilink::ExecutionReportPendingReplace565> const &) override;
+  void operator()(Trace<::cme::sbe::ilink::ExecutionReportNew522> const &) override;
+  void operator()(Trace<::cme::sbe::ilink::ExecutionReportReject523> const &) override;
+  void operator()(Trace<::cme::sbe::ilink::ExecutionReportTradeOutright525> const &) override;
+  void operator()(Trace<::cme::sbe::ilink::ExecutionReportTradeSpread526> const &) override;
+  void operator()(Trace<::cme::sbe::ilink::ExecutionReportTradeSpreadLeg527> const &) override;
+  void operator()(Trace<::cme::sbe::ilink::ExecutionReportModify531> const &) override;
+  void operator()(Trace<::cme::sbe::ilink::ExecutionReportStatus532> const &) override;
+  void operator()(Trace<::cme::sbe::ilink::ExecutionReportCancel534> const &) override;
+  void operator()(Trace<::cme::sbe::ilink::ExecutionReportPendingCancel564> const &) override;
+  void operator()(Trace<::cme::sbe::ilink::ExecutionReportPendingReplace565> const &) override;
   // order
-  void operator()(Trace<cme_ilink::OrderCancelReject535> const &) override;
-  void operator()(Trace<cme_ilink::OrderCancelReplaceReject536> const &) override;
+  void operator()(Trace<::cme::sbe::ilink::OrderCancelReject535> const &) override;
+  void operator()(Trace<::cme::sbe::ilink::OrderCancelReplaceReject536> const &) override;
   // order mass action
-  virtual void operator()(Trace<cme_ilink::OrderMassActionReport562> const &) override;
+  virtual void operator()(Trace<::cme::sbe::ilink::OrderMassActionReport562> const &) override;
   // security definition
-  void operator()(Trace<cme_ilink::SecurityDefinitionResponse561> const &) override;
+  void operator()(Trace<::cme::sbe::ilink::SecurityDefinitionResponse561> const &) override;
 
  protected:
   void operator()(io::net::ConnectionManager::Connected const &) override;

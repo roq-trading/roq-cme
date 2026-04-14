@@ -4,8 +4,8 @@
 
 #include <fmt/format.h>
 
-#include <cme_mdp/AdminHeartbeat12.h>
-#include <cme_mdp/ChannelReset4.h>
+#include <cme/sbe/mdp/AdminHeartbeat12.h>
+#include <cme/sbe/mdp/ChannelReset4.h>
 
 #include "roq/cme/mdp/utils.hpp"
 
@@ -15,13 +15,13 @@ namespace mdp {}  // namespace mdp
 }  // namespace cme
 
 template <>
-inline constexpr std::string_view get_name<cme_mdp::ChannelReset4>() {
+inline constexpr std::string_view get_name<::cme::sbe::mdp::ChannelReset4>() {
   using namespace std::literals;
   return "channel_reset_4"sv;
 }
 
 template <>
-inline constexpr std::string_view get_name<cme_mdp::AdminHeartbeat12>() {
+inline constexpr std::string_view get_name<::cme::sbe::mdp::AdminHeartbeat12>() {
   using namespace std::literals;
   return "admin_heartbeat_12"sv;
 }
@@ -32,8 +32,8 @@ inline constexpr std::string_view get_name<cme_mdp::AdminHeartbeat12>() {
 // ChannelReset4
 
 template <>
-struct fmt::formatter<cme_mdp::ChannelReset4::NoMDEntries> {
-  using value_type = cme_mdp::ChannelReset4::NoMDEntries;
+struct fmt::formatter<::cme::sbe::mdp::ChannelReset4::NoMDEntries> {
+  using value_type = ::cme::sbe::mdp::ChannelReset4::NoMDEntries;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
@@ -51,8 +51,8 @@ struct fmt::formatter<cme_mdp::ChannelReset4::NoMDEntries> {
 };
 
 template <>
-struct fmt::formatter<cme_mdp::ChannelReset4> {
-  using value_type = cme_mdp::ChannelReset4;
+struct fmt::formatter<::cme::sbe::mdp::ChannelReset4> {
+  using value_type = ::cme::sbe::mdp::ChannelReset4;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type const &value, format_context &context) const {
     using namespace std::literals;
@@ -73,8 +73,8 @@ struct fmt::formatter<cme_mdp::ChannelReset4> {
 // AdminHeartbeat12
 
 template <>
-struct fmt::formatter<cme_mdp::AdminHeartbeat12> {
-  using value_type = cme_mdp::AdminHeartbeat12;
+struct fmt::formatter<::cme::sbe::mdp::AdminHeartbeat12> {
+  using value_type = ::cme::sbe::mdp::AdminHeartbeat12;
   constexpr auto parse(format_parse_context &context) { return std::begin(context); }
   auto format(value_type const &, format_context &context) const {
     using namespace std::literals;

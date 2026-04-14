@@ -33,36 +33,36 @@ TEST_CASE("simple", "[ilink_simple]") {
   static_assert(std::size(message) == 79);
   struct MyHandler final : public ilink::Parser::Handler {
     // session
-    void operator()(Trace<cme_ilink::NegotiationResponse501> const &) { FAIL(); }
-    void operator()(Trace<cme_ilink::NegotiationReject502> const &) { FAIL(); }
-    void operator()(Trace<cme_ilink::EstablishmentAck504> const &) { FAIL(); }
-    void operator()(Trace<cme_ilink::EstablishmentReject505> const &) { FAIL(); }
-    void operator()(Trace<cme_ilink::Sequence506> const &) { FAIL(); }
-    void operator()(Trace<cme_ilink::Terminate507> const &) { ++counter; }
-    void operator()(Trace<cme_ilink::Retransmission509> const &) { FAIL(); }
-    void operator()(Trace<cme_ilink::RetransmitReject510> const &) { FAIL(); }
-    void operator()(Trace<cme_ilink::NotApplied513> const &) { FAIL(); }
+    void operator()(Trace<::cme::sbe::ilink::NegotiationResponse501> const &) { FAIL(); }
+    void operator()(Trace<::cme::sbe::ilink::NegotiationReject502> const &) { FAIL(); }
+    void operator()(Trace<::cme::sbe::ilink::EstablishmentAck504> const &) { FAIL(); }
+    void operator()(Trace<::cme::sbe::ilink::EstablishmentReject505> const &) { FAIL(); }
+    void operator()(Trace<::cme::sbe::ilink::Sequence506> const &) { FAIL(); }
+    void operator()(Trace<::cme::sbe::ilink::Terminate507> const &) { ++counter; }
+    void operator()(Trace<::cme::sbe::ilink::Retransmission509> const &) { FAIL(); }
+    void operator()(Trace<::cme::sbe::ilink::RetransmitReject510> const &) { FAIL(); }
+    void operator()(Trace<::cme::sbe::ilink::NotApplied513> const &) { FAIL(); }
     // business
-    void operator()(Trace<cme_ilink::PartyDetailsDefinitionRequestAck519> const &) { FAIL(); }
-    void operator()(Trace<cme_ilink::BusinessReject521> const &) { FAIL(); }
+    void operator()(Trace<::cme::sbe::ilink::PartyDetailsDefinitionRequestAck519> const &) { FAIL(); }
+    void operator()(Trace<::cme::sbe::ilink::BusinessReject521> const &) { FAIL(); }
     // execution report
-    void operator()(Trace<cme_ilink::ExecutionReportNew522> const &) { FAIL(); }
-    void operator()(Trace<cme_ilink::ExecutionReportReject523> const &) { FAIL(); }
-    void operator()(Trace<cme_ilink::ExecutionReportTradeOutright525> const &) { FAIL(); }
-    void operator()(Trace<cme_ilink::ExecutionReportTradeSpread526> const &) { FAIL(); }
-    void operator()(Trace<cme_ilink::ExecutionReportTradeSpreadLeg527> const &) { FAIL(); }
-    void operator()(Trace<cme_ilink::ExecutionReportModify531> const &) { FAIL(); }
-    void operator()(Trace<cme_ilink::ExecutionReportStatus532> const &) { FAIL(); }
-    void operator()(Trace<cme_ilink::ExecutionReportCancel534> const &) { FAIL(); }
-    void operator()(Trace<cme_ilink::ExecutionReportPendingCancel564> const &) { FAIL(); }
-    void operator()(Trace<cme_ilink::ExecutionReportPendingReplace565> const &) { FAIL(); }
+    void operator()(Trace<::cme::sbe::ilink::ExecutionReportNew522> const &) { FAIL(); }
+    void operator()(Trace<::cme::sbe::ilink::ExecutionReportReject523> const &) { FAIL(); }
+    void operator()(Trace<::cme::sbe::ilink::ExecutionReportTradeOutright525> const &) { FAIL(); }
+    void operator()(Trace<::cme::sbe::ilink::ExecutionReportTradeSpread526> const &) { FAIL(); }
+    void operator()(Trace<::cme::sbe::ilink::ExecutionReportTradeSpreadLeg527> const &) { FAIL(); }
+    void operator()(Trace<::cme::sbe::ilink::ExecutionReportModify531> const &) { FAIL(); }
+    void operator()(Trace<::cme::sbe::ilink::ExecutionReportStatus532> const &) { FAIL(); }
+    void operator()(Trace<::cme::sbe::ilink::ExecutionReportCancel534> const &) { FAIL(); }
+    void operator()(Trace<::cme::sbe::ilink::ExecutionReportPendingCancel564> const &) { FAIL(); }
+    void operator()(Trace<::cme::sbe::ilink::ExecutionReportPendingReplace565> const &) { FAIL(); }
     // order
-    void operator()(Trace<cme_ilink::OrderCancelReject535> const &) { FAIL(); }
-    void operator()(Trace<cme_ilink::OrderCancelReplaceReject536> const &) { FAIL(); }
+    void operator()(Trace<::cme::sbe::ilink::OrderCancelReject535> const &) { FAIL(); }
+    void operator()(Trace<::cme::sbe::ilink::OrderCancelReplaceReject536> const &) { FAIL(); }
     // order mass action
-    void operator()(Trace<cme_ilink::OrderMassActionReport562> const &) { FAIL(); }
+    void operator()(Trace<::cme::sbe::ilink::OrderMassActionReport562> const &) { FAIL(); }
     // security definition
-    void operator()(Trace<cme_ilink::SecurityDefinitionResponse561> const &) { FAIL(); }
+    void operator()(Trace<::cme::sbe::ilink::SecurityDefinitionResponse561> const &) { FAIL(); }
     int counter = 0;
   } handler;
   std::span buffer{reinterpret_cast<std::byte const *>(std::data(message)), std::size(message)};
@@ -93,36 +93,36 @@ TEST_CASE("multiple", "[ilink_simple]") {
   static_assert(std::size(message) == 421);
   struct MyHandler final : public ilink::Parser::Handler {
     // session
-    void operator()(Trace<cme_ilink::NegotiationResponse501> const &) { FAIL(); }
-    void operator()(Trace<cme_ilink::NegotiationReject502> const &) { FAIL(); }
-    void operator()(Trace<cme_ilink::EstablishmentAck504> const &) { FAIL(); }
-    void operator()(Trace<cme_ilink::EstablishmentReject505> const &) { FAIL(); }
-    void operator()(Trace<cme_ilink::Sequence506> const &) { FAIL(); }
-    void operator()(Trace<cme_ilink::Terminate507> const &) { ++counter; }
-    void operator()(Trace<cme_ilink::Retransmission509> const &) { FAIL(); }
-    void operator()(Trace<cme_ilink::RetransmitReject510> const &) { FAIL(); }
-    void operator()(Trace<cme_ilink::NotApplied513> const &) { FAIL(); }
+    void operator()(Trace<::cme::sbe::ilink::NegotiationResponse501> const &) { FAIL(); }
+    void operator()(Trace<::cme::sbe::ilink::NegotiationReject502> const &) { FAIL(); }
+    void operator()(Trace<::cme::sbe::ilink::EstablishmentAck504> const &) { FAIL(); }
+    void operator()(Trace<::cme::sbe::ilink::EstablishmentReject505> const &) { FAIL(); }
+    void operator()(Trace<::cme::sbe::ilink::Sequence506> const &) { FAIL(); }
+    void operator()(Trace<::cme::sbe::ilink::Terminate507> const &) { ++counter; }
+    void operator()(Trace<::cme::sbe::ilink::Retransmission509> const &) { FAIL(); }
+    void operator()(Trace<::cme::sbe::ilink::RetransmitReject510> const &) { FAIL(); }
+    void operator()(Trace<::cme::sbe::ilink::NotApplied513> const &) { FAIL(); }
     // business
-    void operator()(Trace<cme_ilink::PartyDetailsDefinitionRequestAck519> const &) { ++counter; }
-    void operator()(Trace<cme_ilink::BusinessReject521> const &) { ++counter; }
+    void operator()(Trace<::cme::sbe::ilink::PartyDetailsDefinitionRequestAck519> const &) { ++counter; }
+    void operator()(Trace<::cme::sbe::ilink::BusinessReject521> const &) { ++counter; }
     // execution report
-    void operator()(Trace<cme_ilink::ExecutionReportNew522> const &) { FAIL(); }
-    void operator()(Trace<cme_ilink::ExecutionReportReject523> const &) { FAIL(); }
-    void operator()(Trace<cme_ilink::ExecutionReportTradeOutright525> const &) { FAIL(); }
-    void operator()(Trace<cme_ilink::ExecutionReportTradeSpread526> const &) { FAIL(); }
-    void operator()(Trace<cme_ilink::ExecutionReportTradeSpreadLeg527> const &) { FAIL(); }
-    void operator()(Trace<cme_ilink::ExecutionReportModify531> const &) { FAIL(); }
-    void operator()(Trace<cme_ilink::ExecutionReportStatus532> const &) { FAIL(); }
-    void operator()(Trace<cme_ilink::ExecutionReportCancel534> const &) { FAIL(); }
-    void operator()(Trace<cme_ilink::ExecutionReportPendingCancel564> const &) { FAIL(); }
-    void operator()(Trace<cme_ilink::ExecutionReportPendingReplace565> const &) { FAIL(); }
+    void operator()(Trace<::cme::sbe::ilink::ExecutionReportNew522> const &) { FAIL(); }
+    void operator()(Trace<::cme::sbe::ilink::ExecutionReportReject523> const &) { FAIL(); }
+    void operator()(Trace<::cme::sbe::ilink::ExecutionReportTradeOutright525> const &) { FAIL(); }
+    void operator()(Trace<::cme::sbe::ilink::ExecutionReportTradeSpread526> const &) { FAIL(); }
+    void operator()(Trace<::cme::sbe::ilink::ExecutionReportTradeSpreadLeg527> const &) { FAIL(); }
+    void operator()(Trace<::cme::sbe::ilink::ExecutionReportModify531> const &) { FAIL(); }
+    void operator()(Trace<::cme::sbe::ilink::ExecutionReportStatus532> const &) { FAIL(); }
+    void operator()(Trace<::cme::sbe::ilink::ExecutionReportCancel534> const &) { FAIL(); }
+    void operator()(Trace<::cme::sbe::ilink::ExecutionReportPendingCancel564> const &) { FAIL(); }
+    void operator()(Trace<::cme::sbe::ilink::ExecutionReportPendingReplace565> const &) { FAIL(); }
     // order
-    void operator()(Trace<cme_ilink::OrderCancelReject535> const &) { FAIL(); }
-    void operator()(Trace<cme_ilink::OrderCancelReplaceReject536> const &) { FAIL(); }
+    void operator()(Trace<::cme::sbe::ilink::OrderCancelReject535> const &) { FAIL(); }
+    void operator()(Trace<::cme::sbe::ilink::OrderCancelReplaceReject536> const &) { FAIL(); }
     // order mass action
-    void operator()(Trace<cme_ilink::OrderMassActionReport562> const &) { FAIL(); }
+    void operator()(Trace<::cme::sbe::ilink::OrderMassActionReport562> const &) { FAIL(); }
     // security definition
-    void operator()(Trace<cme_ilink::SecurityDefinitionResponse561> const &) { FAIL(); }
+    void operator()(Trace<::cme::sbe::ilink::SecurityDefinitionResponse561> const &) { FAIL(); }
     int counter = 0;
   } handler;
   std::span buffer{reinterpret_cast<std::byte const *>(std::data(message)), std::size(message)};

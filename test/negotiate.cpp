@@ -7,8 +7,8 @@
 #include <cmath>
 #include <span>
 
-#include <cme_ilink/MessageHeader.h>
-#include <cme_ilink/Negotiate500.h>
+#include <cme/sbe/ilink/MessageHeader.h>
+#include <cme/sbe/ilink/Negotiate500.h>
 
 #include "roq/utils/debug/hex/message.hpp"
 
@@ -18,7 +18,7 @@ using namespace std::literals;
 
 using namespace Catch::literals;
 
-using namespace cme_ilink;
+using namespace ::cme::sbe::ilink;
 
 using namespace roq;
 
@@ -27,7 +27,7 @@ TEST_CASE("simple", "[negotiate]") {
   auto hmac_signature =
       "\x55\x51\x3a\xfc\xd2\x4b\xd0\x4c\xbe\x2f\x69\x44\xe0\x26\xf1\xf2"
       "\xb3\xb9\x26\x5c\x02\x60\xac\xba\x7e\xa6\x69\x2d\x29\x51\x55\xf6"sv;
-  auto negotiate = cme::ilink::Negotiate{
+  auto negotiate = roq::cme::ilink::Negotiate{
       .hmac_signature = {reinterpret_cast<std::byte const *>(std::data(hmac_signature)), std::size(hmac_signature)},
       .access_key_id = "uaxIRXP9SuJZ02z7cVN1"sv,
       .uuid = 1685510153123456789,

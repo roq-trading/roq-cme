@@ -2,7 +2,7 @@
 
 #include "roq/cme/ilink/establish.hpp"
 
-#include <cme_ilink/Establish503.h>
+#include <cme/sbe/ilink/Establish503.h>
 
 using namespace std::literals;
 
@@ -11,8 +11,8 @@ namespace cme {
 namespace ilink {
 
 namespace {
-using header_type = cme_ilink::MessageHeader;
-using value_type = cme_ilink::Establish503;
+using header_type = ::cme::sbe::ilink::MessageHeader;
+using value_type = ::cme::sbe::ilink::Establish503;
 }  // namespace
 
 std::span<std::byte const> Establish::encode(std::span<std::byte> const &buffer) const {
