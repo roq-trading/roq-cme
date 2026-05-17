@@ -11,7 +11,7 @@ using namespace std::literals;
 
 namespace {
 auto const INFO = roq::Service::Info{
-    .description = "Roq CME Gateway"sv,
+    .description = "Roq's CME gateway"sv,
     .package_name = ROQ_PACKAGE_NAME,
     .host = ROQ_HOST,
     .build_version = ROQ_BUILD_VERSION,
