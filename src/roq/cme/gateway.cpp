@@ -103,6 +103,8 @@ Gateway::Gateway(server::Dispatcher &dispatcher, Settings const &settings, Confi
       order_entry_{create_order_entry<decltype(order_entry_)>(*this, context_, stream_id_, accounts_, shared_)} {
 }
 
+// server::Handler
+
 void Gateway::operator()(Event<Start> const &event) {
   log::info("Starting..."sv);
   dispatch(event);
@@ -187,6 +189,8 @@ void Gateway::operator()(metrics::Writer &writer) const {
   dispatch_helper(*this, writer);
 }
 
+// streams
+
 void Gateway::operator()(Trace<StreamStatus> const &event) {
   dispatcher_(event);
 }
@@ -194,6 +198,8 @@ void Gateway::operator()(Trace<StreamStatus> const &event) {
 void Gateway::operator()(Trace<ExternalLatency> const &event) {
   dispatcher_(event);
 }
+
+// utilities
 
 template <typename... Args>
 void Gateway::dispatch(Args &&...args) {

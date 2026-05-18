@@ -65,12 +65,13 @@ struct Gateway final : public server::Handler, public market_data::SecurityDefin
 
   void operator()(metrics::Writer &) const override;
 
-  // many
+  // streams
 
   void operator()(Trace<StreamStatus> const &) override;
   void operator()(Trace<ExternalLatency> const &) override;
 
   // market_data::SecurityDefinitions::Dispatcher
+
   bool discard_symbol(std::string_view const &name) override { return dispatcher_.discard_symbol(name); }
 
   // utilities
