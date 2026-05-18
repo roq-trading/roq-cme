@@ -11,17 +11,16 @@
 
 #include "roq/io/context.hpp"
 
-#include "roq/cme/market_data/manager.hpp"
-#include "roq/cme/market_data/security_definitions.hpp"
-
 #include "roq/cme/account.hpp"
 #include "roq/cme/config.hpp"
 #include "roq/cme/settings.hpp"
 #include "roq/cme/shared.hpp"
 
 #include "roq/cme/mdp_receiver.hpp"
-
 #include "roq/cme/order_entry.hpp"
+
+#include "roq/cme/market_data/manager.hpp"
+#include "roq/cme/market_data/security_definitions.hpp"
 
 namespace roq {
 namespace cme {
