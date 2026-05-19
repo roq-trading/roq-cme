@@ -20,7 +20,6 @@ set(SOURCES
     gateway.cpp
     mdp_receiver.cpp
     order_entry.cpp
-    settings.cpp
     shared.cpp
     main.cpp)
 
@@ -63,7 +62,6 @@ target_link_libraries(
           roq-logging::roq-logging-flags
           roq-market::roq-market
           roq-server::roq-server
-          roq-server::roq-server-flags
           roq-web::roq-web
           unordered_dense::unordered_dense)
 
