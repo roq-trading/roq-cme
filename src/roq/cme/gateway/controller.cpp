@@ -1,6 +1,6 @@
 /* Copyright (c) 2017-2026, Hans Erik Thrane */
 
-#include "roq/cme/gateway.hpp"
+#include "roq/cme/gateway/controller.hpp"
 
 #include <utility>
 
@@ -12,6 +12,7 @@ using namespace std::literals;
 
 namespace roq {
 namespace cme {
+namespace gateway {
 
 // === HELPERS ===
 
@@ -95,7 +96,11 @@ R create_order_entry(auto &gateway, auto &context, auto &stream_id, auto &accoun
 
 // === IMPLEMENTATION ===
 
-Gateway::Gateway(server::Dispatcher &dispatcher, Settings const &settings, Config const &config, io::Context &context)
+std::unique_ptr<server::Handler> Controller::create(server::Dispatcher &dispatcher, Settings const &settings, Config const &config, io::Context &context) {
+  return std::make_unique<Controller>(dispatcher, settings, config, context);
+}
+
+Controller::Controller(server::Dispatcher &dispatcher, Settings const &settings, Config const &config, io::Context &context)
     : dispatcher_{dispatcher}, accounts_{create_accounts<decltype(accounts_)>(config)}, context_{context},
       security_definitions_{*this, settings.misc.secdef_config_file}, shared_{dispatcher, settings, security_definitions_},
       market_data_{create_market_data_manager(dispatcher_, settings, security_definitions_, shared_, stream_id_)},
@@ -105,21 +110,21 @@ Gateway::Gateway(server::Dispatcher &dispatcher, Settings const &settings, Confi
 
 // server::Handler
 
-void Gateway::operator()(Event<Start> const &event) {
+void Controller::operator()(Event<Start> const &event) {
   log::info("Starting..."sv);
   dispatch(event);
 }
 
-void Gateway::operator()(Event<Stop> const &event) {
+void Controller::operator()(Event<Stop> const &event) {
   log::info("Stopping..."sv);
   dispatch(event);
 }
 
-void Gateway::operator()(Event<Timer> const &event) {
+void Controller::operator()(Event<Timer> const &event) {
   dispatch(event);
 }
 
-void Gateway::operator()(Event<Control> const &event) {
+void Controller::operator()(Event<Control> const &event) {
   auto &[message_info, control] = event;
   switch (control.action) {
     using enum Action;
@@ -135,22 +140,22 @@ void Gateway::operator()(Event<Control> const &event) {
   }
 }
 
-void Gateway::operator()(Event<Connected> const &) {
+void Controller::operator()(Event<Connected> const &) {
 }
 
-void Gateway::operator()(Event<Disconnected> const &) {
+void Controller::operator()(Event<Disconnected> const &) {
 }
 
-void Gateway::operator()(Event<Subscribe> const &) {
+void Controller::operator()(Event<Subscribe> const &) {
 }
 
-uint16_t Gateway::operator()(
+uint16_t Controller::operator()(
     Event<CreateOrder> const &event, server::oms::Order const &order, server::oms::RefData const &ref_data, std::string_view const &request_id) {
   assert(!std::empty(event.value.account));
   return get_order_entry(event.value.account)(event, order, ref_data, request_id);
 }
 
-uint16_t Gateway::operator()(
+uint16_t Controller::operator()(
     Event<ModifyOrder> const &event,
     server::oms::Order const &order,
     server::oms::RefData const &ref_data,
@@ -161,7 +166,7 @@ uint16_t Gateway::operator()(
   return get_order_entry(event.value.account)(event, order, ref_data, request_id, previous_request_id);
 }
 
-uint16_t Gateway::operator()(
+uint16_t Controller::operator()(
     Event<CancelOrder> const &event,
     server::oms::Order const &order,
     server::oms::RefData const &ref_data,
@@ -172,42 +177,42 @@ uint16_t Gateway::operator()(
   return get_order_entry(event.value.account)(event, order, ref_data, request_id, previous_request_id);
 }
 
-uint16_t Gateway::operator()(Event<CancelAllOrders> const &event, std::string_view const &request_id) {
+uint16_t Controller::operator()(Event<CancelAllOrders> const &event, std::string_view const &request_id) {
   assert(!std::empty(event.value.account));
   return get_order_entry(event.value.account)(event, request_id);
 }
 
-uint16_t Gateway::operator()(Event<MassQuote> const &) {
+uint16_t Controller::operator()(Event<MassQuote> const &) {
   throw server::oms::NotSupported{"not supported"sv};
 }
 
-uint16_t Gateway::operator()(Event<CancelQuotes> const &) {
+uint16_t Controller::operator()(Event<CancelQuotes> const &) {
   throw server::oms::NotSupported{"not supported"sv};
 }
 
-void Gateway::operator()(metrics::Writer &writer) const {
+void Controller::operator()(metrics::Writer &writer) const {
   dispatch_helper(*this, writer);
 }
 
 // streams
 
-void Gateway::operator()(Trace<StreamStatus> const &event) {
+void Controller::operator()(Trace<StreamStatus> const &event) {
   dispatcher_(event);
 }
 
-void Gateway::operator()(Trace<ExternalLatency> const &event) {
+void Controller::operator()(Trace<ExternalLatency> const &event) {
   dispatcher_(event);
 }
 
 // utilities
 
 template <typename... Args>
-void Gateway::dispatch(Args &&...args) {
+void Controller::dispatch(Args &&...args) {
   dispatch_helper(*this, std::forward<Args>(args)...);
 }
 
 template <typename... Args>
-void Gateway::dispatch_helper(auto &self, Args &&...args) {
+void Controller::dispatch_helper(auto &self, Args &&...args) {
   auto helper = [&](auto &target) { target(std::forward<Args>(args)...); };
   helper(self.market_data_);
   for (auto &[_, item] : self.order_entry_) {
@@ -215,7 +220,7 @@ void Gateway::dispatch_helper(auto &self, Args &&...args) {
   }
 }
 
-OrderEntry &Gateway::get_order_entry(std::string_view const &account) {
+OrderEntry &Controller::get_order_entry(std::string_view const &account) {
   auto iter = order_entry_.find(account);
   if (iter == std::end(order_entry_)) [[unlikely]] {
     throw RuntimeError{R"(Unknown account="{}")"sv, account};
@@ -223,5 +228,6 @@ OrderEntry &Gateway::get_order_entry(std::string_view const &account) {
   return *(*iter).second;
 }
 
+}  // namespace gateway
 }  // namespace cme
 }  // namespace roq

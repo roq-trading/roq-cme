@@ -1,6 +1,6 @@
 /* Copyright (c) 2017-2026, Hans Erik Thrane */
 
-#include "roq/cme/order_entry.hpp"
+#include "roq/cme/gateway/order_entry.hpp"
 
 #include "roq/mask.hpp"
 
@@ -36,6 +36,7 @@ using namespace std::literals;
 
 namespace roq {
 namespace cme {
+namespace gateway {
 
 // === CONSTANTS ===
 
@@ -1761,5 +1762,6 @@ void OrderEntry::operator()(Trace<server::oms::Response> const &event, uint8_t u
   }
 }
 
+}  // namespace gateway
 }  // namespace cme
 }  // namespace roq

@@ -1,9 +1,10 @@
 /* Copyright (c) 2017-2026, Hans Erik Thrane */
 
-#include "roq/cme/account.hpp"
+#include "roq/cme/gateway/account.hpp"
 
 namespace roq {
 namespace cme {
+namespace gateway {
 
 // === CONSTANTS ===
 
@@ -18,5 +19,6 @@ Account::Account(Config const &config, std::string_view const &name)
       encode_buffer_(ENCODE_BUFFER_LENGTH) {
 }
 
+}  // namespace gateway
 }  // namespace cme
 }  // namespace roq

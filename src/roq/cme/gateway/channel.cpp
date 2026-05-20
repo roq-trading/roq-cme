@@ -1,6 +1,6 @@
 /* Copyright (c) 2017-2026, Hans Erik Thrane */
 
-#include "roq/cme/channel.hpp"
+#include "roq/cme/gateway/channel.hpp"
 
 #include "roq/logging.hpp"
 
@@ -8,6 +8,7 @@ using namespace std::literals;
 
 namespace roq {
 namespace cme {
+namespace gateway {
 
 // === HELPER ===
 
@@ -43,5 +44,6 @@ std::string Channel::get_channel_name(std::string_view const &prefix, Priority p
   return fmt::format("{}{}{}"sv, prefix, channel_id, postfix);
 }
 
+}  // namespace gateway
 }  // namespace cme
 }  // namespace roq

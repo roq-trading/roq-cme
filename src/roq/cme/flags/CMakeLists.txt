@@ -1,14 +1,14 @@
 set(TARGET_NAME ${PROJECT_NAME}-flags)
 
+set(SOURCES settings.cpp)
+
+set(AUTOGEN_SCHEMAS flags.json misc.json ilink.json multicast.json test.json)
+
 include(RoqAutogen)
 
 set(NAMESPACE "roq/cme/flags")
 
 set(TARGET_DIR ${CMAKE_INSTALL_INCLUDEDIR}/${NAMESPACE})
-
-set(SOURCES settings.cpp)
-
-set(AUTOGEN_SCHEMAS flags.json misc.json ilink.json multicast.json test.json)
 
 if(BUILD_DOCS)
 
@@ -65,6 +65,10 @@ add_dependencies(${TARGET_NAME} flags-autogen-headers)
 
 target_link_libraries(${TARGET_NAME} PRIVATE roq-api::roq-api roq-core::roq-core roq-flags::roq-flags roq-logging::roq-logging roq-server::roq-server-flags
                                              absl::flags)
+
+if(ROQ_BUILD_TYPE STREQUAL "Release")
+  set_target_properties(${TARGET_NAME} PROPERTIES LINK_FLAGS_RELEASE -s)
+endif()
 
 target_compile_definitions(${TARGET_NAME} PRIVATE ROQ_PACKAGE_NAME="${TARGET_NAME}" ROQ_BUILD_NUMBER="${ROQ_BUILD_NUMBER}")
 

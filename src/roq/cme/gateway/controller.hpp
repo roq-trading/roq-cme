@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "roq/compat.hpp"
+
 #include <memory>
 #include <string>
 
@@ -11,24 +13,29 @@
 
 #include "roq/io/context.hpp"
 
-#include "roq/cme/account.hpp"
-#include "roq/cme/config.hpp"
-#include "roq/cme/settings.hpp"
-#include "roq/cme/shared.hpp"
+#include "roq/cme/gateway/account.hpp"
+#include "roq/cme/gateway/config.hpp"
+#include "roq/cme/gateway/settings.hpp"
+#include "roq/cme/gateway/shared.hpp"
 
-#include "roq/cme/mdp_receiver.hpp"
-#include "roq/cme/order_entry.hpp"
+#include "roq/cme/gateway/mdp_receiver.hpp"
+#include "roq/cme/gateway/order_entry.hpp"
 
 #include "roq/cme/market_data/manager.hpp"
 #include "roq/cme/market_data/security_definitions.hpp"
 
 namespace roq {
 namespace cme {
+namespace gateway {
 
-struct Gateway final : public server::Handler, public market_data::SecurityDefinitions::Dispatcher, public OrderEntry::Handler {
-  Gateway(server::Dispatcher &, Settings const &, Config const &, io::Context &);
+struct Controller final : public server::Handler, public market_data::SecurityDefinitions::Dispatcher, public OrderEntry::Handler {
+  ROQ_PUBLIC static std::unique_ptr<server::Handler> create(server::Dispatcher &, Settings const &, Config const &, io::Context &);
 
-  Gateway(Gateway const &) = delete;
+  Controller(server::Dispatcher &, Settings const &, Config const &, io::Context &);
+
+  Controller(Controller const &) = delete;
+
+  virtual ~Controller() = default;
 
  protected:
   // server::Handler
@@ -101,5 +108,6 @@ struct Gateway final : public server::Handler, public market_data::SecurityDefin
   utils::unordered_map<std::string, std::unique_ptr<OrderEntry>> order_entry_;
 };
 
+}  // namespace gateway
 }  // namespace cme
 }  // namespace roq

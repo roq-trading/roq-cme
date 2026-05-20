@@ -6,8 +6,10 @@
 
 namespace roq {
 namespace cme {
+namespace gateway {
 
 using Settings = flags::Settings;
 
+}  // namespace gateway
 }  // namespace cme
 }  // namespace roq

@@ -1,69 +1,28 @@
 set(TARGET_NAME ${PROJECT_NAME})
 
 add_subdirectory(flags)
-add_subdirectory(tools)
-add_subdirectory(mdp)
+add_subdirectory(gateway)
 add_subdirectory(ilink)
-add_subdirectory(secdef)
 add_subdirectory(market_data)
+add_subdirectory(mdp)
+add_subdirectory(secdef)
+add_subdirectory(tools)
 
 add_subdirectory(channel_tester)
 add_subdirectory(dump)
 add_subdirectory(filter)
 add_subdirectory(import)
 
-set(SOURCES
-    account.cpp
-    application.cpp
-    channel.cpp
-    config.cpp
-    gateway.cpp
-    mdp_receiver.cpp
-    order_entry.cpp
-    shared.cpp
-    main.cpp)
+set(SOURCES application.cpp main.cpp)
 
 include(RoqAutogen)
 
-set(AUTOGEN_SCHEMAS order_entry_state.json)
-
-roq_autogen_hpp(
-  OUTPUT
-  AUTOGEN_HEADERS
-  SOURCES
-  ${AUTOGEN_SCHEMAS}
-  TEMPLATE_DIR
-  ${TEMPLATE_DIR}
-  TEMPLATE_TYPE
-  "state")
-
-add_custom_target(autogen-headers ALL DEPENDS ${AUTOGEN_HEADERS})
-
-roq_gitignore(OUTPUT .gitignore SOURCES ${TARGET_NAME} ${AUTOGEN_HEADERS})
+roq_gitignore(OUTPUT .gitignore SOURCES ${TARGET_NAME})
 
 add_executable(${TARGET_NAME} ${SOURCES})
 
-add_dependencies(${TARGET_NAME} autogen-headers)
-
-target_link_libraries(
-  ${TARGET_NAME}
-  PRIVATE ${PROJECT_NAME}-flags
-          ${PROJECT_NAME}-tools
-          ${PROJECT_NAME}-mdp
-          ${PROJECT_NAME}-ilink
-          ${PROJECT_NAME}-secdef
-          ${PROJECT_NAME}-market_data
-          roq-api::roq-api
-          roq-core::roq-core
-          roq-codec::roq-codec
-          roq-flags::roq-flags
-          roq-io::roq-io
-          roq-logging::roq-logging
-          roq-logging::roq-logging-flags
-          roq-market::roq-market
-          roq-server::roq-server
-          roq-web::roq-web
-          unordered_dense::unordered_dense)
+target_link_libraries(${TARGET_NAME} PRIVATE ${PROJECT_NAME}-flags ${PROJECT_NAME}-gateway roq-flags::roq-flags roq-logging::roq-logging
+                                             roq-logging::roq-logging-flags roq-server::roq-server)
 
 if(ROQ_BUILD_TYPE STREQUAL "Release")
   set_target_properties(${TARGET_NAME} PROPERTIES LINK_FLAGS_RELEASE -s)

@@ -11,7 +11,7 @@
 
 #include "roq/utils/container.hpp"
 
-#include "roq/cme/settings.hpp"
+#include "roq/cme/gateway/settings.hpp"
 
 #include "roq/cme/tools/security.hpp"
 
@@ -23,6 +23,7 @@
 
 namespace roq {
 namespace cme {
+namespace gateway {
 
 struct Shared final {
  public:
@@ -71,5 +72,6 @@ struct Shared final {
   std::vector<Fill> fills_;
 };
 
+}  // namespace gateway
 }  // namespace cme
 }  // namespace roq

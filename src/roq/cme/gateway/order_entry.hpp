@@ -16,14 +16,15 @@
 
 #include "roq/server.hpp"
 
-#include "roq/cme/account.hpp"
-#include "roq/cme/order_entry_state.hpp"
-#include "roq/cme/shared.hpp"
+#include "roq/cme/gateway/account.hpp"
+#include "roq/cme/gateway/order_entry_state.hpp"
+#include "roq/cme/gateway/shared.hpp"
 
 #include "roq/cme/ilink/parser.hpp"
 
 namespace roq {
 namespace cme {
+namespace gateway {
 
 struct OrderEntry final : public io::net::ConnectionManager::Handler, public ilink::Parser::Handler {
   struct Handler {
@@ -213,5 +214,6 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public ili
   uint64_t request_id_ = {};
 };
 
+}  // namespace gateway
 }  // namespace cme
 }  // namespace roq

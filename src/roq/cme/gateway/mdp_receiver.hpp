@@ -11,10 +11,11 @@
 
 #include "roq/cme/market_data/manager.hpp"
 
-#include "roq/cme/shared.hpp"
+#include "roq/cme/gateway/shared.hpp"
 
 namespace roq {
 namespace cme {
+namespace gateway {
 
 struct MDPReceiver final : public io::net::udp::Receiver::Handler {
   MDPReceiver(io::Context &, Shared &, market_data::Manager &, uint16_t channel_id, mdp::ConnectionType, Priority);
@@ -49,5 +50,6 @@ struct MDPReceiver final : public io::net::udp::Receiver::Handler {
   Shared &shared_;
 };
 
+}  // namespace gateway
 }  // namespace cme
 }  // namespace roq

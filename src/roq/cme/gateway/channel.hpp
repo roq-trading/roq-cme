@@ -10,6 +10,7 @@
 
 namespace roq {
 namespace cme {
+namespace gateway {
 
 struct Channel final {
   Channel(std::string_view const &channel_id, size_t buffer_size, size_t buffer_depth);
@@ -40,5 +41,6 @@ struct Channel final {
   }
 };
 
+}  // namespace gateway
 }  // namespace cme
 }  // namespace roq

@@ -1,6 +1,6 @@
 /* Copyright (c) 2017-2026, Hans Erik Thrane */
 
-#include "roq/cme/mdp_receiver.hpp"
+#include "roq/cme/gateway/mdp_receiver.hpp"
 
 #include "roq/utils/metrics/factory.hpp"
 
@@ -12,6 +12,7 @@ using namespace std::literals;
 
 namespace roq {
 namespace cme {
+namespace gateway {
 
 // === CONSTANTS ===
 
@@ -87,5 +88,6 @@ void MDPReceiver::operator()(metrics::Writer &writer) const {
       .write(profile_.parse, metrics::Type::PROFILE);
 }
 
+}  // namespace gateway
 }  // namespace cme
 }  // namespace roq

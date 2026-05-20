@@ -2,9 +2,10 @@
 
 #include "roq/cme/application.hpp"
 
-#include "roq/cme/config.hpp"
-#include "roq/cme/gateway.hpp"
-#include "roq/cme/settings.hpp"
+#include "roq/cme/flags/settings.hpp"
+
+#include "roq/cme/gateway/config.hpp"
+#include "roq/cme/gateway/controller.hpp"
 
 using namespace std::literals;
 
@@ -20,10 +21,10 @@ uint8_t const API = {};
 // === IMPLEMENTATION ===
 
 int Application::main(args::Parser const &args) {
-  Settings settings{args};
-  Config config{settings};
+  flags::Settings settings{args};
+  gateway::Config config{settings};
   auto context = server::create_io_context(settings);
-  server::Trading<Gateway>{settings, config, *context, API}.dispatch();
+  server::Trading2<gateway::Controller>{settings, config, *context, API}.dispatch();
   return EXIT_SUCCESS;
 }
 

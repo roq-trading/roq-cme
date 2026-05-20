@@ -1,6 +1,6 @@
 /* Copyright (c) 2017-2026, Hans Erik Thrane */
 
-#include "roq/cme/shared.hpp"
+#include "roq/cme/gateway/shared.hpp"
 
 #include <fmt/format.h>
 
@@ -14,6 +14,7 @@ using namespace std::literals;
 
 namespace roq {
 namespace cme {
+namespace gateway {
 
 // === CONSTANTS ===
 
@@ -62,5 +63,6 @@ std::pair<std::string, uint16_t> Shared::get_multicast_config(uint16_t channel_i
   return result;
 }
 
+}  // namespace gateway
 }  // namespace cme
 }  // namespace roq

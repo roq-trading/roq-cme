@@ -7,12 +7,13 @@
 #include <string_view>
 #include <utility>
 
-#include "roq/cme/config.hpp"
+#include "roq/cme/gateway/config.hpp"
 
 #include "roq/cme/tools/crypto.hpp"
 
 namespace roq {
 namespace cme {
+namespace gateway {
 
 struct Account final {
   Account(Config const &, std::string_view const &name);
@@ -33,5 +34,6 @@ struct Account final {
   std::vector<std::byte> encode_buffer_;
 };
 
+}  // namespace gateway
 }  // namespace cme
 }  // namespace roq
