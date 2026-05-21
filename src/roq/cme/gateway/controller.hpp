@@ -35,8 +35,6 @@ struct Controller final : public server::Handler, public market_data::SecurityDe
 
   Controller(Controller const &) = delete;
 
-  virtual ~Controller() = default;
-
  protected:
   // server::Handler
 
