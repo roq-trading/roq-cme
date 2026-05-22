@@ -282,6 +282,7 @@ void Controller::create_producer(std::chrono::nanoseconds timestamp_utc) {
   if (std::empty(std::get<0>(paths))) {
     auto create_directories = true;
     auto create_symlink = false;
+    auto disable = false;
     paths = core::event_log::Producer::create_paths(
         settings_.event_log.dir,
         Category::PUBLIC,
@@ -289,7 +290,8 @@ void Controller::create_producer(std::chrono::nanoseconds timestamp_utc) {
         timestamp_utc,
         core::event_log::Producer::DirectoryFormat::ISO_WEEK,
         create_directories,
-        create_symlink);
+        create_symlink,
+        disable);
   }
   auto config = core::event_log::Producer::Config{
       .input_buffer_size = settings_.event_log.buffer_size,
