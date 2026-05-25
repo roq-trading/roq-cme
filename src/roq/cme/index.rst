@@ -13,8 +13,8 @@
 .. |footnote-3| unicode:: U+2778
 
 
-roq-cme
-=======
+`roq-cme <https://github.com/roq-trading/roq-cme/>`__
+=====================================================
 
 .. tab:: Unstable
 
@@ -414,6 +414,13 @@ Common
 * :ref:`Using Flags <abseil-cpp>`
 * :ref:`Gateway Flags <gateway-flags>`
 * :ref:`Gateway Config <gateway-config>`
+
+
+GitHub
+~~~~~~
+
+* `roq-cme <https://github.com/roq-trading/roq-cme/>`__
+
 
 Exchange
 ~~~~~~~~
