@@ -1,4 +1,4 @@
-set(TARGET_NAME ${PROJECT_NAME}-mdp)
+set(TARGET_NAME ${PROJECT_NAME}-protocol-mdp)
 
 set(SOURCES config.cpp config_reader.cpp frame.cpp map.cpp md_instrument_definition.cpp parser.cpp)
 

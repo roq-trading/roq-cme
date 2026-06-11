@@ -29,9 +29,9 @@ add_executable(${TARGET_NAME} ${SOURCES})
 
 target_link_libraries(
   ${TARGET_NAME}
-  PRIVATE ${PROJECT_NAME}-secdef
-          ${PROJECT_NAME}-mdp
-          ${PROJECT_NAME}-ilink
+  PRIVATE ${PROJECT_NAME}-protocol-ilink
+          ${PROJECT_NAME}-protocol-mdp
+          ${PROJECT_NAME}-secdef
           ${PROJECT_NAME}-tools
           roq-core::roq-core
           EXPAT::EXPAT

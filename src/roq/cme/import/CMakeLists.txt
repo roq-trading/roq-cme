@@ -9,10 +9,10 @@ add_executable(${TARGET_NAME} ${SOURCES})
 target_link_libraries(
   ${TARGET_NAME}
   PRIVATE ${PROJECT_NAME}-import-flags
-          ${PROJECT_NAME}-tools
-          ${PROJECT_NAME}-mdp
           ${PROJECT_NAME}-market_data
+          ${PROJECT_NAME}-protocol-mdp
           ${PROJECT_NAME}-secdef
+          ${PROJECT_NAME}-tools
           roq-api::roq-api
           roq-core::roq-core
           roq-codec::roq-codec

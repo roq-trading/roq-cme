@@ -1,4 +1,4 @@
-set(TARGET_NAME ${PROJECT_NAME}-ilink)
+set(TARGET_NAME ${PROJECT_NAME}-protocol-ilink)
 
 set(SOURCES
     config_reader.cpp
