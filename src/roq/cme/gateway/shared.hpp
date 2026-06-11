@@ -15,9 +15,9 @@
 
 #include "roq/cme/tools/security.hpp"
 
-#include "roq/cme/mdp/config.hpp"
+#include "roq/cme/protocol/mdp/config.hpp"
 
-#include "roq/cme/ilink/config_reader.hpp"
+#include "roq/cme/protocol/ilink/config_reader.hpp"
 
 #include "roq/cme/market_data/security_definitions.hpp"
 
@@ -41,7 +41,7 @@ struct Shared final {
     return true;
   }
 
-  std::pair<std::string, uint16_t> get_multicast_config(uint16_t channel_id, mdp::ConnectionType, Priority) const;
+  std::pair<std::string, uint16_t> get_multicast_config(uint16_t channel_id, protocol::mdp::ConnectionType, Priority) const;
 
   template <typename... Args>
   auto update_order(Args &&...args) {
@@ -65,10 +65,10 @@ struct Shared final {
   Settings const &settings;
   market_data::SecurityDefinitions &security_definitions;
   std::vector<std::byte> buffer;
-  mdp::Config mdp_config;
+  protocol::mdp::Config mdp_config;
 
  private:
-  utils::unordered_map<uint8_t, ilink::ConfigReader::MarketSegment> ilink_config_;
+  utils::unordered_map<uint8_t, protocol::ilink::ConfigReader::MarketSegment> ilink_config_;
   std::vector<Fill> fills_;
 };
 

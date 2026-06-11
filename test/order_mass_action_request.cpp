@@ -12,7 +12,7 @@
 
 #include "roq/utils/debug/hex/message.hpp"
 
-#include "roq/cme/ilink/order_mass_action_request.hpp"
+#include "roq/cme/protocol/ilink/order_mass_action_request.hpp"
 
 using namespace std::literals;
 
@@ -29,7 +29,7 @@ using value_type = ::cme::sbe::ilink::OrderMassActionRequest529;
 
 TEST_CASE("order_mass_action_request_simple", "[order_mass_action_request]") {
   std::vector<std::byte> buffer(4096);
-  auto order_mass_action_request = ilink::OrderMassActionRequest{
+  auto order_mass_action_request = protocol::ilink::OrderMassActionRequest{
       .party_details_list_req_id = {},  // note!
       .order_request_id = 1,
       .manual_order_indicator = ::cme::sbe::ilink::ManualOrdIndReq::Automated,

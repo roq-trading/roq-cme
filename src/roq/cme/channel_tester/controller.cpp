@@ -10,7 +10,7 @@
 
 #include "roq/io/engine/context_factory.hpp"
 
-#include "roq/cme/mdp/parser.hpp"
+#include "roq/cme/protocol/mdp/parser.hpp"
 
 using namespace std::literals;
 
@@ -71,7 +71,7 @@ void Controller::operator()(io::net::udp::Receiver::Read const &read) {
     }
     auto message = std::span{std::data(buffer_), bytes};
     log::info<5>("received {} byte(s)"sv, std::size(message));
-    if (mdp::Frame::parse(message, [&](auto &frame) {
+    if (protocol::mdp::Frame::parse(message, [&](auto &frame) {
           log::info<1>("frame={}"sv, frame);
           auto sequence_number = frame.sequence_number;
           if (sequence_number < settings_.filter_snapshot_from_incremental) {

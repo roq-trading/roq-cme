@@ -10,8 +10,8 @@
 
 #include "roq/server/md/dispatcher.hpp"
 
-#include "roq/cme/mdp/config.hpp"
-#include "roq/cme/mdp/connection_type.hpp"
+#include "roq/cme/protocol/mdp/config.hpp"
+#include "roq/cme/protocol/mdp/connection_type.hpp"
 
 #include "roq/cme/market_data/channel.hpp"
 #include "roq/cme/market_data/options.hpp"
@@ -29,9 +29,14 @@ namespace market_data {
 
 struct Manager final {
   Manager(
-      server::md::Dispatcher &, Options const &, SecurityDefinitions &, std::span<uint16_t const> const &channel_ids, mdp::Config const &, uint16_t &stream_id);
+      server::md::Dispatcher &,
+      Options const &,
+      SecurityDefinitions &,
+      std::span<uint16_t const> const &channel_ids,
+      protocol::mdp::Config const &,
+      uint16_t &stream_id);
 
-  std::string_view const get_name(uint16_t channel_id, mdp::ConnectionType, Priority) const;
+  std::string_view const get_name(uint16_t channel_id, protocol::mdp::ConnectionType, Priority) const;
 
   void operator()(Event<Start> const &);
   void operator()(Event<Stop> const &);
@@ -39,7 +44,7 @@ struct Manager final {
 
   void operator()(metrics::Writer &) const;
 
-  void dispatch(uint16_t channel_id, mdp::ConnectionType, Priority, std::span<std::byte const> const &payload, TraceInfo const &);
+  void dispatch(uint16_t channel_id, protocol::mdp::ConnectionType, Priority, std::span<std::byte const> const &payload, TraceInfo const &);
 
  protected:
   template <typename T>
@@ -50,7 +55,7 @@ struct Manager final {
   Options const options_;
   Shared shared_;
   struct Channel2 final {
-    Channel2(Shared &, mdp::Config const &, uint16_t channel_id, uint16_t &stream_id);
+    Channel2(Shared &, protocol::mdp::Config const &, uint16_t channel_id, uint16_t &stream_id);
 
     Channel channel;
     InstrumentDefinition instrument_definition_1;

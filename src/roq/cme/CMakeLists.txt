@@ -2,9 +2,8 @@ set(TARGET_NAME ${PROJECT_NAME})
 
 add_subdirectory(flags)
 add_subdirectory(gateway)
-add_subdirectory(ilink)
 add_subdirectory(market_data)
-add_subdirectory(mdp)
+add_subdirectory(protocol)
 add_subdirectory(secdef)
 add_subdirectory(tools)
 

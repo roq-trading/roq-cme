@@ -18,7 +18,7 @@ namespace cme {
 namespace gateway {
 
 struct MDPReceiver final : public io::net::udp::Receiver::Handler {
-  MDPReceiver(io::Context &, Shared &, market_data::Manager &, uint16_t channel_id, mdp::ConnectionType, Priority);
+  MDPReceiver(io::Context &, Shared &, market_data::Manager &, uint16_t channel_id, protocol::mdp::ConnectionType, Priority);
 
   MDPReceiver(MDPReceiver const &) = delete;
 
@@ -30,7 +30,7 @@ struct MDPReceiver final : public io::net::udp::Receiver::Handler {
 
  public:
   uint16_t const channel_id;
-  mdp::ConnectionType const connection_type;
+  protocol::mdp::ConnectionType const connection_type;
   Priority const priority;
 
  private:

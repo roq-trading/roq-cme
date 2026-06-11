@@ -20,13 +20,13 @@
 #include "roq/cme/gateway/order_entry_state.hpp"
 #include "roq/cme/gateway/shared.hpp"
 
-#include "roq/cme/ilink/parser.hpp"
+#include "roq/cme/protocol/ilink/parser.hpp"
 
 namespace roq {
 namespace cme {
 namespace gateway {
 
-struct OrderEntry final : public io::net::ConnectionManager::Handler, public ilink::Parser::Handler {
+struct OrderEntry final : public io::net::ConnectionManager::Handler, public protocol::ilink::Parser::Handler {
   struct Handler {
     virtual void operator()(Trace<StreamStatus> const &) = 0;
     virtual void operator()(Trace<ExternalLatency> const &) = 0;

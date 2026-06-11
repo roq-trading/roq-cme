@@ -43,13 +43,13 @@ auto create_mdp_receivers(auto &settings, auto &context, auto &shared, auto &man
   };
   for (auto channel_id : settings.multicast.channel_ids) {
     if (std::empty(shared.settings.misc.secdef_config_file)) {
-      helper_1(channel_id, mdp::ConnectionType::INSTRUMENT_DEFINITION);
+      helper_1(channel_id, protocol::mdp::ConnectionType::INSTRUMENT_DEFINITION);
     } else {
       log::warn("The instrument definitions channel is not used when the secdef file was chosen"sv);
     }
-    helper_1(channel_id, mdp::ConnectionType::MBP_MARKET_RECOVERY);
-    helper_1(channel_id, mdp::ConnectionType::MBOFD_MARKET_RECOVERY);
-    helper_2(channel_id, mdp::ConnectionType::INCREMENTAL);
+    helper_1(channel_id, protocol::mdp::ConnectionType::MBP_MARKET_RECOVERY);
+    helper_1(channel_id, protocol::mdp::ConnectionType::MBOFD_MARKET_RECOVERY);
+    helper_2(channel_id, protocol::mdp::ConnectionType::INCREMENTAL);
   }
   return result;
 }

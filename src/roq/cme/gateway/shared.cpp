@@ -29,18 +29,18 @@ template <typename R>
 R read_ilink_config(auto const &filename) {
   R result;
   if (!std::empty(filename)) {
-    struct Handler final : public ilink::ConfigReader::Handler {
+    struct Handler final : public protocol::ilink::ConfigReader::Handler {
       explicit Handler(R &result) : result_{result} {}
 
      protected:
-      void operator()(uint8_t market_segment_id, ilink::ConfigReader::MarketSegment const &market_segment) override {
+      void operator()(uint8_t market_segment_id, protocol::ilink::ConfigReader::MarketSegment const &market_segment) override {
         result_.try_emplace(market_segment_id, market_segment);
       }
 
      private:
       R &result_;
     } handler{result};
-    ilink::ConfigReader::read(handler, filename);
+    protocol::ilink::ConfigReader::read(handler, filename);
   }
   return result;
 }
@@ -54,7 +54,7 @@ Shared::Shared(server::Dispatcher &dispatcher, Settings const &settings, market_
       mdp_config{settings.multicast.config_file, true}, ilink_config_{read_ilink_config<decltype(ilink_config_)>(settings.ilink.config_file)} {
 }
 
-std::pair<std::string, uint16_t> Shared::get_multicast_config(uint16_t channel_id, mdp::ConnectionType type, Priority priority) const {
+std::pair<std::string, uint16_t> Shared::get_multicast_config(uint16_t channel_id, protocol::mdp::ConnectionType type, Priority priority) const {
   std::pair<std::string, uint16_t> result;
   if (mdp_config.find(channel_id, type, priority, [&](auto &connection) { result = {connection.multicast_address, connection.port}; })) {
   } else {

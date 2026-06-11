@@ -12,7 +12,7 @@
 
 #include "roq/utils/debug/hex/message.hpp"
 
-#include "roq/cme/ilink/party_details_definition_request.hpp"
+#include "roq/cme/protocol/ilink/party_details_definition_request.hpp"
 
 using namespace std::literals;
 
@@ -26,13 +26,13 @@ using namespace roq::cme;
 TEST_CASE("simple", "[party_details_definition_request]") {
   std::vector<std::byte> buffer(4096);
   auto now = 123s;
-  std::array<ilink::PartyDetailsDefinitionRequest::PartyDetails, 1> party_details{{
+  std::array<protocol::ilink::PartyDetailsDefinitionRequest::PartyDetails, 1> party_details{{
       {
           .party_detail_id = "ROQ"sv,
           .party_detail_role = ::cme::sbe::ilink::PartyDetailRole::ExecutingFirm,
       },
   }};
-  auto party_details_definition_request = ilink::PartyDetailsDefinitionRequest{
+  auto party_details_definition_request = protocol::ilink::PartyDetailsDefinitionRequest{
       .party_details_list_req_id = {},  // note!
       .sending_time_epoch = now,
       .list_update_action = ::cme::sbe::ilink::ListUpdAct::Add,

@@ -7,7 +7,7 @@
 #include <cmath>
 #include <span>
 
-#include "roq/cme/ilink/parser.hpp"
+#include "roq/cme/protocol/ilink/parser.hpp"
 
 using namespace std::literals;
 
@@ -31,7 +31,7 @@ TEST_CASE("simple", "[ilink_simple]") {
       "\x12\x00"                                                                          // error codes
       "\xff"sv;                                                                           // split msg
   static_assert(std::size(message) == 79);
-  struct MyHandler final : public ilink::Parser::Handler {
+  struct MyHandler final : public protocol::ilink::Parser::Handler {
     // session
     void operator()(Trace<::cme::sbe::ilink::NegotiationResponse501> const &) { FAIL(); }
     void operator()(Trace<::cme::sbe::ilink::NegotiationReject502> const &) { FAIL(); }
@@ -67,7 +67,7 @@ TEST_CASE("simple", "[ilink_simple]") {
   } handler;
   std::span buffer{reinterpret_cast<std::byte const *>(std::data(message)), std::size(message)};
   TraceInfo trace_info;
-  auto res = ilink::Parser::dispatch(handler, buffer, trace_info);
+  auto res = protocol::ilink::Parser::dispatch(handler, buffer, trace_info);
   CHECK(res);
   CHECK(handler.counter == 1);
 }
@@ -91,7 +91,7 @@ TEST_CASE("multiple", "[ilink_simple]") {
       "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xbc\x85\xa8\x00\x40\x42\x5f\x17\x12\x00"
       "\xff"sv;
   static_assert(std::size(message) == 421);
-  struct MyHandler final : public ilink::Parser::Handler {
+  struct MyHandler final : public protocol::ilink::Parser::Handler {
     // session
     void operator()(Trace<::cme::sbe::ilink::NegotiationResponse501> const &) { FAIL(); }
     void operator()(Trace<::cme::sbe::ilink::NegotiationReject502> const &) { FAIL(); }
@@ -128,7 +128,7 @@ TEST_CASE("multiple", "[ilink_simple]") {
   std::span buffer{reinterpret_cast<std::byte const *>(std::data(message)), std::size(message)};
   TraceInfo trace_info;
   while (true) {
-    auto bytes = ilink::Parser::dispatch(handler, buffer, trace_info);
+    auto bytes = protocol::ilink::Parser::dispatch(handler, buffer, trace_info);
     if (!bytes) {
       break;
     }

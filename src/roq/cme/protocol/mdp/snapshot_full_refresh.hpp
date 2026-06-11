@@ -1,0 +1,263 @@
+/* Copyright (c) 2017-2026, Hans Erik Thrane */
+
+#pragma once
+
+#include <cme/sbe/mdp/SnapshotFullRefresh52.h>
+#include <cme/sbe/mdp/SnapshotFullRefreshLongQty69.h>
+#include <cme/sbe/mdp/SnapshotFullRefreshOrderBook53.h>
+#include <cme/sbe/mdp/SnapshotFullRefreshTCP61.h>
+#include <cme/sbe/mdp/SnapshotFullRefreshTCPLongQty68.h>
+
+#include "roq/core/sbe/iterator.hpp"
+
+#include "roq/cme/protocol/mdp/map.hpp"
+#include "roq/cme/protocol/mdp/utils.hpp"
+
+namespace roq {
+namespace cme {
+namespace protocol {
+namespace mdp {
+
+template <>
+inline size_t compute_length(::cme::sbe::mdp::SnapshotFullRefresh52 &value) {
+  // NoMDEntries
+  auto no_md_entries_length = value.noMDEntries().count();
+  value.noMDEntries().forEach([](auto &e) { e.skip(); });
+  return value.computeLength(no_md_entries_length);
+}
+
+template <>
+inline size_t compute_length(::cme::sbe::mdp::SnapshotFullRefreshOrderBook53 &value) {
+  // NoMDEntries
+  auto no_md_entries_length = value.noMDEntries().count();
+  value.noMDEntries().forEach([](auto &e) { e.skip(); });
+  return value.computeLength(no_md_entries_length);
+}
+
+}  // namespace mdp
+}  // namespace protocol
+}  // namespace cme
+
+template <>
+inline constexpr std::string_view get_name<::cme::sbe::mdp::SnapshotFullRefresh52>() {
+  using namespace std::literals;
+  return "snapshot_full_refresh_52"sv;
+}
+
+template <>
+inline constexpr std::string_view get_name<::cme::sbe::mdp::SnapshotFullRefreshOrderBook53>() {
+  using namespace std::literals;
+  return "snapshot_full_refresh_order_book_53"sv;
+}
+
+template <>
+inline constexpr std::string_view get_name<::cme::sbe::mdp::SnapshotFullRefreshTCP61>() {
+  using namespace std::literals;
+  return "snapshot_full_refresh_tcp_61"sv;
+}
+
+template <>
+inline constexpr std::string_view get_name<::cme::sbe::mdp::SnapshotFullRefreshTCPLongQty68>() {
+  using namespace std::literals;
+  return "snapshot_full_refresh_tcp_long_qty_68"sv;
+}
+
+template <>
+inline constexpr std::string_view get_name<::cme::sbe::mdp::SnapshotFullRefreshLongQty69>() {
+  using namespace std::literals;
+  return "snapshot_full_refresh_long_qty_69"sv;
+}
+}  // namespace roq
+
+// SnapshotFullRefresh52
+
+template <>
+struct fmt::formatter<::cme::sbe::mdp::SnapshotFullRefresh52::NoMDEntries> {
+  using value_type = ::cme::sbe::mdp::SnapshotFullRefresh52::NoMDEntries;
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
+    using namespace std::literals;
+    return fmt::format_to(
+        context.out(),
+        R"({{)"
+        R"(md_entry_px={}, )"
+        R"(md_entry_size={}, )"
+        R"(number_of_orders={}, )"
+        R"(md_price_level={}, )"
+        R"(trading_reference_date={}, )"
+        R"(open_close_settl_flag={}, )"
+        R"(settl_price_type={}, )"
+        R"(md_entry_type={})"
+        R"(}})"sv,
+        roq::map(const_cast<value_type &>(value).mDEntryPx()).template get<double>(),
+        roq::cme::protocol::mdp::get_int(value.mDEntrySize(), value.mDEntrySizeNullValue()),
+        roq::cme::protocol::mdp::get_int(value.numberOfOrders(), value.numberOfOrdersNullValue()),
+        roq::cme::protocol::mdp::get_int(value.mDPriceLevel(), value.mDPriceLevelNullValue()),
+        value.tradingReferenceDate(),
+        value.openCloseSettlFlag(),
+        const_cast<value_type &>(value).settlPriceType(),
+        value.mDEntryType());
+  }
+};
+
+template <>
+struct fmt::formatter<::cme::sbe::mdp::SnapshotFullRefresh52> {
+  using value_type = ::cme::sbe::mdp::SnapshotFullRefresh52;
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type &value, format_context &context) const {
+    using namespace std::literals;
+    value.sbeRewind();  // note!
+    return fmt::format_to(
+        context.out(),
+        R"({{)"
+        R"(version={}, )"
+        R"(last_msg_seq_num_processed={}, )"
+        R"(tot_num_reports={}, )"
+        R"(security_id={}, )"
+        R"(rpt_seq={}, )"
+        R"(transact_time={}, )"
+        R"(last_update_time={}, )"
+        R"(trade_date={}, )"
+        R"(md_security_trading_status={}, )"
+        R"(high_limit_price={}, )"
+        R"(low_limit_price={}, )"
+        R"(max_price_variation={}, )"
+        R"(no_md_entries=[{}])"
+        R"(}})"sv,
+        value.actingVersion(),
+        value.lastMsgSeqNumProcessed(),
+        value.totNumReports(),
+        value.securityID(),
+        value.rptSeq(),
+        value.transactTime(),
+        value.lastUpdateTime(),
+        value.tradeDate(),
+        value.mDSecurityTradingStatus(),
+        roq::map(value.highLimitPrice()).template get<double>(),
+        roq::map(value.lowLimitPrice()).template get<double>(),
+        roq::map(value.maxPriceVariation()).template get<double>(),
+        roq::cme::protocol::mdp::Group{value.noMDEntries()});
+  }
+};
+
+// SnapshotFullRefreshOrderBook53
+
+template <>
+struct fmt::formatter<::cme::sbe::mdp::SnapshotFullRefreshOrderBook53::NoMDEntries> {
+  using value_type = ::cme::sbe::mdp::SnapshotFullRefreshOrderBook53::NoMDEntries;
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
+    using namespace std::literals;
+    return fmt::format_to(
+        context.out(),
+        R"({{)"
+        R"(order_id={}, )"
+        R"(md_order_priority={}, )"
+        R"(md_entry_px={}, )"
+        R"(md_display_qty={}, )"
+        R"(md_entry_type={})"
+        R"(}})"sv,
+        value.orderID(),
+        roq::cme::protocol::mdp::get_int(value.mDOrderPriority(), value.mDOrderPriorityNullValue()),
+        const_cast<value_type &>(value).mDEntryPx(),
+        value.mDDisplayQty(),
+        value.mDEntryType());
+  }
+};
+
+template <>
+struct fmt::formatter<::cme::sbe::mdp::SnapshotFullRefreshOrderBook53> {
+  using value_type = ::cme::sbe::mdp::SnapshotFullRefreshOrderBook53;
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type &value, format_context &context) const {
+    using namespace std::literals;
+    value.sbeRewind();  // note!
+    return fmt::format_to(
+        context.out(),
+        R"({{)"
+        R"(version={}, )"
+        R"(last_msg_seq_num_processed={}, )"
+        R"(tot_num_reports={}, )"
+        R"(security_id={}, )"
+        R"(no_chunks={}, )"
+        R"(current_chunk={}, )"
+        R"(transact_time={}, )"
+        R"(no_md_entries=[{}])"
+        R"(}})"sv,
+        value.actingVersion(),
+        value.lastMsgSeqNumProcessed(),
+        value.totNumReports(),
+        value.securityID(),
+        value.noChunks(),
+        value.currentChunk(),
+        value.transactTime(),
+        roq::cme::protocol::mdp::Group{value.noMDEntries()});
+  }
+};
+
+// SnapshotFullRefreshLongQty69
+
+template <>
+struct fmt::formatter<::cme::sbe::mdp::SnapshotFullRefreshLongQty69::NoMDEntries> {
+  using value_type = ::cme::sbe::mdp::SnapshotFullRefreshLongQty69::NoMDEntries;
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type const &value, format_context &context) const {
+    using namespace std::literals;
+    return fmt::format_to(
+        context.out(),
+        R"({{)"
+        R"(md_entry_px={}, )"
+        R"(md_entry_size={}, )"
+        R"(number_of_orderes={}, )"
+        R"(md_price_level={}, )"
+        R"(open_close_settl_flag={}, )"
+        R"(md_entry_type={})"
+        R"(}})"sv,
+        const_cast<value_type &>(value).mDEntryPx(),
+        roq::cme::protocol::mdp::get_int(value.mDEntrySize(), value.mDEntrySizeNullValue()),
+        roq::cme::protocol::mdp::get_int(value.numberOfOrders(), value.numberOfOrdersNullValue()),
+        roq::cme::protocol::mdp::get_int(value.mDPriceLevel(), value.mDPriceLevelNullValue()),
+        value.openCloseSettlFlag(),
+        value.mDEntryType());
+  }
+};
+
+template <>
+struct fmt::formatter<::cme::sbe::mdp::SnapshotFullRefreshLongQty69> {
+  using value_type = ::cme::sbe::mdp::SnapshotFullRefreshLongQty69;
+  constexpr auto parse(format_parse_context &context) { return std::begin(context); }
+  auto format(value_type &value, format_context &context) const {
+    using namespace std::literals;
+    value.sbeRewind();  // note!
+    return fmt::format_to(
+        context.out(),
+        R"({{)"
+        R"(version={}, )"
+        R"(last_msg_seq_num_processed={}, )"
+        R"(tot_num_reports={}, )"
+        R"(security_id={}, )"
+        R"(rpt_seq={}, )"
+        R"(transact_time={}, )"
+        R"(last_update_time={}, )"
+        R"(trade_date={}, )"
+        R"(md_security_trading_status={}, )"
+        R"(high_limit_price={}, )"
+        R"(low_limit_price={}, )"
+        R"(max_price_variation={}, )"
+        R"(no_md_entries=[{}])"
+        R"(}})"sv,
+        value.actingVersion(),
+        value.lastMsgSeqNumProcessed(),
+        value.totNumReports(),
+        value.securityID(),
+        value.rptSeq(),
+        value.transactTime(),
+        value.lastUpdateTime(),
+        value.tradeDate(),
+        value.mDSecurityTradingStatus(),
+        value.highLimitPrice(),
+        value.lowLimitPrice(),
+        value.maxPriceVariation(),
+        roq::cme::protocol::mdp::Group{value.noMDEntries()});
+  }
+};

@@ -129,7 +129,7 @@ bool Controller::operator()(
     uint16_t destination_port,
     std::span<std::byte const> const &payload) {
   auto include = [](auto connection_type, auto priority) {
-    if (connection_type == mdp::ConnectionType::INCREMENTAL) {
+    if (connection_type == protocol::mdp::ConnectionType::INCREMENTAL) {
       return true;
     }
     return priority == Priority::PRIMARY;  // XXX same as live

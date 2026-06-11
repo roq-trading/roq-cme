@@ -12,7 +12,7 @@
 
 #include "roq/utils/pcap/reader.hpp"
 
-#include "roq/cme/mdp/parser.hpp"
+#include "roq/cme/protocol/mdp/parser.hpp"
 
 using namespace std::literals;
 
@@ -23,7 +23,7 @@ namespace dump {
 // === HELPERS ===
 
 namespace {
-struct Bridge final : public utils::pcap::Reader::Handler, public mdp::Parser::Handler {
+struct Bridge final : public utils::pcap::Reader::Handler, public protocol::mdp::Parser::Handler {
   explicit Bridge(Settings const &settings) : settings_{settings} {}
 
  protected:
@@ -40,46 +40,52 @@ struct Bridge final : public utils::pcap::Reader::Handler, public mdp::Parser::H
     }
     fmt::print("message={{timestamp={}, address={}, port={}"sv, timestamp, destination_address, destination_port);
     TraceInfo trace_info;
-    mdp::Parser::dispatch(*this, payload, trace_info);
+    protocol::mdp::Parser::dispatch(*this, payload, trace_info);
     fmt::print("}}\n"sv);
     return false;
   }
 
-  void operator()(mdp::Frame const &) override {}
+  void operator()(protocol::mdp::Frame const &) override {}
   // admin
-  void operator()(Trace<::cme::sbe::mdp::AdminHeartbeat12> const &event, mdp::Frame const &frame) override { print(event, frame); }
-  void operator()(Trace<::cme::sbe::mdp::ChannelReset4> const &event, mdp::Frame const &frame) override { print(event, frame); }
+  void operator()(Trace<::cme::sbe::mdp::AdminHeartbeat12> const &event, protocol::mdp::Frame const &frame) override { print(event, frame); }
+  void operator()(Trace<::cme::sbe::mdp::ChannelReset4> const &event, protocol::mdp::Frame const &frame) override { print(event, frame); }
   // instrument definitions
-  void operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionFuture54> const &event, mdp::Frame const &frame) override { print(event, frame); }
-  void operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionOption55> const &event, mdp::Frame const &frame) override { print(event, frame); }
-  void operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionSpread56> const &event, mdp::Frame const &frame) override { print(event, frame); }
-  void operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionFixedIncome57> const &event, mdp::Frame const &frame) override { print(event, frame); }
-  void operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionRepo58> const &event, mdp::Frame const &frame) override { print(event, frame); }
-  void operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionFX63> const &event, mdp::Frame const &frame) override { print(event, frame); }
+  void operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionFuture54> const &event, protocol::mdp::Frame const &frame) override { print(event, frame); }
+  void operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionOption55> const &event, protocol::mdp::Frame const &frame) override { print(event, frame); }
+  void operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionSpread56> const &event, protocol::mdp::Frame const &frame) override { print(event, frame); }
+  void operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionFixedIncome57> const &event, protocol::mdp::Frame const &frame) override { print(event, frame); }
+  void operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionRepo58> const &event, protocol::mdp::Frame const &frame) override { print(event, frame); }
+  void operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionFX63> const &event, protocol::mdp::Frame const &frame) override { print(event, frame); }
   // status
-  void operator()(Trace<::cme::sbe::mdp::SecurityStatus30> const &event, mdp::Frame const &frame) override { print(event, frame); }
+  void operator()(Trace<::cme::sbe::mdp::SecurityStatus30> const &event, protocol::mdp::Frame const &frame) override { print(event, frame); }
   // market by price
-  void operator()(Trace<::cme::sbe::mdp::SnapshotFullRefresh52> const &event, mdp::Frame const &frame) override { print(event, frame); }
-  void operator()(Trace<::cme::sbe::mdp::SnapshotFullRefreshLongQty69> const &event, mdp::Frame const &frame) override { print(event, frame); }
-  void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshBook46> const &event, mdp::Frame const &frame) override { print(event, frame); }
-  void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshBookLongQty64> const &event, mdp::Frame const &frame) override { print(event, frame); }
+  void operator()(Trace<::cme::sbe::mdp::SnapshotFullRefresh52> const &event, protocol::mdp::Frame const &frame) override { print(event, frame); }
+  void operator()(Trace<::cme::sbe::mdp::SnapshotFullRefreshLongQty69> const &event, protocol::mdp::Frame const &frame) override { print(event, frame); }
+  void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshBook46> const &event, protocol::mdp::Frame const &frame) override { print(event, frame); }
+  void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshBookLongQty64> const &event, protocol::mdp::Frame const &frame) override { print(event, frame); }
   // market by order
-  void operator()(Trace<::cme::sbe::mdp::SnapshotFullRefreshOrderBook53> const &event, mdp::Frame const &frame) override { print(event, frame); }
-  void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshOrderBook47> const &event, mdp::Frame const &frame) override { print(event, frame); }
+  void operator()(Trace<::cme::sbe::mdp::SnapshotFullRefreshOrderBook53> const &event, protocol::mdp::Frame const &frame) override { print(event, frame); }
+  void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshOrderBook47> const &event, protocol::mdp::Frame const &frame) override { print(event, frame); }
   // trade summary
-  void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshTradeSummary48> const &event, mdp::Frame const &frame) override { print(event, frame); }
-  void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshTradeSummaryLongQty65> const &event, mdp::Frame const &frame) override { print(event, frame); }
-  // statistics
-  void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshDailyStatistics49> const &event, mdp::Frame const &frame) override { print(event, frame); }
-  void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshSessionStatistics51> const &event, mdp::Frame const &frame) override { print(event, frame); }
-  void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshSessionStatisticsLongQty67> const &event, mdp::Frame const &frame) override {
+  void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshTradeSummary48> const &event, protocol::mdp::Frame const &frame) override { print(event, frame); }
+  void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshTradeSummaryLongQty65> const &event, protocol::mdp::Frame const &frame) override {
     print(event, frame);
   }
-  void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshVolume37> const &event, mdp::Frame const &frame) override { print(event, frame); }
-  void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshVolumeLongQty66> const &event, mdp::Frame const &frame) override { print(event, frame); }
+  // statistics
+  void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshDailyStatistics49> const &event, protocol::mdp::Frame const &frame) override {
+    print(event, frame);
+  }
+  void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshSessionStatistics51> const &event, protocol::mdp::Frame const &frame) override {
+    print(event, frame);
+  }
+  void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshSessionStatisticsLongQty67> const &event, protocol::mdp::Frame const &frame) override {
+    print(event, frame);
+  }
+  void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshVolume37> const &event, protocol::mdp::Frame const &frame) override { print(event, frame); }
+  void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshVolumeLongQty66> const &event, protocol::mdp::Frame const &frame) override { print(event, frame); }
   // misc
-  void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshLimitsBanding50> const &event, mdp::Frame const &frame) override { print(event, frame); }
-  void operator()(Trace<::cme::sbe::mdp::QuoteRequest39> const &event, mdp::Frame const &frame) override { print(event, frame); }
+  void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshLimitsBanding50> const &event, protocol::mdp::Frame const &frame) override { print(event, frame); }
+  void operator()(Trace<::cme::sbe::mdp::QuoteRequest39> const &event, protocol::mdp::Frame const &frame) override { print(event, frame); }
 
   void print(auto &event, auto &frame) {
     using value_type = std::remove_cvref_t<decltype(event)>::value_type;

@@ -4,7 +4,7 @@
 
 #include <algorithm>
 
-#include "roq/cme/mdp/config_reader.hpp"
+#include "roq/cme/protocol/mdp/config_reader.hpp"
 
 using namespace std::literals;
 
@@ -46,9 +46,9 @@ TEST_CASE("simple", "[mdp_config_reader]") {
                  R"(</connections>)"
                  R"(</channel>)"
                  R"(</configuration>)"sv;
-  struct MyHandler final : public mdp::ConfigReader::Handler {
+  struct MyHandler final : public protocol::mdp::ConfigReader::Handler {
     int counter = 0;
-    void operator()(uint16_t channel_id, mdp::ConfigReader::Channel const &channel) override {
+    void operator()(uint16_t channel_id, protocol::mdp::ConfigReader::Channel const &channel) override {
       switch (++counter) {
         case 1: {
           CHECK(channel_id == 310);
@@ -90,6 +90,6 @@ TEST_CASE("simple", "[mdp_config_reader]") {
       }
     }
   } handler;
-  mdp::ConfigReader::dispatch(handler, message);
+  protocol::mdp::ConfigReader::dispatch(handler, message);
   CHECK(handler.counter == 1);
 }

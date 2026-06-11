@@ -28,18 +28,18 @@ template <typename R>
 R read_ilink_config(auto const &filename) {
 R result;
 if (!std::empty(filename)) {
-  struct Handler final : public ilink::ConfigReader::Handler {
+  struct Handler final : public protocol::ilink::ConfigReader::Handler {
     explicit Handler(R &result) : result_{result} {}
 
    protected:
-    void operator()(uint8_t market_segment_id, ilink::ConfigReader::MarketSegment const &market_segment) override {
+    void operator()(uint8_t market_segment_id, protocol::ilink::ConfigReader::MarketSegment const &market_segment) override {
       result_.try_emplace(market_segment_id, market_segment);
     }
 
    private:
     R &result_;
   } handler{result};
-  ilink::ConfigReader::read(handler, filename);
+  protocol::ilink::ConfigReader::read(handler, filename);
 }
 return result;
 }

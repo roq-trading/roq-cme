@@ -13,24 +13,24 @@
 #include "roq/server/oms/exceptions.hpp"
 #include "roq/server/oms/order.hpp"
 
-#include "roq/cme/ilink/session.hpp"
+#include "roq/cme/protocol/ilink/session.hpp"
 
-#include "roq/cme/ilink/establish.hpp"
-#include "roq/cme/ilink/negotiate.hpp"
-#include "roq/cme/ilink/sequence.hpp"
-#include "roq/cme/ilink/terminate.hpp"
+#include "roq/cme/protocol/ilink/establish.hpp"
+#include "roq/cme/protocol/ilink/negotiate.hpp"
+#include "roq/cme/protocol/ilink/sequence.hpp"
+#include "roq/cme/protocol/ilink/terminate.hpp"
 
-#include "roq/cme/ilink/party_details_definition_request.hpp"
-#include "roq/cme/ilink/party_details_list_request.hpp"
+#include "roq/cme/protocol/ilink/party_details_definition_request.hpp"
+#include "roq/cme/protocol/ilink/party_details_list_request.hpp"
 
-#include "roq/cme/ilink/security_definition_request.hpp"
+#include "roq/cme/protocol/ilink/security_definition_request.hpp"
 
-#include "roq/cme/ilink/order_mass_status_request.hpp"
+#include "roq/cme/protocol/ilink/order_mass_status_request.hpp"
 
-#include "roq/cme/ilink/new_order_single.hpp"
-#include "roq/cme/ilink/order_cancel_replace_request.hpp"
-#include "roq/cme/ilink/order_cancel_request.hpp"
-#include "roq/cme/ilink/order_mass_action_request.hpp"
+#include "roq/cme/protocol/ilink/new_order_single.hpp"
+#include "roq/cme/protocol/ilink/order_cancel_replace_request.hpp"
+#include "roq/cme/protocol/ilink/order_cancel_request.hpp"
+#include "roq/cme/protocol/ilink/order_mass_action_request.hpp"
 
 using namespace std::literals;
 
@@ -405,7 +405,7 @@ template <typename T>
 auto get_last_px(T &value) -> double {
   constexpr bool has_last_px = requires(T const &t) { t.lastPx(); };
   if constexpr (has_last_px) {
-    return ilink::get_double(const_cast<T &>(value).lastPx());
+    return protocol::ilink::get_double(const_cast<T &>(value).lastPx());
   }
   return NaN;
 }
@@ -442,8 +442,8 @@ auto order_update_from_execution_report(T &value, auto &security, auto &external
   auto client_order_id = value.getClOrdIDAsStringView();
   auto order_status = get_ord_status(value);
   auto quantity = static_cast<double>(value.orderQty());
-  auto price = ilink::get_double(const_cast<value_type &>(value).price());
-  auto stop_price = ilink::get_double(const_cast<value_type &>(value).stopPx());
+  auto price = protocol::ilink::get_double(const_cast<value_type &>(value).price());
+  auto stop_price = protocol::ilink::get_double(const_cast<value_type &>(value).stopPx());
   auto remaining_quantity = get_leaves_qty(value);
   auto traded_quantity = get_cum_qty(value);
   auto last_traded_quantity = get_last_qty(value);
@@ -889,7 +889,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportTradeOutrigh
               auto tmp = fmt::format("{}{}"sv, exec_id, fill_exec_id);  // alloc
               external_trade_ids.emplace_back(std::move(tmp));
               auto &external_trade_id = external_trade_ids.back();
-              auto price = ilink::get_double(item.fillPx());
+              auto price = protocol::ilink::get_double(item.fillPx());
               auto fill = Fill{
                   .external_trade_id = external_trade_id,
                   .quantity = static_cast<double>(item.fillQty()),
@@ -1292,7 +1292,7 @@ size_t OrderEntry::parse(std::span<std::byte const> const &buffer) {
   size_t result = 0;
   profile_.parse([&]() {
     TraceInfo trace_info;
-    result = ilink::Parser::dispatch(*this, buffer, trace_info);
+    result = protocol::ilink::Parser::dispatch(*this, buffer, trace_info);
   });
   return result;
 }
@@ -1404,7 +1404,7 @@ void OrderEntry::send_negotiate() {
       .keep_alive_interval = {},
   };
   auto hmac_signature = account_.create_signature(canonical_message);
-  auto negotiate = ilink::Negotiate{
+  auto negotiate = protocol::ilink::Negotiate{
       .hmac_signature = hmac_signature,
       .access_key_id = account_.get_password(),
       .uuid = canonical_message.uuid,
@@ -1430,7 +1430,7 @@ void OrderEntry::send_establish() {
       .keep_alive_interval = KEEP_ALIVE_INTERVAL,
   };
   auto hmac_signature = account_.create_signature(canonical_message);
-  auto establish = ilink::Establish{
+  auto establish = protocol::ilink::Establish{
       .hmac_signature = hmac_signature,
       .access_key_id = account_.get_password(),
       .trading_system_name = canonical_message.trading_system_name,
@@ -1448,7 +1448,7 @@ void OrderEntry::send_establish() {
 }
 
 void OrderEntry::send_sequence() {
-  auto sequence = ilink::Sequence{
+  auto sequence = protocol::ilink::Sequence{
       .uuid = uuid_,
       .next_seq_no = peek_next_seq_num(),
       .fault_tolerance_indicator = ::cme::sbe::ilink::FTI::Primary,
@@ -1459,7 +1459,7 @@ void OrderEntry::send_sequence() {
 }
 
 void OrderEntry::send_terminate() {
-  auto terminate = ilink::Terminate{};
+  auto terminate = protocol::ilink::Terminate{};
   log::info("DEBUG terminate={}"sv, terminate);
   send(terminate);
 }
@@ -1467,7 +1467,7 @@ void OrderEntry::send_terminate() {
 // XXX requires access to a service gateway
 void OrderEntry::send_party_details_list_request() {
   auto now = clock::get_realtime();
-  auto party_details_list_request = ilink::PartyDetailsListRequest{
+  auto party_details_list_request = protocol::ilink::PartyDetailsListRequest{
       .party_details_list_req_id = 1,  // XXX
       .sending_time_epoch = now,
       .seq_num = fetch_next_seq_num(),
@@ -1478,7 +1478,7 @@ void OrderEntry::send_party_details_list_request() {
 
 void OrderEntry::send_party_details_definition_request() {
   auto now = clock::get_realtime();
-  std::array<ilink::PartyDetailsDefinitionRequest::PartyDetails, 3> party_details{{
+  std::array<protocol::ilink::PartyDetailsDefinitionRequest::PartyDetails, 3> party_details{{
       {
           .party_detail_id = shared_.settings.ilink.firm_id,
           .party_detail_role = ::cme::sbe::ilink::PartyDetailRole::ExecutingFirm,
@@ -1492,7 +1492,7 @@ void OrderEntry::send_party_details_definition_request() {
           .party_detail_role = ::cme::sbe::ilink::PartyDetailRole::Operator,
       },
   }};
-  auto party_details_definition_request = ilink::PartyDetailsDefinitionRequest{
+  auto party_details_definition_request = protocol::ilink::PartyDetailsDefinitionRequest{
       .party_details_list_req_id = {},  // note! must be 0
       .sending_time_epoch = now,
       .list_update_action = ::cme::sbe::ilink::ListUpdAct::Add,
@@ -1518,7 +1518,7 @@ void OrderEntry::send_party_details_definition_request() {
 // XXX ???
 void OrderEntry::send_security_definition_request() {
   auto now = clock::get_realtime();
-  auto security_definition_request = ilink::SecurityDefinitionRequest{
+  auto security_definition_request = protocol::ilink::SecurityDefinitionRequest{
       .party_details_list_req_id = party_details_list_req_id_,
       .security_req_id = {},
       .manual_order_indicator = MANUAL_ORDER_INDICATOR,
@@ -1539,7 +1539,7 @@ void OrderEntry::send_security_definition_request() {
 
 void OrderEntry::send_order_mass_status_request() {
   auto now = clock::get_realtime();
-  auto order_mass_status_request = ilink::OrderMassStatusRequest{
+  auto order_mass_status_request = protocol::ilink::OrderMassStatusRequest{
       .party_details_list_req_id = party_details_list_req_id_,
       .mass_status_req_id = fetch_next_request_id(),
       .manual_order_indicator = MANUAL_ORDER_INDICATOR,
@@ -1577,7 +1577,7 @@ void OrderEntry::send_new_order_single(CreateOrder const &create_order, server::
                 send_party_details_definition_request();
               }
               auto now = clock::get_realtime();
-              auto new_order_single = ilink::NewOrderSingle{
+              auto new_order_single = protocol::ilink::NewOrderSingle{
                   .price = create_order.price,
                   .order_qty = order_qty,
                   .security_id = security_id,
@@ -1633,7 +1633,7 @@ void OrderEntry::send_order_cancel_replace_request(ModifyOrder const &modify_ord
           send_party_details_definition_request();
         }
         auto now = clock::get_realtime();
-        auto order_cancel_replace_request = ilink::OrderCancelReplaceRequest{
+        auto order_cancel_replace_request = protocol::ilink::OrderCancelReplaceRequest{
             .price = modify_order.price,
             .order_qty = order_qty,
             .security_id = security_id,
@@ -1681,7 +1681,7 @@ void OrderEntry::send_order_cancel_request(CancelOrder const &cancel_order, serv
           send_party_details_definition_request();
         }
         auto now = clock::get_realtime();
-        auto order_cancel_request = ilink::OrderCancelRequest{
+        auto order_cancel_request = protocol::ilink::OrderCancelRequest{
             .order_id = {},
             .party_details_list_req_id = party_details_list_req_id_,
             .manual_order_indicator = MANUAL_ORDER_INDICATOR,
@@ -1712,7 +1712,7 @@ void OrderEntry::send_order_mass_action_request(CancelAllOrders const &) {
     send_party_details_definition_request();
   }
   auto now = clock::get_realtime();
-  auto order_mass_action_request = ilink::OrderMassActionRequest{
+  auto order_mass_action_request = protocol::ilink::OrderMassActionRequest{
       .party_details_list_req_id = party_details_list_req_id_,
       .order_request_id = fetch_next_request_id(),  // XXX for what ???
       .manual_order_indicator = MANUAL_ORDER_INDICATOR,

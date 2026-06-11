@@ -42,18 +42,18 @@ Manager::Manager(
     Options const &options,
     SecurityDefinitions &security_definitions,
     std::span<uint16_t const> const &channel_ids,
-    mdp::Config const &config,
+    protocol::mdp::Config const &config,
     uint16_t &stream_id)
     : dispatcher_{dispatcher}, options_{options}, shared_{dispatcher, options, security_definitions},
       channels_{create_channels<decltype(channels_)>(shared_, channel_ids, config, stream_id)}, secdef_config_file_{options.secdef_config_file} {
 }
 
-std::string_view const Manager::get_name(uint16_t channel_id, mdp::ConnectionType connection_type, Priority priority) const {
+std::string_view const Manager::get_name(uint16_t channel_id, protocol::mdp::ConnectionType connection_type, Priority priority) const {
   auto iter = channels_.find(channel_id);
   if (iter != std::end(channels_)) {
     auto &channel = (*iter).second;
     switch (connection_type) {
-      using enum mdp::ConnectionType;
+      using enum protocol::mdp::ConnectionType;
       case HISTORICAL_REPLAY:
         log::fatal("Unexpected"sv);
         break;
@@ -121,14 +121,18 @@ void Manager::dispatch(Event<T> const &event) {
 }
 
 void Manager::dispatch(
-    uint16_t channel_id, mdp::ConnectionType connection_type, Priority priority, std::span<std::byte const> const &payload, TraceInfo const &trace_info) {
+    uint16_t channel_id,
+    protocol::mdp::ConnectionType connection_type,
+    Priority priority,
+    std::span<std::byte const> const &payload,
+    TraceInfo const &trace_info) {
   auto iter = channels_.find(channel_id);
   if (iter == std::end(channels_)) [[unlikely]] {
     return;  // note!
   }
   auto &channel = (*iter).second;
   switch (connection_type) {
-    using enum mdp::ConnectionType;
+    using enum protocol::mdp::ConnectionType;
     case HISTORICAL_REPLAY:
       log::fatal("Unexpected"sv);
       break;
@@ -163,7 +167,7 @@ void Manager::dispatch(
   }
 }
 
-Manager::Channel2::Channel2(Shared &shared, mdp::Config const &config, uint16_t channel_id, uint16_t &stream_id)
+Manager::Channel2::Channel2(Shared &shared, protocol::mdp::Config const &config, uint16_t channel_id, uint16_t &stream_id)
     : channel{channel_id, BUFFER_SIZE, BUFFER_DEPTH}, instrument_definition_1{shared, ++stream_id, config, channel_id, Priority::PRIMARY},
       instrument_definition_2{shared, ++stream_id, config, channel_id, Priority::SECONDARY},
       mbp_market_recovery_1{shared, channel, ++stream_id, config, channel_id, Priority::PRIMARY},

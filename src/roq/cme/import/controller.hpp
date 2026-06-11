@@ -20,8 +20,8 @@
 
 #include "roq/server/md/dispatcher.hpp"
 
-#include "roq/cme/mdp/config.hpp"
-#include "roq/cme/mdp/connection_type.hpp"
+#include "roq/cme/protocol/mdp/config.hpp"
+#include "roq/cme/protocol/mdp/connection_type.hpp"
 
 #include "roq/cme/market_data/manager.hpp"
 #include "roq/cme/market_data/security_definitions.hpp"
@@ -80,7 +80,7 @@ struct Controller final : public utils::pcap::Reader::Handler, public server::md
   Settings const &settings_;
   std::string const pcap_path_;
   GatewaySettings const gateway_settings_;
-  mdp::Config config_;
+  protocol::mdp::Config config_;
   std::vector<utils::regex::Pattern> const symbols_regex_;
   utils::unordered_map<std::string, bool> discard_symbol_;
   std::chrono::nanoseconds const first_timestamp_;

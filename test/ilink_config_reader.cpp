@@ -4,7 +4,7 @@
 
 #include <algorithm>
 
-#include "roq/cme/ilink/config_reader.hpp"
+#include "roq/cme/protocol/ilink/config_reader.hpp"
 
 using namespace std::literals;
 
@@ -26,9 +26,9 @@ TEST_CASE("simple", "[ilink_config_reader]") {
                  R"(<FromCMESchemaVersion>8</FromCMESchemaVersion>)"
                  R"(</marketsegment>)"
                  R"(</configuration>)"sv;
-  struct MyHandler final : public ilink::ConfigReader::Handler {
+  struct MyHandler final : public protocol::ilink::ConfigReader::Handler {
     int counter = 0;
-    void operator()(uint8_t market_segment_id, ilink::ConfigReader::MarketSegment const &market_segment) override {
+    void operator()(uint8_t market_segment_id, protocol::ilink::ConfigReader::MarketSegment const &market_segment) override {
       switch (++counter) {
         case 1: {
           CHECK(market_segment_id == 70);
@@ -45,6 +45,6 @@ TEST_CASE("simple", "[ilink_config_reader]") {
       }
     }
   } handler;
-  ilink::ConfigReader::dispatch(handler, message);
+  protocol::ilink::ConfigReader::dispatch(handler, message);
   CHECK(handler.counter == 1);
 }
