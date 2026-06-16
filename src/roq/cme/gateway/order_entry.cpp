@@ -775,6 +775,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::BusinessReject521> const &e
           .version = {},
           .request_id = {},
           .external_order_id = {},
+          .client_order_id = {},
           .quantity = NaN,
           .price = NaN,
       };
@@ -811,6 +812,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportNew522> cons
                 .version = {},
                 .request_id = {},
                 .external_order_id = {},
+                .client_order_id = {},
                 .quantity = order_update.quantity,
                 .price = order_update.price,
             };
@@ -848,6 +850,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportReject523> c
         .version = {},
         .request_id = {},
         .external_order_id = {},
+        .client_order_id = {},
         .quantity = NaN,
         .price = NaN,
     };
@@ -983,6 +986,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportModify531> c
                 .version = {},
                 .request_id = {},
                 .external_order_id = {},
+                .client_order_id = {},
                 .quantity = order_update.quantity,
                 .price = order_update.price,
             };
@@ -1052,6 +1056,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportCancel534> c
                 .version = {},
                 .request_id = {},
                 .external_order_id = {},
+                .client_order_id = {},
                 .quantity = order_update.quantity,
                 .price = order_update.price,
             };
@@ -1206,6 +1211,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::OrderCancelReject535> const
         .version = {},
         .request_id = {},
         .external_order_id = {},
+        .client_order_id = {},
         .quantity = NaN,
         .price = NaN,
     };
@@ -1237,6 +1243,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::OrderCancelReplaceReject536
         .version = {},
         .request_id = {},
         .external_order_id = {},
+        .client_order_id = {},
         .quantity = NaN,
         .price = NaN,
     };
