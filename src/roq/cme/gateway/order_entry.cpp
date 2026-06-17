@@ -789,8 +789,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::BusinessReject521> const &e
 void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportNew522> const &event) {
   profile_.execution_report_new([&]() {
     using value_type = std::remove_cvref_t<decltype(event)>::value_type;
-    auto &trace_info = event.trace_info;
-    auto &value = event.value;
+    auto &[trace_info, value] = event;
     log::info("DEBUG execution_report_new={}"sv, const_cast<value_type &>(value));
     auto order_id = get_order_id(value);
     if (order_id) {
@@ -811,13 +810,13 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportNew522> cons
                 .text = {},
                 .version = {},
                 .request_id = {},
-                .external_order_id = {},
-                .client_order_id = {},
+                .external_order_id = external_order_id,
+                .client_order_id = order_update.client_order_id,
                 .quantity = order_update.quantity,
                 .price = order_update.price,
             };
             Trace event_2{trace_info, response};
-            (*this)(event_2, order_update.client_order_id, order_update);
+            (*this)(event_2, order_update);
           })) {
       } else {
         log::warn("Unexpected: security_id={}"sv, security_id);
@@ -831,8 +830,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportNew522> cons
 void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportReject523> const &event) {
   profile_.execution_report_reject([&]() {
     using value_type = std::remove_cvref_t<decltype(event)>::value_type;
-    auto &trace_info = event.trace_info;
-    auto &value = event.value;
+    auto &[trace_info, value] = event;
     log::info("DEBUG execution_report_reject={}"sv, const_cast<value_type &>(value));
     auto cl_ord_id = value.getClOrdIDAsStringView();
     auto text = value.getTextAsStringView();
@@ -850,20 +848,19 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportReject523> c
         .version = {},
         .request_id = {},
         .external_order_id = {},
-        .client_order_id = {},
+        .client_order_id = cl_ord_id,
         .quantity = NaN,
         .price = NaN,
     };
     Trace event_2{trace_info, response};
-    (*this)(event_2, cl_ord_id);
+    (*this)(event_2);
   });
 }
 
 void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportTradeOutright525> const &event) {
   profile_.execution_report_trade_outright([&]() {
     using value_type = std::remove_cvref_t<decltype(event)>::value_type;
-    auto &trace_info = event.trace_info;
-    auto &value = event.value;
+    auto &[trace_info, value] = event;
     log::info("DEBUG execution_report_trade_outright={}"sv, const_cast<value_type &>(value));
     auto order_id = get_order_id(value);
     if (order_id) {
@@ -880,7 +877,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportTradeOutrigh
               strategy_id = order.strategy_id;
             };
             Trace event_2{trace_info, order_update};
-            (*this)(callback, event_2, order_update.client_order_id);
+            (*this)(callback, event_2);
             // XXX TODO make generic
             auto &fills = shared_.get_fills();
             std::vector<std::string> external_trade_ids;  // alloc
@@ -924,7 +921,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportTradeOutrigh
                   .update_time_utc = update_time_utc,
                   .external_account = {},
                   .external_order_id = external_order_id,
-                  .client_order_id = {},
+                  .client_order_id = order_update.client_order_id,
                   .fills = fills,
                   .routing_id = {},
                   .update_type = UpdateType::INCREMENTAL,
@@ -932,7 +929,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportTradeOutrigh
                   .user = {},
                   .strategy_id = strategy_id,
               };
-              create_trace_and_dispatch(shared_, trace_info, trade_update, true, user_id, order_update.client_order_id);
+              create_trace_and_dispatch(shared_, trace_info, trade_update, true, user_id);
             }
           })) {
       } else {
@@ -963,8 +960,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportTradeSpreadL
 void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportModify531> const &event) {
   profile_.execution_report_modify([&]() {
     using value_type = std::remove_cvref_t<decltype(event)>::value_type;
-    auto &trace_info = event.trace_info;
-    auto &value = event.value;
+    auto &[trace_info, value] = event;
     log::info("DEBUG execution_report_modify={}"sv, const_cast<value_type &>(value));
     auto order_id = get_order_id(value);
     if (order_id) {
@@ -985,13 +981,13 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportModify531> c
                 .text = {},
                 .version = {},
                 .request_id = {},
-                .external_order_id = {},
-                .client_order_id = {},
+                .external_order_id = order_update.external_order_id,
+                .client_order_id = order_update.client_order_id,
                 .quantity = order_update.quantity,
                 .price = order_update.price,
             };
             Trace event_2{trace_info, response};
-            (*this)(event_2, order_update.client_order_id, order_update);
+            (*this)(event_2, order_update);
           })) {
       } else {
         log::warn("Unexpected: security_id={}"sv, security_id);
@@ -1005,8 +1001,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportModify531> c
 void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportStatus532> const &event) {
   profile_.execution_report_status([&]() {
     using value_type = std::remove_cvref_t<decltype(event)>::value_type;
-    auto &trace_info = event.trace_info;
-    auto &value = event.value;
+    auto &[trace_info, value] = event;
     log::info("DEBUG execution_report_status={}"sv, const_cast<value_type &>(value));
     auto order_id = get_order_id(value);
     if (order_id) {
@@ -1016,7 +1011,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportStatus532> c
             auto order_update = order_update_from_execution_report(value, security, external_order_id);
             auto callback = []([[maybe_unused]] auto &order) {};
             Trace event_2{trace_info, order_update};
-            (*this)(callback, event_2, order_update.client_order_id);
+            (*this)(callback, event_2);
           })) {
       } else {
         log::warn("Unexpected: security_id={}"sv, security_id);
@@ -1033,8 +1028,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportStatus532> c
 void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportCancel534> const &event) {
   profile_.execution_report_cancel([&]() {
     using value_type = std::remove_cvref_t<decltype(event)>::value_type;
-    auto &trace_info = event.trace_info;
-    auto &value = event.value;
+    auto &[trace_info, value] = event;
     log::info("DEBUG execution_report_cancel={}"sv, const_cast<value_type &>(value));
     auto order_id = get_order_id(value);
     if (order_id) {
@@ -1055,13 +1049,13 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportCancel534> c
                 .text = {},
                 .version = {},
                 .request_id = {},
-                .external_order_id = {},
-                .client_order_id = {},
+                .external_order_id = order_update.external_order_id,
+                .client_order_id = order_update.client_order_id,
                 .quantity = order_update.quantity,
                 .price = order_update.price,
             };
             Trace event_2{trace_info, response};
-            (*this)(event_2, order_update.client_order_id, order_update);
+            (*this)(event_2, order_update);
           })) {
       } else {
         log::warn("Unexpected: security_id={}"sv, security_id);
@@ -1093,8 +1087,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportPendingRepla
 void OrderEntry::operator()(Trace<::cme::sbe::ilink::OrderMassActionReport562> const &event) {
   profile_.order_mass_action_report([&]() {
     using value_type = std::remove_cvref_t<decltype(event)>::value_type;
-    auto &trace_info = event.trace_info;
-    auto &value = event.value;
+    auto &[trace_info, value] = event;
     log::info("DEBUG order_mass_action_report={}"sv, const_cast<value_type &>(value));
     auto send_ack = [&](auto status, Error error, std::string_view const &text) {
       auto cancel_all_orders_ack = CancelAllOrdersAck{
@@ -1176,7 +1169,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::OrderMassActionReport562> c
           };
           auto callback = []([[maybe_unused]] auto &order) {};
           Trace event_2{trace_info, order_update};
-          (*this)(callback, event_2, orig_cl_ord_id);
+          (*this)(callback, event_2);
         });
         log::info("*** CANCEL ALL ORDERS SUCCEEDED, TOTAL_AFFECTED_ORDERS={} ***"sv, count);
         send_ack(RequestStatus::ACCEPTED, {}, {});
@@ -1211,12 +1204,12 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::OrderCancelReject535> const
         .version = {},
         .request_id = {},
         .external_order_id = {},
-        .client_order_id = {},
+        .client_order_id = cl_ord_id,
         .quantity = NaN,
         .price = NaN,
     };
     Trace event_2{trace_info, response};
-    (*this)(event_2, cl_ord_id);
+    (*this)(event_2);
   });
 }
 
@@ -1243,12 +1236,12 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::OrderCancelReplaceReject536
         .version = {},
         .request_id = {},
         .external_order_id = {},
-        .client_order_id = {},
+        .client_order_id = cl_ord_id,
         .quantity = NaN,
         .price = NaN,
     };
     Trace event_2{trace_info, response};
-    (*this)(event_2, cl_ord_id);
+    (*this)(event_2);
   });
 }
 
@@ -1743,18 +1736,18 @@ void OrderEntry::send_order_mass_action_request(CancelAllOrders const &) {
 }
 
 template <typename Callback, typename... Args>
-void OrderEntry::operator()(Callback callback, Trace<server::oms::OrderUpdate> const &event, std::string_view const &client_order_id, Args &&...args) {
+void OrderEntry::operator()(Callback callback, Trace<server::oms::OrderUpdate> const &event, Args &&...args) {
   auto &[trace_info, order_update] = event;
-  if (shared_.update_order(client_order_id, stream_id_, trace_info, order_update, std::forward<Args>(args)..., [&](auto &order) { callback(order); })) {
+  if (shared_.update_order(stream_id_, trace_info, order_update, std::forward<Args>(args)..., [&](auto &order) { callback(order); })) {
   } else {
     log::warn("*** EXTERNAL ORDER ***"sv);
   }
 }
 
 template <typename... Args>
-void OrderEntry::operator()(Trace<server::oms::Response> const &event, std::string_view const &client_order_id, Args &&...args) {
+void OrderEntry::operator()(Trace<server::oms::Response> const &event, Args &&...args) {
   auto &[trace_info, response] = event;
-  if (shared_.update_order(client_order_id, stream_id_, trace_info, response, std::forward<Args>(args)..., [&]([[maybe_unused]] auto &order) {})) {
+  if (shared_.update_order(stream_id_, trace_info, response, std::forward<Args>(args)..., [&]([[maybe_unused]] auto &order) {})) {
   } else {
     log::warn("*** EXTERNAL ORDER ***"sv);
   }
