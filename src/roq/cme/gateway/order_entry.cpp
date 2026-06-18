@@ -779,8 +779,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::BusinessReject521> const &e
           .quantity = NaN,
           .price = NaN,
       };
-      Trace event_2{trace_info, response};
-      (*this)(event_2, user_id, order_id);
+      create_trace_and_dispatch(shared_.dispatcher, trace_info, response, stream_id_, user_id, order_id);
     }
   });
 }
@@ -815,8 +814,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportNew522> cons
                 .quantity = order_update.quantity,
                 .price = order_update.price,
             };
-            Trace event_2{trace_info, response};
-            (*this)(event_2, order_update);
+            create_trace_and_dispatch(shared_.dispatcher, trace_info, response, stream_id_, user_id, order_id);
           })) {
       } else {
         log::warn("Unexpected: security_id={}"sv, security_id);
@@ -852,8 +850,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportReject523> c
         .quantity = NaN,
         .price = NaN,
     };
-    Trace event_2{trace_info, response};
-    (*this)(event_2);
+    create_trace_and_dispatch(shared_.dispatcher, trace_info, response, stream_id_, user_id, order_id);
   });
 }
 
@@ -876,8 +873,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportTradeOutrigh
               order_id = order.order_id;
               strategy_id = order.strategy_id;
             };
-            Trace event_2{trace_info, order_update};
-            (*this)(callback, event_2);
+            create_trace_and_dispatch(shared_.dispatcher, trace_info, order_update, stream_id_, callback);
             // XXX TODO make generic
             auto &fills = shared_.get_fills();
             std::vector<std::string> external_trade_ids;  // alloc
@@ -986,8 +982,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportModify531> c
                 .quantity = order_update.quantity,
                 .price = order_update.price,
             };
-            Trace event_2{trace_info, response};
-            (*this)(event_2, order_update);
+            create_trace_and_dispatch(shared_.dispatcher, trace_info, response, order_update, stream_id_);
           })) {
       } else {
         log::warn("Unexpected: security_id={}"sv, security_id);
@@ -1009,9 +1004,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportStatus532> c
       auto security_id = get_security_id(value);
       if (shared_.security_definitions.get_security(security_id, [&](auto &security) {
             auto order_update = order_update_from_execution_report(value, security, external_order_id);
-            auto callback = []([[maybe_unused]] auto &order) {};
-            Trace event_2{trace_info, order_update};
-            (*this)(callback, event_2);
+            create_trace_and_dispatch(shared_.dispatcher, trace_info, order_update, stream_id_);
           })) {
       } else {
         log::warn("Unexpected: security_id={}"sv, security_id);
@@ -1054,8 +1047,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportCancel534> c
                 .quantity = order_update.quantity,
                 .price = order_update.price,
             };
-            Trace event_2{trace_info, response};
-            (*this)(event_2, order_update);
+            create_trace_and_dispatch(shared_.dispatcher, trace_info, response, order_update, stream_id_);
           })) {
       } else {
         log::warn("Unexpected: security_id={}"sv, security_id);
@@ -1167,9 +1159,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::OrderMassActionReport562> c
               .update_type = UpdateType::INCREMENTAL,
               .sending_time_utc = {},
           };
-          auto callback = []([[maybe_unused]] auto &order) {};
-          Trace event_2{trace_info, order_update};
-          (*this)(callback, event_2);
+          create_trace_and_dispatch(shared_.dispatcher, trace_info, order_update, stream_id_);
         });
         log::info("*** CANCEL ALL ORDERS SUCCEEDED, TOTAL_AFFECTED_ORDERS={} ***"sv, count);
         send_ack(RequestStatus::ACCEPTED, {}, {});
@@ -1208,8 +1198,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::OrderCancelReject535> const
         .quantity = NaN,
         .price = NaN,
     };
-    Trace event_2{trace_info, response};
-    (*this)(event_2);
+    create_trace_and_dispatch(shared_.dispatcher, trace_info, response, stream_id_);
   });
 }
 
@@ -1240,8 +1229,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::OrderCancelReplaceReject536
         .quantity = NaN,
         .price = NaN,
     };
-    Trace event_2{trace_info, response};
-    (*this)(event_2);
+    create_trace_and_dispatch(shared_.dispatcher, trace_info, response, stream_id_);
   });
 }
 
@@ -1733,33 +1721,6 @@ void OrderEntry::send_order_mass_action_request(CancelAllOrders const &) {
   };
   log::info("DEBUG order_mass_action_request={}"sv, order_mass_action_request);
   send(order_mass_action_request);
-}
-
-template <typename Callback, typename... Args>
-void OrderEntry::operator()(Callback callback, Trace<server::oms::OrderUpdate> const &event, Args &&...args) {
-  auto &[trace_info, order_update] = event;
-  if (shared_.update_order(stream_id_, trace_info, order_update, std::forward<Args>(args)..., [&](auto &order) { callback(order); })) {
-  } else {
-    log::warn("*** EXTERNAL ORDER ***"sv);
-  }
-}
-
-template <typename... Args>
-void OrderEntry::operator()(Trace<server::oms::Response> const &event, Args &&...args) {
-  auto &[trace_info, response] = event;
-  if (shared_.update_order(stream_id_, trace_info, response, std::forward<Args>(args)..., [&]([[maybe_unused]] auto &order) {})) {
-  } else {
-    log::warn("*** EXTERNAL ORDER ***"sv);
-  }
-}
-
-template <typename... Args>
-void OrderEntry::operator()(Trace<server::oms::Response> const &event, uint8_t user_id, uint64_t order_id, Args &&...args) {
-  auto &[trace_info, response] = event;
-  if (shared_.update_order(user_id, order_id, stream_id_, trace_info, response, std::forward<Args>(args)..., []([[maybe_unused]] auto &order) {})) {
-  } else {
-    log::warn("Did not find order: user_id={}, order_id={}"sv, user_id, order_id);
-  }
 }
 
 }  // namespace gateway

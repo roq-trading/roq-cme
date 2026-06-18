@@ -44,13 +44,8 @@ struct Shared final {
   std::pair<std::string, uint16_t> get_multicast_config(uint16_t channel_id, protocol::mdp::ConnectionType, Priority) const;
 
   template <typename... Args>
-  auto update_order(Args &&...args) {
-    return dispatcher_.update_order(std::forward<Args>(args)...);
-  }
-
-  template <typename... Args>
   auto operator()(Args &&...args) {
-    return dispatcher_(std::forward<Args>(args)...);
+    return dispatcher(std::forward<Args>(args)...);
   }
 
   auto &get_fills() {
@@ -58,8 +53,7 @@ struct Shared final {
     return fills_;
   }
 
- private:
-  server::Dispatcher &dispatcher_;
+  server::Dispatcher &dispatcher;
 
  public:
   Settings const &settings;

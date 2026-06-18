@@ -50,7 +50,7 @@ R read_ilink_config(auto const &filename) {
 // === IMPLEMENTATION ===
 
 Shared::Shared(server::Dispatcher &dispatcher, Settings const &settings, market_data::SecurityDefinitions &security_definitions)
-    : dispatcher_{dispatcher}, settings{settings}, security_definitions{security_definitions}, buffer(BUFFER_SIZE),
+    : dispatcher{dispatcher}, settings{settings}, security_definitions{security_definitions}, buffer(BUFFER_SIZE),
       mdp_config{settings.multicast.config_file, true}, ilink_config_{read_ilink_config<decltype(ilink_config_)>(settings.ilink.config_file)} {
 }
 

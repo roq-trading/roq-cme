@@ -131,15 +131,6 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public pro
   void send_order_cancel_request(CancelOrder const &, server::oms::Order const &);
   void send_order_mass_action_request(CancelAllOrders const &);
 
-  template <typename Callback, typename... Args>
-  void operator()(Callback, Trace<server::oms::OrderUpdate> const &, Args &&...);
-
-  template <typename... Args>
-  void operator()(Trace<server::oms::Response> const &, Args &&...);
-
-  template <typename... Args>
-  void operator()(Trace<server::oms::Response> const &, uint8_t user_id, uint64_t order_id, Args &&...);
-
  private:
   Handler &handler_;
   // config
