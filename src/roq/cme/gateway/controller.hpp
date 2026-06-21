@@ -80,7 +80,7 @@ struct Controller final : public server::Handler, public market_data::SecurityDe
 
   bool discard_symbol(std::string_view const &name) override { return dispatcher_.discard_symbol(name); }
 
-  // utilities
+  // helpers
 
   template <typename... Args>
   void dispatch(Args &&...);

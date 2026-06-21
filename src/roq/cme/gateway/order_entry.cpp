@@ -6,7 +6,6 @@
 
 #include "roq/utils/byte_order.hpp"
 #include "roq/utils/safe_cast.hpp"
-#include "roq/utils/update.hpp"
 
 #include "roq/utils/metrics/factory.hpp"
 

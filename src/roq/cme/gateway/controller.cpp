@@ -2,8 +2,6 @@
 
 #include "roq/cme/gateway/controller.hpp"
 
-#include <utility>
-
 #include "roq/utils/charconv/from_chars.hpp"
 
 #include "roq/server/oms/exceptions.hpp"

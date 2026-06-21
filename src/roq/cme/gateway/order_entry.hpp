@@ -9,6 +9,7 @@
 #include "roq/utils/metrics/profile.hpp"
 
 #include "roq/io/context.hpp"
+
 #include "roq/io/net/connection_factory.hpp"
 #include "roq/io/net/connection_manager.hpp"
 
@@ -36,8 +37,6 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public pro
 
   OrderEntry(OrderEntry const &) = delete;
 
-  bool ready() const { return connection_status_ == ConnectionStatus::READY; }
-
   void operator()(Event<Start> const &);
   void operator()(Event<Stop> const &);
   void operator()(Event<Timer> const &);
@@ -60,7 +59,7 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public pro
 
   void operator()(metrics::Writer &) const;
 
- private:
+ protected:
   // session
   void operator()(Trace<::cme::sbe::ilink::NegotiationResponse501> const &) override;
   void operator()(Trace<::cme::sbe::ilink::NegotiationReject502> const &) override;
@@ -93,15 +92,19 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public pro
   // security definition
   void operator()(Trace<::cme::sbe::ilink::SecurityDefinitionResponse561> const &) override;
 
- protected:
+  // io::net::ConnectionManager::Handler
+
   void operator()(io::net::ConnectionManager::Connected const &) override;
   void operator()(io::net::ConnectionManager::Disconnected const &) override;
   void operator()(io::net::ConnectionManager::Read const &) override;
   void operator()(io::net::ConnectionManager::Write const &) override;
 
+  // helpers
+
   size_t parse(std::span<std::byte const> const &);
 
- private:
+  bool ready() const { return connection_status_ == ConnectionStatus::READY; }
+
   void operator()(ConnectionStatus, std::string_view const &reason = {});
 
   uint32_t download(OrderEntryState state);

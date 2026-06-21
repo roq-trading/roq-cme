@@ -52,9 +52,9 @@ struct create_metrics final : public utils::metrics::Factory {
 
 MDPReceiver::MDPReceiver(
     io::Context &context, Shared &shared, market_data::Manager &manager, uint16_t channel_id, protocol::mdp::ConnectionType connection_type, Priority priority)
-    : channel_id{channel_id}, connection_type{connection_type}, priority{priority}, manager_{manager},
-      name_{manager_.get_name(channel_id, connection_type, priority)},
-      receiver_{create_receiver(*this, context, shared, channel_id, connection_type, priority)},
+    : manager_{manager}, channel_id_{channel_id}, connection_type_{connection_type}, priority_{priority},
+      name_{manager_.get_name(channel_id_, connection_type_, priority_)},
+      receiver_{create_receiver(*this, context, shared, channel_id_, connection_type_, priority_)},
       counter_{
           .disconnect = create_metrics(shared.settings, name_, "disconnect"sv),
       },
@@ -68,13 +68,13 @@ void MDPReceiver::operator()(io::net::udp::Receiver::Read const &) {
   TraceInfo trace_info;
   while (true) {
     auto bytes = (*receiver_).recv(shared_.buffer);
-    log::info<5>("Received {} byte(s) (channel_id={})"sv, bytes, channel_id);
+    log::info<5>("Received {} byte(s) (channel_id={})"sv, bytes, channel_id_);
     if (!bytes) {
       return;
     }
     std::span payload{std::data(shared_.buffer), bytes};
     log::info<5>("{}"sv, utils::debug::hex::Message{payload});
-    manager_.dispatch(channel_id, connection_type, priority, payload, trace_info);
+    manager_.dispatch(channel_id_, connection_type_, priority_, payload, trace_info);
   }
 }
 

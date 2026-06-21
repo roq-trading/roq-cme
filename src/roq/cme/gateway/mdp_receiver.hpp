@@ -25,16 +25,17 @@ struct MDPReceiver final : public io::net::udp::Receiver::Handler {
   void operator()(metrics::Writer &) const;
 
  protected:
+  // io::net::udp::Receiver::Handler
+
   void operator()(io::net::udp::Receiver::Read const &) override;
   void operator()(io::net::udp::Receiver::Error const &) override;
 
- public:
-  uint16_t const channel_id;
-  protocol::mdp::ConnectionType const connection_type;
-  Priority const priority;
-
  private:
   market_data::Manager &manager_;
+  //
+  uint16_t const channel_id_;
+  protocol::mdp::ConnectionType const connection_type_;
+  Priority const priority_;
   // config
   std::string const name_;
   // receiver
