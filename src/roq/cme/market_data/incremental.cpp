@@ -439,9 +439,9 @@ void Incremental::operator()(Trace<::cme::sbe::mdp::ChannelReset4> const &event,
 }
 
 void Incremental::operator()(Trace<::cme::sbe::mdp::SecurityStatus30> const &event, protocol::mdp::Frame const &frame) {
-  auto &trace_info = event.trace_info;
+  auto &[trace_info, security_status_30] = event;
   using value_type = std::remove_cvref_t<decltype(event)>::value_type;
-  auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
+  auto &value = const_cast<value_type &>(security_status_30);  // note! not const-safe
   log::info<5>("security_status_30={}, frame={}"sv, value, frame);
   value.sbeRewind();  // note!
   auto security_id = protocol::mdp::get_int(value.securityID(), value.securityIDNullValue());
@@ -470,9 +470,9 @@ void Incremental::operator()(Trace<::cme::sbe::mdp::SecurityStatus30> const &eve
 }
 
 void Incremental::operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionFuture54> const &event, protocol::mdp::Frame const &frame) {
-  auto &trace_info = event.trace_info;
+  auto &[trace_info, md_instrument_definition_future_54] = event;
   using value_type = std::remove_cvref_t<decltype(event)>::value_type;
-  auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
+  auto &value = const_cast<value_type &>(md_instrument_definition_future_54);  // note! not const-safe
   log::info<5>("md_instrument_definition_future_54={}, frame={}"sv, value, frame);
   value.sbeRewind();  // note!
   [[maybe_unused]] auto security_id = value.securityID();
@@ -499,9 +499,9 @@ void Incremental::operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionFuture
 }
 
 void Incremental::operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionOption55> const &event, protocol::mdp::Frame const &frame) {
-  auto &trace_info = event.trace_info;
+  auto &[trace_info, md_instrument_definition_option_55] = event;
   using value_type = std::remove_cvref_t<decltype(event)>::value_type;
-  auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
+  auto &value = const_cast<value_type &>(md_instrument_definition_option_55);  // note! not const-safe
   log::info<5>("md_instrument_definition_option_55={}, frame={}"sv, value, frame);
   value.sbeRewind();  // note!
   auto security_id = value.securityID();
@@ -517,9 +517,9 @@ void Incremental::operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionOption
 }
 
 void Incremental::operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionSpread56> const &event, protocol::mdp::Frame const &frame) {
-  auto &trace_info = event.trace_info;
+  auto &[trace_info, md_instrument_definition_spread_56] = event;
   using value_type = std::remove_cvref_t<decltype(event)>::value_type;
-  auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
+  auto &value = const_cast<value_type &>(md_instrument_definition_spread_56);  // note! not const-safe
   log::info<5>("md_instrument_definition_spread_56={}, frame={}"sv, value, frame);
   value.sbeRewind();  // note!
   auto security_id = value.securityID();
@@ -535,9 +535,9 @@ void Incremental::operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionSpread
 }
 
 void Incremental::operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionFixedIncome57> const &event, protocol::mdp::Frame const &frame) {
-  auto &trace_info = event.trace_info;
+  auto &[trace_info, md_instrument_definition_fixed_income_57] = event;
   using value_type = std::remove_cvref_t<decltype(event)>::value_type;
-  auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
+  auto &value = const_cast<value_type &>(md_instrument_definition_fixed_income_57);  // note! not const-safe
   log::info<5>("md_instrument_definition_fixed_income_57={}, frame={}"sv, value, frame);
   value.sbeRewind();  // note!
   auto security_id = value.securityID();
@@ -553,9 +553,9 @@ void Incremental::operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionFixedI
 }
 
 void Incremental::operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionRepo58> const &event, protocol::mdp::Frame const &frame) {
-  auto &trace_info = event.trace_info;
+  auto &[trace_info, md_instrument_definition_repo_58] = event;
   using value_type = std::remove_cvref_t<decltype(event)>::value_type;
-  auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
+  auto &value = const_cast<value_type &>(md_instrument_definition_repo_58);  // note! not const-safe
   log::info<5>("md_instrument_definition_repo_58={}, frame={}"sv, value, frame);
   value.sbeRewind();  // note!
   auto security_id = value.securityID();
@@ -571,9 +571,9 @@ void Incremental::operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionRepo58
 }
 
 void Incremental::operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionFX63> const &event, protocol::mdp::Frame const &frame) {
-  auto &trace_info = event.trace_info;
+  auto &[trace_info, md_instrument_definition_fx_63] = event;
   using value_type = std::remove_cvref_t<decltype(event)>::value_type;
-  auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
+  auto &value = const_cast<value_type &>(md_instrument_definition_fx_63);  // note! not const-safe
   log::info<5>("md_instrument_definition_fx_63={}, frame={}"sv, value, frame);
   value.sbeRewind();  // note!
   auto security_id = value.securityID();
@@ -598,9 +598,9 @@ void Incremental::operator()(Trace<::cme::sbe::mdp::QuoteRequest39> const &, pro
 }
 
 void Incremental::operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshBook46> const &event, protocol::mdp::Frame const &frame) {
-  auto &trace_info = event.trace_info;
+  auto &[trace_info, md_incremental_refresh_book_46] = event;
   using value_type = std::remove_cvref_t<decltype(event)>::value_type;
-  auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
+  auto &value = const_cast<value_type &>(md_incremental_refresh_book_46);  // note! not const-safe
   log::info<5>("md_incremental_refresh_book_46={}, frame={}"sv, value, frame);
   value.sbeRewind();  // note!
   // ---
@@ -755,10 +755,10 @@ void Incremental::operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshOrderBoo
   if (!shared_.options.enable_market_by_order) {
     return;
   }
-  auto &trace_info = event.trace_info;
+  auto &[trace_info, md_incremental_refresh_order_book_47] = event;
   using value_type = std::remove_cvref_t<decltype(event)>::value_type;
-  auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
-  value.sbeRewind();                                    // note!
+  auto &value = const_cast<value_type &>(md_incremental_refresh_order_book_47);  // note! not const-safe
+  value.sbeRewind();                                                             // note!
   // ---
   // note! not possible to detect first message -- this is an issue after packet loss
   auto exchange_sequence = frame.sequence_number;
@@ -1085,10 +1085,10 @@ void Incremental::dispatch_market_by_order_stale(auto &trace_info, auto &securit
 
 template <typename T>
 void Incremental::dispatch_trade_summary(Trace<T> const &event, protocol::mdp::Frame const &frame) {
-  auto &trace_info = event.trace_info;
+  auto &[trace_info, value_2] = event;
   using value_type = typename std::remove_cvref_t<decltype(event)>::value_type;
-  auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
-  value.sbeRewind();                                    // note!
+  auto &value = const_cast<value_type &>(value_2);  // note! not const-safe
+  value.sbeRewind();                                // note!
   auto exchange_time_utc = std::chrono::nanoseconds{value.transactTime()};
   auto exchange_sequence = frame.sequence_number;
   auto clear_state = [&]() {
@@ -1347,10 +1347,10 @@ void Incremental::dispatch_trade_summary(Trace<T> const &event, protocol::mdp::F
 
 template <typename T, typename Callback>
 void Incremental::dispatch_statistics(Trace<T> const &event, protocol::mdp::Frame const &frame, Callback callback) {
-  auto &trace_info = event.trace_info;
+  auto &[trace_info, value_2] = event;
   using value_type = typename std::remove_cvref_t<decltype(event)>::value_type;
-  auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
-  value.sbeRewind();                                    // note!
+  auto &value = const_cast<value_type &>(value_2);  // note! not const-safe
+  value.sbeRewind();                                // note!
   auto exchange_time_utc = std::chrono::nanoseconds{value.transactTime()};
   auto &statistics = shared_.get_statistics();
   auto dispatch = [&]([[maybe_unused]] auto security_id, auto &security) {

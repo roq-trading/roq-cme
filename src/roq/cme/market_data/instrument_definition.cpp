@@ -105,9 +105,9 @@ void InstrumentDefinition::operator()(Trace<::cme::sbe::mdp::SecurityStatus30> c
 }
 
 void InstrumentDefinition::operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionFuture54> const &event, protocol::mdp::Frame const &frame) {
-  auto &trace_info = event.trace_info;
+  auto &[trace_info, md_instrument_definition_future_54] = event;
   using value_type = std::remove_cvref_t<decltype(event)>::value_type;
-  auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
+  auto &value = const_cast<value_type &>(md_instrument_definition_future_54);  // note! not const-safe
   log::info<5>("md_instrument_definition_future_54={}, frame={}"sv, value, frame);
   create_security(shared_, value, [&](auto &security) {
     auto reference_data = protocol::mdp::create_reference_data(value, stream_id, security);
@@ -121,9 +121,9 @@ void InstrumentDefinition::operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinit
 }
 
 void InstrumentDefinition::operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionOption55> const &event, protocol::mdp::Frame const &frame) {
-  auto &trace_info = event.trace_info;
+  auto &[trace_info, md_instrument_definition_option_55] = event;
   using value_type = std::remove_cvref_t<decltype(event)>::value_type;
-  auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
+  auto &value = const_cast<value_type &>(md_instrument_definition_option_55);  // note! not const-safe
   log::info<5>("md_instrument_definition_option_55={}, frame={}"sv, value, frame);
   create_security(shared_, value, [&](auto &security) {
     auto reference_data = protocol::mdp::create_reference_data(value, stream_id, security);
@@ -137,9 +137,9 @@ void InstrumentDefinition::operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinit
 }
 
 void InstrumentDefinition::operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionSpread56> const &event, protocol::mdp::Frame const &frame) {
-  auto &trace_info = event.trace_info;
+  auto &[trace_info, md_instrument_definition_spread_56] = event;
   using value_type = std::remove_cvref_t<decltype(event)>::value_type;
-  auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
+  auto &value = const_cast<value_type &>(md_instrument_definition_spread_56);  // note! not const-safe
   log::info<5>("md_instrument_definition_spread_56={}, frame={}"sv, value, frame);
   create_security(shared_, value, [&](auto &security) {
     auto reference_data = protocol::mdp::create_reference_data(value, stream_id, security);
@@ -153,9 +153,9 @@ void InstrumentDefinition::operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinit
 }
 
 void InstrumentDefinition::operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionFixedIncome57> const &event, protocol::mdp::Frame const &frame) {
-  auto &trace_info = event.trace_info;
+  auto &[trace_info, md_instrument_definition_fixed_income_57] = event;
   using value_type = std::remove_cvref_t<decltype(event)>::value_type;
-  auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
+  auto &value = const_cast<value_type &>(md_instrument_definition_fixed_income_57);  // note! not const-safe
   log::info<5>("md_instrument_definition_fixed_income_57={}, frame={}"sv, value, frame);
   create_security(shared_, value, [&](auto &security) {
     auto reference_data = protocol::mdp::create_reference_data(value, stream_id, security);
@@ -169,9 +169,9 @@ void InstrumentDefinition::operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinit
 }
 
 void InstrumentDefinition::operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionRepo58> const &event, protocol::mdp::Frame const &frame) {
-  auto &trace_info = event.trace_info;
+  auto &[trace_info, md_instrument_definition_repo_58] = event;
   using value_type = std::remove_cvref_t<decltype(event)>::value_type;
-  auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
+  auto &value = const_cast<value_type &>(md_instrument_definition_repo_58);  // note! not const-safe
   log::info<5>("md_instrument_definition_repo_58={}, frame={}"sv, value, frame);
   create_security(shared_, value, [&](auto &security) {
     auto reference_data = protocol::mdp::create_reference_data(value, stream_id, security);
@@ -185,9 +185,9 @@ void InstrumentDefinition::operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinit
 }
 
 void InstrumentDefinition::operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionFX63> const &event, protocol::mdp::Frame const &frame) {
-  auto &trace_info = event.trace_info;
+  auto &[trace_info, md_instrument_definition_fx_63] = event;
   using value_type = std::remove_cvref_t<decltype(event)>::value_type;
-  auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
+  auto &value = const_cast<value_type &>(md_instrument_definition_fx_63);  // note! not const-safe
   log::info<5>("md_instrument_definition_fx_63={}, frame={}"sv, value, frame);
   create_security(shared_, value, [&](auto &security) {
     auto reference_data = protocol::mdp::create_reference_data(value, stream_id, security);

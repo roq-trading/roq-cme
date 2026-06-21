@@ -158,9 +158,9 @@ void MBPMarketRecovery::operator()(protocol::mdp::Frame const &) {
 }
 
 void MBPMarketRecovery::operator()(Trace<::cme::sbe::mdp::AdminHeartbeat12> const &event, protocol::mdp::Frame const &frame) {
-  auto &trace_info = event.trace_info;
+  auto &[trace_info, admin_heartbeat_12] = event;
   using value_type = std::remove_cvref_t<decltype(event)>::value_type;
-  auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
+  auto &value = const_cast<value_type &>(admin_heartbeat_12);  // note! not const-safe
   log::info<5>("admin_heartbeat_12={}, frame={}"sv, value, frame);
   auto external_latency = ExternalLatency{
       .stream_id = stream_id,
@@ -219,9 +219,9 @@ void MBPMarketRecovery::operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinition
 }
 
 void MBPMarketRecovery::operator()(Trace<::cme::sbe::mdp::SnapshotFullRefresh52> const &event, protocol::mdp::Frame const &frame) {
-  auto &trace_info = event.trace_info;
+  auto &[trace_info, snapshot_full_refresh_52] = event;
   using value_type = std::remove_cvref_t<decltype(event)>::value_type;
-  auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
+  auto &value = const_cast<value_type &>(snapshot_full_refresh_52);  // note! not const-safe
   log::info<5>("snapshot_full_refresh_52={}, frame={}"sv, value, frame);
   auto security_id = value.securityID();
   shared_.security_definitions.get_security(security_id, [&](auto &security) {
@@ -243,9 +243,9 @@ void MBPMarketRecovery::operator()(Trace<::cme::sbe::mdp::SnapshotFullRefresh52>
 }
 
 void MBPMarketRecovery::operator()(Trace<::cme::sbe::mdp::SnapshotFullRefreshLongQty69> const &event, protocol::mdp::Frame const &frame) {
-  auto &trace_info = event.trace_info;
+  auto &[trace_info, snapshot_full_refresh_long_qty_69] = event;
   using value_type = std::remove_cvref_t<decltype(event)>::value_type;
-  auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
+  auto &value = const_cast<value_type &>(snapshot_full_refresh_long_qty_69);  // note! not const-safe
   log::info<5>("snapshot_full_refresh_long_qty_69={}, frame={}"sv, value, frame);
   auto security_id = value.securityID();
   shared_.security_definitions.get_security(security_id, [&](auto &security) {
