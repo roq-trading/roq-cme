@@ -18,7 +18,6 @@
 #include "roq/server.hpp"
 
 #include "roq/cme/gateway/account.hpp"
-#include "roq/cme/gateway/order_entry_state.hpp"
 #include "roq/cme/gateway/shared.hpp"
 
 #include "roq/cme/protocol/ilink/parser.hpp"
@@ -107,7 +106,13 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public pro
 
   void operator()(ConnectionStatus, std::string_view const &reason = {});
 
-  uint32_t download(OrderEntryState state);
+  enum class State {
+    UNDEFINED = 0,
+    ORDERS,
+    DONE,
+  };
+
+  uint32_t download(State state);
 
   uint32_t peek_next_seq_num();
   uint32_t fetch_next_seq_num();
@@ -202,7 +207,7 @@ struct OrderEntry final : public io::net::ConnectionManager::Handler, public pro
   Shared &shared_;
   // state
   ConnectionStatus connection_status_ = {};
-  core::Download<OrderEntryState> download_;
+  core::Download<State> download_;
   std::chrono::nanoseconds next_heartbeat_ = {};
   uint64_t uuid_ = {};
   uint64_t request_id_ = {};

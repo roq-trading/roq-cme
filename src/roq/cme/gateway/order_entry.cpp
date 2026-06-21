@@ -1012,7 +1012,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportStatus532> c
       log::info(R"(No working orders (text="{}"))"sv, value.getTextAsStringView());
     }
     if (value.lastRptRequested() == ::cme::sbe::ilink::BooleanNULL::True) {
-      download_.check_relaxed(OrderEntryState::ORDERS);
+      download_.check_relaxed(State::ORDERS);
     }
   });
 }
@@ -1306,9 +1306,9 @@ void OrderEntry::operator()(ConnectionStatus connection_status, std::string_view
   create_trace_and_dispatch(handler_, trace_info, stream_status);
 }
 
-uint32_t OrderEntry::download(OrderEntryState state) {
+uint32_t OrderEntry::download(State state) {
   switch (state) {
-    using enum OrderEntryState;
+    using enum State;
     case UNDEFINED:
       assert(false);
       break;
