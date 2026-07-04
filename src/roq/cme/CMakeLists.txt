@@ -10,7 +10,9 @@ add_subdirectory(tools)
 add_subdirectory(channel_tester)
 add_subdirectory(dump)
 add_subdirectory(filter)
+add_subdirectory(fix_bridge)
 add_subdirectory(import)
+add_subdirectory(proto_bridge)
 
 set(SOURCES application.cpp main.cpp)
 
