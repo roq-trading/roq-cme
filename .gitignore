@@ -25,7 +25,5 @@ _CPack_Packages/
 # debian
 *.deb
 
-# roq-data
-*.roq
-
-*.pcap
+# conda
+opt/
