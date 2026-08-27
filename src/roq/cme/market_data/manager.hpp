@@ -51,7 +51,6 @@ struct Manager final {
   void dispatch(Event<T> const &);
 
  private:
-  server::md::Dispatcher &dispatcher_;
   Options const options_;
   Shared shared_;
   struct Channel2 final {

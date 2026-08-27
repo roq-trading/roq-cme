@@ -44,7 +44,7 @@ Manager::Manager(
     std::span<uint16_t const> const &channel_ids,
     protocol::mdp::Config const &config,
     uint16_t &stream_id)
-    : dispatcher_{dispatcher}, options_{options}, shared_{dispatcher, options, security_definitions},
+    : options_{options}, shared_{dispatcher, options, security_definitions},
       channels_{create_channels<decltype(channels_)>(shared_, channel_ids, config, stream_id)}, secdef_config_file_{options.secdef_config_file} {
 }
 
