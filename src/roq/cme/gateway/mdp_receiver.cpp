@@ -25,10 +25,6 @@ auto const SOCKET_OPTIONS = Mask{
 // === HELPERS ===
 
 namespace {
-auto create_name(auto stream_id, auto &channel_name) {
-  return fmt::format("{}:{}"sv, stream_id, channel_name);
-}
-
 auto create_receiver(auto &handler, auto &context, auto &shared, auto channel_id, auto connection_type, auto priority) {
   log::info(R"(Create channel_id="{}, priority={}")"sv, channel_id, priority);
   auto [multicast_address, port] = shared.get_multicast_config(channel_id, connection_type, priority);

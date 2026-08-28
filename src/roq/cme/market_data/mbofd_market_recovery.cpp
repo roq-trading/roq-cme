@@ -52,28 +52,6 @@ void emplace_back(::cme::sbe::mdp::SnapshotFullRefreshOrderBook53::NoMDEntries c
   fmt::format_to(std::back_inserter(order.order_id), "{}"sv, order_id);
   orders.emplace_back(std::move(order));
 }
-
-// note! don't care about re-ordering or dropped messages (*** maybe we should ??? ***)
-void drain(auto &receiver, auto &buffer, auto stream_id, auto parse) {
-  while (true) {
-    // read into buffer
-    auto bytes = receiver.recv(buffer);
-    log::info<5>("Received {} byte(s) (stream_id={})"sv, bytes, stream_id);
-    if (!bytes) {
-      return;
-    }
-    // parse message
-    std::span message{std::data(buffer), bytes};
-    log::info<5>("{}"sv, utils::debug::hex::Message{message});
-    if (protocol::mdp::Frame::parse(message, [&](auto &frame) { log::info<5>("frame={}"sv, frame); })) {
-    } else {
-      // failed to parse frame
-      log::warn("Unexpected"sv);
-      continue;
-    }
-    parse(message);
-  }
-}
 }  // namespace
 
 // === IMPLEMENTATION ===

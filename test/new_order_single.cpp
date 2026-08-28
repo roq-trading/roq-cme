@@ -23,6 +23,7 @@ using namespace roq;
 using value_type = NewOrderSingle514;
 
 namespace {
+/*
 template <typename T>
 auto encode(auto &buffer, auto &message_header, T &value) {
   value.sbeRewind();  // note!
@@ -36,6 +37,7 @@ auto encode(auto &buffer, auto &message_header, T &value) {
   auto length = value.computeLength();
   return std::span{std::data(buffer), length};
 }
+*/
 }  // namespace
 
 TEST_CASE("simple", "[new_order_single]") {

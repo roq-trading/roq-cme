@@ -142,23 +142,6 @@ void mbp_emplace_back(auto &result, T const &item, auto &security) {
 }
 
 template <typename T>
-void trades_emplace_back(auto &result, T const &item, auto &security) {
-  auto price = map(const_cast<T &>(item).mDEntryPx()).template get<double>();
-  auto quantity = protocol::mdp::get_int(item.mDEntrySize(), item.mDEntrySizeNullValue());
-  auto trade = Trade{
-      .side = map(item.aggressorSide()),
-      .price = price * security.display_factor,
-      .quantity = utils::safe_cast(quantity),
-      .trade_id = {},
-      .taker_order_id = {},
-      .maker_order_id = {},
-  };
-  auto trade_id = protocol::mdp::get_int(item.mDTradeEntryID(), item.mDTradeEntryIDNullValue());
-  fmt::format_to(std::back_inserter(trade.trade_id), "{}"sv, trade_id);
-  result.emplace_back(std::move(trade));
-}
-
-template <typename T>
 void statistics_emplace_back_price(auto &result, auto type, T const &item, auto factor) {
   auto value = map(const_cast<T &>(item).mDEntryPx()).template get<double>();
   auto statistics = Statistics{
