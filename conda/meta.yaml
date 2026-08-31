@@ -23,7 +23,6 @@ requirements:
   host:
     - benchmark
     - catch2
-    - expat
     - fmt
     - libabseil
     - magic_enum
@@ -38,6 +37,7 @@ requirements:
     - roq-io
     - roq-logging
     - roq-market
+    - roq-oss-libexpat
     - roq-oss-tomlplusplus
     - roq-server
     - roq-utils

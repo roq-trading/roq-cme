@@ -28,8 +28,10 @@ include(GNUInstallDirs)
 
 # dependencies
 
-find_package(absl REQUIRED)
+set(EXPAT_USE_STATIC_LIBS TRUE)
 find_package(EXPAT REQUIRED) # note! a cmake module takes precedence on macOS
+
+find_package(absl REQUIRED)
 find_package(fmt REQUIRED)
 find_package(magic_enum REQUIRED)
 find_package(roq-api REQUIRED)
