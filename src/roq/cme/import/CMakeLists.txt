@@ -20,7 +20,7 @@ target_link_libraries(
           roq-logging::roq-logging
           roq-logging::roq-logging-flags
           roq-utils::roq-utils
-          EXPAT::EXPAT
+          expat::expat
           fmt::fmt)
 
 if(ROQ_BUILD_TYPE STREQUAL "Release")
