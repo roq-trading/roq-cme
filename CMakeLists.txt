@@ -29,7 +29,7 @@ include(GNUInstallDirs)
 # dependencies
 
 set(EXPAT_USE_STATIC_LIBS TRUE)
-find_package(expat REQUIRED)
+find_package(EXPAT REQUIRED)
 
 find_package(absl REQUIRED)
 find_package(fmt REQUIRED)

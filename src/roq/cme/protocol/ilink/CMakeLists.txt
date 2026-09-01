@@ -22,4 +22,4 @@ include(RoqAutogen)
 
 add_library(${TARGET_NAME} OBJECT ${SOURCES})
 
-target_link_libraries(${TARGET_NAME} PRIVATE roq-core::roq-core roq-io::roq-io roq-logging::roq-logging expat::expat fmt::fmt)
+target_link_libraries(${TARGET_NAME} PRIVATE roq-core::roq-core roq-io::roq-io roq-logging::roq-logging EXPAT::EXPAT fmt::fmt)

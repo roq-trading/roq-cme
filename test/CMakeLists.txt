@@ -34,7 +34,7 @@ target_link_libraries(
           ${PROJECT_NAME}-secdef
           ${PROJECT_NAME}-tools
           roq-core::roq-core
-          expat::expat
+          EXPAT::EXPAT
           Catch2::Catch2)
 
 if(ROQ_BUILD_TYPE STREQUAL "Release")
