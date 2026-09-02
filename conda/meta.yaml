@@ -27,8 +27,7 @@ requirements:
     - magic_enum
     - roq-api
     - roq-cache
-    - roq-cme-sbe-ilink
-    - roq-cme-sbe-mdp
+    - roq-cme-cpp-schema
     - roq-codec
     - roq-core
     - roq-fix
