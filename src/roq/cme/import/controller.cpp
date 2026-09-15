@@ -220,6 +220,11 @@ void Controller::operator()(Trace<MarketStatus> const &event, [[maybe_unused]] b
   append(event);
 }
 
+void Controller::operator()(Trace<MarketSegmentStatus> const &event, [[maybe_unused]] bool is_last) {
+  // log::info("event={}"sv, event);
+  append(event);
+}
+
 void Controller::operator()(Trace<TopOfBook> const &event, [[maybe_unused]] bool is_last) {
   // log::info("event={}"sv, event);
   append(event);

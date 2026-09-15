@@ -56,6 +56,7 @@ struct Controller final : public utils::pcap::Reader::Handler, public server::md
   void operator()(Trace<RateLimitsUpdate> const &) override;
   void operator()(Trace<ReferenceData> const &, bool is_last) override;
   void operator()(Trace<MarketStatus> const &, bool is_last) override;
+  void operator()(Trace<MarketSegmentStatus> const &, bool is_last) override;
   void operator()(Trace<TopOfBook> const &, bool is_last) override;
   void operator()(Trace<MarketByPriceUpdate> const &, bool is_last) override;
   void operator()(Trace<MarketByOrderUpdate> const &, bool is_last) override;
