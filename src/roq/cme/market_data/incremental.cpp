@@ -1276,6 +1276,8 @@ void Incremental::dispatch_trade_summary(Trace<T> const &event, protocol::mdp::F
               taker_order_id = fmt::format("{}"sv, order_id);
               if (number_of_orders == 1) {
                 auto trade = Trade{
+                    .trade_conditions = {},
+                    .trade_type = {},
                     .side = aggressor_side,
                     .price = price * security.display_factor,
                     .quantity = utils::safe_cast(last_qty),
@@ -1288,6 +1290,8 @@ void Incremental::dispatch_trade_summary(Trace<T> const &event, protocol::mdp::F
               }
             } else {  // join
               auto trade = Trade{
+                  .trade_conditions = {},
+                  .trade_type = {},
                   .side = aggressor_side,
                   .price = price * security.display_factor,
                   .quantity = utils::safe_cast(last_qty),
@@ -1303,6 +1307,8 @@ void Incremental::dispatch_trade_summary(Trace<T> const &event, protocol::mdp::F
           for (; offset_2 < number_of_orders; ++offset_2) {
             auto &[order_id, last_qty] = shared_.orders_[offset + offset_2];
             auto trade = Trade{
+                .trade_conditions = {},
+                .trade_type = {},
                 .side = aggressor_side,
                 .price = price * security.display_factor,
                 .quantity = utils::safe_cast(last_qty),
