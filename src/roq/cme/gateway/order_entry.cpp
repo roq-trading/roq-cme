@@ -537,8 +537,10 @@ OrderEntry::OrderEntry(
       latency_{
           .ping = create_metrics(shared.settings, name_, "ping"sv),
       },
-      account_{account}, shared_{shared}, download_{REQUEST_TIMEOUT, [this](auto state) { return download(state); }} {
+      account_{account}, shared_{shared}, download_{REQUEST_TIMEOUT, [this](auto &event) { return download(event); }} {
 }
+
+// server::Stream
 
 void OrderEntry::operator()(Event<Start> const &) {
   (*connection_manager_).start();
@@ -549,82 +551,14 @@ void OrderEntry::operator()(Event<Stop> const &) {
 }
 
 void OrderEntry::operator()(Event<Timer> const &event) {
-  auto now = event.value.now;
-  if (!(*connection_manager_).refresh(now)) {
+  auto &[trace_info, timer] = event;
+  if (!(*connection_manager_).refresh(timer.now)) {
     return;
   }
-  if (!ready() || now < next_heartbeat_) {
+  if (!ready() || timer.now < next_heartbeat_) {
     return;
   }
   send_sequence();  // note! send() updates next_heartbeat
-}
-
-uint16_t OrderEntry::operator()(
-    Event<CreateOrder> const &event, server::oms::Order const &order, server::oms::RefData const &, std::string_view const &request_id) {
-  if (!ready()) [[unlikely]] {
-    throw server::oms::NotReady{"not ready"sv};
-  }
-  send_new_order_single(event.value, order, request_id);
-  return stream_id_;
-}
-
-uint16_t OrderEntry::operator()(
-    Event<ModifyOrder> const &event,
-    server::oms::Order const &order,
-    server::oms::RefData const &,
-    [[maybe_unused]] std::string_view const &request_id,
-    [[maybe_unused]] std::string_view const &previous_request_id) {
-  if (!ready()) [[unlikely]] {
-    throw server::oms::NotReady{"not ready"sv};
-  }
-  send_order_cancel_replace_request(event.value, order);
-  return stream_id_;
-}
-
-uint16_t OrderEntry::operator()(
-    Event<CancelOrder> const &event,
-    server::oms::Order const &order,
-    server::oms::RefData const &,
-    [[maybe_unused]] std::string_view const &request_id,
-    [[maybe_unused]] std::string_view const &previous_request_id) {
-  if (!ready()) [[unlikely]] {
-    throw server::oms::NotReady{"not ready"sv};
-  }
-  send_order_cancel_request(event.value, order);
-  return stream_id_;
-}
-
-uint16_t OrderEntry::operator()(Event<CancelAllOrders> const &event, std::string_view const &request_id) {
-  if (!ready()) [[unlikely]] {
-    throw server::oms::NotReady{"not ready"sv};
-  }
-  auto &cancel_all_orders = event.value;
-  auto send_ack = [&]() {
-    auto cancel_all_orders_ack = CancelAllOrdersAck{
-        .stream_id = stream_id_,
-        .account = account_.get_name(),
-        .order_id = cancel_all_orders.order_id,
-        .exchange = cancel_all_orders.exchange,
-        .symbol = cancel_all_orders.symbol,
-        .side = cancel_all_orders.side,
-        .origin = Origin::GATEWAY,
-        .request_status = RequestStatus::FORWARDED,
-        .error = {},
-        .text = {},
-        .request_id = request_id,
-        .external_account = {},
-        .number_of_affected_orders = {},
-        .round_trip_latency = {},
-        .user = {},
-        .strategy_id = cancel_all_orders.strategy_id,
-    };
-    TraceInfo trace_info{event};
-    Trace event_2{trace_info, cancel_all_orders_ack};
-    shared_(event_2);
-  };
-  send_order_mass_action_request(cancel_all_orders);
-  send_ack();
-  return stream_id_;
 }
 
 void OrderEntry::operator()(metrics::Writer &writer) const {
@@ -659,6 +593,161 @@ void OrderEntry::operator()(metrics::Writer &writer) const {
       .write(latency_.ping, metrics::Type::LATENCY);
 }
 
+void OrderEntry::operator()(Trace<ConnectionStatus> const &event, std::string_view const &reason) {
+  auto &[trace_info, connection_status] = event;
+  connection_status_ = connection_status;
+  auto stream_status = StreamStatus{
+      .stream_id = stream_id_,
+      .account = account_.get_name(),
+      .supports = SUPPORTS,
+      .transport = Transport::TCP,
+      .protocol = Protocol::FIX,
+      .encoding = {Encoding::SBE},
+      .priority = Priority::PRIMARY,
+      .connection_status = connection_status_,
+      .reason = reason,
+      .interface = (*connection_factory_).get_interface(),
+      .authority = (*connection_factory_).get_current_authority(),
+      .path = (*connection_factory_).get_current_path(),
+      .proxy = {},
+  };
+  log::info("stream_status={}"sv, stream_status);
+  create_trace_and_dispatch(handler_, trace_info, stream_status);
+}
+
+// server::OrderActionStream
+
+uint16_t OrderEntry::operator()(
+    Event<CreateOrder> const &event, server::oms::Order const &order, server::oms::RefData const &, std::string_view const &request_id) {
+  if (!ready()) [[unlikely]] {
+    throw server::oms::NotReady{"not ready"sv};
+  }
+  auto &[trace_info, create_order] = event;
+  send_new_order_single(create_order, order, request_id);
+  return stream_id_;
+}
+
+uint16_t OrderEntry::operator()(
+    Event<ModifyOrder> const &event,
+    server::oms::Order const &order,
+    server::oms::RefData const &,
+    [[maybe_unused]] std::string_view const &request_id,
+    [[maybe_unused]] std::string_view const &previous_request_id) {
+  if (!ready()) [[unlikely]] {
+    throw server::oms::NotReady{"not ready"sv};
+  }
+  auto &[trace_info, modify_order] = event;
+  send_order_cancel_replace_request(modify_order, order);
+  return stream_id_;
+}
+
+uint16_t OrderEntry::operator()(
+    Event<CancelOrder> const &event,
+    server::oms::Order const &order,
+    server::oms::RefData const &,
+    [[maybe_unused]] std::string_view const &request_id,
+    [[maybe_unused]] std::string_view const &previous_request_id) {
+  if (!ready()) [[unlikely]] {
+    throw server::oms::NotReady{"not ready"sv};
+  }
+  auto &[trace_info, cancel_order] = event;
+  send_order_cancel_request(cancel_order, order);
+  return stream_id_;
+}
+
+uint16_t OrderEntry::operator()(Event<CancelAllOrders> const &event, std::string_view const &request_id) {
+  if (!ready()) [[unlikely]] {
+    throw server::oms::NotReady{"not ready"sv};
+  }
+  auto &[trace_info, cancel_all_orders] = event;
+  auto send_ack = [&]() {
+    auto cancel_all_orders_ack = CancelAllOrdersAck{
+        .stream_id = stream_id_,
+        .account = account_.get_name(),
+        .order_id = cancel_all_orders.order_id,
+        .exchange = cancel_all_orders.exchange,
+        .symbol = cancel_all_orders.symbol,
+        .side = cancel_all_orders.side,
+        .origin = Origin::GATEWAY,
+        .request_status = RequestStatus::FORWARDED,
+        .error = {},
+        .text = {},
+        .request_id = request_id,
+        .external_account = {},
+        .number_of_affected_orders = {},
+        .round_trip_latency = {},
+        .user = {},
+        .strategy_id = cancel_all_orders.strategy_id,
+    };
+    create_trace_and_dispatch(shared_, trace_info, cancel_all_orders_ack);
+  };
+  send_order_mass_action_request(cancel_all_orders);
+  send_ack();
+  return stream_id_;
+}
+
+// io::net::ConnectionManager::Handler
+
+void OrderEntry::operator()(io::net::ConnectionManager::Connected const &) {
+  send_negotiate();
+  TraceInfo trace_info;  // XXX FIXME TODO
+  create_trace_and_dispatch_2(trace_info, ConnectionStatus::LOGIN_SENT);
+}
+
+void OrderEntry::operator()(io::net::ConnectionManager::Disconnected const &) {
+  outbound_ = {};
+  inbound_ = {};
+  download_.reset();
+  next_heartbeat_ = {};
+  TraceInfo trace_info;  // XXX FIXME TODO
+  create_trace_and_dispatch_2(trace_info, ConnectionStatus::DISCONNECTED);
+  ++counter_.disconnect;
+}
+
+void OrderEntry::operator()(io::net::ConnectionManager::Read const &) {
+  auto buffer = (*connection_manager_).buffer();
+  size_t total_bytes = 0;
+  while (!std::empty(buffer)) {
+    auto bytes = parse(buffer);
+    if (bytes == 0) {  // note! we didn't receive the full message
+      log::error("!!! MESSAGE WAS NOT RECEIVED IN FULL !!!"sv);
+      break;
+    }
+    assert(bytes <= std::size(buffer));
+    total_bytes += bytes;
+    buffer = buffer.subspan(bytes);
+  }
+  (*connection_manager_).drain(total_bytes);
+}
+
+void OrderEntry::operator()(io::net::ConnectionManager::Write const &) {
+}
+
+// core::Download
+
+int32_t OrderEntry::download(Trace<State> const &event) {
+  auto &[trace_info, state] = event;
+  switch (state) {
+    using enum State;
+    case UNDEFINED:
+      assert(false);
+      break;
+    case ORDERS:
+      if (!party_details_list_req_id_) {
+        send_party_details_definition_request();
+      }
+      send_order_mass_status_request();
+      return 1;
+    case DONE:
+      create_trace_and_dispatch_2(trace_info, ConnectionStatus::READY);
+      return {};
+  }
+  assert(false);
+  return {};
+}
+
+// protocol::ilink::Parser::Handler
+
 // session
 
 void OrderEntry::operator()(Trace<::cme::sbe::ilink::NegotiationResponse501> const &event) {
@@ -686,8 +775,8 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::EstablishmentAck504> const 
     using value_type = std::remove_cvref_t<decltype(event)>::value_type;
     auto &[trace_info, value] = event;
     log::info("DEBUG establishment_ack={}"sv, const_cast<value_type &>(value));
-    (*this)(ConnectionStatus::DOWNLOADING);
-    download_.begin();
+    create_trace_and_dispatch_2(trace_info, ConnectionStatus::DOWNLOADING);
+    download_.begin(trace_info);
   });
 }
 
@@ -1013,7 +1102,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportStatus532> c
       log::info(R"(No working orders (text="{}"))"sv, value.getTextAsStringView());
     }
     if (value.lastRptRequested() == ::cme::sbe::ilink::BooleanNULL::True) {
-      download_.check_relaxed(State::ORDERS);
+      download_.check_relaxed(trace_info, State::ORDERS);
     }
   });
 }
@@ -1100,8 +1189,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::OrderMassActionReport562> c
           .user = {},
           .strategy_id = {},
       };
-      Trace event_2{event, cancel_all_orders_ack};
-      shared_(event_2);
+      create_trace_and_dispatch(shared_, trace_info, cancel_all_orders_ack);
     };
     switch (value.massActionResponse()) {
       using enum ::cme::sbe::ilink::MassActionResponse::Value;
@@ -1244,38 +1332,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::SecurityDefinitionResponse5
   });
 }
 
-void OrderEntry::operator()(io::net::ConnectionManager::Connected const &) {
-  send_negotiate();
-  (*this)(ConnectionStatus::LOGIN_SENT);
-}
-
-void OrderEntry::operator()(io::net::ConnectionManager::Disconnected const &) {
-  outbound_ = {};
-  inbound_ = {};
-  download_.reset();
-  next_heartbeat_ = {};
-  (*this)(ConnectionStatus::DISCONNECTED);
-  ++counter_.disconnect;
-}
-
-void OrderEntry::operator()(io::net::ConnectionManager::Read const &) {
-  auto buffer = (*connection_manager_).buffer();
-  size_t total_bytes = 0;
-  while (!std::empty(buffer)) {
-    auto bytes = parse(buffer);
-    if (bytes == 0) {  // note! we didn't receive the full message
-      log::error("!!! MESSAGE WAS NOT RECEIVED IN FULL !!!"sv);
-      break;
-    }
-    assert(bytes <= std::size(buffer));
-    total_bytes += bytes;
-    buffer = buffer.subspan(bytes);
-  }
-  (*connection_manager_).drain(total_bytes);
-}
-
-void OrderEntry::operator()(io::net::ConnectionManager::Write const &) {
-}
+// helpers
 
 size_t OrderEntry::parse(std::span<std::byte const> const &buffer) {
   size_t result = 0;
@@ -1284,48 +1341,6 @@ size_t OrderEntry::parse(std::span<std::byte const> const &buffer) {
     result = protocol::ilink::Parser::dispatch(*this, buffer, trace_info);
   });
   return result;
-}
-
-void OrderEntry::operator()(ConnectionStatus connection_status, std::string_view const &reason) {
-  connection_status_ = connection_status;
-  TraceInfo trace_info;
-  auto stream_status = StreamStatus{
-      .stream_id = stream_id_,
-      .account = account_.get_name(),
-      .supports = SUPPORTS,
-      .transport = Transport::TCP,
-      .protocol = Protocol::FIX,
-      .encoding = {Encoding::SBE},
-      .priority = Priority::PRIMARY,
-      .connection_status = connection_status_,
-      .reason = reason,
-      .interface = (*connection_factory_).get_interface(),
-      .authority = (*connection_factory_).get_current_authority(),
-      .path = (*connection_factory_).get_current_path(),
-      .proxy = {},
-  };
-  log::info("stream_status={}"sv, stream_status);
-  create_trace_and_dispatch(handler_, trace_info, stream_status);
-}
-
-uint32_t OrderEntry::download(State state) {
-  switch (state) {
-    using enum State;
-    case UNDEFINED:
-      assert(false);
-      break;
-    case ORDERS:
-      if (!party_details_list_req_id_) {
-        send_party_details_definition_request();
-      }
-      send_order_mass_status_request();
-      return 1;
-    case DONE:
-      (*this)(ConnectionStatus::READY);
-      return {};
-  }
-  assert(false);
-  return {};
 }
 
 //
