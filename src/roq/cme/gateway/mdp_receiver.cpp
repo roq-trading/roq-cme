@@ -60,8 +60,8 @@ MDPReceiver::MDPReceiver(
       shared_{shared} {
 }
 
-void MDPReceiver::operator()(io::net::udp::Receiver::Read const &) {
-  TraceInfo trace_info;
+void MDPReceiver::operator()(Trace<io::net::udp::Receiver::Read> const &event) {
+  auto &[trace_info, read] = event;
   while (true) {
     auto bytes = (*receiver_).recv(shared_.buffer);
     log::info<5>("Received {} byte(s) (channel_id={})"sv, bytes, channel_id_);
@@ -74,7 +74,8 @@ void MDPReceiver::operator()(io::net::udp::Receiver::Read const &) {
   }
 }
 
-void MDPReceiver::operator()(io::net::udp::Receiver::Error const &error) {
+void MDPReceiver::operator()(Trace<io::net::udp::Receiver::Error> const &event) {
+  auto &[trace_info, error] = event;
   log::fatal("Error: what={}"sv, error.what);
 }
 

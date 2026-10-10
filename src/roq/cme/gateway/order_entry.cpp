@@ -688,27 +688,28 @@ uint16_t OrderEntry::operator()(Event<CancelAllOrders> const &event, std::string
 
 // io::net::ConnectionManager::Handler
 
-void OrderEntry::operator()(io::net::ConnectionManager::Connected const &) {
+void OrderEntry::operator()(Trace<io::net::ConnectionManager::Connected> const &event) {
+  auto &[trace_info, connected] = event;
   send_negotiate();
-  TraceInfo trace_info;  // XXX FIXME TODO
   create_trace_and_dispatch_2(trace_info, ConnectionStatus::LOGIN_SENT);
 }
 
-void OrderEntry::operator()(io::net::ConnectionManager::Disconnected const &) {
+void OrderEntry::operator()(Trace<io::net::ConnectionManager::Disconnected> const &event) {
+  auto &[trace_info, disconnected] = event;
   outbound_ = {};
   inbound_ = {};
   download_.reset();
   next_heartbeat_ = {};
-  TraceInfo trace_info;  // XXX FIXME TODO
   create_trace_and_dispatch_2(trace_info, ConnectionStatus::DISCONNECTED);
   ++counter_.disconnect;
 }
 
-void OrderEntry::operator()(io::net::ConnectionManager::Read const &) {
+void OrderEntry::operator()(Trace<io::net::ConnectionManager::Read> const &event) {
+  auto &[trace_info, read] = event;
   auto buffer = (*connection_manager_).buffer();
   size_t total_bytes = 0;
   while (!std::empty(buffer)) {
-    auto bytes = parse(buffer);
+    auto bytes = parse(trace_info, buffer);
     if (bytes == 0) {  // note! we didn't receive the full message
       log::error("!!! MESSAGE WAS NOT RECEIVED IN FULL !!!"sv);
       break;
@@ -720,7 +721,7 @@ void OrderEntry::operator()(io::net::ConnectionManager::Read const &) {
   (*connection_manager_).drain(total_bytes);
 }
 
-void OrderEntry::operator()(io::net::ConnectionManager::Write const &) {
+void OrderEntry::operator()(Trace<io::net::ConnectionManager::Write> const &) {
 }
 
 // core::Download
@@ -1334,12 +1335,9 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::SecurityDefinitionResponse5
 
 // helpers
 
-size_t OrderEntry::parse(std::span<std::byte const> const &buffer) {
+size_t OrderEntry::parse(TraceInfo const &trace_info, std::span<std::byte const> const &buffer) {
   size_t result = 0;
-  profile_.parse([&]() {
-    TraceInfo trace_info;
-    result = protocol::ilink::Parser::dispatch(*this, buffer, trace_info);
-  });
+  profile_.parse([&]() { result = protocol::ilink::Parser::dispatch(*this, buffer, trace_info); });
   return result;
 }
 

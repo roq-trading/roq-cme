@@ -77,10 +77,10 @@ struct OrderEntry final : public Base<OrderEntry>,
  protected:
   // io::net::ConnectionManager::Handler
 
-  void operator()(io::net::ConnectionManager::Connected const &) override;
-  void operator()(io::net::ConnectionManager::Disconnected const &) override;
-  void operator()(io::net::ConnectionManager::Read const &) override;
-  void operator()(io::net::ConnectionManager::Write const &) override;
+  void operator()(Trace<io::net::ConnectionManager::Connected> const &) override;
+  void operator()(Trace<io::net::ConnectionManager::Disconnected> const &) override;
+  void operator()(Trace<io::net::ConnectionManager::Read> const &) override;
+  void operator()(Trace<io::net::ConnectionManager::Write> const &) override;
 
   enum class State {
     UNDEFINED = 0,
@@ -126,7 +126,7 @@ struct OrderEntry final : public Base<OrderEntry>,
 
   // helpers
 
-  size_t parse(std::span<std::byte const> const &);
+  size_t parse(TraceInfo const &, std::span<std::byte const> const &);
 
   uint32_t peek_next_seq_num();
   uint32_t fetch_next_seq_num();

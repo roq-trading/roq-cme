@@ -62,7 +62,8 @@ void Controller::operator()(io::sys::Signal::Event const &event) {
   (*context_).stop();
 }
 
-void Controller::operator()(io::net::udp::Receiver::Read const &read) {
+void Controller::operator()(Trace<io::net::udp::Receiver::Read> const &event) {
+  auto &[trace_info, read] = event;
   auto &receiver = read.receiver;
   for (;;) {
     auto bytes = receiver.recv(buffer_);
@@ -103,7 +104,8 @@ void Controller::operator()(io::net::udp::Receiver::Read const &read) {
   }
 }
 
-void Controller::operator()(io::net::udp::Receiver::Error const &error) {
+void Controller::operator()(Trace<io::net::udp::Receiver::Error> const &event) {
+  auto &[trace_info, error] = event;
   log::warn("Error: what={}"sv, error.what);
 }
 

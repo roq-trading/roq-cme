@@ -27,8 +27,8 @@ struct MDPReceiver final : public io::net::udp::Receiver::Handler {
  protected:
   // io::net::udp::Receiver::Handler
 
-  void operator()(io::net::udp::Receiver::Read const &) override;
-  void operator()(io::net::udp::Receiver::Error const &) override;
+  void operator()(Trace<io::net::udp::Receiver::Read> const &) override;
+  void operator()(Trace<io::net::udp::Receiver::Error> const &) override;
 
  private:
   market_data::Manager &manager_;

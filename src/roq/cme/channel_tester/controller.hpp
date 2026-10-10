@@ -26,8 +26,8 @@ struct Controller final : public io::sys::Signal::Handler, public io::net::udp::
  protected:
   void operator()(io::sys::Signal::Event const &) override;
 
-  void operator()(io::net::udp::Receiver::Read const &) override;
-  void operator()(io::net::udp::Receiver::Error const &) override;
+  void operator()(Trace<io::net::udp::Receiver::Read> const &) override;
+  void operator()(Trace<io::net::udp::Receiver::Error> const &) override;
 
  private:
   Settings const &settings_;
