@@ -282,14 +282,15 @@ Incremental::Incremental(
       channel_{channel} {
 }
 
-void Incremental::operator()(Event<Start> const &) {
+void Incremental::operator()(Trace<Start> const &) {
 }
 
-void Incremental::operator()(Event<Stop> const &) {
+void Incremental::operator()(Trace<Stop> const &) {
 }
 
-void Incremental::operator()(Event<Timer> const &event) {
-  if (last_update_time_.count() && (last_update_time_ + shared_.options.multicast_timeout) < event.value.now) {
+void Incremental::operator()(Trace<Timer> const &event) {
+  auto &[trace_info, timer] = event;
+  if (last_update_time_.count() && (last_update_time_ + shared_.options.multicast_timeout) < timer.now) {
     log::warn("*** DETECTED TIMEOUT ***"sv);
     last_update_time_ = {};
   }

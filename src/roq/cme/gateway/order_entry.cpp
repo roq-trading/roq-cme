@@ -542,15 +542,15 @@ OrderEntry::OrderEntry(
 
 // server::Stream
 
-void OrderEntry::operator()(Event<Start> const &) {
+void OrderEntry::operator()(Trace<Start> const &) {
   (*connection_manager_).start();
 }
 
-void OrderEntry::operator()(Event<Stop> const &) {
+void OrderEntry::operator()(Trace<Stop> const &) {
   (*connection_manager_).stop();
 }
 
-void OrderEntry::operator()(Event<Timer> const &event) {
+void OrderEntry::operator()(Trace<Timer> const &event) {
   auto &[trace_info, timer] = event;
   if (!(*connection_manager_).refresh(timer.now)) {
     return;

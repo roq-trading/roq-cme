@@ -112,14 +112,15 @@ MBPMarketRecovery::MBPMarketRecovery(
     : priority{priority}, stream_id{stream_id}, name{config.get_name(channel_id, CONNECTION_TYPE, priority)}, shared_{shared}, channel_{channel} {
 }
 
-void MBPMarketRecovery::operator()(Event<Start> const &) {
+void MBPMarketRecovery::operator()(Trace<Start> const &) {
 }
 
-void MBPMarketRecovery::operator()(Event<Stop> const &) {
+void MBPMarketRecovery::operator()(Trace<Stop> const &) {
 }
 
-void MBPMarketRecovery::operator()(Event<Timer> const &event) {
-  if (last_update_time_.count() && (last_update_time_ + shared_.options.multicast_timeout) < event.value.now) {
+void MBPMarketRecovery::operator()(Trace<Timer> const &event) {
+  auto &[trace_info, timer] = event;
+  if (last_update_time_.count() && (last_update_time_ + shared_.options.multicast_timeout) < timer.now) {
     log::warn("*** DETECTED TIMEOUT ***"sv);
     last_update_time_ = {};
   }

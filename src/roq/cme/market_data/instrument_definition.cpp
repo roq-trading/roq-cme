@@ -59,14 +59,15 @@ InstrumentDefinition::InstrumentDefinition(Shared &shared, uint16_t stream_id, p
     : priority{priority}, stream_id{stream_id}, name{config.get_name(channel_id, CONNECTION_TYPE, priority)}, shared_{shared} {
 }
 
-void InstrumentDefinition::operator()(Event<Start> const &) {
+void InstrumentDefinition::operator()(Trace<Start> const &) {
 }
 
-void InstrumentDefinition::operator()(Event<Stop> const &) {
+void InstrumentDefinition::operator()(Trace<Stop> const &) {
 }
 
-void InstrumentDefinition::operator()(Event<Timer> const &event) {
-  if (last_update_time_.count() && (last_update_time_ + shared_.options.multicast_timeout) < event.value.now) {
+void InstrumentDefinition::operator()(Trace<Timer> const &event) {
+  auto &[trace_info, timer] = event;
+  if (last_update_time_.count() && (last_update_time_ + shared_.options.multicast_timeout) < timer.now) {
     log::warn("*** DETECTED TIMEOUT ***"sv);
     last_update_time_ = {};
   }

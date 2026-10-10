@@ -90,20 +90,34 @@ std::string_view const Manager::get_name(uint16_t channel_id, protocol::mdp::Con
   log::fatal("Unexpected: channel_id={}, connection_type={}, priority={}"sv, channel_id, connection_type, priority);
 }
 
-void Manager::operator()(Event<Start> const &event) {
+void Manager::operator()(Trace<Start> const &event) {
   dispatch(event);
   shared_.read_secdef(secdef_config_file_, options_.pcap_first_timestamp);  // note!
 }
 
-void Manager::operator()(Event<Stop> const &event) {
+void Manager::operator()(Trace<Stop> const &event) {
   dispatch(event);
 }
 
-void Manager::operator()(Event<Timer> const &event) {
+void Manager::operator()(Trace<Timer> const &event) {
   dispatch(event);
 }
 
 void Manager::operator()(metrics::Writer &) const {
+}
+
+template <typename T>
+void Manager::dispatch(Trace<T> const &event) {
+  for (auto &[channel_id, item] : channels_) {
+    item.instrument_definition_1(event);
+    item.instrument_definition_2(event);
+    item.mbp_market_recovery_1(event);
+    item.mbp_market_recovery_2(event);
+    item.mbofd_market_recovery_1(event);
+    item.mbofd_market_recovery_2(event);
+    item.incremental_1(event);
+    item.incremental_2(event);
+  }
 }
 
 template <typename T>

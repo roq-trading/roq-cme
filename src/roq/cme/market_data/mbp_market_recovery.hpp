@@ -17,9 +17,9 @@ namespace market_data {
 struct MBPMarketRecovery final : public protocol::mdp::Parser::Handler {
   MBPMarketRecovery(Shared &, Channel &, uint16_t stream_id, protocol::mdp::Config const &, uint16_t channel_id, Priority);
 
-  void operator()(Event<Start> const &);
-  void operator()(Event<Stop> const &);
-  void operator()(Event<Timer> const &);
+  void operator()(Trace<Start> const &);
+  void operator()(Trace<Stop> const &);
+  void operator()(Trace<Timer> const &);
 
   void dispatch(std::span<std::byte const> const &payload, TraceInfo const &);
 

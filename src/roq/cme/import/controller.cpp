@@ -137,18 +137,16 @@ bool Controller::operator()(
   TraceInfo trace_info{timestamp, timestamp, timestamp};
   if (!initialized_) {
     initialized_ = true;
-    auto message_info = create_message_info(trace_info);
     Start start;
-    Event event{message_info, start};
+    Trace event{trace_info, start};
     market_data_(event);
   }
   while (last_timer_update_ < timestamp) {
     if (last_timer_update_.count()) {
       last_timer_update_ += TIMER_FREQUENCY;
       TraceInfo trace_info_2{last_timer_update_, last_timer_update_, last_timer_update_};
-      auto message_info = create_message_info(trace_info_2);
       Timer timer;
-      Event event{message_info, timer};
+      Trace event{trace_info_2, timer};
       market_data_(event);
     } else {
       last_timer_update_ = timestamp;

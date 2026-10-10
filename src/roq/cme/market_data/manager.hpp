@@ -38,15 +38,18 @@ struct Manager final {
 
   std::string_view const get_name(uint16_t channel_id, protocol::mdp::ConnectionType, Priority) const;
 
-  void operator()(Event<Start> const &);
-  void operator()(Event<Stop> const &);
-  void operator()(Event<Timer> const &);
+  void operator()(Trace<Start> const &);
+  void operator()(Trace<Stop> const &);
+  void operator()(Trace<Timer> const &);
 
   void operator()(metrics::Writer &) const;
 
   void dispatch(uint16_t channel_id, protocol::mdp::ConnectionType, Priority, std::span<std::byte const> const &payload, TraceInfo const &);
 
  protected:
+  template <typename T>
+  void dispatch(Trace<T> const &);
+
   template <typename T>
   void dispatch(Event<T> const &);
 
