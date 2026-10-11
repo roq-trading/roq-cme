@@ -207,10 +207,10 @@ void Controller::operator()(Trace<ReferenceData> const &event, [[maybe_unused]] 
   if (settings_.cache_all_reference_data || !reference_data.discard) {
     append(event);
   }
-  auto &exchange = event.value.exchange;
-  auto &symbol = event.value.symbol;
-  get_market_by_price(exchange, symbol)(event.value);
-  get_market_by_order(exchange, symbol)(event.value);
+  auto &exchange = reference_data.exchange;
+  auto &symbol = reference_data.symbol;
+  get_market_by_price(exchange, symbol)(reference_data);
+  get_market_by_order(exchange, symbol)(reference_data);
 }
 
 void Controller::operator()(Trace<MarketStatus> const &event, [[maybe_unused]] bool is_last) {
@@ -236,10 +236,11 @@ void Controller::operator()(Trace<MarketByPriceUpdate> const &event, [[maybe_unu
 // static bool test = false;
 
 void Controller::operator()(Trace<MarketByOrderUpdate> const &event, [[maybe_unused]] bool is_last) {
+  auto &[trace_info, market_by_order_update] = event;
   log::info<5>("event={}"sv, event);
   append(event);
   if (settings_.test.mbp_mbo) {
-    DEBUG_compare(event.value.exchange, event.value.symbol, event.value.exchange_time_utc);
+    DEBUG_compare(market_by_order_update.exchange, market_by_order_update.symbol, market_by_order_update.exchange_time_utc);
   }
 }
 
