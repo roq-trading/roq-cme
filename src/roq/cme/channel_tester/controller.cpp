@@ -57,8 +57,9 @@ void Controller::dispatch() {
   (*context_).dispatch();
 }
 
-void Controller::operator()(io::sys::Signal::Event const &event) {
-  log::warn("*** SIGNAL: {} ***"sv, event.type);
+void Controller::operator()(Trace<io::sys::Signal::Event> const &event) {
+  auto &[trace_info, signal] = event;
+  log::warn("*** SIGNAL: {} ***"sv, signal.type);
   (*context_).stop();
 }
 

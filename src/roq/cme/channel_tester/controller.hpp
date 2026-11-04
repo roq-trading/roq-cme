@@ -24,7 +24,7 @@ struct Controller final : public io::sys::Signal::Handler, public io::net::udp::
   void dispatch();
 
  protected:
-  void operator()(io::sys::Signal::Event const &) override;
+  void operator()(Trace<io::sys::Signal::Event> const &) override;
 
   void operator()(Trace<io::net::udp::Receiver::Read> const &) override;
   void operator()(Trace<io::net::udp::Receiver::Error> const &) override;

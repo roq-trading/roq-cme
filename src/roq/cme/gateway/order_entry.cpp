@@ -552,13 +552,13 @@ void OrderEntry::operator()(Trace<Stop> const &) {
 
 void OrderEntry::operator()(Trace<Timer> const &event) {
   auto &[trace_info, timer] = event;
-  if (!(*connection_manager_).refresh(timer.now)) {
-    return;
+  if ((*connection_manager_).refresh(trace_info)) {
+    if (ready()) {
+      if (trace_info.origin_create_time < next_heartbeat_) {
+        send_sequence();  // note! send() updates next_heartbeat
+      }
+    }
   }
-  if (!ready() || timer.now < next_heartbeat_) {
-    return;
-  }
-  send_sequence();  // note! send() updates next_heartbeat
 }
 
 void OrderEntry::operator()(metrics::Writer &writer) const {
