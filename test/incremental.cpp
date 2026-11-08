@@ -97,7 +97,7 @@ TEST_CASE("batched", "[incremental]") {
           CHECK(std::isnan(map(value.highLimitPrice()).template get<double>()));
           CHECK(std::isnan(map(value.lowLimitPrice()).template get<double>()));
           CHECK(map(value.maxPriceVariation()).template get<double>() == 0.5_a);
-          value.sbeRewind();  // wtf!
+          value.sbeRewind();  // note!
           auto no_md_entries_rows = 0;
           value.noMDEntries().forEach([&no_md_entries_rows](auto &item) {
             switch (++no_md_entries_rows) {
@@ -159,7 +159,7 @@ TEST_CASE("batched", "[incremental]") {
           CHECK(std::isnan(map(value.highLimitPrice()).template get<double>()));
           CHECK(std::isnan(map(value.lowLimitPrice()).template get<double>()));
           CHECK(map(value.maxPriceVariation()).template get<double>() == 0.5_a);
-          value.sbeRewind();  // wtf!
+          value.sbeRewind();  // note!
           auto no_md_entries_rows = 0;
           value.noMDEntries().forEach([&no_md_entries_rows](auto &item) {
             switch (++no_md_entries_rows) {
@@ -277,7 +277,7 @@ TEST_CASE("simple", "[incremental]") {
         case 1: {
           CHECK(value.transactTime() == 1675674780109099981);
           // CHECK(value.matchEventIndicator() ==
-          value.sbeRewind();  // wtf!
+          value.sbeRewind();  // note!
           auto no_md_entries_rows = 0;
           value.noMDEntries().forEach([&no_md_entries_rows](auto &item) {
             switch (++no_md_entries_rows) {
@@ -416,7 +416,7 @@ TEST_CASE("complex", "[incremental]") {
         case 1: {
           CHECK(value.transactTime() == 1675674780109099981);
           // CHECK(value.matchEventIndicator() ==
-          value.sbeRewind();  // wtf!
+          value.sbeRewind();  // note!
           auto no_md_entries_rows = 0;
           value.noMDEntries().forEach([&no_md_entries_rows](auto &item) {
             switch (++no_md_entries_rows) {
@@ -440,7 +440,7 @@ TEST_CASE("complex", "[incremental]") {
       switch (++count_46) {
         case 1: {
           CHECK(value.transactTime() == 1675674780109099981);
-          value.sbeRewind();  // wtf!
+          value.sbeRewind();  // note!
           auto no_md_entries_rows = 0;
           value.noMDEntries().forEach([&no_md_entries_rows](auto &item) {
             switch (++no_md_entries_rows) {
@@ -475,7 +475,7 @@ TEST_CASE("complex", "[incremental]") {
         }
         case 2: {
           CHECK(value.transactTime() == 1675674780109099981);
-          value.sbeRewind();  // wtf!
+          value.sbeRewind();  // note!
           auto no_md_entries_rows = 0;
           value.noMDEntries().forEach([&no_md_entries_rows](auto &item) {
             switch (++no_md_entries_rows) {
@@ -512,7 +512,7 @@ TEST_CASE("complex", "[incremental]") {
         }
         case 3: {
           CHECK(value.transactTime() == 1675674780109113403);
-          value.sbeRewind();  // wtf!
+          value.sbeRewind();  // note!
           auto no_md_entries_rows = 0;
           value.noMDEntries().forEach([&no_md_entries_rows](auto &item) {
             switch (++no_md_entries_rows) {
@@ -543,7 +543,7 @@ TEST_CASE("complex", "[incremental]") {
       switch (++count_47) {
         case 1: {
           CHECK(value.transactTime() == 1675674780109113403);
-          value.sbeRewind();  // wtf!
+          value.sbeRewind();  // note!
           auto no_md_entries_rows = 0;
           value.noMDEntries().forEach([&no_md_entries_rows](auto &item) {
             switch (++no_md_entries_rows) {
@@ -578,7 +578,7 @@ TEST_CASE("complex", "[incremental]") {
       switch (++count_48) {
         case 1: {
           CHECK(value.transactTime() == 1675674780109113403);
-          value.sbeRewind();  // wtf!
+          value.sbeRewind();  // note!
           auto no_md_entries_rows = 0;
           value.noMDEntries().forEach([&no_md_entries_rows](auto &item) {
             switch (++no_md_entries_rows) {
@@ -683,7 +683,7 @@ TEST_CASE("46_with_orders", "[incremental]") {
         case 1: {
           CHECK(value.transactTime() == 1675760836604722057);
           // XXX matchEventIndicator
-          value.sbeRewind();  // wtf!
+          value.sbeRewind();  // note!
           auto no_md_entries_rows = 0;
           value.noMDEntries().forEach([&no_md_entries_rows](auto &item) {
             switch (++no_md_entries_rows) {
@@ -719,7 +719,7 @@ TEST_CASE("46_with_orders", "[incremental]") {
         case 2: {
           CHECK(value.transactTime() == 1675760836604722057);
           // XXX matchEventIndicator
-          value.sbeRewind();  // wtf!
+          value.sbeRewind();  // note!
           auto no_md_entries_rows = 0;
           value.noMDEntries().forEach([&no_md_entries_rows]([[maybe_unused]] auto &item) { ++no_md_entries_rows; });
           CHECK(no_md_entries_rows == 0);

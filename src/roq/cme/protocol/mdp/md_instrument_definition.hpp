@@ -48,7 +48,7 @@ template <>
 inline size_t compute_length(::cme::sbe::mdp::MDInstrumentDefinitionFuture54 &value) {
   // NoEvents
   auto no_events_length = value.noEvents().count();
-  value.sbeRewind();  // wtf!
+  value.sbeRewind();  // note!
   value.noEvents().forEach([](auto &e) { e.skip(); });
   // NoMDFeedTypes
   auto no_md_feed_types_length = value.noMDFeedTypes().count();
@@ -66,7 +66,7 @@ template <>
 inline size_t compute_length(::cme::sbe::mdp::MDInstrumentDefinitionOption55 &value) {
   // NoEvents
   auto no_events_length = value.noEvents().count();
-  value.sbeRewind();  // wtf!
+  value.sbeRewind();  // note!
   value.noEvents().forEach([](auto &e) { e.skip(); });
   // NoMDFeedTypes
   auto no_md_feed_types_length = value.noMDFeedTypes().count();
@@ -91,7 +91,7 @@ template <>
 inline size_t compute_length(::cme::sbe::mdp::MDInstrumentDefinitionSpread56 &value) {
   // NoEvents
   auto no_events_length = value.noEvents().count();
-  value.sbeRewind();  // wtf!
+  value.sbeRewind();  // note!
   value.noEvents().forEach([](auto &e) { e.skip(); });
   // NoMDFeedTypes
   auto no_md_feed_types_length = value.noMDFeedTypes().count();
@@ -112,7 +112,7 @@ template <>
 inline size_t compute_length(::cme::sbe::mdp::MDInstrumentDefinitionFixedIncome57 &value) {
   // NoEvents
   auto no_events_length = value.noEvents().count();
-  value.sbeRewind();  // wtf!
+  value.sbeRewind();  // note!
   value.noEvents().forEach([](auto &e) { e.skip(); });
   // NoMDFeedTypes
   auto no_md_feed_types_length = value.noMDFeedTypes().count();
@@ -130,7 +130,7 @@ template <>
 inline size_t compute_length(::cme::sbe::mdp::MDInstrumentDefinitionRepo58 &value) {
   // NoEvents
   auto no_events_length = value.noEvents().count();
-  value.sbeRewind();  // wtf!
+  value.sbeRewind();  // note!
   value.noEvents().forEach([](auto &e) { e.skip(); });
   // NoMDFeedTypes
   auto no_md_feed_types_length = value.noMDFeedTypes().count();
@@ -155,7 +155,7 @@ template <>
 inline size_t compute_length(::cme::sbe::mdp::MDInstrumentDefinitionFX63 &value) {
   // NoEvents
   auto no_events_length = value.noEvents().count();
-  value.sbeRewind();  // wtf!
+  value.sbeRewind();  // note!
   value.noEvents().forEach([](auto &e) { e.skip(); });
   // NoMDFeedTypes
   auto no_md_feed_types_length = value.noMDFeedTypes().count();

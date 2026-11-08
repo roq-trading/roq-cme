@@ -3,6 +3,7 @@ set(TARGET_NAME ${PROJECT_NAME}-protocol-ilink)
 set(SOURCES
     config_reader.cpp
     establish.cpp
+    map.cpp
     mass_quote.cpp
     negotiate.cpp
     new_order_single.cpp

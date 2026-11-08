@@ -120,7 +120,7 @@ TEST_CASE("simple", "[mbofd_recovery]") {
           CHECK(std::isnan(map(value.highLimitPrice()).template get<double>()));
           CHECK(map(value.lowLimitPrice()).template get<double>() == 0.00390625_a);
           CHECK(map(value.maxPriceVariation()).template get<double>() == 0.125_a);
-          value.sbeRewind();  // wtf!
+          value.sbeRewind();  // note!
           auto no_md_entries_rows = 0;
           value.noMDEntries().forEach([&no_md_entries_rows](auto &item) {
             switch (++no_md_entries_rows) {
@@ -182,7 +182,7 @@ TEST_CASE("simple", "[mbofd_recovery]") {
           CHECK(std::isnan(map(value.highLimitPrice()).template get<double>()));
           CHECK(map(value.lowLimitPrice()).template get<double>() == 0.03125_a);
           CHECK(map(value.maxPriceVariation()).template get<double>() == 0.5_a);
-          value.sbeRewind();  // wtf!
+          value.sbeRewind();  // note!
           auto no_md_entries_rows = 0;
           value.noMDEntries().forEach([&no_md_entries_rows](auto &item) {
             switch (++no_md_entries_rows) {
@@ -245,7 +245,7 @@ TEST_CASE("simple", "[mbofd_recovery]") {
           CHECK(value.noChunks() == 242);
           CHECK(value.currentChunk() == 242);
           CHECK(value.transactTime() == 1675666401560808535);
-          value.sbeRewind();  // wtf!
+          value.sbeRewind();  // note!
           auto no_md_entries_rows = 0;
           value.noMDEntries().forEach([&no_md_entries_rows](auto &item) {
             switch (++no_md_entries_rows) {
@@ -290,7 +290,7 @@ TEST_CASE("simple", "[mbofd_recovery]") {
           CHECK(value.noChunks() == 1);
           CHECK(value.currentChunk() == 1);
           CHECK(value.transactTime() == 1675665709058730423);
-          value.sbeRewind();  // wtf!
+          value.sbeRewind();  // note!
           auto no_md_entries_rows = 0;
           value.noMDEntries().forEach([&no_md_entries_rows](auto &item) {
             switch (++no_md_entries_rows) {

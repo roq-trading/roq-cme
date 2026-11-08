@@ -48,7 +48,7 @@ struct NewOrderSingle final {
   ::cme::sbe::ilink::OrderTypeReq::Value ord_type = {};
   ::cme::sbe::ilink::TimeInForce::Value time_in_force = {};
   ::cme::sbe::ilink::ManualOrdIndReq::Value manual_order_indicator = {};
-  uint8_t exec_inst = {};  // ::cme::sbe::ilink::ExecInst
+  ::cme::sbe::ilink::ExecInst exec_inst = {};
   ::cme::sbe::ilink::ExecMode::Value execution_mode = {};
   bool liquidity_flag = {};
   bool managed_order = {};

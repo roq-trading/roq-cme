@@ -82,9 +82,12 @@ struct OrderEntry final : public Base<OrderEntry>,
   void operator()(Trace<io::net::ConnectionManager::Read> const &) override;
   void operator()(Trace<io::net::ConnectionManager::Write> const &) override;
 
+  // core::Download
+
   enum class State {
     UNDEFINED = 0,
-    ORDERS,
+    PARTY_DETAILS_DEFINITION_REQUEST,
+    ORDER_MASS_STATUS_REQUEST,
     DONE,
   };
 

@@ -102,7 +102,7 @@ TEST_CASE("md_incremental_refresh_book_46_test_1", "[mdp3]") {
       switch (++counter) {
         case 1: {
           CHECK(value.transactTime() == 1659367870041633809);
-          value.sbeRewind();  // wtf!
+          value.sbeRewind();  // note!
           auto no_md_entries_rows = 0;
           value.noMDEntries().forEach([&no_md_entries_rows](auto &item) {
             ++no_md_entries_rows;
@@ -131,7 +131,7 @@ TEST_CASE("md_incremental_refresh_book_46_test_1", "[mdp3]") {
         }
         case 2: {
           CHECK(value.transactTime() == 1659367870041633809);
-          value.sbeRewind();  // wtf!
+          value.sbeRewind();  // note!
           value.noMDEntries().forEach([](auto &) { FAIL(); });
           value.noOrderIDEntries().forEach([](auto &) { FAIL(); });
           break;

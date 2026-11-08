@@ -12,6 +12,8 @@
 #include "roq/server/oms/exceptions.hpp"
 #include "roq/server/oms/order.hpp"
 
+#include "roq/cme/protocol/ilink/map.hpp"
+
 #include "roq/cme/protocol/ilink/session.hpp"
 
 #include "roq/cme/protocol/ilink/establish.hpp"
@@ -98,10 +100,10 @@ auto get_quantity(double value) -> uint32_t {
 }
 
 // order_request_id
-// note! we include request type because ExectuionReportReject523 doesn't have that information
+// note! we include request type because ExecutionReportReject523 doesn't have that information
 
-constexpr auto encode_order_request_id(RequestType type, uint8_t user_id, uint64_t order_id) -> uint64_t {
-  return (static_cast<uint64_t>(static_cast<uint8_t>(type)) << 56) | (static_cast<uint64_t>(user_id) << 48) | order_id;
+constexpr auto encode_order_request_id(RequestType request_type, uint8_t user_id, uint64_t order_id) -> uint64_t {
+  return (static_cast<uint64_t>(static_cast<uint8_t>(request_type)) << 56) | (static_cast<uint64_t>(user_id) << 48) | order_id;
 }
 
 constexpr auto decode_order_request_id(uint64_t value) -> std::tuple<RequestType, uint8_t, uint64_t> {
@@ -116,202 +118,6 @@ static_assert(encode_order_request_id(RequestType::CANCEL_ORDER, SOURCE_SELF, OR
 
 static_assert(decode_order_request_id(0x0101000000000001) == std::tuple<RequestType, uint8_t, uint64_t>{RequestType::CREATE_ORDER, 1, 1});
 static_assert(decode_order_request_id(0x03ffffffffffffff) == std::tuple<RequestType, uint8_t, uint64_t>{RequestType::CANCEL_ORDER, SOURCE_SELF, ORDER_ID_MAX});
-
-// side
-
-auto map(Side side) -> ::cme::sbe::ilink::SideReq::Value {
-  switch (side) {
-    using enum Side;
-    case UNDEFINED:
-      break;
-    case BUY:
-      return ::cme::sbe::ilink::SideReq::Buy;
-    case SELL:
-      return ::cme::sbe::ilink::SideReq::Sell;
-  }
-  return ::cme::sbe::ilink::SideReq::NULL_VALUE;
-}
-
-auto map(::cme::sbe::ilink::SideReq::Value value) -> Side {
-  switch (value) {
-    using enum ::cme::sbe::ilink::SideReq::Value;
-    case Buy:
-      return Side::BUY;
-    case Sell:
-      return Side::SELL;
-    case Undisclosed:
-    case NULL_VALUE:
-      break;
-  }
-  return {};
-}
-
-// order type
-
-// XXX need some more complexity here
-auto map(OrderType order_type) -> ::cme::sbe::ilink::OrderTypeReq::Value {
-  switch (order_type) {
-    using enum OrderType;
-    case UNDEFINED:
-      break;
-    case MARKET:
-      return ::cme::sbe::ilink::OrderTypeReq::MarketwithProtection;  // ???
-    case LIMIT:
-      return ::cme::sbe::ilink::OrderTypeReq::Limit;
-  }
-  return ::cme::sbe::ilink::OrderTypeReq::NULL_VALUE;
-}
-
-auto map(::cme::sbe::ilink::OrderType::Value value) -> OrderType {
-  switch (value) {
-    using enum ::cme::sbe::ilink::OrderType::Value;
-    case MarketWithProtection:
-      return OrderType::MARKET;
-    case Limit:
-      return OrderType::LIMIT;
-    case StopLimit:
-      return OrderType::LIMIT;
-    case MarketWithLeftoverAsLimit:
-      return OrderType::MARKET;  // ???
-    case NULL_VALUE:
-      break;
-  }
-  return {};
-}
-
-// time in force
-
-auto map(TimeInForce time_in_force) -> ::cme::sbe::ilink::TimeInForce::Value {
-  switch (time_in_force) {
-    using enum TimeInForce;
-    case UNDEFINED:
-      break;
-    case GFD:
-      return ::cme::sbe::ilink::TimeInForce::Day;
-    case GTC:
-      return ::cme::sbe::ilink::TimeInForce::GoodTillCancel;
-    case OPG:
-      break;
-    case IOC:
-      return ::cme::sbe::ilink::TimeInForce::FillAndKill;
-    case FOK:
-      return ::cme::sbe::ilink::TimeInForce::FillOrKill;  // btec and ebs
-    case GTX:
-      break;
-    case GTD:
-      return ::cme::sbe::ilink::TimeInForce::GoodTillDate;
-    case AT_THE_CLOSE:
-      break;
-    case GOOD_THROUGH_CROSSING:
-      break;
-    case AT_CROSSING:
-      break;
-    case GOOD_FOR_TIME:
-      break;
-    case GFA:
-      break;
-    case GFM:
-      break;
-  }
-  return ::cme::sbe::ilink::TimeInForce::NULL_VALUE;
-}
-
-auto map(::cme::sbe::ilink::TimeInForce::Value value) -> TimeInForce {
-  switch (value) {
-    using enum ::cme::sbe::ilink::TimeInForce::Value;
-    case Day:
-      return TimeInForce::GFD;
-    case GoodTillCancel:
-      return TimeInForce::GTC;
-    case FillAndKill:
-      return TimeInForce::IOC;
-    case FillOrKill:
-      return TimeInForce::FOK;
-    case GoodTillDate:
-      return TimeInForce::GTD;
-    case GoodForSession:
-      break;  // ???
-    case NULL_VALUE:
-      break;
-  }
-  return {};
-}
-
-// execution instructions
-
-auto map(Mask<ExecutionInstruction> execution_instructions) -> uint8_t {
-  uint8_t result = {};
-  auto error = false;
-  using value_type = std::remove_cvref_t<decltype(execution_instructions)>;
-  using iterator = value_type::iterator;
-  using sentinel = value_type::sentinel;
-  std::ranges::for_each(iterator{execution_instructions}, sentinel{}, [&](auto item) {
-    switch (item) {
-      using enum ExecutionInstruction;
-      case UNDEFINED:
-        break;
-      case PARTICIPATE_DO_NOT_INITIATE:
-        error = true;
-        break;
-      case CANCEL_IF_NOT_BEST:
-        // result = ::cme::sbe::ilink::ExecInst::oB(result, true); // note! not for futures and options!
-        error = true;
-        break;
-      case DO_NOT_INCREASE:
-      case DO_NOT_REDUCE:
-        error = true;
-        break;
-    }
-  });
-  if (error) [[unlikely]] {
-    throw server::oms::Rejected{Origin::GATEWAY, Error::INVALID_EXECUTION_INSTRUCTION, "unsupported"sv};
-  }
-  return result;
-}
-
-// order status
-
-auto map(::cme::sbe::ilink::OrderStatus::Value value) -> OrderStatus {
-  switch (value) {
-    using enum ::cme::sbe::ilink::OrderStatus::Value;
-    case New:
-      return OrderStatus::WORKING;  // ???
-    case PartiallyFilled:
-      return OrderStatus::WORKING;
-    case Filled:
-      return OrderStatus::COMPLETED;
-    case Cancelled:
-      return OrderStatus::CANCELED;
-    case Replaced:
-      return OrderStatus::WORKING;
-    case PendingCancel:
-      return OrderStatus::WORKING;
-    case Rejected:
-      return OrderStatus::REJECTED;
-    case Expired:
-      return OrderStatus::EXPIRED;
-    case PendingReplace:
-      return OrderStatus::ACCEPTED;
-    case Undefined:
-      break;  // ???
-    case NULL_VALUE:
-      break;
-  }
-  return {};
-}
-
-auto map(::cme::sbe::ilink::OrdStatusTrd::Value value) -> OrderStatus {
-  switch (value) {
-    using enum ::cme::sbe::ilink::OrdStatusTrd::Value;
-    case PartiallyFilled:
-      return OrderStatus::WORKING;
-    case Filled:
-      return OrderStatus::COMPLETED;
-    case NULL_VALUE:
-      break;
-  }
-  return {};
-}
 
 // get
 
@@ -432,22 +238,7 @@ auto get_aggressor_indicator(T &value) -> Liquidity {
 template <typename T>
 auto order_update_from_execution_report(T &value, auto &security, auto &external_order_id) -> server::oms::OrderUpdate {
   using value_type = std::remove_cvref_t<T>;
-  auto account = value.getSenderIDAsStringView();
-  auto side = map(value.side());
-  auto order_type = map(value.ordType());
-  auto time_in_force = map(value.timeInForce());
-  auto create_time_utc = get_transact_time(value);
-  auto update_time_utc = create_time_utc;
-  auto client_order_id = value.getClOrdIDAsStringView();
-  auto order_status = get_ord_status(value);
-  auto quantity = static_cast<double>(value.orderQty());
-  auto price = protocol::ilink::get_double(const_cast<value_type &>(value).price());
-  auto stop_price = protocol::ilink::get_double(const_cast<value_type &>(value).stopPx());
-  auto remaining_quantity = get_leaves_qty(value);
-  auto traded_quantity = get_cum_qty(value);
-  auto last_traded_quantity = get_last_qty(value);
-  auto last_traded_price = get_last_px(value);
-  auto liquidity = get_aggressor_indicator(value);
+  auto transact_time = get_transact_time(value);
   auto update_type = [&]() {
     if constexpr (std::is_same_v<value_type, ::cme::sbe::ilink::ExecutionReportStatus532>) {
       return UpdateType::SNAPSHOT;
@@ -456,35 +247,35 @@ auto order_update_from_execution_report(T &value, auto &security, auto &external
     }
   }();
   return {
-      .account = account,
+      .account = value.getSenderIDAsStringView(),
       .exchange = security.exchange,
       .symbol = security.symbol,
-      .side = side,
+      .side = map(value.side()),
       .position_effect = {},
       .margin_mode = {},
       .max_show_quantity = NaN,
-      .order_type = order_type,
-      .time_in_force = time_in_force,
+      .order_type = map(value.ordType()),
+      .time_in_force = map(value.timeInForce()),
       .execution_instructions = {},
       .execution_destination = {},
-      .create_time_utc = create_time_utc,
-      .update_time_utc = update_time_utc,
+      .create_time_utc = transact_time,
+      .update_time_utc = transact_time,
       .external_account = {},
       .external_order_id = external_order_id,
-      .client_order_id = client_order_id,
-      .order_status = order_status,
+      .client_order_id = value.getClOrdIDAsStringView(),
+      .order_status = get_ord_status(value),
       .error = {},
       .text = {},
-      .quantity = quantity,
-      .price = price,
-      .stop_price = stop_price,
+      .quantity = static_cast<double>(value.orderQty()),
+      .price = protocol::ilink::get_double(const_cast<value_type &>(value).price()),
+      .stop_price = protocol::ilink::get_double(const_cast<value_type &>(value).stopPx()),
       .leverage = NaN,
-      .remaining_quantity = remaining_quantity,
-      .traded_quantity = traded_quantity,
+      .remaining_quantity = get_leaves_qty(value),
+      .traded_quantity = get_cum_qty(value),
       .average_traded_price = NaN,
-      .last_traded_quantity = last_traded_quantity,
-      .last_traded_price = last_traded_price,
-      .last_liquidity = liquidity,
+      .last_traded_quantity = get_last_qty(value),
+      .last_traded_price = get_last_px(value),
+      .last_liquidity = get_aggressor_indicator(value),
       .routing_id = {},
       .max_request_version = {},
       .max_response_version = {},
@@ -690,8 +481,8 @@ uint16_t OrderEntry::operator()(Event<CancelAllOrders> const &event, std::string
 
 void OrderEntry::operator()(Trace<io::net::ConnectionManager::Connected> const &event) {
   auto &[trace_info, connected] = event;
-  send_negotiate();
   create_trace_and_dispatch_2(trace_info, ConnectionStatus::LOGIN_SENT);
+  send_negotiate();
 }
 
 void OrderEntry::operator()(Trace<io::net::ConnectionManager::Disconnected> const &event) {
@@ -728,15 +519,21 @@ void OrderEntry::operator()(Trace<io::net::ConnectionManager::Write> const &) {
 
 int32_t OrderEntry::download(Trace<State> const &event) {
   auto &[trace_info, state] = event;
+  auto publish_downloading = [&]() { create_trace_and_dispatch_2(trace_info, ConnectionStatus::DOWNLOADING, magic_enum::enum_name(state)); };
   switch (state) {
     using enum State;
     case UNDEFINED:
       assert(false);
       break;
-    case ORDERS:
-      if (!party_details_list_req_id_) {
+    case PARTY_DETAILS_DEFINITION_REQUEST:
+      if (party_details_list_req_id_) {
+        return 0;
+      } else {
+        publish_downloading();
         send_party_details_definition_request();
       }
+      return 1;
+    case ORDER_MASS_STATUS_REQUEST:
       send_order_mass_status_request();
       return 1;
     case DONE:
@@ -776,7 +573,6 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::EstablishmentAck504> const 
     using value_type = std::remove_cvref_t<decltype(event)>::value_type;
     auto &[trace_info, value] = event;
     log::info("DEBUG establishment_ack={}"sv, const_cast<value_type &>(value));
-    create_trace_and_dispatch_2(trace_info, ConnectionStatus::DOWNLOADING);
     download_.begin(trace_info);
   });
 }
@@ -837,11 +633,12 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::NotApplied513> const &event
 // business
 
 void OrderEntry::operator()(Trace<::cme::sbe::ilink::PartyDetailsDefinitionRequestAck519> const &event) {
+  auto const STATE = State::PARTY_DETAILS_DEFINITION_REQUEST;
   profile_.party_details_definition_request_ack([&]() {
-    using value_type = std::remove_cvref_t<decltype(event)>::value_type;
     using value_type = std::remove_cvref_t<decltype(event)>::value_type;
     auto &[trace_info, value] = event;
     log::info("DEBUG party_defails_definition_request_ack={}"sv, const_cast<value_type &>(value));
+    download_.check_relaxed(trace_info, STATE);
   });
 }
 
@@ -883,29 +680,30 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportNew522> cons
     auto order_id = get_order_id(value);
     if (order_id) {
       auto external_order_id = fmt::format("{}"sv, order_id);
+      auto helper = [&](auto &security) {
+        auto [type, user_id, order_id] = decode_order_request_id(value.orderRequestID());
+        log::info("DEBUG type={}, user_id={}, order_id={}"sv, type, user_id, order_id);
+        if (type != RequestType::CREATE_ORDER) [[unlikely]] {
+          log::warn("Unexpected: type={}"sv, type);
+        }
+        auto order_update = order_update_from_execution_report(value, security, external_order_id);
+        auto response = server::oms::Response{
+            .request_type = type,
+            .origin = Origin::EXCHANGE,
+            .request_status = RequestStatus::ACCEPTED,
+            .error = {},
+            .text = {},
+            .version = {},
+            .request_id = {},
+            .external_order_id = external_order_id,
+            .client_order_id = order_update.client_order_id,
+            .quantity = order_update.quantity,
+            .price = order_update.price,
+        };
+        create_trace_and_dispatch(shared_.dispatcher, trace_info, response, stream_id_, user_id, order_id);
+      };
       auto security_id = get_security_id(value);
-      if (shared_.security_definitions.get_security(security_id, [&](auto &security) {
-            auto [type, user_id, order_id] = decode_order_request_id(value.orderRequestID());
-            log::info("DEBUG type={}, user_id={}, order_id={}"sv, type, user_id, order_id);
-            if (type != RequestType::CREATE_ORDER) [[unlikely]] {
-              log::warn("Unexpected: type={}"sv, type);
-            }
-            auto order_update = order_update_from_execution_report(value, security, external_order_id);
-            auto response = server::oms::Response{
-                .request_type = type,
-                .origin = Origin::EXCHANGE,
-                .request_status = RequestStatus::ACCEPTED,
-                .error = {},
-                .text = {},
-                .version = {},
-                .request_id = {},
-                .external_order_id = external_order_id,
-                .client_order_id = order_update.client_order_id,
-                .quantity = order_update.quantity,
-                .price = order_update.price,
-            };
-            create_trace_and_dispatch(shared_.dispatcher, trace_info, response, stream_id_, user_id, order_id);
-          })) {
+      if (shared_.security_definitions.get_security(security_id, helper)) {
       } else {
         log::warn("Unexpected: security_id={}"sv, security_id);
       }
@@ -952,72 +750,72 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportTradeOutrigh
     auto order_id = get_order_id(value);
     if (order_id) {
       auto external_order_id = fmt::format("{}"sv, order_id);
+      auto helper = [&](auto &security) {
+        auto order_update = order_update_from_execution_report(value, security, external_order_id);
+        auto user_id = SOURCE_NONE;
+        auto order_id = ORDER_ID_NONE;
+        auto strategy_id = STRATEGY_ID_NONE;
+        auto callback = [&](auto &order) {
+          user_id = order.user_id;
+          order_id = order.order_id;
+          strategy_id = order.strategy_id;
+        };
+        create_trace_and_dispatch(shared_.dispatcher, trace_info, order_update, stream_id_, callback);
+        // XXX TODO make generic
+        auto &fills = shared_.get_fills();
+        std::vector<std::string> external_trade_ids;  // alloc
+        auto exec_id = value.getExecIDAsStringView();
+        auto liquidity = get_aggressor_indicator(value);
+        const_cast<value_type &>(value).sbeRewind();  // note!
+        const_cast<value_type &>(value).noFills().forEach([&](auto &item) {
+          auto fill_exec_id = item.getFillExecIDAsStringView();
+          auto tmp = fmt::format("{}{}"sv, exec_id, fill_exec_id);  // alloc
+          external_trade_ids.emplace_back(std::move(tmp));
+          auto &external_trade_id = external_trade_ids.back();
+          auto price = protocol::ilink::get_double(item.fillPx());
+          auto fill = Fill{
+              .external_trade_id = external_trade_id,
+              .quantity = static_cast<double>(item.fillQty()),
+              .price = price,
+              .liquidity = liquidity,
+              .commission_amount = NaN,
+              .commission_currency = {},
+              .base_amount = NaN,
+              .quote_amount = NaN,
+              .profit_loss_amount = NaN,
+          };
+          fills.emplace_back(std::move(fill));
+        });
+        if (!std::empty(fills)) {
+          auto create_time_utc = get_transact_time(value);
+          auto update_time_utc = create_time_utc;
+          auto trade_update = TradeUpdate{
+              .stream_id = stream_id_,
+              .account = account_.get_name(),
+              .order_id = order_id,
+              .exchange = security.exchange,
+              .symbol = security.symbol,
+              .side = map(value.side()),
+              .position_effect = {},
+              .margin_mode = {},
+              .quantity_type = {},
+              .create_time_utc = create_time_utc,
+              .update_time_utc = update_time_utc,
+              .external_account = {},
+              .external_order_id = external_order_id,
+              .client_order_id = order_update.client_order_id,
+              .fills = fills,
+              .routing_id = {},
+              .update_type = UpdateType::INCREMENTAL,
+              .sending_time_utc = {},
+              .user = {},
+              .strategy_id = strategy_id,
+          };
+          create_trace_and_dispatch(shared_, trace_info, trade_update, true, user_id);
+        }
+      };
       auto security_id = get_security_id(value);
-      if (shared_.security_definitions.get_security(security_id, [&](auto &security) {
-            auto order_update = order_update_from_execution_report(value, security, external_order_id);
-            auto user_id = SOURCE_NONE;
-            auto order_id = ORDER_ID_NONE;
-            auto strategy_id = STRATEGY_ID_NONE;
-            auto callback = [&](auto &order) {
-              user_id = order.user_id;
-              order_id = order.order_id;
-              strategy_id = order.strategy_id;
-            };
-            create_trace_and_dispatch(shared_.dispatcher, trace_info, order_update, stream_id_, callback);
-            // XXX TODO make generic
-            auto &fills = shared_.get_fills();
-            std::vector<std::string> external_trade_ids;  // alloc
-            auto exec_id = value.getExecIDAsStringView();
-            auto liquidity = get_aggressor_indicator(value);
-            const_cast<value_type &>(value).sbeRewind();  // note!
-            const_cast<value_type &>(value).noFills().forEach([&](auto &item) {
-              auto fill_exec_id = item.getFillExecIDAsStringView();
-              auto tmp = fmt::format("{}{}"sv, exec_id, fill_exec_id);  // alloc
-              external_trade_ids.emplace_back(std::move(tmp));
-              auto &external_trade_id = external_trade_ids.back();
-              auto price = protocol::ilink::get_double(item.fillPx());
-              auto fill = Fill{
-                  .external_trade_id = external_trade_id,
-                  .quantity = static_cast<double>(item.fillQty()),
-                  .price = price,
-                  .liquidity = liquidity,
-                  .commission_amount = NaN,
-                  .commission_currency = {},
-                  .base_amount = NaN,
-                  .quote_amount = NaN,
-                  .profit_loss_amount = NaN,
-              };
-              fills.emplace_back(std::move(fill));
-            });
-            if (!std::empty(fills)) {
-              auto side = map(value.side());
-              auto create_time_utc = get_transact_time(value);
-              auto update_time_utc = create_time_utc;
-              auto trade_update = TradeUpdate{
-                  .stream_id = stream_id_,
-                  .account = account_.get_name(),
-                  .order_id = order_id,
-                  .exchange = security.exchange,
-                  .symbol = security.symbol,
-                  .side = side,
-                  .position_effect = {},
-                  .margin_mode = {},
-                  .quantity_type = {},
-                  .create_time_utc = create_time_utc,
-                  .update_time_utc = update_time_utc,
-                  .external_account = {},
-                  .external_order_id = external_order_id,
-                  .client_order_id = order_update.client_order_id,
-                  .fills = fills,
-                  .routing_id = {},
-                  .update_type = UpdateType::INCREMENTAL,
-                  .sending_time_utc = {},
-                  .user = {},
-                  .strategy_id = strategy_id,
-              };
-              create_trace_and_dispatch(shared_, trace_info, trade_update, true, user_id);
-            }
-          })) {
+      if (shared_.security_definitions.get_security(security_id, helper)) {
       } else {
         log::warn("Unexpected: security_id={}"sv, security_id);
       }
@@ -1051,29 +849,30 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportModify531> c
     auto order_id = get_order_id(value);
     if (order_id) {
       auto external_order_id = fmt::format("{}"sv, order_id);
+      auto helper = [&](auto &security) {
+        auto [type, user_id, order_id] = decode_order_request_id(value.orderRequestID());
+        log::info("DEBUG type={}, user_id={}, order_id={}"sv, type, user_id, order_id);
+        if (type != RequestType::MODIFY_ORDER) [[unlikely]] {
+          log::warn("Unexpected: type={}"sv, type);
+        }
+        auto order_update = order_update_from_execution_report(value, security, external_order_id);
+        auto response = server::oms::Response{
+            .request_type = type,
+            .origin = Origin::EXCHANGE,
+            .request_status = RequestStatus::ACCEPTED,
+            .error = {},
+            .text = {},
+            .version = {},
+            .request_id = {},
+            .external_order_id = order_update.external_order_id,
+            .client_order_id = order_update.client_order_id,
+            .quantity = order_update.quantity,
+            .price = order_update.price,
+        };
+        create_trace_and_dispatch(shared_.dispatcher, trace_info, response, order_update, stream_id_);
+      };
       auto security_id = get_security_id(value);
-      if (shared_.security_definitions.get_security(security_id, [&](auto &security) {
-            auto [type, user_id, order_id] = decode_order_request_id(value.orderRequestID());
-            log::info("DEBUG type={}, user_id={}, order_id={}"sv, type, user_id, order_id);
-            if (type != RequestType::MODIFY_ORDER) [[unlikely]] {
-              log::warn("Unexpected: type={}"sv, type);
-            }
-            auto order_update = order_update_from_execution_report(value, security, external_order_id);
-            auto response = server::oms::Response{
-                .request_type = type,
-                .origin = Origin::EXCHANGE,
-                .request_status = RequestStatus::ACCEPTED,
-                .error = {},
-                .text = {},
-                .version = {},
-                .request_id = {},
-                .external_order_id = order_update.external_order_id,
-                .client_order_id = order_update.client_order_id,
-                .quantity = order_update.quantity,
-                .price = order_update.price,
-            };
-            create_trace_and_dispatch(shared_.dispatcher, trace_info, response, order_update, stream_id_);
-          })) {
+      if (shared_.security_definitions.get_security(security_id, helper)) {
       } else {
         log::warn("Unexpected: security_id={}"sv, security_id);
       }
@@ -1084,6 +883,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportModify531> c
 }
 
 void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportStatus532> const &event) {
+  auto const STATE = State::ORDER_MASS_STATUS_REQUEST;
   profile_.execution_report_status([&]() {
     using value_type = std::remove_cvref_t<decltype(event)>::value_type;
     auto &[trace_info, value] = event;
@@ -1091,11 +891,12 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportStatus532> c
     auto order_id = get_order_id(value);
     if (order_id) {
       auto external_order_id = fmt::format("{}"sv, order_id);
+      auto helper = [&](auto &security) {
+        auto order_update = order_update_from_execution_report(value, security, external_order_id);
+        create_trace_and_dispatch(shared_.dispatcher, trace_info, order_update, stream_id_);
+      };
       auto security_id = get_security_id(value);
-      if (shared_.security_definitions.get_security(security_id, [&](auto &security) {
-            auto order_update = order_update_from_execution_report(value, security, external_order_id);
-            create_trace_and_dispatch(shared_.dispatcher, trace_info, order_update, stream_id_);
-          })) {
+      if (shared_.security_definitions.get_security(security_id, helper)) {
       } else {
         log::warn("Unexpected: security_id={}"sv, security_id);
       }
@@ -1103,7 +904,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportStatus532> c
       log::info(R"(No working orders (text="{}"))"sv, value.getTextAsStringView());
     }
     if (value.lastRptRequested() == ::cme::sbe::ilink::BooleanNULL::True) {
-      download_.check_relaxed(trace_info, State::ORDERS);
+      download_.check_relaxed(trace_info, STATE);
     }
   });
 }
@@ -1116,29 +917,30 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportCancel534> c
     auto order_id = get_order_id(value);
     if (order_id) {
       auto external_order_id = fmt::format("{}"sv, order_id);
+      auto helper = [&](auto &security) {
+        auto [type, user_id, order_id] = decode_order_request_id(value.orderRequestID());
+        log::info("DEBUG type={}, user_id={}, order_id={}"sv, type, user_id, order_id);
+        if (type != RequestType::CANCEL_ORDER) [[unlikely]] {
+          log::warn("Unexpected: type={}"sv, type);
+        }
+        auto order_update = order_update_from_execution_report(value, security, external_order_id);
+        auto response = server::oms::Response{
+            .request_type = RequestType::CANCEL_ORDER,
+            .origin = Origin::EXCHANGE,
+            .request_status = RequestStatus::ACCEPTED,
+            .error = {},
+            .text = {},
+            .version = {},
+            .request_id = {},
+            .external_order_id = order_update.external_order_id,
+            .client_order_id = order_update.client_order_id,
+            .quantity = order_update.quantity,
+            .price = order_update.price,
+        };
+        create_trace_and_dispatch(shared_.dispatcher, trace_info, response, order_update, stream_id_);
+      };
       auto security_id = get_security_id(value);
-      if (shared_.security_definitions.get_security(security_id, [&](auto &security) {
-            auto [type, user_id, order_id] = decode_order_request_id(value.orderRequestID());
-            log::info("DEBUG type={}, user_id={}, order_id={}"sv, type, user_id, order_id);
-            if (type != RequestType::CANCEL_ORDER) [[unlikely]] {
-              log::warn("Unexpected: type={}"sv, type);
-            }
-            auto order_update = order_update_from_execution_report(value, security, external_order_id);
-            auto response = server::oms::Response{
-                .request_type = RequestType::CANCEL_ORDER,
-                .origin = Origin::EXCHANGE,
-                .request_status = RequestStatus::ACCEPTED,
-                .error = {},
-                .text = {},
-                .version = {},
-                .request_id = {},
-                .external_order_id = order_update.external_order_id,
-                .client_order_id = order_update.client_order_id,
-                .quantity = order_update.quantity,
-                .price = order_update.price,
-            };
-            create_trace_and_dispatch(shared_.dispatcher, trace_info, response, order_update, stream_id_);
-          })) {
+      if (shared_.security_definitions.get_security(security_id, helper)) {
       } else {
         log::warn("Unexpected: security_id={}"sv, security_id);
       }
@@ -1563,56 +1365,54 @@ void OrderEntry::send_order_mass_status_request() {
 // note!
 //   undoc: execution mode must be x0 (NULL results in reject reason 109)
 void OrderEntry::send_new_order_single(CreateOrder const &create_order, server::oms::Order const &order, std::string_view const &request_id) {
-  if (shared_.security_definitions.find_security_id(market_segment_id_, order.symbol, [&](auto security_id) {
-        log::info("DEBUG found security_id={}"sv, security_id);
-        if (shared_.security_definitions.get_security(security_id, [&](auto &security) {
-              if (create_order.exchange != security.exchange) [[unlikely]] {
-                throw server::oms::Rejected{Origin::GATEWAY, Error::INVALID_EXCHANGE, "Expected: {}"sv, security.exchange};
-              }
-              auto order_qty = get_quantity(create_order.quantity);
-              auto side = map(create_order.side);
-              auto order_request_id = encode_order_request_id(RequestType::CREATE_ORDER, order.user_id, order.order_id);
-              auto ord_type = map(create_order.order_type);
-              auto time_in_force = map(create_order.time_in_force);
-              auto exec_inst = map(create_order.execution_instructions);
-              if (!party_details_list_req_id_) {
-                send_party_details_definition_request();
-              }
-              auto now = clock::get_realtime();
-              auto new_order_single = protocol::ilink::NewOrderSingle{
-                  .price = create_order.price,
-                  .order_qty = order_qty,
-                  .security_id = security_id,
-                  .side = side,
-                  .seq_num = fetch_next_seq_num(),
-                  .sender_id = account_.get_name(),
-                  .cl_ord_id = request_id,
-                  .party_details_list_req_id = party_details_list_req_id_,
-                  .order_request_id = order_request_id,
-                  .sending_time_epoch = now,
-                  .stop_px = create_order.stop_price,
-                  .location = shared_.settings.ilink.location,
-                  .min_qty = {},
-                  .display_qty = {},
-                  .expire_date = {},
-                  .ord_type = ord_type,
-                  .time_in_force = time_in_force,
-                  .manual_order_indicator = MANUAL_ORDER_INDICATOR,
-                  .exec_inst = exec_inst,
-                  .execution_mode = static_cast<::cme::sbe::ilink::ExecMode::Value>(0),  // note!
-                  .liquidity_flag = {},
-                  .managed_order = {},
-                  .short_sale_type = ::cme::sbe::ilink::ShortSaleType::NULL_VALUE,
-                  .discretion_price = NaN,
-                  .reservation_price = NaN,
-              };
-              log::info("DEBUG new_order_single={}"sv, new_order_single);
-              send(new_order_single);
-            })) {
-        } else {
-          log::fatal("Unexpected: didn't find security for security_id={}"sv, security_id);
-        }
-      })) {
+  auto helper_1 = [&](auto security_id) {
+    log::info("DEBUG found security_id={}"sv, security_id);
+    auto helper_2 = [&](auto &security) {
+      if (create_order.exchange != security.exchange) [[unlikely]] {
+        throw server::oms::Rejected{Origin::GATEWAY, Error::INVALID_EXCHANGE, "Expected: {}"sv, security.exchange};
+      }
+      auto order_qty = get_quantity(create_order.quantity);
+      auto order_request_id = encode_order_request_id(RequestType::CREATE_ORDER, order.user_id, order.order_id);
+      if (!party_details_list_req_id_) {
+        send_party_details_definition_request();
+      }
+      auto now = clock::get_realtime();
+      auto new_order_single = protocol::ilink::NewOrderSingle{
+          .price = create_order.price,
+          .order_qty = order_qty,
+          .security_id = security_id,
+          .side = map(create_order.side),
+          .seq_num = fetch_next_seq_num(),
+          .sender_id = account_.get_name(),
+          .cl_ord_id = request_id,
+          .party_details_list_req_id = party_details_list_req_id_,
+          .order_request_id = order_request_id,
+          .sending_time_epoch = now,
+          .stop_px = create_order.stop_price,
+          .location = shared_.settings.ilink.location,
+          .min_qty = {},
+          .display_qty = {},
+          .expire_date = {},
+          .ord_type = map(create_order.order_type),
+          .time_in_force = map(create_order.time_in_force),
+          .manual_order_indicator = MANUAL_ORDER_INDICATOR,
+          .exec_inst = map(create_order.execution_instructions),
+          .execution_mode = static_cast<::cme::sbe::ilink::ExecMode::Value>(0),  // note!
+          .liquidity_flag = {},
+          .managed_order = {},
+          .short_sale_type = ::cme::sbe::ilink::ShortSaleType::NULL_VALUE,
+          .discretion_price = NaN,
+          .reservation_price = NaN,
+      };
+      log::info("DEBUG new_order_single={}"sv, new_order_single);
+      send(new_order_single);
+    };
+    if (shared_.security_definitions.get_security(security_id, helper_2)) {
+    } else {
+      log::fatal("Unexpected: didn't find security for security_id={}"sv, security_id);
+    }
+  };
+  if (shared_.security_definitions.find_security_id(market_segment_id_, order.symbol, helper_1)) {
   } else {
     throw server::oms::Rejected{
         Origin::GATEWAY, Error::INVALID_SYMBOL, R"(No mapping for market_segment_id={} and symbol="{}")"sv, market_segment_id_, order.symbol};
@@ -1622,50 +1422,48 @@ void OrderEntry::send_new_order_single(CreateOrder const &create_order, server::
 // note!
 //   undoc: execution mode must be x0 (NULL results in reject reason 109)
 void OrderEntry::send_order_cancel_replace_request(ModifyOrder const &modify_order, server::oms::Order const &order) {
+  auto helper = [&](auto security_id) {
+    log::info("DEBUG found security_id={}"sv, security_id);
+    auto order_qty = get_quantity(modify_order.quantity);
+    auto order_request_id = encode_order_request_id(RequestType::MODIFY_ORDER, order.user_id, order.order_id);
+    if (!party_details_list_req_id_) {
+      send_party_details_definition_request();
+    }
+    auto now = clock::get_realtime();
+    auto order_cancel_replace_request = protocol::ilink::OrderCancelReplaceRequest{
+        .price = modify_order.price,
+        .order_qty = order_qty,
+        .security_id = security_id,
+        .side = map(order.side),
+        .seq_num = fetch_next_seq_num(),
+        .sender_id = account_.get_name(),
+        .cl_ord_id = order.client_order_id,
+        .party_details_list_req_id = party_details_list_req_id_,
+        .order_id = {},
+        .stop_px = NaN,
+        .order_request_id = order_request_id,
+        .sending_time_epoch = now,
+        .location = shared_.settings.ilink.location,
+        .min_qty = {},
+        .display_qty = {},
+        .expire_date = {},
+        .ord_type = map(order.order_type),
+        .time_in_force = map(order.time_in_force),
+        .manual_order_indicator = MANUAL_ORDER_INDICATOR,
+        .ofm_override = ::cme::sbe::ilink::OFMOverrideReq::Disabled,
+        .exec_inst = {},                                                       // XXX
+        .execution_mode = static_cast<::cme::sbe::ilink::ExecMode::Value>(0),  // note!
+        .liquidity_flag = {},
+        .managed_order = {},
+        .short_sale_type = ::cme::sbe::ilink::ShortSaleType::NULL_VALUE,
+        .discretion_price = NaN,
+    };
+    log::info("DEBUG order_cancel_replace_request={}"sv, order_cancel_replace_request);
+    send(order_cancel_replace_request);
+  };
   log::info("DEBUG modify_order={}"sv, modify_order);
   log::info("DEBUG order={}"sv, order);
-  if (shared_.security_definitions.find_security_id(market_segment_id_, order.symbol, [&](auto security_id) {
-        log::info("DEBUG found security_id={}"sv, security_id);
-        auto order_qty = get_quantity(modify_order.quantity);
-        auto side = map(order.side);
-        auto order_request_id = encode_order_request_id(RequestType::MODIFY_ORDER, order.user_id, order.order_id);
-        auto ord_type = map(order.order_type);
-        auto time_in_force = map(order.time_in_force);
-        if (!party_details_list_req_id_) {
-          send_party_details_definition_request();
-        }
-        auto now = clock::get_realtime();
-        auto order_cancel_replace_request = protocol::ilink::OrderCancelReplaceRequest{
-            .price = modify_order.price,
-            .order_qty = order_qty,
-            .security_id = security_id,
-            .side = side,
-            .seq_num = fetch_next_seq_num(),
-            .sender_id = account_.get_name(),
-            .cl_ord_id = order.client_order_id,
-            .party_details_list_req_id = party_details_list_req_id_,
-            .order_id = {},
-            .stop_px = NaN,
-            .order_request_id = order_request_id,
-            .sending_time_epoch = now,
-            .location = shared_.settings.ilink.location,
-            .min_qty = {},
-            .display_qty = {},
-            .expire_date = {},
-            .ord_type = ord_type,
-            .time_in_force = time_in_force,
-            .manual_order_indicator = MANUAL_ORDER_INDICATOR,
-            .ofm_override = ::cme::sbe::ilink::OFMOverrideReq::Disabled,
-            .exec_inst = {},                                                       // XXX
-            .execution_mode = static_cast<::cme::sbe::ilink::ExecMode::Value>(0),  // note!
-            .liquidity_flag = {},
-            .managed_order = {},
-            .short_sale_type = ::cme::sbe::ilink::ShortSaleType::NULL_VALUE,
-            .discretion_price = NaN,
-        };
-        log::info("DEBUG order_cancel_replace_request={}"sv, order_cancel_replace_request);
-        send(order_cancel_replace_request);
-      })) {
+  if (shared_.security_definitions.find_security_id(market_segment_id_, order.symbol, helper)) {
   } else {
     throw server::oms::Rejected{
         Origin::GATEWAY, Error::INVALID_SYMBOL, R"(No mapping for market_segment_id={} and symbol="{}")"sv, market_segment_id_, order.symbol};
@@ -1673,34 +1471,34 @@ void OrderEntry::send_order_cancel_replace_request(ModifyOrder const &modify_ord
 }
 
 void OrderEntry::send_order_cancel_request(CancelOrder const &cancel_order, server::oms::Order const &order) {
+  auto helper = [&](auto security_id) {
+    log::info("DEBUG found security_id={}"sv, security_id);
+    auto order_request_id = encode_order_request_id(RequestType::CANCEL_ORDER, order.user_id, order.order_id);
+    if (!party_details_list_req_id_) {
+      send_party_details_definition_request();
+    }
+    auto now = clock::get_realtime();
+    auto order_cancel_request = protocol::ilink::OrderCancelRequest{
+        .order_id = {},
+        .party_details_list_req_id = party_details_list_req_id_,
+        .manual_order_indicator = MANUAL_ORDER_INDICATOR,
+        .seq_num = fetch_next_seq_num(),
+        .sender_id = account_.get_name(),
+        .cl_ord_id = order.client_order_id,
+        .order_request_id = order_request_id,
+        .sending_time_epoch = now,
+        .location = shared_.settings.ilink.location,
+        .security_id = security_id,
+        .side = map(order.side),
+        .liquidity_flag = {},
+        .orig_order_user = {},
+    };
+    log::info("DEBUG order_cancel_request={}"sv, order_cancel_request);
+    send(order_cancel_request);
+  };
   log::info("DEBUG cancel_order={}"sv, cancel_order);
   log::info("DEBUG order={}"sv, order);
-  if (shared_.security_definitions.find_security_id(market_segment_id_, order.symbol, [&](auto security_id) {
-        log::info("DEBUG found security_id={}"sv, security_id);
-        auto order_request_id = encode_order_request_id(RequestType::CANCEL_ORDER, order.user_id, order.order_id);
-        auto side = map(order.side);
-        if (!party_details_list_req_id_) {
-          send_party_details_definition_request();
-        }
-        auto now = clock::get_realtime();
-        auto order_cancel_request = protocol::ilink::OrderCancelRequest{
-            .order_id = {},
-            .party_details_list_req_id = party_details_list_req_id_,
-            .manual_order_indicator = MANUAL_ORDER_INDICATOR,
-            .seq_num = fetch_next_seq_num(),
-            .sender_id = account_.get_name(),
-            .cl_ord_id = order.client_order_id,
-            .order_request_id = order_request_id,
-            .sending_time_epoch = now,
-            .location = shared_.settings.ilink.location,
-            .security_id = security_id,
-            .side = side,
-            .liquidity_flag = {},
-            .orig_order_user = {},
-        };
-        log::info("DEBUG order_cancel_request={}"sv, order_cancel_request);
-        send(order_cancel_request);
-      })) {
+  if (shared_.security_definitions.find_security_id(market_segment_id_, order.symbol, helper)) {
   } else {
     throw server::oms::Rejected{
         Origin::GATEWAY, Error::INVALID_SYMBOL, R"(No mapping for market_segment_id={} and symbol="{}")"sv, market_segment_id_, order.symbol};

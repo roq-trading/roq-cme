@@ -2,12 +2,9 @@
 
 #include <catch2/catch_all.hpp>
 
-#include <fmt/format.h>
+// #include "roq/logging.hpp"
 
-#include <cmath>
-#include <span>
-
-#include "roq/cme/protocol/mdp/parser.hpp"
+#include "mdp_parser_tester.hpp"
 
 using namespace std::literals;
 
@@ -15,6 +12,8 @@ using namespace Catch::literals;
 
 using namespace roq;
 using namespace roq::cme;
+
+using value_type = ::cme::sbe::mdp::MDIncrementalRefreshTradeSummary48;
 
 TEST_CASE("simple", "[md_incremental_refresh_trade_summary]") {
   constexpr auto const message =
@@ -30,48 +29,52 @@ TEST_CASE("simple", "[md_incremental_refresh_trade_summary]") {
       "\x1e\x88\xa6\x07\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00\x46\xb3\x1e\x88\xa6\x07\x00\x00\x01\x00\x00\x00\x00\x00"
       "\x00\x00\x64\xd1\x1e\x88\xa6\x07\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00"sv;
   static_assert(std::size(message) == 124);
-  struct MyHandler final : public protocol::mdp::Parser::Handler {
-    int counter = 0;
-    void operator()(protocol::mdp::Frame const &) override {}
-    void operator()(Trace<::cme::sbe::mdp::ChannelReset4> const &, protocol::mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<::cme::sbe::mdp::AdminHeartbeat12> const &, protocol::mdp::Frame const &) override { FAIL(); }
-    // - security status
-    void operator()(Trace<::cme::sbe::mdp::SecurityStatus30> const &, protocol::mdp::Frame const &) override { FAIL(); }
-    // - instrument definition
-    void operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionFuture54> const &, protocol::mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionOption55> const &, protocol::mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionSpread56> const &, protocol::mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionFixedIncome57> const &, protocol::mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionRepo58> const &, protocol::mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionFX63> const &, protocol::mdp::Frame const &) override { FAIL(); }
-    // - SnapshotFullRefresh
-    void operator()(Trace<::cme::sbe::mdp::SnapshotFullRefresh52> const &, protocol::mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<::cme::sbe::mdp::SnapshotFullRefreshOrderBook53> const &, protocol::mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<::cme::sbe::mdp::SnapshotFullRefreshLongQty69> const &, protocol::mdp::Frame const &) override { FAIL(); }
-    // - MDIncrementalRefresh
-    void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshVolume37> const &, protocol::mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshBook46> const &, protocol::mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshOrderBook47> const &, protocol::mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshTradeSummary48> const &event, protocol::mdp::Frame const &) override {
-      using value_type = std::remove_cvref_t<decltype(event)>::value_type;
-      [[maybe_unused]] auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
-      ++counter;
+  size_t counter = 0;
+  auto helper = [&](value_type const &obj) {
+    auto &value = const_cast<value_type &>(obj);  // note! not const-safe
+    // log::warn("DEBUG {}"sv, value);
+    // value.sbeRewind();
+    switch (++counter) {
+      case 1: {
+        CHECK(value.transactTime() == 1677818783052707369);
+        CHECK(value.matchEventIndicator().lastTradeMsg());
+        //
+        size_t no_md_entries = 0;
+        value.noMDEntries().forEach([&](auto &item) {
+          switch (++no_md_entries) {
+            case 1:
+              CHECK(item.securityID() == 699486);
+              break;
+          }
+        });
+        CHECK(no_md_entries == 1);
+        //
+        size_t no_order_id_entries = 0;
+        value.noOrderIDEntries().forEach([&](auto &item) {
+          switch (++no_order_id_entries) {
+            case 1:
+              CHECK(item.orderID() == 8411829686674);
+              break;
+            case 2:
+              CHECK(item.orderID() == 8411829678918);
+              break;
+            case 3:
+              CHECK(item.orderID() == 8411829686628);
+              break;
+          }
+        });
+        CHECK(no_order_id_entries == 3);
+        break;
+      }
     }
-    void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshDailyStatistics49> const &, protocol::mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshLimitsBanding50> const &, protocol::mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshSessionStatistics51> const &, protocol::mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshBookLongQty64> const &, protocol::mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshTradeSummaryLongQty65> const &, protocol::mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshVolumeLongQty66> const &, protocol::mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshSessionStatisticsLongQty67> const &, protocol::mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<::cme::sbe::mdp::QuoteRequest39> const &, protocol::mdp::Frame const &) override { FAIL(); }
-  } handler;
-  std::span buffer{reinterpret_cast<std::byte const *>(std::data(message)), std::size(message)};
-  TraceInfo trace_info;
-  auto res = protocol::mdp::Parser::dispatch(handler, buffer, trace_info);
-  CHECK(res);
-  CHECK(handler.counter == 1);
+  };
+  MDPParserTester<value_type>::dispatch(helper, message);
+  CHECK(counter == 1);
 }
+
+// {version=9, transact_time=1677818783052707369, match_event_indicator=1, no_md_entries=[{md_entry_px=101.66015625, md_entry_size=2, security_id=699486,
+// rpt_seq=4095207, number_of_orders=3, aggressor_side=Buy, md_update_action=New, md_entry_type=2, md_trade_entry_id=71533942}],
+// no_order_id_entries=[{order_id=8411829686674, last_qty=2}, {order_id=8411829678918, last_qty=1}, {order_id=8411829686628, last_qty=1}]}
 
 TEST_CASE("multiple_fills", "[md_incremental_refresh_trade_summary]") {
   constexpr auto const message =
@@ -88,48 +91,54 @@ TEST_CASE("multiple_fills", "[md_incremental_refresh_trade_summary]") {
       "\x00\x00\x64\xd1\x1e\x88\xa6\x07\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\xee\xad\x1e\x88\xa6\x07\x00\x00\x01\x00"
       "\x00\x00\x00\x00\x00\x00\xb3\xd1\x1e\x88\xa6\x07\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00"sv;
   static_assert(std::size(message) == 156);
-  struct MyHandler final : public protocol::mdp::Parser::Handler {
-    int counter = 0;
-    void operator()(protocol::mdp::Frame const &) override {}
-    void operator()(Trace<::cme::sbe::mdp::ChannelReset4> const &, protocol::mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<::cme::sbe::mdp::AdminHeartbeat12> const &, protocol::mdp::Frame const &) override { FAIL(); }
-    // - security status
-    void operator()(Trace<::cme::sbe::mdp::SecurityStatus30> const &, protocol::mdp::Frame const &) override { FAIL(); }
-    // - instrument definition
-    void operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionFuture54> const &, protocol::mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionOption55> const &, protocol::mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionSpread56> const &, protocol::mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionFixedIncome57> const &, protocol::mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionRepo58> const &, protocol::mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<::cme::sbe::mdp::MDInstrumentDefinitionFX63> const &, protocol::mdp::Frame const &) override { FAIL(); }
-    // - SnapshotFullRefresh
-    void operator()(Trace<::cme::sbe::mdp::SnapshotFullRefresh52> const &, protocol::mdp::Frame const &) override {}
-    void operator()(Trace<::cme::sbe::mdp::SnapshotFullRefreshOrderBook53> const &, protocol::mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<::cme::sbe::mdp::SnapshotFullRefreshLongQty69> const &, protocol::mdp::Frame const &) override { FAIL(); }
-    // - MDIncrementalRefresh
-    void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshVolume37> const &, protocol::mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshBook46> const &, protocol::mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshOrderBook47> const &, protocol::mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshTradeSummary48> const &event, protocol::mdp::Frame const &) override {
-      using value_type = std::remove_cvref_t<decltype(event)>::value_type;
-      [[maybe_unused]] auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
-      ++counter;
+  size_t counter = 0;
+  auto helper = [&](value_type const &obj) {
+    auto &value = const_cast<value_type &>(obj);  // note! not const-safe
+    // log::warn("DEBUG {}"sv, value);
+    // value.sbeRewind();
+    switch (++counter) {
+      case 1: {
+        CHECK(value.transactTime() == 1677818823052569803);
+        CHECK(value.matchEventIndicator().lastTradeMsg());
+        //
+        size_t no_md_entries = 0;
+        value.noMDEntries().forEach([&](auto &item) {
+          switch (++no_md_entries) {
+            case 1:
+              CHECK(item.securityID() == 699486);
+              break;
+          }
+        });
+        CHECK(no_md_entries == 1);
+        //
+        size_t no_order_id_entries = 0;
+        value.noOrderIDEntries().forEach([&](auto &item) {
+          switch (++no_order_id_entries) {
+            case 1:
+              CHECK(item.orderID() == 8411829686737);
+              break;
+            case 2:
+              CHECK(item.orderID() == 8411829679570);
+              break;
+            // ...
+            case 5:
+              CHECK(item.orderID() == 8411829686707);
+              break;
+          }
+        });
+        CHECK(no_order_id_entries == 5);
+        break;
+      }
     }
-    void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshDailyStatistics49> const &, protocol::mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshLimitsBanding50> const &, protocol::mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshSessionStatistics51> const &, protocol::mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshBookLongQty64> const &, protocol::mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshTradeSummaryLongQty65> const &, protocol::mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshVolumeLongQty66> const &, protocol::mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshSessionStatisticsLongQty67> const &, protocol::mdp::Frame const &) override { FAIL(); }
-    void operator()(Trace<::cme::sbe::mdp::QuoteRequest39> const &, protocol::mdp::Frame const &) override { FAIL(); }
-  } handler;
-  std::span buffer{reinterpret_cast<std::byte const *>(std::data(message)), std::size(message)};
-  TraceInfo trace_info;
-  auto res = protocol::mdp::Parser::dispatch(handler, buffer, trace_info);
-  CHECK(res);
-  CHECK(handler.counter == 1);
+  };
+  MDPParserTester<value_type>::dispatch(helper, message);
+  CHECK(counter == 1);
 }
+
+// {version=9, transact_time=1677818823052569803, match_event_indicator=1, no_md_entries=[{md_entry_px=101.66015625, md_entry_size=5, security_id=699486,
+// rpt_seq=4095214, number_of_orders=5, aggressor_side=Buy, md_update_action=New, md_entry_type=2, md_trade_entry_id=71533951}],
+// no_order_id_entries=[{order_id=8411829686737, last_qty=5}, {order_id=8411829679570, last_qty=2}, {order_id=8411829686628, last_qty=1},
+// {order_id=8411829677550, last_qty=1}, {order_id=8411829686707, last_qty=1}]}
 
 // XXX need example with trading through and leaving order
 // XXX need example with multiple securities
@@ -244,7 +253,7 @@ TEST_CASE("span_multiple messages", "[md_incremental_refresh_trade_summary]") {
       using value_type = std::remove_cvref_t<decltype(event)>::value_type;
       auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
       ++counter;
-      fmt::print("{}"sv, value);
+      // fmt::print("{}"sv, value);
     }
     void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshDailyStatistics49> const &, protocol::mdp::Frame const &) override { FAIL(); }
     void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshLimitsBanding50> const &, protocol::mdp::Frame const &) override { FAIL(); }

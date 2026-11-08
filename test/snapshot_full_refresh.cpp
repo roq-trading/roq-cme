@@ -134,7 +134,7 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
           CHECK(std::isnan(map(value.highLimitPrice()).template get<double>()));
           CHECK(std::isnan(map(value.lowLimitPrice()).template get<double>()));
           CHECK(map(value.maxPriceVariation()).template get<double>() == 0.5_a);
-          value.sbeRewind();  // wtf!
+          value.sbeRewind();  // note!
           auto no_md_entries_rows = 0;
           value.noMDEntries().forEach([&no_md_entries_rows](auto &item) {
             switch (++no_md_entries_rows) {
@@ -415,7 +415,7 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
           CHECK(std::isnan(map(value.highLimitPrice()).template get<double>()));
           CHECK(std::isnan(map(value.lowLimitPrice()).template get<double>()));
           CHECK(map(value.maxPriceVariation()).template get<double>() == 0.5_a);
-          value.sbeRewind();  // wtf!
+          value.sbeRewind();  // note!
           auto no_md_entries_rows = 0;
           value.noMDEntries().forEach([&no_md_entries_rows](auto &item) {
             switch (++no_md_entries_rows) {
@@ -486,7 +486,7 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
           CHECK(std::isnan(map(value.highLimitPrice()).template get<double>()));
           CHECK(std::isnan(map(value.lowLimitPrice()).template get<double>()));
           CHECK(map(value.maxPriceVariation()).template get<double>() == 0.25_a);
-          value.sbeRewind();  // wtf!
+          value.sbeRewind();  // note!
           auto no_md_entries_rows = 0;
           value.noMDEntries().forEach([&no_md_entries_rows](auto &item) {
             switch (++no_md_entries_rows) {
@@ -557,7 +557,7 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
           CHECK(std::isnan(map(value.highLimitPrice()).template get<double>()));
           CHECK(std::isnan(map(value.lowLimitPrice()).template get<double>()));
           CHECK(map(value.maxPriceVariation()).template get<double>() == 2500.0_a);
-          value.sbeRewind();  // wtf!
+          value.sbeRewind();  // note!
           auto no_md_entries_rows = 0;
           value.noMDEntries().forEach([&no_md_entries_rows](auto &item) {
             switch (++no_md_entries_rows) {
@@ -588,7 +588,7 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
           CHECK(std::isnan(map(value.highLimitPrice()).template get<double>()));
           CHECK(std::isnan(map(value.lowLimitPrice()).template get<double>()));
           CHECK(map(value.maxPriceVariation()).template get<double>() == 0.25_a);
-          value.sbeRewind();  // wtf!
+          value.sbeRewind();  // note!
           auto no_md_entries_rows = 0;
           value.noMDEntries().forEach([&no_md_entries_rows](auto &item) {
             switch (++no_md_entries_rows) {
@@ -659,7 +659,7 @@ TEST_CASE("simple", "[snapshot_full_refresh]") {
           CHECK(std::isnan(map(value.highLimitPrice()).template get<double>()));
           CHECK(std::isnan(map(value.lowLimitPrice()).template get<double>()));
           CHECK(map(value.maxPriceVariation()).template get<double>() == 0.125_a);
-          value.sbeRewind();  // wtf!
+          value.sbeRewind();  // note!
           auto no_md_entries_rows = 0;
           value.noMDEntries().forEach([&no_md_entries_rows](auto &item) {
             switch (++no_md_entries_rows) {

@@ -34,7 +34,7 @@ template <>
 inline size_t compute_length(::cme::sbe::mdp::MDIncrementalRefreshBook46 &value) {
   // NoMDEntries
   auto no_md_entries_length = value.noMDEntries().count();
-  value.sbeRewind();  // wtf!
+  value.sbeRewind();  // note!
   value.noMDEntries().forEach([](auto &e) { e.skip(); });
   // NoOrderIDEntries
   auto no_order_id_entries_length = value.noOrderIDEntries().count();
