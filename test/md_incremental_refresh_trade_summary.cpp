@@ -251,7 +251,7 @@ TEST_CASE("span_multiple messages", "[md_incremental_refresh_trade_summary]") {
     void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshOrderBook47> const &, protocol::mdp::Frame const &) override { FAIL(); }
     void operator()(Trace<::cme::sbe::mdp::MDIncrementalRefreshTradeSummary48> const &event, protocol::mdp::Frame const &) override {
       using value_type = std::remove_cvref_t<decltype(event)>::value_type;
-      auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
+      [[maybe_unused]]auto &value = const_cast<value_type &>(event.value);  // note! not const-safe
       ++counter;
       // fmt::print("{}"sv, value);
     }
