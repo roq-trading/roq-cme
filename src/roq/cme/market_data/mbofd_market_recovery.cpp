@@ -363,9 +363,10 @@ void MBOFDMarketRecovery::publish_stream_status(TraceInfo const &trace_info, Con
       .connection_status = connection_status_,
       .reason = {},
       .interface = shared_.options.local_interface,
+      .proxy = {},
+      .peer = {},
       .authority = {},
       .path = name,
-      .proxy = {},
   };
   log::info("stream_status={}"sv, stream_status);
   create_trace_and_dispatch(shared_, trace_info, stream_status);
