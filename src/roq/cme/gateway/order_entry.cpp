@@ -495,7 +495,7 @@ uint16_t OrderEntry::operator()(Trace<CancelAllOrders> const &event, std::string
 
 void OrderEntry::operator()(Trace<io::net::ConnectionManager::Connected> const &event) {
   auto &[trace_info, connected] = event;
-  create_trace_and_dispatch_2(trace_info, ConnectionStatus::LOGIN_SENT);
+  create_trace_and_dispatch_2(trace_info, ConnectionStatus::AUTHENTICATING);
   send_negotiate();
 }
 
