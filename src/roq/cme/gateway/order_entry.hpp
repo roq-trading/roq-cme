@@ -44,10 +44,6 @@ struct OrderEntry final : public Base<OrderEntry>,
 
   // server::Stream
 
-  uint16_t stream_id() const override { return stream_id_; }
-
-  bool ready() const override { return connection_status_ == ConnectionStatus::READY; }
-
   void operator()(Trace<Start> const &) override;
   void operator()(Trace<Stop> const &) override;
   void operator()(Trace<Timer> const &) override;
@@ -163,7 +159,6 @@ struct OrderEntry final : public Base<OrderEntry>,
  private:
   Handler &handler_;
   // config
-  uint16_t const stream_id_;
   std::string const name_;
   uint8_t const market_segment_id_;
   uint64_t const party_details_list_req_id_ = {};  // XXX const until we get access to a service GW
@@ -227,7 +222,6 @@ struct OrderEntry final : public Base<OrderEntry>,
   // cache
   Shared &shared_;
   // state
-  ConnectionStatus connection_status_ = {};
   core::Download2<State> download_;
   std::chrono::nanoseconds next_heartbeat_ = {};
   uint64_t uuid_ = {};

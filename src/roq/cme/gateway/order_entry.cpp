@@ -291,7 +291,7 @@ auto order_update_from_execution_report(T &value, auto &security, auto &external
 
 OrderEntry::OrderEntry(
     Handler &handler, io::Context &context, uint16_t stream_id, Account &account, Shared &shared, uint8_t market_segment_id, io::web::URI const &uri)
-    : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_, account.get_name())}, market_segment_id_{market_segment_id},
+    : server::OrderActionStream{stream_id}, handler_{handler}, name_{create_name(stream_id, account.get_name())}, market_segment_id_{market_segment_id},
       connection_factory_{create_connection_factory(shared.settings, context, uri)},
       connection_manager_{create_connection_manager(*this, shared.settings, *connection_factory_)}, decode_buffer_(shared.settings.misc.decode_buffer_size),
       encode_buffer_2_(shared.settings.misc.encode_buffer_size),
@@ -387,25 +387,26 @@ void OrderEntry::operator()(metrics::Writer &writer) const {
 
 void OrderEntry::operator()(Trace<ConnectionStatus> const &event, std::string_view const &reason) {
   auto &[trace_info, connection_status] = event;
-  connection_status_ = connection_status;
-  auto stream_status = StreamStatus{
-      .stream_id = stream_id_,
-      .account = account_.get_name(),
-      .supports = SUPPORTS,
-      .transport = Transport::TCP,
-      .protocol = Protocol::FIX,
-      .encoding = {Encoding::SBE},
-      .priority = Priority::PRIMARY,
-      .connection_status = connection_status_,
-      .reason = reason,
-      .interface = (*connection_factory_).get_interface(),
-      .proxy = {},
-      .peer = {},
-      .authority = (*connection_factory_).get_current_authority(),
-      .path = (*connection_factory_).get_current_path(),
-  };
-  log::info("stream_status={}"sv, stream_status);
-  create_trace_and_dispatch(handler_, trace_info, stream_status);
+  if (update(connection_status, reason)) {
+    auto stream_status = StreamStatus{
+        .stream_id = stream_id(),
+        .account = account_.get_name(),
+        .supports = SUPPORTS,
+        .transport = Transport::TCP,
+        .protocol = Protocol::FIX,
+        .encoding = {Encoding::SBE},
+        .priority = Priority::PRIMARY,
+        .connection_status = connection_status,
+        .reason = reason,
+        .interface = (*connection_factory_).get_interface(),
+        .proxy = {},
+        .peer = {},
+        .authority = (*connection_factory_).get_current_authority(),
+        .path = (*connection_factory_).get_current_path(),
+    };
+    log::info("stream_status={}"sv, stream_status);
+    create_trace_and_dispatch(handler_, trace_info, stream_status);
+  }
 }
 
 // server::OrderActionStream
@@ -429,7 +430,7 @@ uint16_t OrderEntry::operator()(
   }
   auto &[trace_info, create_order] = event;
   send_new_order_single(create_order, order, request_id);
-  return stream_id_;
+  return stream_id();
 }
 
 uint16_t OrderEntry::operator()(
@@ -443,7 +444,7 @@ uint16_t OrderEntry::operator()(
   }
   auto &[trace_info, modify_order] = event;
   send_order_cancel_replace_request(modify_order, order);
-  return stream_id_;
+  return stream_id();
 }
 
 uint16_t OrderEntry::operator()(
@@ -457,7 +458,7 @@ uint16_t OrderEntry::operator()(
   }
   auto &[trace_info, cancel_order] = event;
   send_order_cancel_request(cancel_order, order);
-  return stream_id_;
+  return stream_id();
 }
 
 uint16_t OrderEntry::operator()(Trace<CancelAllOrders> const &event, std::string_view const &request_id) {
@@ -467,7 +468,7 @@ uint16_t OrderEntry::operator()(Trace<CancelAllOrders> const &event, std::string
   auto &[trace_info, cancel_all_orders] = event;
   auto send_ack = [&]() {
     auto cancel_all_orders_ack = CancelAllOrdersAck{
-        .stream_id = stream_id_,
+        .stream_id = stream_id(),
         .account = account_.get_name(),
         .order_id = cancel_all_orders.order_id,
         .exchange = cancel_all_orders.exchange,
@@ -488,14 +489,14 @@ uint16_t OrderEntry::operator()(Trace<CancelAllOrders> const &event, std::string
   };
   send_order_mass_action_request(cancel_all_orders);
   send_ack();
-  return stream_id_;
+  return stream_id();
 }
 
 // io::net::ConnectionManager::Handler
 
 void OrderEntry::operator()(Trace<io::net::ConnectionManager::Connected> const &event) {
   auto &[trace_info, connected] = event;
-  create_trace_and_dispatch_2(trace_info, ConnectionStatus::AUTHENTICATING);
+  publish(trace_info, ConnectionStatus::AUTHENTICATING);
   send_negotiate();
 }
 
@@ -505,7 +506,7 @@ void OrderEntry::operator()(Trace<io::net::ConnectionManager::Disconnected> cons
   inbound_ = {};
   download_.reset();
   next_heartbeat_ = {};
-  create_trace_and_dispatch_2(trace_info, ConnectionStatus::DISCONNECTED);
+  publish(trace_info, ConnectionStatus::DISCONNECTED);
   ++counter_.disconnect;
 }
 
@@ -533,7 +534,6 @@ void OrderEntry::operator()(Trace<io::net::ConnectionManager::Write> const &) {
 
 int32_t OrderEntry::download(Trace<State> const &event) {
   auto &[trace_info, state] = event;
-  auto publish_downloading = [&]() { create_trace_and_dispatch_2(trace_info, ConnectionStatus::DOWNLOADING, magic_enum::enum_name(state)); };
   switch (state) {
     using enum State;
     case UNDEFINED:
@@ -543,15 +543,16 @@ int32_t OrderEntry::download(Trace<State> const &event) {
       if (party_details_list_req_id_) {
         return 0;
       } else {
-        publish_downloading();
+        publish(trace_info, ConnectionStatus::DOWNLOADING, state);
         send_party_details_definition_request();
       }
       return 1;
     case ORDER_MASS_STATUS_REQUEST:
+      publish(trace_info, ConnectionStatus::DOWNLOADING, state);
       send_order_mass_status_request();
       return 1;
     case DONE:
-      create_trace_and_dispatch_2(trace_info, ConnectionStatus::READY);
+      publish(trace_info, ConnectionStatus::READY);
       return {};
   }
   assert(false);
@@ -681,7 +682,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::BusinessReject521> const &e
           .quantity = NaN,
           .price = NaN,
       };
-      create_trace_and_dispatch(shared_.dispatcher, trace_info, response, stream_id_, user_id, order_id);
+      create_trace_and_dispatch(shared_.dispatcher, trace_info, response, stream_id(), user_id, order_id);
     }
   });
 }
@@ -716,7 +717,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportNew522> cons
             .quantity = order_update.quantity,
             .price = order_update.price,
         };
-        create_trace_and_dispatch(shared_.dispatcher, trace_info, response, stream_id_, user_id, order_id);
+        create_trace_and_dispatch(shared_.dispatcher, trace_info, response, stream_id(), user_id, order_id);
       };
       auto security_id = get_security_id(value);
       if (shared_.security_definitions.get_security(security_id, helper)) {
@@ -755,7 +756,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportReject523> c
         .quantity = NaN,
         .price = NaN,
     };
-    create_trace_and_dispatch(shared_.dispatcher, trace_info, response, stream_id_, user_id, order_id);
+    create_trace_and_dispatch(shared_.dispatcher, trace_info, response, stream_id(), user_id, order_id);
   });
 }
 
@@ -777,7 +778,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportTradeOutrigh
           order_id = order.order_id;
           strategy_id = order.strategy_id;
         };
-        create_trace_and_dispatch(shared_.dispatcher, trace_info, order_update, stream_id_, callback);
+        create_trace_and_dispatch(shared_.dispatcher, trace_info, order_update, stream_id(), callback);
         // XXX TODO make generic
         auto &fills = shared_.get_fills();
         std::vector<std::string> external_trade_ids;  // alloc
@@ -807,7 +808,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportTradeOutrigh
           auto create_time_utc = get_transact_time(value);
           auto update_time_utc = create_time_utc;
           auto trade_update = TradeUpdate{
-              .stream_id = stream_id_,
+              .stream_id = stream_id(),
               .account = account_.get_name(),
               .order_id = order_id,
               .exchange = security.exchange,
@@ -887,7 +888,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportModify531> c
             .quantity = order_update.quantity,
             .price = order_update.price,
         };
-        create_trace_and_dispatch(shared_.dispatcher, trace_info, response, order_update, stream_id_);
+        create_trace_and_dispatch(shared_.dispatcher, trace_info, response, order_update, stream_id());
       };
       auto security_id = get_security_id(value);
       if (shared_.security_definitions.get_security(security_id, helper)) {
@@ -911,7 +912,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportStatus532> c
       auto external_order_id = fmt::format("{}"sv, order_id);
       auto helper = [&](auto &security) {
         auto order_update = order_update_from_execution_report(value, security, external_order_id);
-        create_trace_and_dispatch(shared_.dispatcher, trace_info, order_update, stream_id_);
+        create_trace_and_dispatch(shared_.dispatcher, trace_info, order_update, stream_id());
       };
       auto security_id = get_security_id(value);
       if (shared_.security_definitions.get_security(security_id, helper)) {
@@ -956,7 +957,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportCancel534> c
             .quantity = order_update.quantity,
             .price = order_update.price,
         };
-        create_trace_and_dispatch(shared_.dispatcher, trace_info, response, order_update, stream_id_);
+        create_trace_and_dispatch(shared_.dispatcher, trace_info, response, order_update, stream_id());
       };
       auto security_id = get_security_id(value);
       if (shared_.security_definitions.get_security(security_id, helper)) {
@@ -994,7 +995,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::OrderMassActionReport562> c
     log::info("DEBUG order_mass_action_report={}"sv, const_cast<value_type &>(value));
     auto send_ack = [&](auto status, Error error, std::string_view const &text) {
       auto cancel_all_orders_ack = CancelAllOrdersAck{
-          .stream_id = stream_id_,
+          .stream_id = stream_id(),
           .account = account_.get_name(),
           .order_id = {},
           .exchange = {},
@@ -1071,7 +1072,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::OrderMassActionReport562> c
               .update_type = UpdateType::INCREMENTAL,
               .sending_time_utc = {},
           };
-          create_trace_and_dispatch(shared_.dispatcher, trace_info, order_update, stream_id_);
+          create_trace_and_dispatch(shared_.dispatcher, trace_info, order_update, stream_id());
         });
         log::info("*** CANCEL ALL ORDERS SUCCEEDED, TOTAL_AFFECTED_ORDERS={} ***"sv, count);
         send_ack(RequestStatus::ACCEPTED, {}, {});
@@ -1111,7 +1112,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::OrderCancelReject535> const
         .quantity = NaN,
         .price = NaN,
     };
-    create_trace_and_dispatch(shared_.dispatcher, trace_info, response, stream_id_);
+    create_trace_and_dispatch(shared_.dispatcher, trace_info, response, stream_id());
   });
 }
 
@@ -1143,7 +1144,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::OrderCancelReplaceReject536
         .quantity = NaN,
         .price = NaN,
     };
-    create_trace_and_dispatch(shared_.dispatcher, trace_info, response, stream_id_);
+    create_trace_and_dispatch(shared_.dispatcher, trace_info, response, stream_id());
   });
 }
 
