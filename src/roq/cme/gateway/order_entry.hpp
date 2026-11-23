@@ -58,21 +58,21 @@ struct OrderEntry final : public Base<OrderEntry>,
   void operator()(Trace<server::oms::OrderActionBatchCommit> const &) override;
   void operator()(Trace<server::oms::OrderActionBatchRollback> const &) override;
 
-  uint16_t operator()(Trace<CreateOrder> const &, server::oms::Order const &, server::oms::RefData const &, std::string_view const &request_id) override;
-  uint16_t operator()(
+  void operator()(Trace<CreateOrder> const &, server::oms::Order const &, server::oms::RefData const &, std::string_view const &request_id) override;
+  void operator()(
       Trace<ModifyOrder> const &,
       server::oms::Order const &,
       server::oms::RefData const &,
       std::string_view const &request_id,
       std::string_view const &previous_request_id) override;
-  uint16_t operator()(
+  void operator()(
       Trace<CancelOrder> const &,
       server::oms::Order const &,
       server::oms::RefData const &,
       std::string_view const &request_id,
       std::string_view const &previous_request_id) override;
 
-  uint16_t operator()(Trace<CancelAllOrders> const &, std::string_view const &request_id) override;
+  void operator()(Trace<CancelAllOrders> const &, std::string_view const &request_id) override;
 
  protected:
   // io::net::ConnectionManager::Handler

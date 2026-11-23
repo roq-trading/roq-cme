@@ -334,17 +334,17 @@ OrderEntry::OrderEntry(
 
 // server::Stream
 
-void OrderEntry::operator()(Trace<Start> const &) {
-  (*connection_manager_).start();
+void OrderEntry::operator()(Trace<Start> const &event) {
+  (*connection_manager_)(event);
 }
 
-void OrderEntry::operator()(Trace<Stop> const &) {
-  (*connection_manager_).stop();
+void OrderEntry::operator()(Trace<Stop> const &event) {
+  (*connection_manager_)(event);
 }
 
 void OrderEntry::operator()(Trace<Timer> const &event) {
   auto &[trace_info, timer] = event;
-  if ((*connection_manager_).refresh(trace_info)) {
+  if ((*connection_manager_)(event)) {
     if (ready()) {
       if (trace_info.origin_create_time < next_heartbeat_) {
         send_sequence();  // note! send() updates next_heartbeat
@@ -423,17 +423,16 @@ void OrderEntry::operator()(Trace<server::oms::OrderActionBatchRollback> const &
   throw server::oms::NotSupported{"not supported"sv};
 }
 
-uint16_t OrderEntry::operator()(
+void OrderEntry::operator()(
     Trace<CreateOrder> const &event, server::oms::Order const &order, server::oms::RefData const &, std::string_view const &request_id) {
   if (!ready()) [[unlikely]] {
     throw server::oms::NotReady{"not ready"sv};
   }
   auto &[trace_info, create_order] = event;
   send_new_order_single(create_order, order, request_id);
-  return stream_id();
 }
 
-uint16_t OrderEntry::operator()(
+void OrderEntry::operator()(
     Trace<ModifyOrder> const &event,
     server::oms::Order const &order,
     server::oms::RefData const &,
@@ -444,10 +443,9 @@ uint16_t OrderEntry::operator()(
   }
   auto &[trace_info, modify_order] = event;
   send_order_cancel_replace_request(modify_order, order);
-  return stream_id();
 }
 
-uint16_t OrderEntry::operator()(
+void OrderEntry::operator()(
     Trace<CancelOrder> const &event,
     server::oms::Order const &order,
     server::oms::RefData const &,
@@ -458,10 +456,9 @@ uint16_t OrderEntry::operator()(
   }
   auto &[trace_info, cancel_order] = event;
   send_order_cancel_request(cancel_order, order);
-  return stream_id();
 }
 
-uint16_t OrderEntry::operator()(Trace<CancelAllOrders> const &event, std::string_view const &request_id) {
+void OrderEntry::operator()(Trace<CancelAllOrders> const &event, std::string_view const &request_id) {
   if (!ready()) [[unlikely]] {
     throw server::oms::NotReady{"not ready"sv};
   }
@@ -489,7 +486,6 @@ uint16_t OrderEntry::operator()(Trace<CancelAllOrders> const &event, std::string
   };
   send_order_mass_action_request(cancel_all_orders);
   send_ack();
-  return stream_id();
 }
 
 // io::net::ConnectionManager::Handler

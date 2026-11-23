@@ -93,8 +93,8 @@ struct Controller final : public server::Handler, public market_data::SecurityDe
   template <typename... Args>
   static void dispatch_helper(auto &self, Args &&...);
 
-  template <typename Res, typename T, typename... Args>
-  Res dispatch_order_action(Trace<T> const &, Args &&...);
+  template <typename T, typename... Args>
+  uint16_t dispatch_order_action(Trace<T> const &, Args &&...);
 
  private:
   server::Dispatcher &dispatcher_;
