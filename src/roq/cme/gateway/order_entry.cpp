@@ -291,8 +291,8 @@ auto order_update_from_execution_report(T &value, auto &security, auto &external
 
 OrderEntry::OrderEntry(
     Handler &handler, io::Context &context, uint16_t stream_id, Account &account, Shared &shared, uint8_t market_segment_id, io::web::URI const &uri)
-    : server::OrderActionStream{stream_id}, handler_{handler}, name_{create_name(stream_id, account.get_name())}, market_segment_id_{market_segment_id},
-      connection_factory_{create_connection_factory(shared.settings, context, uri)},
+    : server::OrderActionStream{stream_id, account.name, SUPPORTS}, handler_{handler}, name_{create_name(stream_id, account.name)},
+      market_segment_id_{market_segment_id}, connection_factory_{create_connection_factory(shared.settings, context, uri)},
       connection_manager_{create_connection_manager(*this, shared.settings, *connection_factory_)}, decode_buffer_(shared.settings.misc.decode_buffer_size),
       encode_buffer_2_(shared.settings.misc.encode_buffer_size),
       counter_{
@@ -389,9 +389,9 @@ void OrderEntry::operator()(Trace<ConnectionStatus> const &event, std::string_vi
   auto &[trace_info, connection_status] = event;
   if (update(connection_status, reason)) {
     auto stream_status = StreamStatus{
-        .stream_id = stream_id(),
-        .account = account_.get_name(),
-        .supports = SUPPORTS,
+        .stream_id = stream_id,
+        .account = account,
+        .supports = supports,
         .transport = Transport::TCP,
         .protocol = Protocol::FIX,
         .encoding = {Encoding::SBE},
@@ -465,8 +465,8 @@ void OrderEntry::operator()(Trace<CancelAllOrders> const &event, std::string_vie
   auto &[trace_info, cancel_all_orders] = event;
   auto send_ack = [&]() {
     auto cancel_all_orders_ack = CancelAllOrdersAck{
-        .stream_id = stream_id(),
-        .account = account_.get_name(),
+        .stream_id = stream_id,
+        .account = account_.name,
         .order_id = cancel_all_orders.order_id,
         .exchange = cancel_all_orders.exchange,
         .symbol = cancel_all_orders.symbol,
@@ -678,7 +678,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::BusinessReject521> const &e
           .quantity = NaN,
           .price = NaN,
       };
-      create_trace_and_dispatch(shared_.dispatcher, trace_info, response, stream_id(), user_id, order_id);
+      create_trace_and_dispatch(shared_.dispatcher, trace_info, response, stream_id, user_id, order_id);
     }
   });
 }
@@ -713,7 +713,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportNew522> cons
             .quantity = order_update.quantity,
             .price = order_update.price,
         };
-        create_trace_and_dispatch(shared_.dispatcher, trace_info, response, stream_id(), user_id, order_id);
+        create_trace_and_dispatch(shared_.dispatcher, trace_info, response, stream_id, user_id, order_id);
       };
       auto security_id = get_security_id(value);
       if (shared_.security_definitions.get_security(security_id, helper)) {
@@ -752,7 +752,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportReject523> c
         .quantity = NaN,
         .price = NaN,
     };
-    create_trace_and_dispatch(shared_.dispatcher, trace_info, response, stream_id(), user_id, order_id);
+    create_trace_and_dispatch(shared_.dispatcher, trace_info, response, stream_id, user_id, order_id);
   });
 }
 
@@ -774,7 +774,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportTradeOutrigh
           order_id = order.order_id;
           strategy_id = order.strategy_id;
         };
-        create_trace_and_dispatch(shared_.dispatcher, trace_info, order_update, stream_id(), callback);
+        create_trace_and_dispatch(shared_.dispatcher, trace_info, order_update, stream_id, callback);
         // XXX TODO make generic
         auto &fills = shared_.get_fills();
         std::vector<std::string> external_trade_ids;  // alloc
@@ -804,8 +804,8 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportTradeOutrigh
           auto create_time_utc = get_transact_time(value);
           auto update_time_utc = create_time_utc;
           auto trade_update = TradeUpdate{
-              .stream_id = stream_id(),
-              .account = account_.get_name(),
+              .stream_id = stream_id,
+              .account = account_.name,
               .order_id = order_id,
               .exchange = security.exchange,
               .symbol = security.symbol,
@@ -884,7 +884,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportModify531> c
             .quantity = order_update.quantity,
             .price = order_update.price,
         };
-        create_trace_and_dispatch(shared_.dispatcher, trace_info, response, order_update, stream_id());
+        create_trace_and_dispatch(shared_.dispatcher, trace_info, response, order_update, stream_id);
       };
       auto security_id = get_security_id(value);
       if (shared_.security_definitions.get_security(security_id, helper)) {
@@ -908,7 +908,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportStatus532> c
       auto external_order_id = fmt::format("{}"sv, order_id);
       auto helper = [&](auto &security) {
         auto order_update = order_update_from_execution_report(value, security, external_order_id);
-        create_trace_and_dispatch(shared_.dispatcher, trace_info, order_update, stream_id());
+        create_trace_and_dispatch(shared_.dispatcher, trace_info, order_update, stream_id);
       };
       auto security_id = get_security_id(value);
       if (shared_.security_definitions.get_security(security_id, helper)) {
@@ -953,7 +953,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::ExecutionReportCancel534> c
             .quantity = order_update.quantity,
             .price = order_update.price,
         };
-        create_trace_and_dispatch(shared_.dispatcher, trace_info, response, order_update, stream_id());
+        create_trace_and_dispatch(shared_.dispatcher, trace_info, response, order_update, stream_id);
       };
       auto security_id = get_security_id(value);
       if (shared_.security_definitions.get_security(security_id, helper)) {
@@ -991,8 +991,8 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::OrderMassActionReport562> c
     log::info("DEBUG order_mass_action_report={}"sv, const_cast<value_type &>(value));
     auto send_ack = [&](auto status, Error error, std::string_view const &text) {
       auto cancel_all_orders_ack = CancelAllOrdersAck{
-          .stream_id = stream_id(),
-          .account = account_.get_name(),
+          .stream_id = stream_id,
+          .account = account_.name,
           .order_id = {},
           .exchange = {},
           .symbol = {},
@@ -1068,7 +1068,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::OrderMassActionReport562> c
               .update_type = UpdateType::INCREMENTAL,
               .sending_time_utc = {},
           };
-          create_trace_and_dispatch(shared_.dispatcher, trace_info, order_update, stream_id());
+          create_trace_and_dispatch(shared_.dispatcher, trace_info, order_update, stream_id);
         });
         log::info("*** CANCEL ALL ORDERS SUCCEEDED, TOTAL_AFFECTED_ORDERS={} ***"sv, count);
         send_ack(RequestStatus::ACCEPTED, {}, {});
@@ -1108,7 +1108,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::OrderCancelReject535> const
         .quantity = NaN,
         .price = NaN,
     };
-    create_trace_and_dispatch(shared_.dispatcher, trace_info, response, stream_id());
+    create_trace_and_dispatch(shared_.dispatcher, trace_info, response, stream_id);
   });
 }
 
@@ -1140,7 +1140,7 @@ void OrderEntry::operator()(Trace<::cme::sbe::ilink::OrderCancelReplaceReject536
         .quantity = NaN,
         .price = NaN,
     };
-    create_trace_and_dispatch(shared_.dispatcher, trace_info, response, stream_id());
+    create_trace_and_dispatch(shared_.dispatcher, trace_info, response, stream_id);
   });
 }
 
@@ -1217,7 +1217,7 @@ void OrderEntry::send_negotiate() {
   auto canonical_message = tools::CanonicalMessage{
       .request_timestamp = now,
       .uuid = uuid_,
-      .session = account_.get_login(),
+      .session = account_.login,
       .firm_id = shared_.settings.ilink.firm_id,
       // note! following must be empty for the negotiate request
       .trading_system_name = {},
@@ -1229,7 +1229,7 @@ void OrderEntry::send_negotiate() {
   auto hmac_signature = account_.create_signature(canonical_message);
   auto negotiate = protocol::ilink::Negotiate{
       .hmac_signature = hmac_signature,
-      .access_key_id = account_.get_password(),
+      .access_key_id = account_.password,
       .uuid = canonical_message.uuid,
       .request_timestamp = canonical_message.request_timestamp,
       .session = canonical_message.session,
@@ -1244,7 +1244,7 @@ void OrderEntry::send_establish() {
   auto canonical_message = tools::CanonicalMessage{
       .request_timestamp = now,
       .uuid = uuid_,
-      .session = account_.get_login(),
+      .session = account_.login,
       .firm_id = shared_.settings.ilink.firm_id,
       .trading_system_name = ROQ_PACKAGE_NAME,
       .trading_system_version = ROQ_BUILD_VERSION,
@@ -1255,7 +1255,7 @@ void OrderEntry::send_establish() {
   auto hmac_signature = account_.create_signature(canonical_message);
   auto establish = protocol::ilink::Establish{
       .hmac_signature = hmac_signature,
-      .access_key_id = account_.get_password(),
+      .access_key_id = account_.password,
       .trading_system_name = canonical_message.trading_system_name,
       .trading_system_version = canonical_message.trading_system_version,
       .trading_system_vendor = canonical_message.trading_system_vendor,
@@ -1307,11 +1307,11 @@ void OrderEntry::send_party_details_definition_request() {
           .party_detail_role = ::cme::sbe::ilink::PartyDetailRole::ExecutingFirm,
       },
       {
-          .party_detail_id = account_.get_name(),
+          .party_detail_id = account_.name,
           .party_detail_role = ::cme::sbe::ilink::PartyDetailRole::CustomerAccount,
       },
       {
-          .party_detail_id = account_.get_name(),
+          .party_detail_id = account_.name,
           .party_detail_role = ::cme::sbe::ilink::PartyDetailRole::Operator,
       },
   }};
@@ -1346,7 +1346,7 @@ void OrderEntry::send_security_definition_request() {
       .security_req_id = {},
       .manual_order_indicator = MANUAL_ORDER_INDICATOR,
       .seq_num = fetch_next_seq_num(),
-      .sender_id = account_.get_name(),
+      .sender_id = account_.name,
       .sending_time_epoch = now,
       .security_sub_type = {},
       .location = shared_.settings.ilink.location,
@@ -1367,7 +1367,7 @@ void OrderEntry::send_order_mass_status_request() {
       .mass_status_req_id = fetch_next_request_id(),
       .manual_order_indicator = MANUAL_ORDER_INDICATOR,
       .seq_num = fetch_next_seq_num(),
-      .sender_id = account_.get_name(),
+      .sender_id = account_.name,
       .sending_time_epoch = now,
       .security_group = {},
       .location = shared_.settings.ilink.location,
@@ -1402,7 +1402,7 @@ void OrderEntry::send_new_order_single(CreateOrder const &create_order, server::
           .security_id = security_id,
           .side = map(create_order.side),
           .seq_num = fetch_next_seq_num(),
-          .sender_id = account_.get_name(),
+          .sender_id = account_.name,
           .cl_ord_id = request_id,
           .party_details_list_req_id = party_details_list_req_id_,
           .order_request_id = order_request_id,
@@ -1455,7 +1455,7 @@ void OrderEntry::send_order_cancel_replace_request(ModifyOrder const &modify_ord
         .security_id = security_id,
         .side = map(order.side),
         .seq_num = fetch_next_seq_num(),
-        .sender_id = account_.get_name(),
+        .sender_id = account_.name,
         .cl_ord_id = order.client_order_id,
         .party_details_list_req_id = party_details_list_req_id_,
         .order_id = {},
@@ -1502,7 +1502,7 @@ void OrderEntry::send_order_cancel_request(CancelOrder const &cancel_order, serv
         .party_details_list_req_id = party_details_list_req_id_,
         .manual_order_indicator = MANUAL_ORDER_INDICATOR,
         .seq_num = fetch_next_seq_num(),
-        .sender_id = account_.get_name(),
+        .sender_id = account_.name,
         .cl_ord_id = order.client_order_id,
         .order_request_id = order_request_id,
         .sending_time_epoch = now,
@@ -1536,7 +1536,7 @@ void OrderEntry::send_order_mass_action_request(CancelAllOrders const &) {
       .order_request_id = fetch_next_request_id(),  // XXX for what ???
       .manual_order_indicator = MANUAL_ORDER_INDICATOR,
       .seq_num = fetch_next_seq_num(),
-      .sender_id = account_.get_name(),
+      .sender_id = account_.name,
       .sending_time_epoch = now,
       .security_group = {},
       .location = shared_.settings.ilink.location,
