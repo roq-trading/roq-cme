@@ -334,25 +334,6 @@ OrderEntry::OrderEntry(
 
 // server::Stream
 
-void OrderEntry::operator()(Trace<Start> const &event) {
-  (*connection_manager_)(event);
-}
-
-void OrderEntry::operator()(Trace<Stop> const &event) {
-  (*connection_manager_)(event);
-}
-
-void OrderEntry::operator()(Trace<Timer> const &event) {
-  auto &[trace_info, timer] = event;
-  if ((*connection_manager_)(event)) {
-    if (ready()) {
-      if (trace_info.origin_create_time < next_heartbeat_) {
-        send_sequence();  // note! send() updates next_heartbeat
-      }
-    }
-  }
-}
-
 void OrderEntry::operator()(metrics::Writer &writer) const {
   writer  //
       .write(counter_.disconnect, metrics::Type::COUNTER)
@@ -383,6 +364,25 @@ void OrderEntry::operator()(metrics::Writer &writer) const {
       .write(profile_.order_mass_action_report, metrics::Type::PROFILE)
       .write(profile_.security_definition_response, metrics::Type::PROFILE)
       .write(latency_.ping, metrics::Type::LATENCY);
+}
+
+void OrderEntry::operator()(Trace<Start> const &event) {
+  (*connection_manager_)(event);
+}
+
+void OrderEntry::operator()(Trace<Stop> const &event) {
+  (*connection_manager_)(event);
+}
+
+void OrderEntry::operator()(Trace<Timer> const &event) {
+  auto &[trace_info, timer] = event;
+  if ((*connection_manager_)(event)) {
+    if (ready()) {
+      if (trace_info.origin_create_time < next_heartbeat_) {
+        send_sequence();  // note! send() updates next_heartbeat
+      }
+    }
+  }
 }
 
 void OrderEntry::operator()(Trace<ConnectionStatus> const &event, std::string_view const &reason) {
